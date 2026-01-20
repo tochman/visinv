@@ -1,15 +1,12 @@
 import { Link, useLocation } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { useSelector } from 'react-redux';
-import { appConfig } from '../../config/constants';
 
 export default function Sidebar() {
   const { t } = useTranslation();
   const location = useLocation();
-  const { user } = useSelector((state) => state.auth);
+  const { isAdmin } = useSelector((state) => state.auth);
   const { isPremium } = useSelector((state) => state.subscriptions);
-
-  const isAdmin = user?.email === appConfig.adminEmail;
 
   const navItems = [
     { path: '/', label: t('nav.dashboard'), icon: '📊' },
@@ -26,11 +23,20 @@ export default function Sidebar() {
 
   const isActive = (path) => location.pathname === path;
 
+  // Admins have access to all premium features
+  const hasPremiumAccess = isPremium || isAdmin;
+
   return (
     <div className="w-64 bg-white shadow-lg">
       <div className="p-6">
         <h1 className="text-2xl font-bold text-gray-900">VisInv</h1>
-        {!isPremium && (
+        {isAdmin && (
+          <div className="mt-4 p-3 bg-purple-50 rounded-lg text-sm">
+            <p className="text-purple-900 font-medium">👑 Admin</p>
+            <span className="text-purple-600 text-xs">Full access</span>
+          </div>
+        )}
+        {!hasPremiumAccess && (
           <div className="mt-4 p-3 bg-blue-50 rounded-lg text-sm">
             <p className="text-blue-900 font-medium">Free Plan</p>
             <Link to="/settings" className="text-blue-600 hover:underline text-xs">
@@ -42,7 +48,7 @@ export default function Sidebar() {
 
       <nav className="px-4 space-y-1">
         {navItems.map((item) => {
-          const disabled = item.premium && !isPremium && !isAdmin;
+          const disabled = item.premium && !hasPremiumAccess;
           
           return (
             <Link
@@ -59,7 +65,7 @@ export default function Sidebar() {
             >
               <span className="mr-3 text-xl">{item.icon}</span>
               <span className="flex-1">{item.label}</span>
-              {item.premium && !isPremium && !isAdmin && (
+              {item.premium && !hasPremiumAccess && (
                 <span className="text-xs bg-yellow-400 text-gray-900 px-2 py-1 rounded">
                   PRO
                 </span>

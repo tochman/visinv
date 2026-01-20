@@ -28,16 +28,20 @@ import AdminRoute from './components/auth/AdminRoute';
 
 function App() {
   const dispatch = useDispatch();
-  const { isAuthenticated, loading } = useSelector((state) => state.auth);
+  const { initialized, loading } = useSelector((state) => state.auth);
 
   useEffect(() => {
     dispatch(checkSession());
   }, [dispatch]);
 
-  if (loading) {
+  // Show loading while checking session
+  if (!initialized || loading) {
     return (
-      <div className="flex items-center justify-center min-h-screen">
-        <div className="text-lg">Loading...</div>
+      <div className="flex items-center justify-center min-h-screen bg-gray-100">
+        <div className="text-center">
+          <div className="text-2xl font-bold text-gray-900 mb-2">VisInv</div>
+          <div className="text-gray-600">Loading...</div>
+        </div>
       </div>
     );
   }

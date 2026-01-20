@@ -1,13 +1,27 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
 import { authService, supabase } from '../../services/supabase';
 
+// Helper to fetch user profile
+const fetchUserProfile = async (userId) => {
+  if (!supabase) return null;
+  const { data } = await supabase
+    .from('profiles')
+    .select('*')
+    .eq('id', userId)
+    .single();
+  return data;
+};
+
 // Async thunks
 export const signIn = createAsyncThunk(
   'auth/signIn',
   async ({ email, password }, { rejectWithValue }) => {
     const { data, error } = await authService.signIn(email, password);
     if (error) return rejectWithValue(error.message);
-    return data;
+    
+    // Fetch profile to get admin status
+    const profile = await fetchUserProfile(data.user.id);
+    return { ...data, profile };
   }
 );
 
@@ -43,7 +57,13 @@ export const checkSession = createAsyncThunk(
   async (_, { rejectWithValue }) => {
     const { session, error } = await authService.getSession();
     if (error) return rejectWithValue(error.message);
-    return session;
+    
+    // Fetch profile if session exists
+    let profile = null;
+    if (session?.user) {
+      profile = await fetchUserProfile(session.user.id);
+    }
+    return { session, profile };
   }
 );
 
@@ -51,10 +71,13 @@ const authSlice = createSlice({
   name: 'auth',
   initialState: {
     user: null,
+    profile: null,
     session: null,
-    loading: false,
+    loading: true, // Start with loading true to check session first
     error: null,
     isAuthenticated: false,
+    isAdmin: false,
+    initialized: false, // Track if we've checked the session
   },
   reducers: {
     setUser: (state, action) => {
@@ -79,7 +102,9 @@ const authSlice = createSlice({
         state.loading = false;
         state.user = action.payload.user;
         state.session = action.payload.session;
+        state.profile = action.payload.profile;
         state.isAuthenticated = true;
+        state.isAdmin = action.payload.profile?.is_admin || false;
       })
       .addCase(signIn.rejected, (state, action) => {
         state.loading = false;
@@ -102,16 +127,32 @@ const authSlice = createSlice({
       // Sign Out
       .addCase(signOut.fulfilled, (state) => {
         state.user = null;
+        state.profile = null;
         state.session = null;
         state.isAuthenticated = false;
+        state.isAdmin = false;
       })
       // Check Session
+      .addCase(checkSession.pending, (state) => {
+        state.loading = true;
+      })
       .addCase(checkSession.fulfilled, (state, action) => {
-        if (action.payload) {
-          state.session = action.payload;
-          state.user = action.payload.user;
+        state.loading = false;
+        state.initialized = true;
+        if (action.payload.session) {
+          state.session = action.payload.session;
+          state.user = action.payload.session.user;
+          state.profile = action.payload.profile;
           state.isAuthenticated = true;
+          state.isAdmin = action.payload.profile?.is_admin || false;
+        } else {
+          state.isAuthenticated = false;
         }
+      })
+      .addCase(checkSession.rejected, (state) => {
+        state.loading = false;
+        state.initialized = true;
+        state.isAuthenticated = false;
       });
   },
 });

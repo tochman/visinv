@@ -3,6 +3,7 @@ import { useDispatch, useSelector } from 'react-redux';
 import { useNavigate, Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { signIn, signInWithGoogle } from '../../features/auth/authSlice';
+import { isSupabaseConfigured } from '../../services/supabase';
 
 export default function SignIn() {
   const { t } = useTranslation();
@@ -37,6 +38,19 @@ export default function SignIn() {
   return (
     <div className="bg-white rounded-lg shadow-xl p-8">
       <h2 className="text-2xl font-bold text-gray-900 mb-6">{t('auth.signIn')}</h2>
+
+      {!isSupabaseConfigured && (
+        <div className="mb-4 p-4 bg-yellow-50 border border-yellow-200 rounded-lg">
+          <p className="text-yellow-800 font-medium">⚠️ Supabase not configured</p>
+          <p className="text-yellow-700 text-sm mt-1">
+            To enable authentication, create a <code className="bg-yellow-100 px-1 rounded">.env</code> file with:
+          </p>
+          <pre className="mt-2 text-xs bg-yellow-100 p-2 rounded overflow-x-auto">
+{`VITE_SUPABASE_URL=your_project_url
+VITE_SUPABASE_ANON_KEY=your_anon_key`}
+          </pre>
+        </div>
+      )}
 
       {error && (
         <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-lg">

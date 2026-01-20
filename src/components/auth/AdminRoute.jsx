@@ -1,9 +1,8 @@
 import { Navigate } from 'react-router-dom';
 import { useSelector } from 'react-redux';
-import { appConfig } from '../../config/constants';
 
 export default function AdminRoute({ children }) {
-  const { user, isAuthenticated, loading } = useSelector((state) => state.auth);
+  const { isAuthenticated, isAdmin, loading } = useSelector((state) => state.auth);
 
   if (loading) {
     return (
@@ -17,7 +16,7 @@ export default function AdminRoute({ children }) {
     return <Navigate to="/auth/signin" replace />;
   }
 
-  if (user?.email !== appConfig.adminEmail) {
+  if (!isAdmin) {
     return <Navigate to="/" replace />;
   }
 
