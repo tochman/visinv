@@ -1,7 +1,6 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { useEditor, EditorContent } from '@tiptap/react';
 import StarterKit from '@tiptap/starter-kit';
-import { Underline } from '@tiptap/extension-underline';
 import { TextAlign } from '@tiptap/extension-text-align';
 import { TextStyle } from '@tiptap/extension-text-style';
 import { Color } from '@tiptap/extension-color';
@@ -916,16 +915,14 @@ function BlockPalette({ onInsertBlock, onInsertColumns }) {
 }
 
 /**
- * TemplateEditor - Edit and preview report templates
+ * TemplateEditor - Edit and preview invoice templates
  * Features: Syntax validation, live preview, design themes, visual/code modes
  */
 export default function TemplateEditor({ 
   template, 
   onSave, 
   onCancel,
-  wheelData,
-  pageData,
-  organizationData 
+  invoiceData
 }) {
   const [name, setName] = useState(template?.name || '');
   const [description, setDescription] = useState(template?.description || '');
@@ -1023,7 +1020,6 @@ export default function TemplateEditor({
   const visualEditor = useEditor({
     extensions: [
       StarterKit,
-      Underline,
       TextStyle,
       Color,
       Highlight.configure({ multicolor: true }),
@@ -1116,9 +1112,9 @@ export default function TemplateEditor({
       const result = validateTemplate(templateContent);
       setValidation(result);
       
-      if (result.valid && wheelData && organizationData) {
+      if (result.valid) {
         try {
-          const context = buildTemplateContext(wheelData, pageData, organizationData);
+          const context = buildTemplateContext(invoiceData);
           const rendered = renderTemplate(templateContent, context);
           setPreview(generateHtmlDocument(rendered, theme));
         } catch (error) {
@@ -1128,13 +1124,13 @@ export default function TemplateEditor({
             ${error.message}
           </div>`, theme));
         }
-      } else if (!wheelData || !organizationData) {
+      } else {
         setPreview(generateHtmlDocument(`<div style="color: #64748b; padding: 20px; font-style: italic;">
-          Välj ett hjul ovan för att se förhandsvisning med riktiga data.
+          Template preview will appear here.
         </div>`, theme));
       }
     }
-  }, [templateContent, wheelData, pageData, organizationData, selectedTheme]);
+  }, [templateContent, invoiceData, selectedTheme]);
 
   const handleSave = async () => {
     if (!validation.valid) {
@@ -1163,17 +1159,17 @@ export default function TemplateEditor({
   };
 
   const handleExportPreview = async () => {
-    if (!templateContent || !wheelData) return;
+    if (!templateContent) return;
     
     setIsExporting(true);
     try {
-      const context = buildTemplateContext(wheelData, pageData, organizationData);
+      const context = buildTemplateContext(invoiceData);
       const rendered = renderTemplate(templateContent, context);
       const htmlDocument = generateHtmlDocument(rendered, theme);
-      const filename = `${name.replace(/\s+/g, '_').toLowerCase() || 'rapport'}_${Date.now()}.pdf`;
+      const filename = `${name.replace(/\s+/g, '_').toLowerCase() || 'invoice'}_${Date.now()}.pdf`;
       await exportToPDF(htmlDocument, filename);
     } catch (error) {
-      alert('Kunde inte exportera PDF: ' + error.message);
+      alert('Could not export PDF: ' + error.message);
     } finally {
       setIsExporting(false);
     }

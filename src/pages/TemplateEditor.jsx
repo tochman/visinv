@@ -74,9 +74,7 @@ export default function TemplateEditorPage() {
       template={isEditing ? currentTemplate : null}
       onSave={handleSave}
       onCancel={handleCancel}
-      wheelData={null}
-      pageData={null}
-      organizationData={null}
+      invoiceData={null}
     />
   );
 }

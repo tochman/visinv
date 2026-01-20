@@ -75,112 +75,30 @@ Handlebars.registerHelper('json', function(context) {
 });
 
 /**
- * Build template data context from wheel data
+ * Build template data context from invoice data
  */
-export function buildTemplateContext(wheelData, pageData, organizationData) {
-  const { rings = [], activityGroups = [], labels = [], items = [] } = organizationData || {};
-  
-  // Build months with associated items
-  const monthNames = [
-    'Januari', 'Februari', 'Mars', 'April', 'Maj', 'Juni',
-    'Juli', 'Augusti', 'September', 'Oktober', 'November', 'December'
-  ];
-  
-  const months = monthNames.map((name, index) => {
-    const monthItems = items.filter(item => {
-      const startDate = new Date(item.startDate);
-      return startDate.getMonth() === index && startDate.getFullYear() === (pageData?.year || wheelData.year);
-    }).map(item => enrichItem(item, rings, activityGroups, labels));
-    
-    return {
-      name,
-      index,
-      items: monthItems,
-      itemCount: monthItems.length
-    };
-  });
-  
-  // Enrich rings with item counts
-  const enrichedRings = rings.map(ring => ({
-    ...ring,
-    items: items.filter(item => item.ringId === ring.id).map(item => enrichItem(item, rings, activityGroups, labels)),
-    itemCount: items.filter(item => item.ringId === ring.id).length
-  }));
-  
-  // Enrich activity groups with items
-  const enrichedActivityGroups = activityGroups.map(group => ({
-    ...group,
-    items: items.filter(item => item.activityId === group.id).map(item => enrichItem(item, rings, activityGroups, labels)),
-    itemCount: items.filter(item => item.activityId === group.id).length
-  }));
-  
-  // Enrich labels with items
-  const enrichedLabels = labels.map(label => ({
-    ...label,
-    items: items.filter(item => item.labelId === label.id).map(item => enrichItem(item, rings, activityGroups, labels)),
-    itemCount: items.filter(item => item.labelId === label.id).length
-  }));
-  
-  // Calculate statistics
-  const stats = {
-    totalItems: items.length,
-    totalRings: rings.length,
-    totalActivityGroups: activityGroups.length,
-    totalLabels: labels.length,
-    itemsByMonth: months.map(m => m.itemCount),
-    itemsByRing: enrichedRings.map(r => ({ name: r.name, count: r.itemCount })),
-    itemsByGroup: enrichedActivityGroups.map(g => ({ name: g.name, count: g.itemCount })),
-    itemsByLabel: enrichedLabels.map(l => ({ name: l.name, count: l.itemCount }))
+export function buildTemplateContext(invoiceData = {}) {
+  // Sample invoice data for preview
+  const sampleInvoice = {
+    invoice_number: 'INV-0001',
+    client_name: 'Acme Corporation',
+    client_email: 'contact@acme.com',
+    issue_date: new Date().toISOString().split('T')[0],
+    due_date: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
+    status: 'draft',
+    subtotal: 10000,
+    tax_rate: 25,
+    tax_amount: 2500,
+    total: 12500,
+    currency: 'SEK',
+    notes: 'Payment due within 30 days',
+    line_items: [
+      { description: 'Consulting Services', quantity: 10, unit_price: 800, amount: 8000 },
+      { description: 'Project Management', quantity: 5, unit_price: 400, amount: 2000 }
+    ]
   };
   
-  return {
-    wheel: {
-      id: wheelData.id,
-      title: wheelData.title,
-      year: pageData?.year || wheelData.year,
-      colors: wheelData.colors || {},
-      showWeekRing: wheelData.showWeekRing,
-      showMonthRing: wheelData.showMonthRing,
-      showRingNames: wheelData.showRingNames,
-      showLabels: wheelData.showLabels
-    },
-    page: pageData ? {
-      id: pageData.id,
-      title: pageData.title,
-      year: pageData.year,
-      pageOrder: pageData.pageOrder
-    } : null,
-    months,
-    rings: enrichedRings,
-    activityGroups: enrichedActivityGroups,
-    labels: enrichedLabels,
-    items: items.map(item => enrichItem(item, rings, activityGroups, labels)),
-    stats,
-    currentDate: new Date().toLocaleDateString('sv-SE', { 
-      year: 'numeric', 
-      month: 'long', 
-      day: 'numeric' 
-    })
-  };
-}
-
-/**
- * Enrich item with related data
- */
-function enrichItem(item, rings, activityGroups, labels) {
-  const ring = rings.find(r => r.id === item.ringId);
-  const activityGroup = activityGroups.find(a => a.id === item.activityId);
-  const label = item.labelId ? labels.find(l => l.id === item.labelId) : null;
-  
-  return {
-    ...item,
-    ringName: ring?.name || 'Unknown Ring',
-    ringColor: ring?.color || '#94A3B8',
-    activityName: activityGroup?.name || 'Unknown Group',
-    activityColor: activityGroup?.color || '#94A3B8',
-    labelName: label?.name || null,
-    labelColor: label?.color || null
-  };
+  return invoiceData && Object.keys(invoiceData).length > 0 ? invoiceData : sampleInvoice;
 }
 
 /**
@@ -358,15 +276,10 @@ export function validateTemplate(templateContent) {
  */
 export function getTemplateVariables() {
   return {
-    wheel: ['id', 'title', 'year', 'colors', 'showWeekRing', 'showMonthRing', 'showRingNames', 'showLabels'],
-    page: ['id', 'title', 'year', 'pageOrder'],
-    months: ['name', 'index', 'items', 'itemCount'],
-    rings: ['id', 'name', 'type', 'color', 'visible', 'items', 'itemCount'],
-    activityGroups: ['id', 'name', 'color', 'visible', 'items', 'itemCount'],
-    labels: ['id', 'name', 'color', 'visible', 'items', 'itemCount'],
-    items: ['id', 'name', 'startDate', 'endDate', 'ringId', 'activityId', 'labelId', 'ringName', 'activityName', 'labelName', 'ringColor', 'activityColor', 'labelColor'],
-    stats: ['totalItems', 'totalRings', 'totalActivityGroups', 'totalLabels', 'itemsByMonth', 'itemsByRing', 'itemsByGroup', 'itemsByLabel'],
-    helpers: ['formatDate', 'formatDateTime', 'ifEquals', 'ifContains', 'add', 'subtract', 'multiply', 'divide', 'pluralize', 'uppercase', 'lowercase', 'truncate', 'json']
+    invoice: ['invoice_number', 'client_name', 'client_email', 'issue_date', 'due_date', 'status', 'subtotal', 'tax_rate', 'tax_amount', 'total', 'currency', 'notes'],
+    line_items: ['description', 'quantity', 'unit_price', 'amount'],
+    helpers: ['formatDate', 'formatDateTime', 'ifEquals', 'ifContains', 'add', 'subtract', 'multiply', 'divide', 'pluralize', 'uppercase', 'lowercase', 'truncate', 'json'],
+    iteration: ['#each line_items', '/each']
   };
 }
 
