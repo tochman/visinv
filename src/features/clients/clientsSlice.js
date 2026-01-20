@@ -1,14 +1,10 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
-import { supabase } from '../../services/supabase';
+import { Client } from '../../services/resources/Client';
 
 export const fetchClients = createAsyncThunk(
   'clients/fetchClients',
   async (_, { rejectWithValue }) => {
-    const { data, error } = await supabase
-      .from('clients')
-      .select('*')
-      .order('name');
-    
+    const { data, error } = await Client.index();
     if (error) return rejectWithValue(error.message);
     return data;
   }
@@ -17,12 +13,7 @@ export const fetchClients = createAsyncThunk(
 export const createClient = createAsyncThunk(
   'clients/createClient',
   async (clientData, { rejectWithValue }) => {
-    const { data, error } = await supabase
-      .from('clients')
-      .insert(clientData)
-      .select()
-      .single();
-    
+    const { data, error } = await Client.create(clientData);
     if (error) return rejectWithValue(error.message);
     return data;
   }
@@ -31,13 +22,7 @@ export const createClient = createAsyncThunk(
 export const updateClient = createAsyncThunk(
   'clients/updateClient',
   async ({ id, updates }, { rejectWithValue }) => {
-    const { data, error } = await supabase
-      .from('clients')
-      .update(updates)
-      .eq('id', id)
-      .select()
-      .single();
-    
+    const { data, error } = await Client.update(id, updates);
     if (error) return rejectWithValue(error.message);
     return data;
   }
@@ -46,11 +31,7 @@ export const updateClient = createAsyncThunk(
 export const deleteClient = createAsyncThunk(
   'clients/deleteClient',
   async (id, { rejectWithValue }) => {
-    const { error } = await supabase
-      .from('clients')
-      .delete()
-      .eq('id', id);
-    
+    const { error } = await Client.destroy(id);
     if (error) return rejectWithValue(error.message);
     return id;
   }

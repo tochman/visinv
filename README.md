@@ -112,13 +112,19 @@ visinv/
 │   │   ├── invoices/     # Invoice-related components
 │   │   ├── clients/      # Client-related components
 │   │   └── ...
-│   ├── features/         # Redux slices
+│   ├── features/         # Redux slices (state management)
 │   │   ├── auth/
 │   │   ├── invoices/
 │   │   ├── clients/
 │   │   └── ...
+│   ├── services/         # External services & data access
+│   │   ├── resources/    # Resource pattern (Client, Invoice, etc.)
+│   │   │   ├── BaseResource.js
+│   │   │   ├── Client.js
+│   │   │   └── index.js
+│   │   ├── supabase.js
+│   │   └── ...
 │   ├── pages/            # Page components
-│   ├── services/         # API services
 │   ├── hooks/            # Custom hooks
 │   ├── utils/            # Utility functions
 │   ├── i18n/             # Internationalization
@@ -127,6 +133,17 @@ visinv/
 ├── public/               # Static assets
 └── ...
 ```
+
+### Architecture
+
+We follow a clean **Resource Pattern** for data access:
+
+- **Components** → Never touch Supabase directly
+- **Redux Slices** → Use Resources for data operations
+- **Resources** → REST-like API wrapping Supabase
+- **BaseResource** → Shared CRUD logic
+
+See [ARCHITECTURE.md](ARCHITECTURE.md) for detailed patterns and best practices.
 
 ## Development
 
@@ -200,6 +217,7 @@ Admin can:
 
 ## Documentation
 
+- [ARCHITECTURE.md](ARCHITECTURE.md) - Code patterns, Resource pattern, best practices
 - [FEATURES.md](FEATURES.md) - Complete feature list with user stories
 - [DATABASE.md](DATABASE.md) - Database schema and setup
 
