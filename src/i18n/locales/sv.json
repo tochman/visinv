@@ -56,6 +56,33 @@
     "edit": "Redigera kund",
     "delete": "Ta bort kund"
   },
+  "clients": {
+    "title": "Kunder",
+    "create": "Lägg till kund",
+    "edit": "Redigera kund",
+    "delete": "Ta bort kund",
+    "search": "Sök kunder...",
+    "empty": "Inga kunder ännu",
+    "emptyDescription": "Kom igång genom att lägga till din första kund.",
+    "addFirst": "Lägg till din första kund",
+    "deleteConfirm": "Är du säker på att du vill ta bort denna kund? Denna åtgärd kan inte ångras.",
+    "deleteSuccess": "Kund borttagen",
+    "createSuccess": "Kund skapad",
+    "updateSuccess": "Kund uppdaterad",
+    "name": "Namn",
+    "email": "E-post",
+    "phone": "Telefon",
+    "address": "Adress",
+    "city": "Ort",
+    "postalCode": "Postnummer",
+    "country": "Land",
+    "orgNumber": "Organisationsnummer",
+    "vatNumber": "Momsnummer",
+    "contactPerson": "Kontaktperson",
+    "notes": "Anteckningar",
+    "invoiceCount": "Fakturor",
+    "totalBilled": "Totalt fakturerat"
+  },
   "subscription": {
     "free": "Gratis",
     "premium": "Premium",
@@ -65,6 +92,7 @@
   },
   "common": {
     "save": "Spara",
+    "saving": "Sparar...",
     "cancel": "Avbryt",
     "delete": "Ta bort",
     "edit": "Redigera",
@@ -74,6 +102,7 @@
     "export": "Exportera",
     "loading": "Laddar...",
     "error": "Fel",
-    "success": "Lyckades"
+    "success": "Lyckades",
+    "actions": "Åtgärder"
   }
 }

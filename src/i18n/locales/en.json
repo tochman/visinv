@@ -56,6 +56,34 @@
     "edit": "Edit Client",
     "delete": "Delete Client"
   },
+  "clients": {
+    "create": "Add Client",
+    "edit": "Edit Client",
+    "search": "Search clients...",
+    "empty": "No clients yet",
+    "emptyDescription": "Get started by creating your first client.",
+    "createFirst": "Add Your First Client",
+    "noResults": "No clients found",
+    "tryDifferentSearch": "Try a different search term.",
+    "deleteConfirm": "Delete Client?",
+    "deleteWarning": "This action cannot be undone. All invoices for this client will be affected.",
+    "name": "Company / Client Name",
+    "email": "Email",
+    "phone": "Phone",
+    "contact": "Contact",
+    "contactPerson": "Contact Person",
+    "location": "Location",
+    "address": "Address",
+    "streetAddress": "Street Address",
+    "city": "City",
+    "postalCode": "Postal Code",
+    "country": "Country",
+    "businessInfo": "Business Information",
+    "orgNumber": "Org. Number",
+    "vatNumber": "VAT Number",
+    "notes": "Notes",
+    "basicInfo": "Basic Information"
+  },
   "subscription": {
     "free": "Free",
     "premium": "Premium",
@@ -65,6 +93,7 @@
   },
   "common": {
     "save": "Save",
+    "saving": "Saving...",
     "cancel": "Cancel",
     "delete": "Delete",
     "edit": "Edit",
@@ -74,6 +103,7 @@
     "export": "Export",
     "loading": "Loading...",
     "error": "Error",
-    "success": "Success"
+    "success": "Success",
+    "actions": "Actions"
   }
 }

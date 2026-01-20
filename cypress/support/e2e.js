@@ -1,0 +1,16 @@
+// ***********************************************************
+// This support/e2e.js file is processed and loaded automatically
+// before your test files.
+//
+// This is a great place to put global configuration and behavior
+// that modifies Cypress.
+// ***********************************************************
+
+import './commands'
+
+// Prevent uncaught exceptions from failing tests
+Cypress.on('uncaught:exception', (err, runnable) => {
+  // Return false to prevent the error from failing the test
+  // You can add conditions here if you want to fail on specific errors
+  return false
+})

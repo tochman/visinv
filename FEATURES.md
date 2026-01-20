@@ -20,8 +20,9 @@
 **US-004: Free Invoice Limit**
 - As a **free user**, in order to **try the platform before committing**, I would like to **create and send up to 10 invoices for free**.
 
-**US-005: Client Management**
+**US-005: Client Management** ✅
 - As a **free user**, in order to **organize my customer information**, I would like to **create, edit, and manage client profiles with contact details**.
+- **Status:** Implemented - Full CRUD operations with search, modal forms, and i18n support
 
 **US-006: Invoice Creation**
 - As a **free user**, in order to **bill my clients**, I would like to **create invoices with multiple line items, tax calculations, and client information**.

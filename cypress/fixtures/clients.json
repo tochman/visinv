@@ -1,0 +1,48 @@
+{
+  "validClient": {
+    "name": "Acme Corporation",
+    "email": "contact@acme.com",
+    "phone": "+46 8 123 4567",
+    "address": "Storgatan 1",
+    "city": "Stockholm",
+    "postalCode": "111 22",
+    "country": "Sweden",
+    "orgNumber": "556123-4567",
+    "vatNumber": "SE556123456701",
+    "contactPerson": "John Doe",
+    "notes": "Important client"
+  },
+  "minimalClient": {
+    "name": "Simple Client AB"
+  },
+  "invalidClient": {
+    "name": "",
+    "email": "invalid-email"
+  },
+  "clientList": [
+    {
+      "id": "client-1",
+      "name": "First Client AB",
+      "email": "first@example.com",
+      "phone": "+46 70 111 1111",
+      "city": "Stockholm",
+      "country": "Sweden"
+    },
+    {
+      "id": "client-2",
+      "name": "Second Client AB",
+      "email": "second@example.com",
+      "phone": "+46 70 222 2222",
+      "city": "Göteborg",
+      "country": "Sweden"
+    },
+    {
+      "id": "client-3",
+      "name": "Third Client AB",
+      "email": "third@example.com",
+      "phone": "+46 70 333 3333",
+      "city": "Malmö",
+      "country": "Sweden"
+    }
+  ]
+}
