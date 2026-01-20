@@ -1,5 +1,8 @@
 @import "tailwindcss";
 
+/* Enable class-based dark mode for Tailwind 4.x */
+@custom-variant dark (&:where(.dark, .dark *));
+
 /* Light theme (default) */
 :root {
   --color-bg-primary: #f3f4f6;
