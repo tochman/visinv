@@ -21,7 +21,7 @@ class InvoiceTemplateResource extends BaseResource {
     const { data, error } = await this.supabase
       .from(this.tableName)
       .select('*')
-      .or(`user_id.eq.${user.id},is_system.eq.true`)
+      .or(`user_id.eq.${user.id},user_id.is.null`)
       .order('is_system', { ascending: false })
       .order('name', { ascending: true });
 
