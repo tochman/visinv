@@ -37,10 +37,10 @@ function App() {
   // Show loading while checking session
   if (!initialized || loading) {
     return (
-      <div className="flex items-center justify-center min-h-screen bg-gray-100">
+      <div className="flex items-center justify-center min-h-screen bg-gray-100 dark:bg-gray-900">
         <div className="text-center">
-          <div className="text-2xl font-bold text-gray-900 mb-2">VisInv</div>
-          <div className="text-gray-600">Loading...</div>
+          <div className="text-2xl font-bold text-gray-900 dark:text-white mb-2">VisInv</div>
+          <div className="text-gray-600 dark:text-gray-400">Loading...</div>
         </div>
       </div>
     );

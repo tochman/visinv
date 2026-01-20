@@ -42,18 +42,18 @@ export default function SignUp() {
   };
 
   return (
-    <div className="bg-white rounded-lg shadow-xl p-8">
-      <h2 className="text-2xl font-bold text-gray-900 mb-6">{t('auth.signUp')}</h2>
+    <div className="bg-white dark:bg-gray-800 rounded-sm shadow-xl p-8">
+      <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-6">{t('auth.signUp')}</h2>
 
       {error && (
-        <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-lg">
-          <p className="text-red-600 text-sm">{error}</p>
+        <div className="mb-4 p-3 bg-red-50 dark:bg-red-900/30 border border-red-200 dark:border-red-800 rounded-sm">
+          <p className="text-red-600 dark:text-red-400 text-sm">{error}</p>
         </div>
       )}
 
       <form onSubmit={handleSubmit} className="space-y-4">
         <div>
-          <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-1">
+          <label htmlFor="email" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
             {t('auth.email')}
           </label>
           <input
@@ -63,12 +63,12 @@ export default function SignUp() {
             value={formData.email}
             onChange={handleChange}
             required
-            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+            className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
           />
         </div>
 
         <div>
-          <label htmlFor="password" className="block text-sm font-medium text-gray-700 mb-1">
+          <label htmlFor="password" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
             {t('auth.password')}
           </label>
           <input
@@ -78,12 +78,12 @@ export default function SignUp() {
             value={formData.password}
             onChange={handleChange}
             required
-            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+            className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
           />
         </div>
 
         <div>
-          <label htmlFor="confirmPassword" className="block text-sm font-medium text-gray-700 mb-1">
+          <label htmlFor="confirmPassword" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
             Confirm Password
           </label>
           <input
@@ -93,22 +93,22 @@ export default function SignUp() {
             value={formData.confirmPassword}
             onChange={handleChange}
             required
-            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+            className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
           />
         </div>
 
         <button
           type="submit"
           disabled={loading}
-          className="w-full py-3 bg-blue-600 text-white rounded-lg font-medium hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed"
+          className="w-full py-3 bg-blue-600 text-white rounded-sm font-medium hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed"
         >
           {loading ? t('common.loading') : t('auth.signUp')}
         </button>
       </form>
 
-      <p className="mt-6 text-center text-sm text-gray-600">
+      <p className="mt-6 text-center text-sm text-gray-600 dark:text-gray-400">
         {t('auth.alreadyHaveAccount')}{' '}
-        <Link to="/auth/signin" className="text-blue-600 hover:underline font-medium">
+        <Link to="/auth/signin" className="text-blue-600 dark:text-blue-400 hover:underline font-medium">
           {t('auth.signIn')}
         </Link>
       </p>

@@ -27,19 +27,19 @@ export default function Sidebar() {
   const hasPremiumAccess = isPremium || isAdmin;
 
   return (
-    <div className="w-64 bg-white shadow-lg">
+    <div className="w-64 bg-white dark:bg-gray-800 shadow-lg dark:shadow-gray-900/20">
       <div className="p-6">
-        <h1 className="text-2xl font-bold text-gray-900">VisInv</h1>
+        <h1 className="text-2xl font-bold text-gray-900 dark:text-white">VisInv</h1>
         {isAdmin && (
-          <div className="mt-4 p-3 bg-purple-50 rounded-lg text-sm">
-            <p className="text-purple-900 font-medium">👑 Admin</p>
-            <span className="text-purple-600 text-xs">Full access</span>
+          <div className="mt-4 p-3 bg-purple-50 dark:bg-purple-900/30 rounded-sm text-sm">
+            <p className="text-purple-900 dark:text-purple-300 font-medium">👑 Admin</p>
+            <span className="text-purple-600 dark:text-purple-400 text-xs">Full access</span>
           </div>
         )}
         {!hasPremiumAccess && (
-          <div className="mt-4 p-3 bg-blue-50 rounded-lg text-sm">
-            <p className="text-blue-900 font-medium">Free Plan</p>
-            <Link to="/settings" className="text-blue-600 hover:underline text-xs">
+          <div className="mt-4 p-3 bg-blue-50 dark:bg-blue-900/30 rounded-sm text-sm">
+            <p className="text-blue-900 dark:text-blue-300 font-medium">Free Plan</p>
+            <Link to="/settings" className="text-blue-600 dark:text-blue-400 hover:underline text-xs">
               Upgrade to Premium
             </Link>
           </div>
@@ -54,19 +54,19 @@ export default function Sidebar() {
             <Link
               key={item.path}
               to={disabled ? '#' : item.path}
-              className={`flex items-center px-4 py-3 rounded-lg transition-colors ${
+              className={`flex items-center px-4 py-3 rounded-sm transition-colors ${
                 isActive(item.path)
                   ? 'bg-blue-600 text-white'
                   : disabled
-                  ? 'text-gray-400 cursor-not-allowed'
-                  : 'text-gray-700 hover:bg-gray-100'
+                  ? 'text-gray-400 dark:text-gray-600 cursor-not-allowed'
+                  : 'text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700'
               }`}
               onClick={(e) => disabled && e.preventDefault()}
             >
               <span className="mr-3 text-xl">{item.icon}</span>
               <span className="flex-1">{item.label}</span>
               {item.premium && !hasPremiumAccess && (
-                <span className="text-xs bg-yellow-400 text-gray-900 px-2 py-1 rounded">
+                <span className="text-xs bg-yellow-400 dark:bg-yellow-500 text-gray-900 px-2 py-1 rounded">
                   PRO
                 </span>
               )}
