@@ -895,7 +895,7 @@ function BlockPalette({ onInsertBlock, onInsertColumns }) {
           <button
             key={block.id}
             onClick={() => block.isResizable && onInsertColumns ? onInsertColumns(block.preset) : onInsertBlock(block.html)}
-            className={`p-2 bg-white border rounded-lg hover:border-blue-400 hover:shadow-md transition-all text-left group ${block.isResizable ? 'border-blue-200' : 'border-gray-200'}`}
+            className={`p-2 bg-white border rounded-sm hover:border-blue-400 hover:shadow-md transition-all text-left group ${block.isResizable ? 'border-blue-200' : 'border-gray-200'}`}
             title={block.isResizable ? `${block.name} (resizable)` : block.name}
           >
             <div className="flex items-center gap-2 mb-1.5">
@@ -1281,7 +1281,7 @@ export default function TemplateEditor({
       onClick={onClick}
       disabled={disabled}
       title={title}
-      className={`p-2 rounded-lg transition-all ${
+      className={`p-2 rounded-sm transition-all ${
         active 
           ? 'bg-blue-100 text-blue-700' 
           : disabled 
@@ -1317,7 +1317,7 @@ export default function TemplateEditor({
           </div>
 
           {/* Center: 3-Mode toggle */}
-          <div className="flex items-center bg-gray-100 rounded-lg p-0.5">
+          <div className="flex items-center bg-gray-100 rounded-sm p-0.5">
             <button
               onClick={() => handleModeSwitch('visual')}
               className={`px-3 py-1.5 text-sm font-medium rounded-md transition ${
@@ -1417,14 +1417,14 @@ export default function TemplateEditor({
 
             <button
               onClick={onCancel}
-              className="px-3 py-1.5 text-sm text-gray-600 hover:text-gray-900 hover:bg-gray-100 rounded-lg transition"
+              className="px-3 py-1.5 text-sm text-gray-600 hover:text-gray-900 hover:bg-gray-100 rounded-sm transition"
             >
               Avbryt
             </button>
             <button
               onClick={handleSave}
               disabled={!validation.valid || !name.trim() || isSaving}
-              className="px-4 py-1.5 text-sm bg-green-600 hover:bg-green-700 text-white rounded-lg transition disabled:opacity-50 flex items-center gap-2"
+              className="px-4 py-1.5 text-sm bg-green-600 hover:bg-green-700 text-white rounded-sm transition disabled:opacity-50 flex items-center gap-2"
             >
               {isSaving ? (
                 <>
@@ -1454,7 +1454,7 @@ export default function TemplateEditor({
               <select
                 value={category}
                 onChange={(e) => setCategory(e.target.value)}
-                className="w-full px-2 py-1.5 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                className="w-full px-2 py-1.5 text-sm border border-gray-300 rounded-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent"
               >
                 <option value="custom">Anpassad</option>
                 <option value="monthly">Månatlig</option>
@@ -1468,7 +1468,7 @@ export default function TemplateEditor({
                 <select
                   value={selectedTheme}
                   onChange={(e) => setSelectedTheme(e.target.value)}
-                  className="flex-1 px-2 py-1.5 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  className="flex-1 px-2 py-1.5 text-sm border border-gray-300 rounded-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                 >
                   {Object.entries(DESIGN_THEMES).map(([key, t]) => (
                     <option key={key} value={key}>{t.name}</option>
@@ -1492,7 +1492,7 @@ export default function TemplateEditor({
                 type="text"
                 value={description}
                 onChange={(e) => setDescription(e.target.value)}
-                className="w-full px-2 py-1.5 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                className="w-full px-2 py-1.5 text-sm border border-gray-300 rounded-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                 placeholder="Valfri beskrivning av mallen"
               />
             </div>
@@ -1551,7 +1551,7 @@ export default function TemplateEditor({
                       <button
                         key={block.id}
                         onClick={() => handleBlockInsert(block)}
-                        className={`p-2 bg-gray-50 border rounded-lg hover:border-blue-400 hover:bg-blue-50 transition-all text-left group ${block.isResizable ? 'border-blue-200' : 'border-gray-200'}`}
+                        className={`p-2 bg-gray-50 border rounded-sm hover:border-blue-400 hover:bg-blue-50 transition-all text-left group ${block.isResizable ? 'border-blue-200' : 'border-gray-200'}`}
                         title={block.isResizable ? `${block.name} (klicka & dra för att ändra storlek)` : block.name}
                       >
                         <div className="flex items-center gap-1.5 mb-1">
