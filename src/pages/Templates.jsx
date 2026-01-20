@@ -1,23 +1,20 @@
 import { useState, useEffect } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
+import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { 
   fetchTemplates, 
-  createTemplate, 
-  updateTemplate, 
   deleteTemplate,
   cloneTemplate 
 } from '../features/invoiceTemplates/invoiceTemplatesSlice';
-import TemplateEditorModal from '../components/templates/TemplateEditorModal';
 
 export default function InvoiceTemplates() {
   const { t } = useTranslation();
   const dispatch = useDispatch();
+  const navigate = useNavigate();
   const { items: templates, loading, error } = useSelector((state) => state.invoiceTemplates);
   const { user } = useSelector((state) => state.auth);
 
-  const [isModalOpen, setIsModalOpen] = useState(false);
-  const [selectedTemplate, setSelectedTemplate] = useState(null);
   const [searchTerm, setSearchTerm] = useState('');
   const [deleteConfirm, setDeleteConfirm] = useState(null);
 
@@ -28,13 +25,11 @@ export default function InvoiceTemplates() {
   }, [dispatch, user]);
 
   const handleCreate = () => {
-    setSelectedTemplate(null);
-    setIsModalOpen(true);
+    navigate('/templates/new');
   };
 
   const handleEdit = (template) => {
-    setSelectedTemplate(template);
-    setIsModalOpen(true);
+    navigate(`/templates/edit/${template.id}`);
   };
 
   const handleClone = async (template) => {
@@ -47,16 +42,6 @@ export default function InvoiceTemplates() {
   const handleDelete = async (id) => {
     await dispatch(deleteTemplate(id));
     setDeleteConfirm(null);
-  };
-
-  const handleSave = async (templateData) => {
-    if (selectedTemplate?.id) {
-      await dispatch(updateTemplate({ id: selectedTemplate.id, updates: templateData })).unwrap();
-    } else {
-      await dispatch(createTemplate(templateData)).unwrap();
-    }
-    setIsModalOpen(false);
-    setSelectedTemplate(null);
   };
 
   const filteredTemplates = templates.filter(template =>
@@ -207,16 +192,6 @@ export default function InvoiceTemplates() {
           )}
         </div>
       )}
-
-      <TemplateEditorModal
-        isOpen={isModalOpen}
-        onClose={() => {
-          setIsModalOpen(false);
-          setSelectedTemplate(null);
-        }}
-        template={selectedTemplate}
-        onSave={handleSave}
-      />
 
       {deleteConfirm && (
         <div className="fixed inset-0 z-50 overflow-y-auto">
