@@ -33,10 +33,17 @@ export default function TemplateEditorPage() {
 
   const handleSave = async (templateData) => {
     try {
+      // Map template_content to content for database
+      const { template_content, ...rest } = templateData;
+      const dbData = {
+        ...rest,
+        content: template_content
+      };
+      
       if (isEditing) {
-        await dispatch(updateTemplate({ id, ...templateData })).unwrap();
+        await dispatch(updateTemplate({ id, updates: dbData })).unwrap();
       } else {
-        await dispatch(createTemplate(templateData)).unwrap();
+        await dispatch(createTemplate(dbData)).unwrap();
       }
       navigate('/templates');
     } catch (err) {
@@ -69,9 +76,15 @@ export default function TemplateEditorPage() {
     );
   }
 
+  // Map database content field to template_content for the editor
+  const editorTemplate = currentTemplate ? {
+    ...currentTemplate,
+    template_content: currentTemplate.content
+  } : null;
+
   return (
     <TemplateEditor
-      template={isEditing ? currentTemplate : null}
+      template={isEditing ? editorTemplate : null}
       onSave={handleSave}
       onCancel={handleCancel}
       invoiceData={null}

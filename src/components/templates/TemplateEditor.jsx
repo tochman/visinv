@@ -1148,8 +1148,8 @@ export default function TemplateEditor({
       await onSave({
         name: name.trim(),
         description: description.trim(),
-        template_content: templateContent,
-        category
+        template_content: templateContent
+        // Note: category removed - not in database schema
       });
     } catch (error) {
       alert('Kunde inte spara mall: ' + error.message);
