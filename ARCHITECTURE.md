@@ -159,6 +159,26 @@ function MyComponent() {
 }
 ```
 
+### Implemented Resources
+
+**Client Resource** - Customer management  
+**InvoiceTemplate Resource** - Template CRUD with shared system templates
+
+Key pattern: Templates with `user_id=null` are system templates visible to all users via RLS:
+
+```javascript
+// InvoiceTemplate.js
+async index() {
+  const { user } = await this.getCurrentUser();
+  const { data, error } = await this.supabase
+    .from(this.tableName)
+    .select('*')
+    .or(`user_id.eq.${user.id},user_id.is.null`) // User's + System templates
+    .order('created_at', { ascending: false });
+  return { data, error };
+}
+```
+
 ### Creating New Resources
 
 When adding a new feature (e.g., Invoices), create a new Resource:
@@ -327,6 +347,102 @@ refactor: migrate clients to Resource pattern
 - Update clientsSlice to use Client.index(), Client.create(), etc.
 - Remove direct Supabase imports from Redux slice
 - Maintain backward compatibility with existing components
+```
+
+## Services Layer
+
+### Template Service
+
+**Location:** `src/services/templateService.js`
+
+Handles Handlebars template rendering and PDF export:
+
+```javascript
+import Handlebars from 'handlebars';
+import html2pdf from 'html2pdf.js';
+
+// Build context with sample or real invoice data
+export const buildTemplateContext = (invoiceData) => {
+  return invoiceData || {
+    invoice_number: 'INV-0001',
+    client_name: 'Acme Corporation',
+    line_items: [
+      { description: 'Consulting Services', quantity: 10, unit_price: 800, amount: 8000 },
+      { description: 'Project Management', quantity: 5, unit_price: 400, amount: 2000 }
+    ],
+    subtotal: 10000,
+    tax_rate: 25,
+    total: 12500,
+    currency: 'SEK'
+  };
+};
+
+// Render template with Handlebars
+export const renderTemplate = (templateContent, context) => {
+  const template = Handlebars.compile(templateContent);
+  return template(context);
+};
+
+// Export to PDF
+export const exportToPDF = async (htmlContent, filename) => {
+  const options = {
+    margin: 10,
+    filename: filename,
+    image: { type: 'jpeg', quality: 0.98 },
+    html2canvas: { scale: 2 },
+    jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
+  };
+  return html2pdf().set(options).from(htmlContent).save();
+};
+```
+
+**Available Handlebars Helpers:**
+- `formatDate` - Format dates (YYYY-MM-DD)
+- `formatDateTime` - Format timestamps
+- `ifEquals` - Conditional comparison
+- `ifContains` - Check array membership
+- `add`, `subtract`, `multiply`, `divide` - Math operations
+- `pluralize`, `uppercase`, `lowercase`, `truncate` - String utilities
+- `json` - Debug JSON output
+
+**Template Variables:**
+- **Invoice fields:** invoice_number, client_name, client_email, issue_date, due_date, status, subtotal, tax_rate, tax_amount, total, currency, notes
+- **Line items:** `{{#each line_items}}` - description, quantity, unit_price, amount
+- **Iteration:** `@index`, `@first`, `@last`
+
+## TipTap Editor Integration
+
+### Location
+`src/components/templates/TemplateEditor.jsx` (2039 lines)  
+Copied from legacy wheel project, adapted for invoice domain.
+
+### Features
+- **Modes:** Visual (TipTap WYSIWYG), Code (HTML+Handlebars), Preview (rendered)
+- **Extensions:** StarterKit, TextAlign, TextStyle, Color, Highlight, GlobalDragHandle, ColumnExtension
+- **Themes:** 6 design themes (modern, professional, warm, dark, nature, corporate)
+- **Block Library:** Header, Paragraph, Table, List, Image, Columns, Page Break
+- **Variable Insertion:** Click to insert Handlebars variables in both visual and code modes
+- **Syntax Highlighting:** Prism.js for HTML + Handlebars in code mode
+- **Dark Mode:** Full dark mode support via Tailwind
+- **PDF Export:** Generate PDF from preview using html2pdf.js
+
+### Property Mapping
+
+Database uses `content` but editor expects `template_content`:
+
+```javascript
+// TemplateEditorPage.jsx - Load
+const editorTemplate = currentTemplate ? {
+  ...currentTemplate,
+  template_content: currentTemplate.content  // Map DB to editor
+} : null;
+
+// TemplateEditorPage.jsx - Save
+const { template_content, ...rest } = templateData;
+const dbData = {
+  ...rest,
+  content: template_content  // Map editor to DB
+};
 ```
 
 ## Future Enhancements

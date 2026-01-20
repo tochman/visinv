@@ -6,14 +6,19 @@ A modern, full-featured invoice management system built with React, Supabase, an
 
 ### Core Features
 - ✅ Email & Google OAuth authentication
-- ✅ Client management
-- ✅ Invoice creation and management
-- ✅ Multiple invoice templates
-- ✅ PDF generation and download
-- ✅ Email invoice delivery
+- ✅ Client management (full CRUD with search)
+- ✅ Invoice templates with TipTap editor
+  - System templates (Modern, Classic) available to all
+  - Custom template creation (Premium)
+  - Visual/Code/Preview modes
+  - 6 design themes
+  - Handlebars templating with live preview
+  - PDF export functionality
+- 🚧 Invoice creation and management (in progress)
+- 🚧 PDF generation and download (template integration pending)
+- 🚧 Email invoice delivery (planned)
 - ✅ Multi-language support (Swedish & English)
-- ✅ Team collaboration (Premium)
-- ✅ Custom invoice templates (Premium)
+- 🚧 Team collaboration (Premium - planned)
 - ✅ Stripe subscription management
 
 ### Free Tier
@@ -42,12 +47,15 @@ A modern, full-featured invoice management system built with React, Supabase, an
 - **Redux Toolkit** - State management
 - **React Router** - Routing
 - **i18next** - Internationalization
+- **TipTap** - Rich text editor for templates
+- **Handlebars** - Template rendering engine
+- **Prism.js** - Syntax highlighting
 
 ### Backend & Services
 - **Supabase** - Database, Auth, Storage
 - **Stripe** - Payment processing
 - **Resend** - Email delivery
-- **jsPDF** - PDF generation
+- **html2pdf.js** - PDF generation from templates
 
 ## Getting Started
 
@@ -166,13 +174,13 @@ See [DATABASE.md](DATABASE.md) for complete database schema and setup instructio
 
 Key tables:
 - `profiles` - User profiles
-- `clients` - Customer information
-- `invoices` - Invoice headers
-- `invoice_rows` - Invoice line items
-- `products` - Product catalog
-- `templates` - Invoice templates
-- `teams` - Team information
-- `subscriptions` - Stripe subscriptions
+- `clients` - Customer information ✅
+- `invoice_templates` - Handlebars templates with system/user templates ✅
+- `invoices` - Invoice headers (pending)
+- `invoice_rows` - Invoice line items (pending)
+- `products` - Product catalog (optional)
+- `teams` - Team information (planned)
+- `subscriptions` - Stripe subscriptions (planned)
 
 ## Deployment
 

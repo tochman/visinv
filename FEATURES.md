@@ -39,8 +39,9 @@
 **US-010: PDF Generation**
 - As a **free user**, in order to **share invoices in a standard format**, I would like to **download invoices as PDF files**.
 
-**US-011: Predefined Invoice Templates**
+**US-011: Predefined Invoice Templates** ✅
 - As a **free user**, in order to **create professional-looking invoices quickly**, I would like to **choose from a set of predefined invoice templates**.
+- **Status:** Implemented - System templates (Modern, Classic) available to all users, stored with user_id=null for shared access
 
 ---
 
@@ -52,11 +53,13 @@
 **US-013: Unlimited Invoices**
 - As a **premium user**, in order to **scale my business without limits**, I would like to **create and send unlimited invoices**.
 
-**US-014: Custom Invoice Templates**
+**US-014: Custom Invoice Templates** ✅
 - As a **premium user**, in order to **match my brand identity**, I would like to **create and customize my own invoice templates**.
+- **Status:** Implemented - Full-page TipTap editor with visual/code/preview modes, 6 design themes, Handlebars templating
 
-**US-015: Template Management**
+**US-015: Template Management** ✅
 - As a **premium user**, in order to **maintain multiple branding options**, I would like to **save, edit, and delete multiple custom templates**.
+- **Status:** Implemented - CRUD operations with search, clone system templates, edit/delete user templates, preview with sample data
 
 **US-016: Team Creation**
 - As a **premium user**, in order to **collaborate with my team**, I would like to **create teams and invite team members**.
