@@ -60,9 +60,7 @@ describe('Invoice Template Management', () => {
 
     cy.login('admin')
     cy.visit('/templates')
-    
-    // Wait for page to load instead of waiting for API
-    cy.get('[data-cy="create-template-button"]', { timeout: 10000 }).should('be.visible')
+    cy.wait('@getTemplates')
   })
 
   describe('Template List', () => {
