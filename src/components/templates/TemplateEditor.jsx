@@ -324,10 +324,10 @@ function VisualEditorToolbar({ editor, showOutlines, setShowOutlines }) {
   if (!editor) return null;
 
   const buttonClass = (active) => 
-    `p-2 rounded ${active ? 'bg-blue-100 text-blue-700' : 'hover:bg-gray-100 text-gray-700'}`;
+    `p-2 rounded ${active ? 'bg-blue-100 text-blue-700' : 'hover:bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300'}`;
 
   return (
-    <div className="flex flex-wrap items-center gap-1 p-2 border-b border-gray-200 bg-white">
+    <div className="flex flex-wrap items-center gap-1 p-2 border-b border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800">
       {/* Text formatting */}
       <button
         onClick={() => editor.chain().focus().toggleBold().run()}
@@ -480,7 +480,7 @@ function VisualEditorToolbar({ editor, showOutlines, setShowOutlines }) {
       <button
         onClick={() => editor.chain().focus().undo().run()}
         disabled={!editor.can().undo()}
-        className={`p-2 rounded ${editor.can().undo() ? 'hover:bg-gray-100 text-gray-700' : 'text-gray-300'}`}
+        className={`p-2 rounded ${editor.can().undo() ? 'hover:bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300' : 'text-gray-300'}`}
         title="Ångra (Ctrl+Z)"
       >
         <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -490,7 +490,7 @@ function VisualEditorToolbar({ editor, showOutlines, setShowOutlines }) {
       <button
         onClick={() => editor.chain().focus().redo().run()}
         disabled={!editor.can().redo()}
-        className={`p-2 rounded ${editor.can().redo() ? 'hover:bg-gray-100 text-gray-700' : 'text-gray-300'}`}
+        className={`p-2 rounded ${editor.can().redo() ? 'hover:bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300' : 'text-gray-300'}`}
         title="Gör om (Ctrl+Y)"
       >
         <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -583,7 +583,7 @@ const LAYOUT_BLOCKS = [
     name: 'Kort',
     icon: '🃏',
     preview: (
-      <div className="border border-gray-300 rounded p-2 bg-white shadow-sm">
+      <div className="border border-gray-300 dark:border-gray-600 rounded p-2 bg-white dark:bg-gray-800 shadow-sm">
         <div className="h-2 bg-gray-600 rounded w-2/3 mb-1"></div>
         <div className="h-1.5 bg-gray-300 rounded w-full"></div>
       </div>
@@ -633,10 +633,10 @@ const LAYOUT_BLOCKS = [
     preset: '50-50',
     preview: (
       <div className="grid grid-cols-2 gap-1">
-        <div className="bg-gray-100 rounded p-1">
+        <div className="bg-gray-100 dark:bg-gray-700 rounded p-1">
           <div className="h-1.5 bg-gray-400 rounded w-full"></div>
         </div>
-        <div className="bg-gray-100 rounded p-1">
+        <div className="bg-gray-100 dark:bg-gray-700 rounded p-1">
           <div className="h-1.5 bg-gray-400 rounded w-full"></div>
         </div>
       </div>
@@ -660,13 +660,13 @@ const LAYOUT_BLOCKS = [
     preset: '33-33-33',
     preview: (
       <div className="grid grid-cols-3 gap-0.5">
-        <div className="bg-gray-100 rounded p-0.5">
+        <div className="bg-gray-100 dark:bg-gray-700 rounded p-0.5">
           <div className="h-1.5 bg-gray-400 rounded w-full"></div>
         </div>
-        <div className="bg-gray-100 rounded p-0.5">
+        <div className="bg-gray-100 dark:bg-gray-700 rounded p-0.5">
           <div className="h-1.5 bg-gray-400 rounded w-full"></div>
         </div>
-        <div className="bg-gray-100 rounded p-0.5">
+        <div className="bg-gray-100 dark:bg-gray-700 rounded p-0.5">
           <div className="h-1.5 bg-gray-400 rounded w-full"></div>
         </div>
       </div>
@@ -694,7 +694,7 @@ const LAYOUT_BLOCKS = [
     preset: '66-33',
     preview: (
       <div className="grid grid-cols-3 gap-0.5">
-        <div className="col-span-2 bg-gray-100 rounded p-1">
+        <div className="col-span-2 bg-gray-100 dark:bg-gray-700 rounded p-1">
           <div className="h-1.5 bg-gray-400 rounded w-full mb-0.5"></div>
           <div className="h-1.5 bg-gray-300 rounded w-3/4"></div>
         </div>
@@ -724,16 +724,16 @@ const LAYOUT_BLOCKS = [
     preset: '25-25-25-25',
     preview: (
       <div className="grid grid-cols-4 gap-0.5">
-        <div className="bg-gray-100 rounded p-0.5">
+        <div className="bg-gray-100 dark:bg-gray-700 rounded p-0.5">
           <div className="h-1.5 bg-gray-400 rounded w-full"></div>
         </div>
-        <div className="bg-gray-100 rounded p-0.5">
+        <div className="bg-gray-100 dark:bg-gray-700 rounded p-0.5">
           <div className="h-1.5 bg-gray-400 rounded w-full"></div>
         </div>
-        <div className="bg-gray-100 rounded p-0.5">
+        <div className="bg-gray-100 dark:bg-gray-700 rounded p-0.5">
           <div className="h-1.5 bg-gray-400 rounded w-full"></div>
         </div>
-        <div className="bg-gray-100 rounded p-0.5">
+        <div className="bg-gray-100 dark:bg-gray-700 rounded p-0.5">
           <div className="h-1.5 bg-gray-400 rounded w-full"></div>
         </div>
       </div>
@@ -750,12 +750,12 @@ const LAYOUT_BLOCKS = [
     name: 'Tabell',
     icon: '📋',
     preview: (
-      <div className="border border-gray-300 rounded overflow-hidden">
+      <div className="border border-gray-300 dark:border-gray-600 rounded overflow-hidden">
         <div className="bg-blue-600 h-2"></div>
         <div className="grid grid-cols-3 gap-px bg-gray-200">
-          <div className="bg-white h-1.5"></div>
-          <div className="bg-white h-1.5"></div>
-          <div className="bg-white h-1.5"></div>
+          <div className="bg-white dark:bg-gray-800 h-1.5"></div>
+          <div className="bg-white dark:bg-gray-800 h-1.5"></div>
+          <div className="bg-white dark:bg-gray-800 h-1.5"></div>
         </div>
       </div>
     ),
@@ -816,8 +816,8 @@ const LAYOUT_BLOCKS = [
     preview: (
       <div className="grid grid-cols-4 gap-0.5">
         {[...Array(12)].map((_, i) => (
-          <div key={i} className="bg-gray-100 rounded p-0.5 text-center">
-            <div className="text-[6px] text-gray-500">{['Jan','Feb','Mar','Apr','Maj','Jun','Jul','Aug','Sep','Okt','Nov','Dec'][i]}</div>
+          <div key={i} className="bg-gray-100 dark:bg-gray-700 rounded p-0.5 text-center">
+            <div className="text-[6px] text-gray-500 dark:text-gray-400">{['Jan','Feb','Mar','Apr','Maj','Jun','Jul','Aug','Sep','Okt','Nov','Dec'][i]}</div>
           </div>
         ))}
       </div>
@@ -864,7 +864,7 @@ const LAYOUT_BLOCKS = [
     name: 'Sidfot',
     icon: '📝',
     preview: (
-      <div className="border-t border-gray-300 pt-1">
+      <div className="border-t border-gray-300 dark:border-gray-600 pt-1">
         <div className="h-1.5 bg-gray-300 rounded w-1/3"></div>
       </div>
     ),
@@ -878,7 +878,7 @@ const LAYOUT_BLOCKS = [
     icon: '📃',
     preview: (
       <div className="border-t-2 border-dashed border-gray-400 my-1 relative">
-        <span className="absolute -top-1.5 left-1/2 -translate-x-1/2 bg-white px-1 text-[6px] text-gray-400">NY SIDA</span>
+        <span className="absolute -top-1.5 left-1/2 -translate-x-1/2 bg-white dark:bg-gray-800 px-1 text-[6px] text-gray-400">NY SIDA</span>
       </div>
     ),
     html: `<div class="page-break"></div>`
@@ -889,23 +889,23 @@ const LAYOUT_BLOCKS = [
 function BlockPalette({ onInsertBlock, onInsertColumns }) {
   return (
     <div className="p-3 space-y-2">
-      <h4 className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-2">Layout-block</h4>
+      <h4 className="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide mb-2">Layout-block</h4>
       <div className="grid grid-cols-2 gap-2">
         {LAYOUT_BLOCKS.map(block => (
           <button
             key={block.id}
             onClick={() => block.isResizable && onInsertColumns ? onInsertColumns(block.preset) : onInsertBlock(block.html)}
-            className={`p-2 bg-white border rounded-lg hover:border-blue-400 hover:shadow-md transition-all text-left group ${block.isResizable ? 'border-blue-200' : 'border-gray-200'}`}
+            className={`p-2 bg-white dark:bg-gray-800 border rounded-lg hover:border-blue-400 hover:shadow-md transition-all text-left group ${block.isResizable ? 'border-blue-200' : 'border-gray-200 dark:border-gray-700'}`}
             title={block.isResizable ? `${block.name} (resizable)` : block.name}
           >
             <div className="flex items-center gap-2 mb-1.5">
               <span className="text-lg">{block.icon}</span>
-              <span className="text-xs font-medium text-gray-700 group-hover:text-blue-600">{block.name}</span>
+              <span className="text-xs font-medium text-gray-700 dark:text-gray-300 group-hover:text-blue-600">{block.name}</span>
               {block.isResizable && (
                 <span className="ml-auto text-[9px] px-1.5 py-0.5 bg-blue-100 text-blue-600 rounded font-medium">↔</span>
               )}
             </div>
-            <div className="h-12 overflow-hidden rounded bg-gray-50 p-1.5">
+            <div className="h-12 overflow-hidden rounded bg-gray-50 dark:bg-gray-900 p-1.5">
               {block.preview}
             </div>
           </button>
@@ -1286,7 +1286,7 @@ export default function TemplateEditor({
           ? 'bg-blue-100 text-blue-700' 
           : disabled 
             ? 'text-gray-300 cursor-not-allowed'
-            : 'text-gray-600 hover:bg-gray-100 hover:text-gray-900'
+            : 'text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:bg-gray-700 hover:text-gray-900 dark:text-white'
       }`}
     >
       {children}
@@ -1294,9 +1294,9 @@ export default function TemplateEditor({
   );
 
   return (
-    <div className="template-editor h-full flex flex-col bg-gray-50">
+    <div className="template-editor h-full flex flex-col bg-gray-50 dark:bg-gray-900">
       {/* Compact Header */}
-      <div className="bg-white border-b border-gray-200 px-4 py-3">
+      <div className="bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 px-4 py-3">
         <div className="flex items-center justify-between gap-4">
           {/* Left: Title input */}
           <div className="flex items-center gap-3 flex-1 max-w-md">
@@ -1317,13 +1317,13 @@ export default function TemplateEditor({
           </div>
 
           {/* Center: 3-Mode toggle */}
-          <div className="flex items-center bg-gray-100 rounded-lg p-0.5">
+          <div className="flex items-center bg-gray-100 dark:bg-gray-700 rounded-lg p-0.5">
             <button
               onClick={() => handleModeSwitch('visual')}
               className={`px-3 py-1.5 text-sm font-medium rounded-md transition ${
                 editorMode === 'visual' 
-                  ? 'bg-white text-gray-900 shadow-sm' 
-                  : 'text-gray-600 hover:text-gray-900'
+                  ? 'bg-white dark:bg-gray-800 text-gray-900 dark:text-white shadow-sm' 
+                  : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:text-white'
               }`}
               title="Visuell redigering med designade element"
             >
@@ -1338,8 +1338,8 @@ export default function TemplateEditor({
               onClick={() => handleModeSwitch('code')}
               className={`px-3 py-1.5 text-sm font-medium rounded-md transition ${
                 editorMode === 'code' 
-                  ? 'bg-white text-gray-900 shadow-sm' 
-                  : 'text-gray-600 hover:text-gray-900'
+                  ? 'bg-white dark:bg-gray-800 text-gray-900 dark:text-white shadow-sm' 
+                  : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:text-white'
               }`}
               title="Redigera HTML/Handlebars-kod"
             >
@@ -1354,8 +1354,8 @@ export default function TemplateEditor({
               onClick={() => handleModeSwitch('preview')}
               className={`px-3 py-1.5 text-sm font-medium rounded-md transition ${
                 editorMode === 'preview' 
-                  ? 'bg-white text-gray-900 shadow-sm' 
-                  : 'text-gray-600 hover:text-gray-900'
+                  ? 'bg-white dark:bg-gray-800 text-gray-900 dark:text-white shadow-sm' 
+                  : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:text-white'
               }`}
               title="Förhandsgranska med verklig data"
             >
@@ -1417,7 +1417,7 @@ export default function TemplateEditor({
 
             <button
               onClick={onCancel}
-              className="px-3 py-1.5 text-sm text-gray-600 hover:text-gray-900 hover:bg-gray-100 rounded-lg transition"
+              className="px-3 py-1.5 text-sm text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:text-white hover:bg-gray-100 dark:bg-gray-700 rounded-lg transition"
             >
               Avbryt
             </button>
@@ -1448,13 +1448,13 @@ export default function TemplateEditor({
 
         {/* Settings panel (collapsible) */}
         {showSettings && (
-          <div className="mt-4 pt-4 border-t border-gray-200 grid grid-cols-4 gap-4">
+          <div className="mt-4 pt-4 border-t border-gray-200 dark:border-gray-700 grid grid-cols-4 gap-4">
             <div>
-              <label className="block text-xs font-medium text-gray-500 mb-1">Kategori</label>
+              <label className="block text-xs font-medium text-gray-500 dark:text-gray-400 mb-1">Kategori</label>
               <select
                 value={category}
                 onChange={(e) => setCategory(e.target.value)}
-                className="w-full px-2 py-1.5 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                className="w-full px-2 py-1.5 text-sm border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
               >
                 <option value="custom">Anpassad</option>
                 <option value="monthly">Månatlig</option>
@@ -1463,12 +1463,12 @@ export default function TemplateEditor({
               </select>
             </div>
             <div>
-              <label className="block text-xs font-medium text-gray-500 mb-1">Designschema</label>
+              <label className="block text-xs font-medium text-gray-500 dark:text-gray-400 mb-1">Designschema</label>
               <div className="flex items-center gap-2">
                 <select
                   value={selectedTheme}
                   onChange={(e) => setSelectedTheme(e.target.value)}
-                  className="flex-1 px-2 py-1.5 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  className="flex-1 px-2 py-1.5 text-sm border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                 >
                   {Object.entries(DESIGN_THEMES).map(([key, t]) => (
                     <option key={key} value={key}>{t.name}</option>
@@ -1478,7 +1478,7 @@ export default function TemplateEditor({
                   {['primary', 'secondary', 'accent'].map(c => (
                     <div 
                       key={c}
-                      className="w-4 h-4 rounded-full border border-gray-300" 
+                      className="w-4 h-4 rounded-full border border-gray-300 dark:border-gray-600" 
                       style={{ background: theme.colors[c] }}
                       title={c}
                     />
@@ -1487,12 +1487,12 @@ export default function TemplateEditor({
               </div>
             </div>
             <div className="col-span-2">
-              <label className="block text-xs font-medium text-gray-500 mb-1">Beskrivning</label>
+              <label className="block text-xs font-medium text-gray-500 dark:text-gray-400 mb-1">Beskrivning</label>
               <input
                 type="text"
                 value={description}
                 onChange={(e) => setDescription(e.target.value)}
-                className="w-full px-2 py-1.5 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                className="w-full px-2 py-1.5 text-sm border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                 placeholder="Valfri beskrivning av mallen"
               />
             </div>
@@ -1504,13 +1504,13 @@ export default function TemplateEditor({
       <div className="flex-1 flex overflow-hidden">
         {/* Left Sidebar - Tools (only in edit modes) */}
         {showSidebar && editorMode !== 'preview' && (
-          <div className="w-72 bg-white border-r border-gray-200 flex flex-col">
+          <div className="w-72 bg-white dark:bg-gray-800 border-r border-gray-200 dark:border-gray-700 flex flex-col">
             {/* Sidebar tabs */}
-            <div className="flex border-b border-gray-200">
+            <div className="flex border-b border-gray-200 dark:border-gray-700">
               <button
                 onClick={() => setSidebarTab('blocks')}
                 className={`flex-1 px-4 py-3 text-sm font-medium transition-colors relative ${
-                  sidebarTab === 'blocks' ? 'text-gray-900' : 'text-gray-500 hover:text-gray-700'
+                  sidebarTab === 'blocks' ? 'text-gray-900 dark:text-white' : 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:text-gray-300'
                 }`}
               >
                 <span className="flex items-center justify-center gap-2">
@@ -1526,7 +1526,7 @@ export default function TemplateEditor({
               <button
                 onClick={() => setSidebarTab('variables')}
                 className={`flex-1 px-4 py-3 text-sm font-medium transition-colors relative ${
-                  sidebarTab === 'variables' ? 'text-gray-900' : 'text-gray-500 hover:text-gray-700'
+                  sidebarTab === 'variables' ? 'text-gray-900 dark:text-white' : 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:text-gray-300'
                 }`}
               >
                 <span className="flex items-center justify-center gap-2">
@@ -1545,23 +1545,23 @@ export default function TemplateEditor({
             <div className="flex-1 overflow-y-auto">
               {sidebarTab === 'blocks' ? (
                 <div className="p-3">
-                  <p className="text-xs text-gray-500 mb-3">Klicka för att infoga block vid markören. <span className="text-blue-500">↔</span> = storlek kan ändras</p>
+                  <p className="text-xs text-gray-500 dark:text-gray-400 mb-3">Klicka för att infoga block vid markören. <span className="text-blue-500">↔</span> = storlek kan ändras</p>
                   <div className="grid grid-cols-2 gap-2">
                     {LAYOUT_BLOCKS.map(block => (
                       <button
                         key={block.id}
                         onClick={() => handleBlockInsert(block)}
-                        className={`p-2 bg-gray-50 border rounded-lg hover:border-blue-400 hover:bg-blue-50 transition-all text-left group ${block.isResizable ? 'border-blue-200' : 'border-gray-200'}`}
+                        className={`p-2 bg-gray-50 dark:bg-gray-900 border rounded-lg hover:border-blue-400 hover:bg-blue-50 transition-all text-left group ${block.isResizable ? 'border-blue-200' : 'border-gray-200 dark:border-gray-700'}`}
                         title={block.isResizable ? `${block.name} (klicka & dra för att ändra storlek)` : block.name}
                       >
                         <div className="flex items-center gap-1.5 mb-1">
                           <span className="text-base">{block.icon}</span>
-                          <span className="text-xs font-medium text-gray-700 group-hover:text-blue-600 truncate">{block.name}</span>
+                          <span className="text-xs font-medium text-gray-700 dark:text-gray-300 group-hover:text-blue-600 truncate">{block.name}</span>
                           {block.isResizable && (
                             <span className="ml-auto text-[9px] px-1 py-0.5 bg-blue-100 text-blue-600 rounded font-medium">↔</span>
                           )}
                         </div>
-                        <div className="h-10 overflow-hidden rounded bg-white p-1 border border-gray-100">
+                        <div className="h-10 overflow-hidden rounded bg-white dark:bg-gray-800 p-1 border border-gray-100">
                           {block.preview}
                         </div>
                       </button>
@@ -1570,11 +1570,11 @@ export default function TemplateEditor({
                 </div>
               ) : (
                 <div className="p-3 space-y-4 text-xs">
-                  <p className="text-gray-500">Klicka för att infoga variabel</p>
+                  <p className="text-gray-500 dark:text-gray-400">Klicka för att infoga variabel</p>
                   
                   {/* Wheel & Page variables */}
                   <div>
-                    <h4 className="font-semibold text-gray-900 mb-2 flex items-center gap-1">
+                    <h4 className="font-semibold text-gray-900 dark:text-white mb-2 flex items-center gap-1">
                       <span className="w-2 h-2 bg-blue-500 rounded-full"></span>
                       Hjul & Sida
                     </h4>
@@ -1600,7 +1600,7 @@ export default function TemplateEditor({
 
                   {/* Statistics */}
                   <div>
-                    <h4 className="font-semibold text-gray-900 mb-2 flex items-center gap-1">
+                    <h4 className="font-semibold text-gray-900 dark:text-white mb-2 flex items-center gap-1">
                       <span className="w-2 h-2 bg-green-500 rounded-full"></span>
                       Statistik
                     </h4>
@@ -1625,7 +1625,7 @@ export default function TemplateEditor({
 
                   {/* Loops */}
                   <div>
-                    <h4 className="font-semibold text-gray-900 mb-2 flex items-center gap-1">
+                    <h4 className="font-semibold text-gray-900 dark:text-white mb-2 flex items-center gap-1">
                       <span className="w-2 h-2 bg-purple-500 rounded-full"></span>
                       Loopar (listor)
                     </h4>
@@ -1665,7 +1665,7 @@ export default function TemplateEditor({
 
                   {/* Item fields (in loops) */}
                   <div>
-                    <h4 className="font-semibold text-gray-900 mb-2 flex items-center gap-1">
+                    <h4 className="font-semibold text-gray-900 dark:text-white mb-2 flex items-center gap-1">
                       <span className="w-2 h-2 bg-teal-500 rounded-full"></span>
                       Aktivitetsfält (i loopar)
                     </h4>
@@ -1698,7 +1698,7 @@ export default function TemplateEditor({
 
                   {/* Helpers */}
                   <div>
-                    <h4 className="font-semibold text-gray-900 mb-2 flex items-center gap-1">
+                    <h4 className="font-semibold text-gray-900 dark:text-white mb-2 flex items-center gap-1">
                       <span className="w-2 h-2 bg-orange-500 rounded-full"></span>
                       Hjälpfunktioner
                     </h4>
@@ -1714,7 +1714,7 @@ export default function TemplateEditor({
 
                   {/* Conditionals */}
                   <div>
-                    <h4 className="font-semibold text-gray-900 mb-2 flex items-center gap-1">
+                    <h4 className="font-semibold text-gray-900 dark:text-white mb-2 flex items-center gap-1">
                       <span className="w-2 h-2 bg-pink-500 rounded-full"></span>
                       Villkor & Logik
                     </h4>
@@ -1728,15 +1728,15 @@ export default function TemplateEditor({
 
                   {/* Layout */}
                   <div>
-                    <h4 className="font-semibold text-gray-900 mb-2 flex items-center gap-1">
-                      <span className="w-2 h-2 bg-gray-500 rounded-full"></span>
+                    <h4 className="font-semibold text-gray-900 dark:text-white mb-2 flex items-center gap-1">
+                      <span className="w-2 h-2 bg-gray-50 dark:bg-gray-9000 rounded-full"></span>
                       Layout & Print
                     </h4>
                     <div className="grid grid-cols-2 gap-1">
-                      <button onClick={() => insertVariable('<div class="page-break"></div>')} className="px-2 py-1 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded transition text-left">Sidbrytning</button>
-                      <button onClick={() => insertVariable('<div class="no-break">\n  ...\n</div>')} className="px-2 py-1 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded transition text-left">Ingen brytning</button>
-                      <button onClick={() => insertVariable('<div class="section">\n  ...\n</div>')} className="px-2 py-1 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded transition text-left">Sektion</button>
-                      <button onClick={() => insertVariable('<div class="card">\n  ...\n</div>')} className="px-2 py-1 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded transition text-left">Kort</button>
+                      <button onClick={() => insertVariable('<div class="page-break"></div>')} className="px-2 py-1 bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 text-gray-700 dark:text-gray-300 rounded transition text-left">Sidbrytning</button>
+                      <button onClick={() => insertVariable('<div class="no-break">\n  ...\n</div>')} className="px-2 py-1 bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 text-gray-700 dark:text-gray-300 rounded transition text-left">Ingen brytning</button>
+                      <button onClick={() => insertVariable('<div class="section">\n  ...\n</div>')} className="px-2 py-1 bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 text-gray-700 dark:text-gray-300 rounded transition text-left">Sektion</button>
+                      <button onClick={() => insertVariable('<div class="card">\n  ...\n</div>')} className="px-2 py-1 bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 text-gray-700 dark:text-gray-300 rounded transition text-left">Kort</button>
                     </div>
                   </div>
                 </div>
@@ -1751,8 +1751,8 @@ export default function TemplateEditor({
           {editorMode === 'visual' && (
             <>
               <VisualEditorToolbar editor={visualEditor} showOutlines={showOutlines} setShowOutlines={setShowOutlines} />
-              <div className="flex-1 overflow-auto bg-gray-100 p-6">
-                <div className="mx-auto bg-white shadow-xl" style={{ width: '794px', minHeight: '1123px' }}>
+              <div className="flex-1 overflow-auto bg-gray-100 dark:bg-gray-700 p-6">
+                <div className="mx-auto bg-white dark:bg-gray-800 shadow-xl" style={{ width: '794px', minHeight: '1123px' }}>
                   <style>{`
                     .ProseMirror {
                       padding: 48px 64px;
@@ -1999,24 +1999,24 @@ export default function TemplateEditor({
 
           {/* Preview Mode */}
           {editorMode === 'preview' && (
-            <div className="flex-1 flex flex-col bg-gray-100">
+            <div className="flex-1 flex flex-col bg-gray-100 dark:bg-gray-700">
               <div className="bg-gray-200 px-4 py-2 flex items-center justify-between">
                 <div className="flex items-center gap-3">
-                  <span className="text-sm font-medium text-gray-700">Förhandsvisning</span>
-                  <span className="text-xs text-gray-500 bg-white px-2 py-0.5 rounded">{theme.name}</span>
+                  <span className="text-sm font-medium text-gray-700 dark:text-gray-300">Förhandsvisning</span>
+                  <span className="text-xs text-gray-500 dark:text-gray-400 bg-white dark:bg-gray-800 px-2 py-0.5 rounded">{theme.name}</span>
                 </div>
-                <span className="text-xs text-gray-500">A4-format (210×297mm)</span>
+                <span className="text-xs text-gray-500 dark:text-gray-400">A4-format (210×297mm)</span>
               </div>
               <div className="flex-1 overflow-auto p-6">
                 {preview ? (
                   <div className="mx-auto" style={{ maxWidth: '794px' }}>
                     <iframe
                       srcDoc={preview}
-                      className="bg-white shadow-2xl mx-auto border-0 w-full rounded-sm"
+                      className="bg-white dark:bg-gray-800 shadow-2xl mx-auto border-0 w-full rounded-sm"
                       style={{ height: '1123px' }}
                       title="Template Preview"
                     />
-                    <p className="text-center text-xs text-gray-500 mt-4">
+                    <p className="text-center text-xs text-gray-500 dark:text-gray-400 mt-4">
                       Detta visar hur rapporten ser ut med verklig data från det valda hjulet
                     </p>
                   </div>
@@ -2026,8 +2026,8 @@ export default function TemplateEditor({
                       <svg className="w-16 h-16 mx-auto mb-3 opacity-40" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
                       </svg>
-                      <p className="text-sm font-medium text-gray-600 mb-1">Ingen förhandsvisning tillgänglig</p>
-                      <p className="text-xs text-gray-500">Välj ett hjul ovan för att se rapporten med verklig data</p>
+                      <p className="text-sm font-medium text-gray-600 dark:text-gray-400 mb-1">Ingen förhandsvisning tillgänglig</p>
+                      <p className="text-xs text-gray-500 dark:text-gray-400">Välj ett hjul ovan för att se rapporten med verklig data</p>
                     </div>
                   </div>
                 )}
