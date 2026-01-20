@@ -1,0 +1,79 @@
+{
+  "app": {
+    "name": "VisInv",
+    "tagline": "Professional Invoice Management"
+  },
+  "nav": {
+    "dashboard": "Dashboard",
+    "invoices": "Invoices",
+    "clients": "Clients",
+    "templates": "Templates",
+    "teams": "Teams",
+    "settings": "Settings",
+    "admin": "Admin"
+  },
+  "auth": {
+    "signIn": "Sign In",
+    "signUp": "Sign Up",
+    "signOut": "Sign Out",
+    "email": "Email",
+    "password": "Password",
+    "forgotPassword": "Forgot Password?",
+    "resetPassword": "Reset Password",
+    "signInWithGoogle": "Sign in with Google",
+    "dontHaveAccount": "Don't have an account?",
+    "alreadyHaveAccount": "Already have an account?"
+  },
+  "invoice": {
+    "title": "Invoice",
+    "number": "Invoice Number",
+    "date": "Invoice Date",
+    "dueDate": "Due Date",
+    "status": "Status",
+    "total": "Total",
+    "subtotal": "Subtotal",
+    "tax": "Tax",
+    "create": "Create Invoice",
+    "edit": "Edit Invoice",
+    "delete": "Delete Invoice",
+    "send": "Send Invoice",
+    "print": "Print Invoice",
+    "download": "Download PDF",
+    "statuses": {
+      "draft": "Draft",
+      "sent": "Sent",
+      "paid": "Paid",
+      "overdue": "Overdue",
+      "cancelled": "Cancelled"
+    }
+  },
+  "client": {
+    "name": "Client Name",
+    "email": "Email",
+    "phone": "Phone",
+    "address": "Address",
+    "create": "Create Client",
+    "edit": "Edit Client",
+    "delete": "Delete Client"
+  },
+  "subscription": {
+    "free": "Free",
+    "premium": "Premium",
+    "upgrade": "Upgrade to Premium",
+    "manage": "Manage Subscription",
+    "invoicesRemaining": "{{count}} invoices remaining"
+  },
+  "common": {
+    "save": "Save",
+    "cancel": "Cancel",
+    "delete": "Delete",
+    "edit": "Edit",
+    "create": "Create",
+    "search": "Search",
+    "filter": "Filter",
+    "export": "Export",
+    "loading": "Loading...",
+    "error": "Error",
+    "success": "Success"
+  }
+}

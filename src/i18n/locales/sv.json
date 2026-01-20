@@ -1,0 +1,79 @@
+{
+  "app": {
+    "name": "VisInv",
+    "tagline": "Professionell Fakturahantering"
+  },
+  "nav": {
+    "dashboard": "Översikt",
+    "invoices": "Fakturor",
+    "clients": "Kunder",
+    "templates": "Mallar",
+    "teams": "Team",
+    "settings": "Inställningar",
+    "admin": "Admin"
+  },
+  "auth": {
+    "signIn": "Logga in",
+    "signUp": "Registrera",
+    "signOut": "Logga ut",
+    "email": "E-post",
+    "password": "Lösenord",
+    "forgotPassword": "Glömt lösenord?",
+    "resetPassword": "Återställ lösenord",
+    "signInWithGoogle": "Logga in med Google",
+    "dontHaveAccount": "Har du inget konto?",
+    "alreadyHaveAccount": "Har du redan ett konto?"
+  },
+  "invoice": {
+    "title": "Faktura",
+    "number": "Fakturanummer",
+    "date": "Fakturadatum",
+    "dueDate": "Förfallodatum",
+    "status": "Status",
+    "total": "Totalt",
+    "subtotal": "Delsumma",
+    "tax": "Moms",
+    "create": "Skapa faktura",
+    "edit": "Redigera faktura",
+    "delete": "Ta bort faktura",
+    "send": "Skicka faktura",
+    "print": "Skriv ut faktura",
+    "download": "Ladda ner PDF",
+    "statuses": {
+      "draft": "Utkast",
+      "sent": "Skickad",
+      "paid": "Betald",
+      "overdue": "Förfallen",
+      "cancelled": "Avbruten"
+    }
+  },
+  "client": {
+    "name": "Kundnamn",
+    "email": "E-post",
+    "phone": "Telefon",
+    "address": "Adress",
+    "create": "Skapa kund",
+    "edit": "Redigera kund",
+    "delete": "Ta bort kund"
+  },
+  "subscription": {
+    "free": "Gratis",
+    "premium": "Premium",
+    "upgrade": "Uppgradera till Premium",
+    "manage": "Hantera prenumeration",
+    "invoicesRemaining": "{{count}} fakturor kvar"
+  },
+  "common": {
+    "save": "Spara",
+    "cancel": "Avbryt",
+    "delete": "Ta bort",
+    "edit": "Redigera",
+    "create": "Skapa",
+    "search": "Sök",
+    "filter": "Filtrera",
+    "export": "Exportera",
+    "loading": "Laddar...",
+    "error": "Fel",
+    "success": "Lyckades"
+  }
+}
