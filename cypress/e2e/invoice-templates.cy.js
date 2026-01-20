@@ -232,7 +232,7 @@ describe('Invoice Template Management', () => {
         body: []
       }).as('getEmptyTemplates')
       
-      cy.visit('/invoice-templates')
+      cy.visit('/templates')
       cy.wait('@getEmptyTemplates')
       
       cy.get('[data-cy="empty-state"]').should('be.visible')
@@ -246,7 +246,7 @@ describe('Invoice Template Management', () => {
         body: []
       }).as('getEmptyTemplates')
       
-      cy.visit('/invoice-templates')
+      cy.visit('/templates')
       cy.wait('@getEmptyTemplates')
       
       cy.get('[data-cy="empty-state-button"]').click()
