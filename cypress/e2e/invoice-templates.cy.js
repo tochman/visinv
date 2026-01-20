@@ -104,6 +104,12 @@ describe('Invoice Template Management', () => {
       
       cy.get('[data-cy="submit-button"]').click()
       
+      // Wait a bit for async operations
+      cy.wait(1000)
+      
+      // Check that there are no errors
+      cy.get('[data-cy="template-form-error"]').should('not.exist')
+      
       // Modal should close after successful creation
       cy.get('[data-cy="template-modal"]').should('not.exist')
     })
@@ -253,11 +259,14 @@ describe('Invoice Template Management', () => {
       
       cy.get('[data-cy="template-content-input"]').type('<html><body><h1>Test</h1></body></html>')
       
+      // Preview is hidden by default
+      cy.get('[data-cy="template-preview"]').should('not.exist')
+      
       cy.contains('button', 'Show Preview').click()
-      cy.get('[data-cy="template-preview"]').should('be.visible')
+      cy.get('[data-cy="template-preview"]').should('exist')
       
       cy.contains('button', 'Hide Preview').click()
-      cy.get('[data-cy="template-preview"]').should('not.be.visible')
+      cy.get('[data-cy="template-preview"]').should('not.exist')
     })
 
     it('is expected to render Handlebars variables in preview', () => {
