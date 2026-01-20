@@ -56,7 +56,7 @@ describe('Invoice Template Management', () => {
     }).as('deleteTemplate')
 
     cy.login('admin')
-    cy.visit('/invoice-templates')
+    cy.visit('/templates')
     
     // Wait for page to load instead of waiting for API
     cy.get('[data-cy="create-template-button"]', { timeout: 10000 }).should('be.visible')
