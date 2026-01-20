@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { useTranslation } from 'react-i18next';
 import { createInvoice, updateInvoice } from '../../features/invoices/invoicesSlice';
@@ -10,6 +10,7 @@ export default function InvoiceModal({ isOpen, onClose, invoice = null }) {
   const isEditing = !!invoice;
   
   const clients = useSelector(state => state.clients.items);
+  const prevInvoiceIdRef = useRef();
 
   const [formData, setFormData] = useState({
     client_id: invoice?.client_id || '',
@@ -28,6 +29,30 @@ export default function InvoiceModal({ isOpen, onClose, invoice = null }) {
 
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
+
+  // Reset form when modal opens or when switching between invoices
+  useEffect(() => {
+    const currentInvoiceId = invoice?.id;
+    if (isOpen && prevInvoiceIdRef.current !== currentInvoiceId) {
+      setFormData({
+        client_id: invoice?.client_id || '',
+        issue_date: invoice?.issue_date || new Date().toISOString().split('T')[0],
+        due_date: invoice?.due_date || new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
+        tax_rate: invoice?.tax_rate || 25,
+        currency: invoice?.currency || 'SEK',
+        notes: invoice?.notes || '',
+        terms: invoice?.terms || '',
+        reference: invoice?.reference || '',
+      });
+      
+      setRows(invoice?.invoice_rows || [
+        { description: '', quantity: 1, unit_price: 0, unit: 'st', tax_rate: 25 }
+      ]);
+      
+      setError(null);
+      prevInvoiceIdRef.current = currentInvoiceId;
+    }
+  }, [isOpen, invoice]);
 
   useEffect(() => {
     if (isOpen && clients.length === 0) {
@@ -141,7 +166,7 @@ export default function InvoiceModal({ isOpen, onClose, invoice = null }) {
             </button>
           </div>
 
-          <form onSubmit={handleSubmit} data-cy="invoice-form" className="p-6 space-y-6">
+          <form onSubmit={handleSubmit} data-cy="invoice-form" className="p-6 space-y-6" noValidate>
             {error && (
               <div data-cy="invoice-form-error" className="p-3 bg-red-50 dark:bg-red-900/30 border border-red-200 dark:border-red-800 rounded-sm">
                 <p className="text-red-600 dark:text-red-400 text-sm">{error}</p>
