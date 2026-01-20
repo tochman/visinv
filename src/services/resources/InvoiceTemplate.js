@@ -15,7 +15,7 @@ class InvoiceTemplateResource extends BaseResource {
    * @returns {Promise<{data: Array|null, error: Error|null}>}
    */
   async index() {
-    const { data: user } = await this.getCurrentUser();
+    const { user } = await this.getCurrentUser();
     if (!user) return { data: null, error: new Error('Not authenticated') };
 
     const { data, error } = await this.supabase
@@ -34,7 +34,7 @@ class InvoiceTemplateResource extends BaseResource {
    * @returns {Promise<{data: Object|null, error: Error|null}>}
    */
   async create(templateData) {
-    const { data: user } = await this.getCurrentUser();
+    const { user } = await this.getCurrentUser();
     if (!user) return { data: null, error: new Error('Not authenticated') };
 
     const { data, error } = await this.supabase
@@ -57,7 +57,7 @@ class InvoiceTemplateResource extends BaseResource {
    * @returns {Promise<{data: Object|null, error: Error|null}>}
    */
   async clone(templateId, newName) {
-    const { data: user } = await this.getCurrentUser();
+    const { user } = await this.getCurrentUser();
     if (!user) return { data: null, error: new Error('Not authenticated') };
 
     // Fetch the template to clone
