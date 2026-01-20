@@ -50,8 +50,32 @@
       "overdue": "Förfallen",
       "cancelled": "Avbruten"
     }
-  },
-  "invoices": {
+  },  "invoiceTemplates": {
+    "title": "Fakturamallar",
+    "create": "Skapa Mall",
+    "edit": "Redigera Mall",
+    "clone": "Klona Mall",
+    "delete": "Ta Bort Mall",
+    "search": "Sök mallar...",
+    "empty": "Inga mallar än",
+    "emptyDescription": "Skapa mallar för att snabbt generera fakturor.",
+    "createFirst": "Skapa Din Första Mall",
+    "selectTemplate": "Välj Mall",
+    "selectPlaceholder": "Välj en mall...",
+    "noTemplate": "Ingen Mall",
+    "name": "Mallnamn",
+    "content": "HTML-innehåll",
+    "variables": "Tillgängliga Variabler",
+    "preview": "Förhandsgranska",
+    "systemTemplate": "Systemmall",
+    "userTemplate": "Användarmall",
+    "clonePrompt": "Ange namn för klonad mall",
+    "deleteConfirm": "Ta Bort Mall?",
+    "deleteWarning": "Denna åtgärd kan inte ångras.",
+    "variablesHelp": "Använd {{variabel_namn}} i din mall",
+    "modern": "Modern",
+    "classic": "Klassisk"
+  },  "invoices": {
     "create": "Skapa faktura",
     "edit": "Redigera faktura",
     "search": "Sök fakturor...",

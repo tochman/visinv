@@ -5,6 +5,7 @@ import clientsReducer from '../features/clients/clientsSlice';
 import templatesReducer from '../features/templates/templatesSlice';
 import subscriptionsReducer from '../features/subscriptions/subscriptionsSlice';
 import teamsReducer from '../features/teams/teamsSlice';
+import invoiceTemplatesReducer from '../features/invoiceTemplates/invoiceTemplatesSlice';
 
 export const store = configureStore({
   reducer: {
@@ -14,6 +15,7 @@ export const store = configureStore({
     templates: templatesReducer,
     subscriptions: subscriptionsReducer,
     teams: teamsReducer,
+    invoiceTemplates: invoiceTemplatesReducer,
   },
   middleware: (getDefaultMiddleware) =>
     getDefaultMiddleware({

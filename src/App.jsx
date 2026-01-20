@@ -18,6 +18,7 @@ import Invoices from './pages/Invoices';
 import InvoiceDetail from './pages/InvoiceDetail';
 import Clients from './pages/Clients';
 import Templates from './pages/Templates';
+import InvoiceTemplates from './pages/InvoiceTemplates';
 import Teams from './pages/Teams';
 import Settings from './pages/Settings';
 import AdminDashboard from './pages/admin/AdminDashboard';
@@ -63,6 +64,7 @@ function App() {
           <Route path="/invoices/:id" element={<InvoiceDetail />} />
           <Route path="/clients" element={<Clients />} />
           <Route path="/templates" element={<Templates />} />
+          <Route path="/invoice-templates" element={<InvoiceTemplates />} />
           <Route path="/teams" element={<Teams />} />
           <Route path="/settings" element={<Settings />} />
         </Route>

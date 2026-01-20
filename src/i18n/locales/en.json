@@ -51,6 +51,32 @@
       "cancelled": "Cancelled"
     }
   },
+  "invoiceTemplates": {
+    "title": "Invoice Templates",
+    "create": "Create Template",
+    "edit": "Edit Template",
+    "clone": "Clone Template",
+    "delete": "Delete Template",
+    "search": "Search templates...",
+    "empty": "No templates yet",
+    "emptyDescription": "Create templates to quickly generate invoices.",
+    "createFirst": "Create Your First Template",
+    "selectTemplate": "Select Template",
+    "selectPlaceholder": "Choose a template...",
+    "noTemplate": "No Template",
+    "name": "Template Name",
+    "content": "HTML Content",
+    "variables": "Available Variables",
+    "preview": "Preview",
+    "systemTemplate": "System Template",
+    "userTemplate": "User Template",
+    "clonePrompt": "Enter name for cloned template",
+    "deleteConfirm": "Delete Template?",
+    "deleteWarning": "This action cannot be undone.",
+    "variablesHelp": "Use {{variable_name}} in your template",
+    "modern": "Modern",
+    "classic": "Classic"
+  },
   "invoices": {
     "create": "Create Invoice",
     "edit": "Edit Invoice",
