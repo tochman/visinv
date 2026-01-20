@@ -1,0 +1,12 @@
+[
+  {
+    "id": "7f4fab55-5b15-4708-afea-48240c13690e",
+    "user_id": null,
+    "name": "Modern",
+    "content": "<!DOCTYPE html>\n<html>\n<head>\n  <style>\n    body { font-family: Arial, sans-serif; padding: 40px; }\n    .header { border-bottom: 3px solid #3b82f6; padding-bottom: 20px; margin-bottom: 30px; }\n    .invoice-number { font-size: 24px; font-weight: bold; color: #3b82f6; }\n    .details { margin: 20px 0; }\n    .table { width: 100%; border-collapse: collapse; margin: 20px 0; }\n    .table th { background: #f3f4f6; padding: 10px; text-align: left; }\n    .table td { padding: 10px; border-bottom: 1px solid #e5e7eb; }\n    .total { text-align: right; font-size: 18px; font-weight: bold; margin-top: 20px; }\n  </style>\n</head>\n<body>\n  <div class=\"header\">\n    <div class=\"invoice-number\">{{invoice_number}}</div>\n    <div>{{client_name}}</div>\n  </div>\n  \n  <div class=\"details\">\n    <p><strong>Issue Date:</strong> {{issue_date}}</p>\n    <p><strong>Due Date:</strong> {{due_date}}</p>\n  </div>\n\n  <table class=\"table\">\n    <thead>\n      <tr>\n        <th>Description</th>\n        <th>Quantity</th>\n        <th>Unit Price</th>\n        <th>Amount</th>\n      </tr>\n    </thead>\n    <tbody>\n      {{#each line_items}}\n      <tr>\n        <td>{{description}}</td>\n        <td>{{quantity}}</td>\n        <td>{{unit_price}}</td>\n        <td>{{amount}}</td>\n      </tr>\n      {{/each}}\n    </tbody>\n  </table>\n\n  <div class=\"total\">\n    <div>Subtotal: {{subtotal}}</div>\n    <div>Tax ({{tax_rate}}%): {{tax_amount}}</div>\n    <div style=\"color: #3b82f6;\">Total: {{total}} {{currency}}</div>\n  </div>\n</body>\n</html>",
+    "variables": "[\"invoice_number\",\"client_name\",\"issue_date\",\"due_date\",\"line_items\",\"subtotal\",\"tax_rate\",\"tax_amount\",\"total\",\"currency\"]",
+    "is_system": true,
+    "created_at": "2026-01-20 22:34:44.089043+00",
+    "updated_at": "2026-01-20 22:34:44.089043+00"
+  }
+]
