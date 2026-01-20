@@ -8,8 +8,10 @@ export default defineConfig({
     video: false,
     screenshotOnRunFailure: true,
     defaultCommandTimeout: 10000,
+    env: {
+      SUPABASE_PROJECT_REF: 'huuytzuocdtgedlmmccx'
+    },
     setupNodeEvents(on, config) {
-      // implement node event listeners here
     },
   },
 })

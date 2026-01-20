@@ -18,9 +18,12 @@ export const store = configureStore({
   middleware: (getDefaultMiddleware) =>
     getDefaultMiddleware({
       serializableCheck: {
-        // Ignore these paths in the state
         ignoredActions: ['auth/setUser'],
         ignoredPaths: ['auth.user'],
       },
     }),
 });
+
+if (window.Cypress) {
+  window.store = store;
+}

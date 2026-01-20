@@ -12,5 +12,6 @@ import './commands'
 Cypress.on('uncaught:exception', (err, runnable) => {
   // Return false to prevent the error from failing the test
   // You can add conditions here if you want to fail on specific errors
+  console.log('Uncaught exception:', err.message)
   return false
 })

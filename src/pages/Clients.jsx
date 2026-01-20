@@ -51,13 +51,13 @@ export default function Clients() {
     <div>
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-6">
-        <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-4 sm:mb-0">
+        <h1 data-cy="clients-page-title" className="text-3xl font-bold text-gray-900 dark:text-white mb-4 sm:mb-0">
           {t('nav.clients')}
         </h1>
         <button
           onClick={handleCreate}
-          data-testid="create-client-button"
-          className="inline-flex items-center px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+          data-cy="create-client-button"
+          className="inline-flex items-center px-4 py-2 bg-blue-600 text-white rounded-sm hover:bg-blue-700 transition-colors"
         >
           <svg className="w-5 h-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
@@ -82,15 +82,15 @@ export default function Clients() {
             placeholder={t('clients.search')}
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
-            data-testid="search-clients-input"
-            className="w-full pl-10 pr-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+            data-cy="search-clients-input"
+            className="w-full pl-10 pr-4 py-2 border border-gray-300 dark:border-gray-600 rounded-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
           />
         </div>
       </div>
 
       {/* Error */}
       {error && (
-        <div data-testid="clients-error" className="mb-6 p-4 bg-red-50 dark:bg-red-900/30 border border-red-200 dark:border-red-800 rounded-lg">
+        <div data-cy="clients-error" className="mb-6 p-4 bg-red-50 dark:bg-red-900/30 border border-red-200 dark:border-red-800 rounded-sm">
           <p className="text-red-600 dark:text-red-400">{error}</p>
         </div>
       )}
@@ -105,7 +105,7 @@ export default function Clients() {
 
       {/* Empty State */}
       {!loading && filteredClients.length === 0 && (
-        <div data-testid="clients-empty-state" className="bg-white dark:bg-gray-800 rounded-lg shadow dark:shadow-gray-900/20 p-12 text-center">
+        <div data-cy="clients-empty-state" className="bg-white dark:bg-gray-800 rounded-sm shadow dark:shadow-gray-900/20 p-12 text-center">
           <svg
             className="w-16 h-16 mx-auto text-gray-400 dark:text-gray-600 mb-4"
             fill="none"
@@ -123,7 +123,7 @@ export default function Clients() {
           {!searchTerm && (
             <button
               onClick={handleCreate}
-              className="inline-flex items-center px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
+              className="inline-flex items-center px-4 py-2 bg-blue-600 text-white rounded-sm hover:bg-blue-700"
             >
               <svg className="w-5 h-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
@@ -136,9 +136,9 @@ export default function Clients() {
 
       {/* Client List */}
       {!loading && filteredClients.length > 0 && (
-        <div data-testid="clients-list" className="bg-white dark:bg-gray-800 rounded-lg shadow dark:shadow-gray-900/20 overflow-hidden">
+        <div data-cy="clients-list" className="bg-white dark:bg-gray-800 rounded-sm shadow dark:shadow-gray-900/20 overflow-hidden">
           <div className="overflow-x-auto">
-            <table data-testid="clients-table" className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
+            <table data-cy="clients-table" className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
               <thead className="bg-gray-50 dark:bg-gray-900/50">
                 <tr>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
@@ -160,15 +160,15 @@ export default function Clients() {
               </thead>
               <tbody className="divide-y divide-gray-200 dark:divide-gray-700">
                 {filteredClients.map((client) => (
-                  <tr key={client.id} data-testid={`client-row-${client.id}`} className="hover:bg-gray-50 dark:hover:bg-gray-700/50">
+                  <tr key={client.id} data-cy={`client-row-${client.id}`} className="hover:bg-gray-50 dark:hover:bg-gray-700/50">
                     <td className="px-6 py-4 whitespace-nowrap">
-                      <div data-testid="client-name" className="font-medium text-gray-900 dark:text-white">{client.name}</div>
+                      <div data-cy="client-name" className="font-medium text-gray-900 dark:text-white">{client.name}</div>
                       {client.contact_person && (
                         <div className="text-sm text-gray-500 dark:text-gray-400">{client.contact_person}</div>
                       )}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
-                      <div data-testid="client-email" className="text-sm text-gray-900 dark:text-white">{client.email || '-'}</div>
+                      <div data-cy="client-email" className="text-sm text-gray-900 dark:text-white">{client.email || '-'}</div>
                       <div className="text-sm text-gray-500 dark:text-gray-400">{client.phone || '-'}</div>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
@@ -181,14 +181,14 @@ export default function Clients() {
                     <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                       <button
                         onClick={() => handleEdit(client)}
-                        data-testid={`edit-client-${client.id}`}
+                        data-cy={`edit-client-${client.id}`}
                         className="text-blue-600 dark:text-blue-400 hover:text-blue-900 dark:hover:text-blue-300 mr-4"
                       >
                         {t('common.edit')}
                       </button>
                       <button
                         onClick={() => setDeleteConfirm(client.id)}
-                        data-testid={`delete-client-${client.id}`}
+                        data-cy={`delete-client-${client.id}`}
                         className="text-red-600 dark:text-red-400 hover:text-red-900 dark:hover:text-red-300"
                       >
                         {t('common.delete')}
@@ -211,10 +211,10 @@ export default function Clients() {
 
       {/* Delete Confirmation Modal */}
       {deleteConfirm && (
-        <div className="fixed inset-0 z-50 overflow-y-auto" data-testid="delete-confirm-modal">
+        <div className="fixed inset-0 z-50 overflow-y-auto" data-cy="delete-confirm-modal">
           <div className="flex min-h-screen items-center justify-center p-4">
             <div className="fixed inset-0 bg-black/50" onClick={() => setDeleteConfirm(null)} />
-            <div className="relative bg-white dark:bg-gray-800 rounded-lg shadow-xl p-6 max-w-sm w-full">
+            <div className="relative bg-white dark:bg-gray-800 rounded-sm shadow-xl p-6 max-w-sm w-full">
               <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-4">
                 {t('clients.deleteConfirm')}
               </h3>
@@ -224,15 +224,15 @@ export default function Clients() {
               <div className="flex justify-end space-x-3">
                 <button
                   onClick={() => setDeleteConfirm(null)}
-                  data-testid="cancel-delete-button"
-                  className="px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg"
+                  data-cy="cancel-delete-button"
+                  className="px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-sm"
                 >
                   {t('common.cancel')}
                 </button>
                 <button
                   onClick={() => handleDelete(deleteConfirm)}
-                  data-testid="confirm-delete-button"
-                  className="px-4 py-2 text-sm font-medium text-white bg-red-600 hover:bg-red-700 rounded-lg"
+                  data-cy="confirm-delete-button"
+                  className="px-4 py-2 text-sm font-medium text-white bg-red-600 hover:bg-red-700 rounded-sm"
                 >
                   {t('common.delete')}
                 </button>
