@@ -1,15 +1,19 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
-import { supabase } from '../../services/supabase';
+import { Invoice } from '../../services/resources';
 
-// Async thunks
 export const fetchInvoices = createAsyncThunk(
   'invoices/fetchInvoices',
   async (_, { rejectWithValue }) => {
-    const { data, error } = await supabase
-      .from('invoices')
-      .select('*, client:clients(*), invoice_rows(*)')
-      .order('created_at', { ascending: false });
-    
+    const { data, error } = await Invoice.index();
+    if (error) return rejectWithValue(error.message);
+    return data;
+  }
+);
+
+export const fetchInvoice = createAsyncThunk(
+  'invoices/fetchInvoice',
+  async (id, { rejectWithValue }) => {
+    const { data, error } = await Invoice.show(id);
     if (error) return rejectWithValue(error.message);
     return data;
   }
@@ -18,12 +22,7 @@ export const fetchInvoices = createAsyncThunk(
 export const createInvoice = createAsyncThunk(
   'invoices/createInvoice',
   async (invoiceData, { rejectWithValue }) => {
-    const { data, error } = await supabase
-      .from('invoices')
-      .insert(invoiceData)
-      .select()
-      .single();
-    
+    const { data, error } = await Invoice.create(invoiceData);
     if (error) return rejectWithValue(error.message);
     return data;
   }
@@ -32,13 +31,7 @@ export const createInvoice = createAsyncThunk(
 export const updateInvoice = createAsyncThunk(
   'invoices/updateInvoice',
   async ({ id, updates }, { rejectWithValue }) => {
-    const { data, error } = await supabase
-      .from('invoices')
-      .update(updates)
-      .eq('id', id)
-      .select()
-      .single();
-    
+    const { data, error } = await Invoice.update(id, updates);
     if (error) return rejectWithValue(error.message);
     return data;
   }
@@ -47,13 +40,27 @@ export const updateInvoice = createAsyncThunk(
 export const deleteInvoice = createAsyncThunk(
   'invoices/deleteInvoice',
   async (id, { rejectWithValue }) => {
-    const { error } = await supabase
-      .from('invoices')
-      .delete()
-      .eq('id', id);
-    
+    const { error } = await Invoice.destroy(id);
     if (error) return rejectWithValue(error.message);
     return id;
+  }
+);
+
+export const markInvoiceAsSent = createAsyncThunk(
+  'invoices/markAsSent',
+  async (id, { rejectWithValue }) => {
+    const { data, error } = await Invoice.markAsSent(id);
+    if (error) return rejectWithValue(error.message);
+    return data;
+  }
+);
+
+export const markInvoiceAsPaid = createAsyncThunk(
+  'invoices/markAsPaid',
+  async ({ id, paidAt }, { rejectWithValue }) => {
+    const { data, error } = await Invoice.markAsPaid(id, paidAt);
+    if (error) return rejectWithValue(error.message);
+    return data;
   }
 );
 
@@ -61,21 +68,20 @@ const invoicesSlice = createSlice({
   name: 'invoices',
   initialState: {
     items: [],
+    currentInvoice: null,
     loading: false,
     error: null,
-    selectedInvoice: null,
   },
   reducers: {
-    setSelectedInvoice: (state, action) => {
-      state.selectedInvoice = action.payload;
-    },
     clearError: (state) => {
       state.error = null;
+    },
+    clearCurrentInvoice: (state) => {
+      state.currentInvoice = null;
     },
   },
   extraReducers: (builder) => {
     builder
-      // Fetch Invoices
       .addCase(fetchInvoices.pending, (state) => {
         state.loading = true;
         state.error = null;
@@ -88,23 +94,74 @@ const invoicesSlice = createSlice({
         state.loading = false;
         state.error = action.payload;
       })
-      // Create Invoice
+      .addCase(fetchInvoice.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(fetchInvoice.fulfilled, (state, action) => {
+        state.loading = false;
+        state.currentInvoice = action.payload;
+      })
+      .addCase(fetchInvoice.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload;
+      })
+      .addCase(createInvoice.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
       .addCase(createInvoice.fulfilled, (state, action) => {
+        state.loading = false;
         state.items.unshift(action.payload);
       })
-      // Update Invoice
+      .addCase(createInvoice.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload;
+      })
+      .addCase(updateInvoice.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
       .addCase(updateInvoice.fulfilled, (state, action) => {
-        const index = state.items.findIndex(i => i.id === action.payload.id);
+        state.loading = false;
+        const index = state.items.findIndex(item => item.id === action.payload.id);
+        if (index !== -1) {
+          state.items[index] = action.payload;
+        }
+        if (state.currentInvoice?.id === action.payload.id) {
+          state.currentInvoice = action.payload;
+        }
+      })
+      .addCase(updateInvoice.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload;
+      })
+      .addCase(deleteInvoice.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(deleteInvoice.fulfilled, (state, action) => {
+        state.loading = false;
+        state.items = state.items.filter(item => item.id !== action.payload);
+      })
+      .addCase(deleteInvoice.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload;
+      })
+      .addCase(markInvoiceAsSent.fulfilled, (state, action) => {
+        const index = state.items.findIndex(item => item.id === action.payload.id);
         if (index !== -1) {
           state.items[index] = action.payload;
         }
       })
-      // Delete Invoice
-      .addCase(deleteInvoice.fulfilled, (state, action) => {
-        state.items = state.items.filter(i => i.id !== action.payload);
+      .addCase(markInvoiceAsPaid.fulfilled, (state, action) => {
+        const index = state.items.findIndex(item => item.id === action.payload.id);
+        if (index !== -1) {
+          state.items[index] = action.payload;
+        }
       });
   },
 });
 
-export const { setSelectedInvoice, clearError } = invoicesSlice.actions;
+export const { clearError, clearCurrentInvoice } = invoicesSlice.actions;
 export default invoicesSlice.reducer;
