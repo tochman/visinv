@@ -1,4 +1,4 @@
-import BaseResource from './BaseResource';
+import { BaseResource } from './BaseResource';
 
 /**
  * InvoiceTemplate Resource

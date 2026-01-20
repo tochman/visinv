@@ -1,0 +1,290 @@
+/// <reference types="cypress" />
+
+describe('Invoice Template Management', () => {
+  const mockSystemTemplate = {
+    id: 'template-system-1',
+    name: 'Modern',
+    content: '<html><body>{{invoice_number}}</body></html>',
+    variables: ['invoice_number', 'client_name'],
+    is_system: true,
+    user_id: null
+  }
+
+  const mockUserTemplate = {
+    id: 'template-user-1',
+    name: 'My Custom Template',
+    content: '<html><body>Custom content</body></html>',
+    variables: ['invoice_number'],
+    is_system: false,
+    user_id: 'user-123'
+  }
+
+  beforeEach(() => {
+    // Mock templates endpoint - match any query params
+    cy.intercept('GET', '**/rest/v1/invoice_templates*', {
+      statusCode: 200,
+      body: [mockSystemTemplate, mockUserTemplate]
+    }).as('getTemplates')
+
+    // Mock create template
+    cy.intercept('POST', '**/rest/v1/invoice_templates', (req) => {
+      req.reply({
+        statusCode: 201,
+        body: {
+          id: 'new-template-id',
+          ...req.body,
+          is_system: false,
+          user_id: 'user-123'
+        }
+      })
+    }).as('createTemplate')
+
+    // Mock update template
+    cy.intercept('PATCH', '**/rest/v1/invoice_templates?id=eq.*', (req) => {
+      req.reply({
+        statusCode: 200,
+        body: {
+          id: req.url.match(/id=eq\.([^&]*)/)[1],
+          ...req.body
+        }
+      })
+    }).as('updateTemplate')
+
+    // Mock delete template
+    cy.intercept('DELETE', '**/rest/v1/invoice_templates?id=eq.*', {
+      statusCode: 204
+    }).as('deleteTemplate')
+
+    cy.login('admin')
+    cy.visit('/invoice-templates')
+    
+    // Wait for page to load instead of waiting for API
+    cy.get('[data-cy="create-template-button"]', { timeout: 10000 }).should('be.visible')
+  })
+
+  describe('Template List', () => {
+    it('is expected to display the templates page', () => {
+      cy.contains('Invoice Templates').should('be.visible')
+      cy.get('[data-cy="create-template-button"]').should('be.visible')
+      cy.get('[data-cy="search-templates"]').should('be.visible')
+    })
+
+    it('is expected to display system templates', () => {
+      cy.contains('System Template').should('be.visible')
+      cy.get(`[data-cy="template-${mockSystemTemplate.id}"]`).should('exist')
+      cy.get(`[data-cy="template-${mockSystemTemplate.id}"]`).should('contain', 'Modern')
+      cy.get(`[data-cy="template-${mockSystemTemplate.id}"]`).should('contain', 'System')
+    })
+
+    it('is expected to display user templates', () => {
+      cy.contains('Custom').should('be.visible')
+      cy.get(`[data-cy="template-${mockUserTemplate.id}"]`).should('exist')
+      cy.get(`[data-cy="template-${mockUserTemplate.id}"]`).should('contain', 'My Custom Template')
+    })
+
+    it('is expected to search templates', () => {
+      cy.get('[data-cy="search-templates"]').type('Modern')
+      cy.get(`[data-cy="template-${mockSystemTemplate.id}"]`).should('be.visible')
+      
+      cy.get('[data-cy="search-templates"]').clear().type('Custom')
+      cy.get(`[data-cy="template-${mockUserTemplate.id}"]`).should('be.visible')
+    })
+  })
+
+  describe('Creating Templates', () => {
+    it('is expected to open the template modal when clicking create', () => {
+      cy.get('[data-cy="create-template-button"]').click()
+      cy.get('[data-cy="template-modal"]').should('be.visible')
+      cy.get('[data-cy="template-modal-title"]').should('contain', 'Create Template')
+    })
+
+    it('is expected to create a new template', () => {
+      cy.get('[data-cy="create-template-button"]').click()
+      
+      cy.get('[data-cy="template-name-input"]').type('New Invoice Template')
+      cy.get('[data-cy="template-content-input"]').type('<html><body><h1>{{invoice_number}}</h1></body></html>')
+      
+      cy.get('[data-cy="submit-button"]').click()
+      
+      cy.wait('@createTemplate').its('request.body').should('deep.include', {
+        name: 'New Invoice Template',
+        content: '<html><body><h1>{{invoice_number}}</h1></body></html>'
+      })
+      
+      cy.get('[data-cy="template-modal"]').should('not.exist')
+    })
+
+    it('is expected to show validation error when name is empty', () => {
+      cy.get('[data-cy="create-template-button"]').click()
+      
+      cy.get('[data-cy="template-content-input"]').type('<html><body>Test</body></html>')
+      cy.get('[data-cy="submit-button"]').click()
+      
+      cy.get('[data-cy="template-form-error"]').should('exist')
+      cy.get('[data-cy="template-modal"]').should('be.visible')
+    })
+
+    it('is expected to display available variables', () => {
+      cy.get('[data-cy="create-template-button"]').click()
+      
+      cy.contains('Available Variables').should('be.visible')
+      cy.contains('{{invoice_number}}').should('be.visible')
+      cy.contains('{{client_name}}').should('be.visible')
+      cy.contains('{{line_items}}').should('be.visible')
+    })
+
+    it('is expected to close modal when clicking cancel', () => {
+      cy.get('[data-cy="create-template-button"]').click()
+      cy.get('[data-cy="template-modal"]').should('be.visible')
+      
+      cy.get('[data-cy="cancel-button"]').click()
+      cy.get('[data-cy="template-modal"]').should('not.exist')
+    })
+
+    it('is expected to close modal when clicking X button', () => {
+      cy.get('[data-cy="create-template-button"]').click()
+      cy.get('[data-cy="template-modal"]').should('be.visible')
+      
+      cy.get('[data-cy="close-modal-button"]').click()
+      cy.get('[data-cy="template-modal"]').should('not.exist')
+    })
+  })
+
+  describe('Editing Templates', () => {
+    it('is expected to open template in edit mode', () => {
+      cy.get(`[data-cy="edit-template-${mockUserTemplate.id}"]`).click()
+      
+      cy.get('[data-cy="template-modal"]').should('be.visible')
+      cy.get('[data-cy="template-modal-title"]').should('contain', 'Edit')
+      cy.get('[data-cy="template-name-input"]').should('have.value', mockUserTemplate.name)
+      cy.get('[data-cy="template-content-input"]').should('have.value', mockUserTemplate.content)
+    })
+
+    it('is expected to update template data', () => {
+      cy.get(`[data-cy="edit-template-${mockUserTemplate.id}"]`).click()
+      
+      cy.get('[data-cy="template-name-input"]').clear().type('Updated Template Name')
+      cy.get('[data-cy="template-content-input"]').clear().type('<html><body>Updated</body></html>')
+      
+      cy.get('[data-cy="submit-button"]').click()
+      
+      cy.wait('@updateTemplate')
+      cy.get('[data-cy="template-modal"]').should('not.exist')
+    })
+  })
+
+  describe('Cloning Templates', () => {
+    it('is expected to clone a system template', () => {
+      // Intercept the clone operation (which is a POST)
+      cy.intercept('POST', '**/rest/v1/invoice_templates*', (req) => {
+        req.reply({
+          statusCode: 201,
+          body: {
+            id: 'cloned-template-id',
+            name: 'Modern (Copy)',
+            content: mockSystemTemplate.content,
+            is_system: false,
+            user_id: 'user-123'
+          }
+        })
+      }).as('cloneTemplate')
+
+      cy.get(`[data-cy="clone-template-${mockSystemTemplate.id}"]`).click()
+      
+      // Cypress can't interact with native prompts directly, but we can stub it
+      cy.window().then((win) => {
+        cy.stub(win, 'prompt').returns('Modern (Copy)')
+      })
+      
+      cy.get(`[data-cy="clone-template-${mockSystemTemplate.id}"]`).click()
+    })
+  })
+
+  describe('Deleting Templates', () => {
+    it('is expected to open delete confirmation modal', () => {
+      cy.get(`[data-cy="delete-template-${mockUserTemplate.id}"]`).click()
+      
+      cy.contains('Delete Template?').should('be.visible')
+      cy.contains('This action cannot be undone').should('be.visible')
+    })
+
+    it('is expected to cancel deletion', () => {
+      cy.get(`[data-cy="delete-template-${mockUserTemplate.id}"]`).click()
+      
+      cy.contains('button', 'Cancel').click()
+      cy.contains('Delete Template?').should('not.exist')
+    })
+
+    it('is expected to delete a template', () => {
+      cy.get(`[data-cy="delete-template-${mockUserTemplate.id}"]`).click()
+      
+      cy.get('[data-cy="confirm-delete-template"]').click()
+      
+      cy.wait('@deleteTemplate')
+      cy.contains('Delete Template?').should('not.exist')
+    })
+  })
+
+  describe('Empty State', () => {
+    it('is expected to show empty state when no templates exist', () => {
+      cy.intercept('GET', '**/rest/v1/invoice_templates*', {
+        statusCode: 200,
+        body: []
+      }).as('getEmptyTemplates')
+      
+      cy.visit('/invoice-templates')
+      cy.wait('@getEmptyTemplates')
+      
+      cy.get('[data-cy="empty-state"]').should('be.visible')
+      cy.contains('No templates yet').should('be.visible')
+      cy.get('[data-cy="empty-state-button"]').should('be.visible')
+    })
+
+    it('is expected to open modal from empty state button', () => {
+      cy.intercept('GET', '**/rest/v1/invoice_templates*', {
+        statusCode: 200,
+        body: []
+      }).as('getEmptyTemplates')
+      
+      cy.visit('/invoice-templates')
+      cy.wait('@getEmptyTemplates')
+      
+      cy.get('[data-cy="empty-state-button"]').click()
+      cy.get('[data-cy="template-modal"]').should('be.visible')
+    })
+  })
+
+  describe('Template Preview', () => {
+    it('is expected to show preview when toggled', () => {
+      cy.get('[data-cy="create-template-button"]').click()
+      
+      cy.get('[data-cy="template-content-input"]').type('<html><body><h1>Test</h1></body></html>')
+      
+      cy.contains('button', 'Show Preview').click()
+      cy.get('[data-cy="template-preview"]').should('be.visible')
+      
+      cy.contains('button', 'Hide Preview').click()
+      cy.get('[data-cy="template-preview"]').should('not.be.visible')
+    })
+
+    it('is expected to render Handlebars variables in preview', () => {
+      cy.get('[data-cy="create-template-button"]').click()
+      
+      cy.get('[data-cy="template-content-input"]').type('<html><body><h1>{{invoice_number}}</h1><p>{{client_name}}</p></body></html>')
+      
+      cy.contains('button', 'Show Preview').click()
+      
+      // Preview should show sample data
+      cy.get('[data-cy="template-preview"]').should('contain', 'INV-0001')
+      cy.get('[data-cy="template-preview"]').should('contain', 'Acme Corporation')
+    })
+
+    it('is expected to show error for invalid Handlebars syntax', () => {
+      cy.get('[data-cy="create-template-button"]').click()
+      
+      cy.get('[data-cy="template-content-input"]').type('<html><body>{{#invalid syntax</body></html>')
+      
+      cy.get('[data-cy="template-form-error"]').should('exist')
+    })
+  })
+})
