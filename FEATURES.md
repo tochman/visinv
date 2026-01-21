@@ -27,8 +27,9 @@
 - As a **free user**, in order to **organize my customer information**, I would like to **create, edit, and manage client profiles with contact details**.
 - **Status:** Implemented - Full CRUD operations with search, modal forms, and i18n support
 
-**US-006: Invoice Creation**
+**US-006: Invoice Creation** ✅
 - As a **free user**, in order to **bill my clients**, I would like to **create invoices with multiple line items, tax calculations, and client information**.
+- **Status:** Implemented - Full CRUD with InvoiceModal, line items, tax calculations, status management (draft/sent/paid), 28 Cypress tests
 
 **US-007: Product Catalog (Optional)**
 - As a **free user**, in order to **speed up invoice creation**, I would like to **maintain a product/service catalog that I can add to invoices**.
