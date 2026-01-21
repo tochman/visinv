@@ -119,16 +119,95 @@ export function renderTemplate(templateContent, context) {
  * Expects a complete HTML document with styling already included
  */
 export async function exportToPDF(html, filename = 'report.pdf') {
+  // Helper to inline computed colors as rgb() values to avoid unsupported color
+  // functions (e.g. oklch) used by Tailwind v4 color tokens. html2canvas
+  // cannot parse these, so we convert computed styles to rgb before rendering.
+  const inlineComputedColors = (doc) => {
+    try {
+      // Canvas-based color normalizer: converts any valid CSS color (incl. oklch)
+      // into a normalized rgb/rgba string that html2canvas can parse.
+      const ctx = doc.createElement('canvas').getContext('2d');
+      const normalizeColor = (value) => {
+        if (!value) return value;
+        try {
+          ctx.fillStyle = '#000';
+          ctx.fillStyle = value;
+          return ctx.fillStyle; // normalized to rgb()/rgba()/#hex
+        } catch {
+          return value;
+        }
+      };
+      const walker = doc.createTreeWalker(doc.body, NodeFilter.SHOW_ELEMENT);
+      const colorProps = [
+        'color',
+        'backgroundColor',
+        'borderTopColor',
+        'borderRightColor',
+        'borderBottomColor',
+        'borderLeftColor',
+        'outlineColor'
+      ];
+
+      let node;
+      while ((node = walker.nextNode())) {
+        const cs = doc.defaultView?.getComputedStyle(node);
+        if (!cs) continue;
+
+        // If any value includes unsupported color functions, force inline as rgb()
+        colorProps.forEach((prop) => {
+          const val = cs[prop];
+          if (!val) return;
+          const normalized = normalizeColor(val);
+          node.style[prop] = normalized || val;
+        });
+
+        // SVG fills/strokes
+        if (node instanceof doc.defaultView.SVGElement) {
+          const fill = normalizeColor(cs.fill);
+          const stroke = normalizeColor(cs.stroke);
+          if (fill) node.setAttribute('fill', fill);
+          if (stroke) node.setAttribute('stroke', stroke);
+        }
+      }
+
+      // Ensure a white page background
+      if (doc.body && !doc.body.style.backgroundColor) {
+        doc.body.style.backgroundColor = '#ffffff';
+      }
+    } catch (err) {
+      // Best-effort; don't block PDF generation if this fails
+      // eslint-disable-next-line no-console
+      console.warn('Color inlining failed, continuing anyway:', err);
+    }
+  };
+
   const options = {
     margin: [10, 10],
     filename,
     image: { type: 'jpeg', quality: 0.98 },
-    html2canvas: { scale: 2, useCORS: true },
+    html2canvas: {
+      scale: 2,
+      useCORS: true,
+      backgroundColor: '#ffffff',
+      onclone: (clonedDoc) => inlineComputedColors(clonedDoc)
+    },
     jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
   };
-  
+
   try {
-    await html2pdf().set(options).from(html).save();
+    // Ensure we work with a real DOM node so that onclone can traverse it
+    const container = document.createElement('div');
+    container.style.position = 'fixed';
+    container.style.left = '-10000px';
+    container.style.top = '0';
+    container.style.width = '800px';
+    container.style.background = '#ffffff';
+    container.innerHTML = html;
+    document.body.appendChild(container);
+
+    await html2pdf().set(options).from(container).save();
+
+    container.remove();
     return true;
   } catch (error) {
     console.error('PDF export error:', error);
