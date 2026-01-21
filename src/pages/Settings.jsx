@@ -1,85 +1,44 @@
 import { useTranslation } from 'react-i18next';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import { useForm } from 'react-hook-form';
 import { useOrganization } from '../contexts/OrganizationContext';
 
 export default function Settings() {
   const { t } = useTranslation();
   const { currentOrganization, updateOrganization, loading } = useOrganization();
   const [isEditing, setIsEditing] = useState(false);
-  const [formData, setFormData] = useState({});
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState(null);
-  const [validationErrors, setValidationErrors] = useState({});
   const [successMessage, setSuccessMessage] = useState('');
 
+  const { register, handleSubmit, formState: { errors }, reset, setValue } = useForm({
+    mode: 'onSubmit',
+    defaultValues: currentOrganization || {}
+  });
+
+  // Update form when organization changes
+  useEffect(() => {
+    if (currentOrganization) {
+      reset(currentOrganization);
+    }
+  }, [currentOrganization, reset]);
+
   const handleEdit = () => {
-    setFormData({ ...currentOrganization });
     setIsEditing(true);
   };
 
   const handleCancel = () => {
     setIsEditing(false);
-    setFormData({});
+    reset(currentOrganization);
     setError(null);
-    setValidationErrors({});
     setSuccessMessage('');
   };
 
-  const handleChange = (e) => {
-    const { name, value, type, checked } = e.target;
-    setFormData((prev) => ({
-      ...prev,
-      [name]: type === 'checkbox' ? checked : value,
-    }));
-  };
-
-  const validateForm = () => {
-    const errors = {};
-    
-    if (!formData.name?.trim()) {
-      errors.name = 'Företagsnamn är obligatoriskt';
-    }
-    if (!formData.organization_number?.trim()) {
-      errors.organization_number = 'Organisationsnummer är obligatoriskt enligt Aktiebolagslagen';
-    }
-    if (!formData.municipality?.trim()) {
-      errors.municipality = 'Kommun är obligatoriskt enligt Aktiebolagslagen';
-    }
-    if (!formData.vat_number?.trim()) {
-      errors.vat_number = 'Momsregistreringsnummer är obligatoriskt enligt Mervärdesskattelagen';
-    }
-    if (!formData.address?.trim()) {
-      errors.address = 'Adress är obligatorisk';
-    }
-    if (!formData.city?.trim()) {
-      errors.city = 'Stad är obligatorisk';
-    }
-    if (!formData.postal_code?.trim()) {
-      errors.postal_code = 'Postnummer är obligatoriskt';
-    }
-    if (!formData.email?.trim()) {
-      errors.email = 'E-post är obligatoriskt';
-    } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) {
-      errors.email = 'Ogiltig e-postadress';
-    }
-    
-    return errors;
-  };
-
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    setValidationErrors({});
+  const onSubmit = async (data) => {
     setError(null);
-    
-    const errors = validateForm();
-    if (Object.keys(errors).length > 0) {
-      setValidationErrors(errors);
-      return;
-    }
-    
     setSaving(true);
 
-    const { error: updateError } = await updateOrganization(currentOrganization.id, formData);
+    const { error: updateError } = await updateOrganization(currentOrganization.id, data);
 
     if (updateError) {
       setError(updateError.message);
@@ -138,14 +97,8 @@ export default function Settings() {
           {successMessage}
         </div>
       )}
-      
-      {!Object.keys(validationErrors).length && !isEditing && formData.name && (
-        <div className="mb-6 p-4 bg-green-100 dark:bg-green-900/30 border border-green-400 dark:border-green-700 text-green-700 dark:text-green-400 rounded" data-cy="success-message">
-          Organisationen har sparats
-        </div>
-      )}
 
-      <form onSubmit={handleSubmit}>
+      <form onSubmit={handleSubmit(onSubmit)}>
         <div className="bg-white dark:bg-gray-800 rounded-sm shadow dark:shadow-gray-900/20 p-6 space-y-6">
           {/* Basic Information */}
           <div>
@@ -155,20 +108,21 @@ export default function Settings() {
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                  {t('organization.name')}
+                  {t('organization.name')} *
                 </label>
                 {isEditing ? (
                   <div>
                     <input
                       type="text"
-                      name="name"
-                      value={formData.name || ''}
-                      onChange={handleChange}
+                      {...register('name', { 
+                        required: 'Företagsnamn är obligatoriskt',
+                        validate: value => value?.trim() || 'Företagsnamn är obligatoriskt'
+                      })}
                       className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white"
                       data-cy="org-name"
                     />
-                    {validationErrors.name && (
-                      <p className="mt-1 text-sm text-red-600 dark:text-red-400" data-cy="error-org-name">{validationErrors.name}</p>
+                    {errors.name && (
+                      <p className="mt-1 text-sm text-red-600 dark:text-red-400" data-cy="error-org-name">{errors.name.message}</p>
                     )}
                   </div>
                 ) : (
@@ -178,20 +132,21 @@ export default function Settings() {
 
               <div>
                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                  {t('organization.organizationNumber')}
+                  {t('organization.organizationNumber')} *
                 </label>
                 {isEditing ? (
                   <div>
                     <input
                       type="text"
-                      name="organization_number"
-                      value={formData.organization_number || ''}
-                      onChange={handleChange}
+                      {...register('organization_number', { 
+                        required: 'Organisationsnummer är obligatoriskt enligt Aktiebolagslagen',
+                        validate: value => value?.trim() || 'Organisationsnummer är obligatoriskt enligt Aktiebolagslagen'
+                      })}
                       className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white"
                       data-cy="org-number"
                     />
-                    {validationErrors.organization_number && (
-                      <p className="mt-1 text-sm text-red-600 dark:text-red-400" data-cy="error-org-number">{validationErrors.organization_number}</p>
+                    {errors.organization_number && (
+                      <p className="mt-1 text-sm text-red-600 dark:text-red-400" data-cy="error-org-number">{errors.organization_number.message}</p>
                     )}
                   </div>
                 ) : (
@@ -203,20 +158,21 @@ export default function Settings() {
 
               <div>
                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                  {t('organization.vatNumber')}
+                  {t('organization.vatNumber')} *
                 </label>
                 {isEditing ? (
                   <div>
                     <input
                       type="text"
-                      name="vat_number"
-                      value={formData.vat_number || ''}
-                      onChange={handleChange}
+                      {...register('vat_number', { 
+                        required: 'Momsregistreringsnummer är obligatoriskt enligt Mervärdesskattelagen',
+                        validate: value => value?.trim() || 'Momsregistreringsnummer är obligatoriskt enligt Mervärdesskattelagen'
+                      })}
                       className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white"
                       data-cy="org-vat"
                     />
-                    {validationErrors.vat_number && (
-                      <p className="mt-1 text-sm text-red-600 dark:text-red-400" data-cy="error-vat-number">{validationErrors.vat_number}</p>
+                    {errors.vat_number && (
+                      <p className="mt-1 text-sm text-red-600 dark:text-red-400" data-cy="error-vat-number">{errors.vat_number.message}</p>
                     )}
                   </div>
                 ) : (
@@ -236,20 +192,21 @@ export default function Settings() {
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div className="md:col-span-2">
                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                  {t('organization.address')}
+                  {t('organization.address')} *
                 </label>
                 {isEditing ? (
                   <div>
                     <input
                       type="text"
-                      name="address"
-                      value={formData.address || ''}
-                      onChange={handleChange}
+                      {...register('address', { 
+                        required: 'Adress är obligatorisk',
+                        validate: value => value?.trim() || 'Adress är obligatorisk'
+                      })}
                       className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white"
                       data-cy="org-address"
                     />
-                    {validationErrors.address && (
-                      <p className="mt-1 text-sm text-red-600 dark:text-red-400" data-cy="error-address">{validationErrors.address}</p>
+                    {errors.address && (
+                      <p className="mt-1 text-sm text-red-600 dark:text-red-400" data-cy="error-address">{errors.address.message}</p>
                     )}
                   </div>
                 ) : (
@@ -261,20 +218,21 @@ export default function Settings() {
 
               <div>
                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                  {t('organization.city')}
+                  {t('organization.city')} *
                 </label>
                 {isEditing ? (
                   <div>
                     <input
                       type="text"
-                      name="city"
-                      value={formData.city || ''}
-                      onChange={handleChange}
+                      {...register('city', { 
+                        required: 'Stad är obligatorisk',
+                        validate: value => value?.trim() || 'Stad är obligatorisk'
+                      })}
                       className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white"
                       data-cy="org-city"
                     />
-                    {validationErrors.city && (
-                      <p className="mt-1 text-sm text-red-600 dark:text-red-400" data-cy="error-city">{validationErrors.city}</p>
+                    {errors.city && (
+                      <p className="mt-1 text-sm text-red-600 dark:text-red-400" data-cy="error-city">{errors.city.message}</p>
                     )}
                   </div>
                 ) : (
@@ -284,20 +242,21 @@ export default function Settings() {
 
               <div>
                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                  Postnummer
+                  Postnummer *
                 </label>
                 {isEditing ? (
                   <div>
                     <input
                       type="text"
-                      name="postal_code"
-                      value={formData.postal_code || ''}
-                      onChange={handleChange}
+                      {...register('postal_code', { 
+                        required: 'Postnummer är obligatoriskt',
+                        validate: value => value?.trim() || 'Postnummer är obligatoriskt'
+                      })}
                       className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white"
                       data-cy="org-postal-code"
                     />
-                    {validationErrors.postal_code && (
-                      <p className="mt-1 text-sm text-red-600 dark:text-red-400" data-cy="error-postal-code">{validationErrors.postal_code}</p>
+                    {errors.postal_code && (
+                      <p className="mt-1 text-sm text-red-600 dark:text-red-400" data-cy="error-postal-code">{errors.postal_code.message}</p>
                     )}
                   </div>
                 ) : (
@@ -307,20 +266,21 @@ export default function Settings() {
 
               <div>
                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                  {t('organization.municipality')}
+                  {t('organization.municipality')} *
                 </label>
                 {isEditing ? (
                   <div>
                     <input
                       type="text"
-                      name="municipality"
-                      value={formData.municipality || ''}
-                      onChange={handleChange}
+                      {...register('municipality', { 
+                        required: 'Kommun är obligatoriskt enligt Aktiebolagslagen',
+                        validate: value => value?.trim() || 'Kommun är obligatoriskt enligt Aktiebolagslagen'
+                      })}
                       className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white"
                       data-cy="org-municipality"
                     />
-                    {validationErrors.municipality && (
-                      <p className="mt-1 text-sm text-red-600 dark:text-red-400" data-cy="error-municipality">{validationErrors.municipality}</p>
+                    {errors.municipality && (
+                      <p className="mt-1 text-sm text-red-600 dark:text-red-400" data-cy="error-municipality">{errors.municipality.message}</p>
                     )}
                   </div>
                 ) : (
@@ -332,21 +292,26 @@ export default function Settings() {
 
               <div>
                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                  {t('organization.email')}
+                  {t('organization.email')} *
                 </label>
                 {isEditing ? (
                   <div>
                     <input
                       type="email"
-                      name="email"
-                      value={formData.email || ''}
-                      onChange={handleChange}
+                      {...register('email', { 
+                        required: 'E-post är obligatoriskt',
+                        validate: value => value?.trim() || 'E-post är obligatoriskt',
+                        pattern: {
+                          value: /^[^\s@]+@[^\s@]+\.[^\s@]+$/,
+                          message: 'Ogiltig e-postadress'
+                        }
+                      })}
                       className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white"
                       data-cy="org-email"
                       required
                     />
-                    {validationErrors.email && (
-                      <p className="mt-1 text-sm text-red-600 dark:text-red-400" data-cy="error-email">{validationErrors.email}</p>
+                    {errors.email && (
+                      <p className="mt-1 text-sm text-red-600 dark:text-red-400" data-cy="error-email">{errors.email.message}</p>
                     )}
                   </div>
                 ) : (
@@ -361,9 +326,7 @@ export default function Settings() {
                 {isEditing ? (
                   <input
                     type="tel"
-                    name="phone"
-                    value={formData.phone || ''}
-                    onChange={handleChange}
+                    {...register('phone')}
                     className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white"
                   />
                 ) : (
@@ -386,9 +349,7 @@ export default function Settings() {
                 {isEditing ? (
                   <input
                     type="text"
-                    name="bank_giro"
-                    value={formData.bank_giro || ''}
-                    onChange={handleChange}
+                    {...register('bank_giro')}
                     className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white"
                   />
                 ) : (
@@ -405,9 +366,7 @@ export default function Settings() {
                 {isEditing ? (
                   <input
                     type="text"
-                    name="bank_iban"
-                    value={formData.bank_iban || ''}
-                    onChange={handleChange}
+                    {...register('bank_iban')}
                     className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white"
                   />
                 ) : (
@@ -422,9 +381,7 @@ export default function Settings() {
                   <label className="flex items-center">
                     <input
                       type="checkbox"
-                      name="f_skatt_approved"
-                      checked={formData.f_skatt_approved || false}
-                      onChange={handleChange}
+                      {...register('f_skatt_approved')}
                       className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
                       data-cy="org-f-skatt-approved"
                     />
@@ -459,9 +416,7 @@ export default function Settings() {
                 {isEditing ? (
                   <input
                     type="text"
-                    name="invoice_number_prefix"
-                    value={formData.invoice_number_prefix || ''}
-                    onChange={handleChange}
+                    {...register('invoice_number_prefix')}
                     className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white"
                     data-cy="invoice-prefix-input"
                   />
@@ -479,9 +434,7 @@ export default function Settings() {
                 {isEditing ? (
                   <input
                     type="number"
-                    name="default_payment_terms"
-                    value={formData.default_payment_terms || ''}
-                    onChange={handleChange}
+                    {...register('default_payment_terms', { valueAsNumber: true })}
                     min="1"
                     className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white"
                     data-cy="payment-terms-input"
@@ -499,9 +452,7 @@ export default function Settings() {
                 </label>
                 {isEditing ? (
                   <select
-                    name="default_currency"
-                    value={formData.default_currency || 'SEK'}
-                    onChange={handleChange}
+                    {...register('default_currency')}
                     className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white"
                   >
                     <option value="SEK">SEK</option>
@@ -523,9 +474,7 @@ export default function Settings() {
                 {isEditing ? (
                   <input
                     type="number"
-                    name="default_tax_rate"
-                    value={formData.default_tax_rate || ''}
-                    onChange={handleChange}
+                    {...register('default_tax_rate', { valueAsNumber: true })}
                     step="0.01"
                     min="0"
                     max="100"
