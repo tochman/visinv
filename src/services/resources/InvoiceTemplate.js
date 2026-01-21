@@ -89,6 +89,236 @@ class InvoiceTemplateResource extends BaseResource {
       {
         name: 'Modern',
         content: `<!DOCTYPE html>
+<html lang="sv">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Faktura {{invoice_number}}</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    @media print {
+      body { print-color-adjust: exact; -webkit-print-color-adjust: exact; }
+      .no-print { display: none; }
+    }
+  </style>
+</head>
+<body class="bg-gray-50 p-8">
+  <div class="max-w-5xl mx-auto bg-white shadow-lg">
+    
+    <div class="bg-gradient-to-r from-blue-600 to-blue-700 text-white px-10 py-8">
+      <div class="flex justify-between items-start">
+        <div>
+          <h1 class="text-5xl font-bold tracking-tight mb-3">FAKTURA</h1>
+          <div class="bg-white/20 backdrop-blur-sm px-4 py-2 rounded inline-block">
+            <p class="text-xl font-semibold">{{invoice_number}}</p>
+          </div>
+        </div>
+        <div class="text-right">
+          <p class="text-2xl font-bold mb-1">{{organization_name}}</p>
+          <p class="text-sm opacity-90">Org.nr: {{organization_number}}</p>
+          {{#if organization_vat_number}}
+          <p class="text-sm opacity-90">Moms nr: {{organization_vat_number}}</p>
+          {{/if}}
+        </div>
+      </div>
+    </div>
+
+    <div class="px-10 py-8">
+      
+      {{#if organization_f_skatt_approved}}
+      <div class="bg-green-50 border-l-4 border-green-500 px-6 py-4 rounded-r mb-8 flex items-center">
+        <svg class="w-6 h-6 text-green-600 mr-3" fill="currentColor" viewBox="0 0 20 20">
+          <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/>
+        </svg>
+        <p class="text-green-900 font-semibold text-lg">Godkänd för F-skatt</p>
+      </div>
+      {{/if}}
+
+      <div class="grid grid-cols-2 gap-6 mb-10">
+        
+        <div class="bg-gradient-to-br from-slate-50 to-slate-100 p-6 rounded-lg border border-slate-200">
+          <div class="flex items-center mb-4">
+            <div class="bg-blue-600 rounded-full p-2 mr-3">
+              <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/>
+              </svg>
+            </div>
+            <h3 class="text-xs font-bold text-slate-500 uppercase tracking-wider">Fakturamottagare</h3>
+          </div>
+          <div class="space-y-1">
+            <p class="text-lg font-bold text-slate-900">{{client_name}}</p>
+            <p class="text-sm text-slate-600">{{client_address}}</p>
+            <p class="text-sm text-slate-600">{{client_postal_code}} {{client_city}}</p>
+            {{#if client_country}}
+            <p class="text-sm text-slate-600">{{client_country}}</p>
+            {{/if}}
+            {{#if client_email}}
+            <p class="text-sm text-blue-600 mt-2">{{client_email}}</p>
+            {{/if}}
+          </div>
+        </div>
+
+        <div class="bg-gradient-to-br from-blue-50 to-blue-100 p-6 rounded-lg border border-blue-200">
+          <div class="flex items-center mb-4">
+            <div class="bg-blue-600 rounded-full p-2 mr-3">
+              <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+              </svg>
+            </div>
+            <h3 class="text-xs font-bold text-blue-700 uppercase tracking-wider">Fakturadetaljer</h3>
+          </div>
+          <div class="space-y-2">
+            <div class="flex justify-between items-center">
+              <span class="text-sm text-slate-600 font-medium">Fakturadatum:</span>
+              <span class="text-sm font-bold text-slate-900">{{issue_date}}</span>
+            </div>
+            <div class="flex justify-between items-center">
+              <span class="text-sm text-slate-600 font-medium">Leveransdatum:</span>
+              <span class="text-sm font-bold text-slate-900">{{delivery_date}}</span>
+            </div>
+            <div class="flex justify-between items-center bg-blue-200/50 px-3 py-2 rounded">
+              <span class="text-sm text-blue-900 font-semibold">Förfallodatum:</span>
+              <span class="text-sm font-bold text-blue-900">{{due_date}}</span>
+            </div>
+            {{#if reference}}
+            <div class="flex justify-between items-center pt-2 border-t border-blue-200">
+              <span class="text-sm text-slate-600 font-medium">Er referens:</span>
+              <span class="text-sm font-semibold text-slate-900">{{reference}}</span>
+            </div>
+            {{/if}}
+          </div>
+        </div>
+      </div>
+
+      <div class="mb-8 overflow-hidden rounded-lg border border-slate-200">
+        <table class="w-full">
+          <thead>
+            <tr class="bg-gradient-to-r from-slate-700 to-slate-800 text-white">
+              <th class="text-left px-4 py-4 font-semibold text-sm">Beskrivning</th>
+              <th class="text-center px-4 py-4 font-semibold text-sm w-24">Antal</th>
+              <th class="text-right px-4 py-4 font-semibold text-sm w-32">Á-pris</th>
+              <th class="text-right px-4 py-4 font-semibold text-sm w-24">Moms</th>
+              <th class="text-right px-4 py-4 font-semibold text-sm w-32 bg-slate-800">Belopp</th>
+            </tr>
+          </thead>
+          <tbody class="bg-white divide-y divide-slate-200">
+            {{#each line_items}}
+            <tr class="hover:bg-slate-50 transition-colors">
+              <td class="px-4 py-4 text-slate-900">{{description}}</td>
+              <td class="text-center px-4 py-4 text-slate-600 font-medium">{{quantity}} {{unit}}</td>
+              <td class="text-right px-4 py-4 text-slate-600 tabular-nums">{{unit_price}} {{../currency}}</td>
+              <td class="text-right px-4 py-4 text-slate-600 font-medium">{{tax_rate}}%</td>
+              <td class="text-right px-4 py-4 font-bold text-slate-900 bg-slate-50 tabular-nums">{{amount}} {{../currency}}</td>
+            </tr>
+            {{/each}}
+          </tbody>
+        </table>
+      </div>
+
+      <div class="flex justify-end mb-10">
+        <div class="w-96">
+          <div class="bg-slate-50 rounded-lg p-6 border border-slate-200">
+            <div class="space-y-3">
+              <div class="flex justify-between items-center text-slate-700">
+                <span class="font-medium">Delsumma:</span>
+                <span class="font-semibold tabular-nums">{{subtotal}} {{currency}}</span>
+              </div>
+              
+              {{#each vat_groups}}
+              <div class="flex justify-between items-center text-slate-600 text-sm">
+                <span>Moms {{rate}}% ({{base}} {{../currency}}):</span>
+                <span class="font-semibold tabular-nums">{{vat}} {{../currency}}</span>
+              </div>
+              {{/each}}
+              
+              <div class="border-t-2 border-blue-600 pt-4 mt-4">
+                <div class="flex justify-between items-center">
+                  <span class="text-xl font-bold text-blue-600">Att betala:</span>
+                  <span class="text-2xl font-bold text-blue-600 tabular-nums">{{total}} {{currency}}</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {{#if payment_reference}}
+      <div class="bg-gradient-to-r from-amber-50 to-yellow-50 border-l-4 border-amber-500 p-6 rounded-r mb-8">
+        <h3 class="text-sm font-bold text-amber-900 uppercase tracking-wider mb-3 flex items-center">
+          <svg class="w-5 h-5 mr-2" fill="currentColor" viewBox="0 0 20 20">
+            <path d="M4 4a2 2 0 00-2 2v1h16V6a2 2 0 00-2-2H4z"/>
+            <path fill-rule="evenodd" d="M18 9H2v5a2 2 0 002 2h12a2 2 0 002-2V9zM4 13a1 1 0 011-1h1a1 1 0 110 2H5a1 1 0 01-1-1zm5-1a1 1 0 100 2h1a1 1 0 100-2H9z" clip-rule="evenodd"/>
+          </svg>
+          Betalningsinformation
+        </h3>
+        <div class="flex items-center justify-between bg-white/60 px-4 py-3 rounded">
+          <span class="text-amber-900 font-semibold">OCR-nummer:</span>
+          <span class="font-mono text-xl font-bold text-amber-900 tracking-wider">{{payment_reference}}</span>
+        </div>
+        <p class="text-sm text-amber-800 mt-3">
+          <strong>Viktigt:</strong> Ange alltid OCR-nummer vid betalning för snabb och korrekt hantering.
+        </p>
+      </div>
+      {{/if}}
+
+      <div class="grid grid-cols-1 gap-6 mb-8">
+        {{#if notes}}
+        <div class="bg-blue-50 border border-blue-200 rounded-lg p-5">
+          <h3 class="text-sm font-bold text-blue-900 uppercase tracking-wider mb-2 flex items-center">
+            <svg class="w-4 h-4 mr-2" fill="currentColor" viewBox="0 0 20 20">
+              <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd"/>
+            </svg>
+            Noteringar
+          </h3>
+          <p class="text-slate-700">{{notes}}</p>
+        </div>
+        {{/if}}
+        
+        {{#if terms}}
+        <div class="bg-slate-50 border border-slate-200 rounded-lg p-5">
+          <h3 class="text-sm font-bold text-slate-700 uppercase tracking-wider mb-2 flex items-center">
+            <svg class="w-4 h-4 mr-2" fill="currentColor" viewBox="0 0 20 20">
+              <path fill-rule="evenodd" d="M4 4a2 2 0 012-2h4.586A2 2 0 0112 2.586L15.414 6A2 2 0 0116 7.414V16a2 2 0 01-2 2H6a2 2 0 01-2-2V4z" clip-rule="evenodd"/>
+            </svg>
+            Betalningsvillkor
+          </h3>
+          <p class="text-slate-700">{{terms}}</p>
+        </div>
+        {{/if}}
+      </div>
+
+      <div class="border-t-2 border-slate-200 pt-6 mt-8">
+        <div class="grid grid-cols-2 gap-6 text-xs text-slate-600">
+          <div>
+            <h4 class="font-bold text-slate-700 mb-2">Betalning sker till:</h4>
+            <p class="font-semibold text-slate-900">{{organization_name}}</p>
+            <p>{{organization_address}}</p>
+            <p>{{organization_postal_code}} {{organization_city}}</p>
+            {{#if organization_municipality}}
+            <p>{{organization_municipality}} kommun</p>
+            {{/if}}
+            {{#if organization_email}}
+            <p class="mt-2">E-post: {{organization_email}}</p>
+            {{/if}}
+            {{#if organization_phone}}
+            <p>Telefon: {{organization_phone}}</p>
+            {{/if}}
+          </div>
+          <div class="text-right">
+            <div class="bg-slate-100 p-4 rounded">
+              <p class="text-slate-700 leading-relaxed">
+                Denna faktura är upprättad enligt <strong>Bokföringslagen (1999:1078)</strong> 
+                och <strong>Mervärdesskattelagen (2023:200)</strong>
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</body>
+</html><!DOCTYPE html>
 <html>
 <head>
   <meta charset="UTF-8">
