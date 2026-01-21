@@ -212,4 +212,85 @@ describe('Client Management', () => {
       cy.get('[data-cy="client-modal"]').should('not.exist')
     })
   })
+
+  describe('Happy Path - Editing a Client', () => {
+    const existingClient = {
+      id: 'existing-client-id',
+      name: 'ACME Corp',
+      email: 'contact@acme.com',
+      phone: '+46 8 123 4567',
+      contact_person: 'Jane Smith',
+      address: 'Kungsgatan 10',
+      city: 'Stockholm',
+      postal_code: '111 43',
+      country: 'Sweden',
+      organization_number: '556789-0123',
+      vat_number: 'SE556789012301',
+      notes: 'Premium customer'
+    }
+
+    beforeEach(() => {
+      cy.intercept('GET', '**/rest/v1/clients*', {
+        statusCode: 200,
+        body: [existingClient]
+      }).as('getClientsWithData')
+
+      cy.intercept('PATCH', '**/rest/v1/clients*', (req) => {
+        req.reply({
+          statusCode: 200,
+          body: [{ ...existingClient, ...req.body }]
+        })
+      }).as('updateClient')
+
+      cy.visit('/clients')
+      cy.wait('@getClientsWithData')
+    })
+
+    it('is expected to open edit modal with prefilled values', () => {
+      cy.get(`[data-cy="edit-client-${existingClient.id}"]`).click()
+      cy.get('[data-cy="client-modal"]').should('be.visible')
+      cy.get('[data-cy="client-modal-title"]').should('contain', 'Redigera')
+
+      // Verify all fields are prefilled
+      cy.get('[data-cy="client-name-input"]').should('have.value', existingClient.name)
+      cy.get('[data-cy="client-email-input"]').should('have.value', existingClient.email)
+      cy.get('[data-cy="client-phone-input"]').should('have.value', existingClient.phone)
+      cy.get('input[name="contact_person"]').should('have.value', existingClient.contact_person)
+      cy.get('input[name="address"]').should('have.value', existingClient.address)
+      cy.get('input[name="city"]').should('have.value', existingClient.city)
+      cy.get('input[name="postal_code"]').should('have.value', existingClient.postal_code)
+      cy.get('input[name="country"]').should('have.value', existingClient.country)
+      cy.get('input[name="organization_number"]').should('have.value', existingClient.organization_number)
+      cy.get('input[name="vat_number"]').should('have.value', existingClient.vat_number)
+      cy.get('textarea[name="notes"]').should('have.value', existingClient.notes)
+    })
+
+    it('is expected to update a client successfully', () => {
+      cy.get(`[data-cy="edit-client-${existingClient.id}"]`).click()
+      cy.get('[data-cy="client-modal"]').should('be.visible')
+
+      // Modify some fields
+      cy.get('[data-cy="client-name-input"]').clear().type('ACME Corporation Updated')
+      cy.get('[data-cy="client-email-input"]').clear().type('new-contact@acme.com')
+      cy.get('[data-cy="save-client-button"]').click()
+
+      cy.wait('@updateClient')
+      cy.get('[data-cy="client-modal"]').should('not.exist')
+    })
+
+    it('is expected to preserve unmodified fields when updating', () => {
+      cy.get(`[data-cy="edit-client-${existingClient.id}"]`).click()
+      cy.get('[data-cy="client-modal"]').should('be.visible')
+
+      // Only change the name
+      cy.get('[data-cy="client-name-input"]').clear().type('ACME New Name')
+      cy.get('[data-cy="save-client-button"]').click()
+
+      cy.wait('@updateClient').its('request.body').should('include', {
+        email: existingClient.email,
+        phone: existingClient.phone,
+        city: existingClient.city
+      })
+    })
+  })
 })

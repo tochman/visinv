@@ -1,29 +1,38 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useDispatch } from 'react-redux';
 import { useTranslation } from 'react-i18next';
 import { createClient, updateClient } from '../../features/clients/clientsSlice';
+
+const getInitialFormData = (client) => ({
+  name: client?.name || '',
+  email: client?.email || '',
+  phone: client?.phone || '',
+  address: client?.address || '',
+  city: client?.city || '',
+  postal_code: client?.postal_code || '',
+  country: client?.country || 'Sweden',
+  organization_number: client?.organization_number || '',
+  vat_number: client?.vat_number || '',
+  contact_person: client?.contact_person || '',
+  notes: client?.notes || '',
+});
 
 export default function ClientModal({ isOpen, onClose, client = null }) {
   const { t } = useTranslation();
   const dispatch = useDispatch();
   const isEditing = !!client;
 
-  const [formData, setFormData] = useState({
-    name: client?.name || '',
-    email: client?.email || '',
-    phone: client?.phone || '',
-    address: client?.address || '',
-    city: client?.city || '',
-    postal_code: client?.postal_code || '',
-    country: client?.country || 'Sweden',
-    organization_number: client?.organization_number || '',
-    vat_number: client?.vat_number || '',
-    contact_person: client?.contact_person || '',
-    notes: client?.notes || '',
-  });
-
+  const [formData, setFormData] = useState(getInitialFormData(client));
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
+
+  // Update form data when client changes (for edit mode)
+  useEffect(() => {
+    if (isOpen) {
+      setFormData(getInitialFormData(client));
+      setError(null);
+    }
+  }, [client, isOpen]);
 
   const handleChange = (e) => {
     setFormData({
