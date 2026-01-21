@@ -31,8 +31,10 @@
 - As a **free user**, in order to **bill my clients**, I would like to **create invoices with multiple line items, tax calculations, and client information**.
 - **Status:** Implemented - Full CRUD with InvoiceModal, line items, tax calculations, status management (draft/sent/paid), 28 Cypress tests
 
-**US-007: Product Catalog (Optional)**
+**US-007: Product Catalog** ✅
 - As a **free user**, in order to **speed up invoice creation**, I would like to **maintain a product/service catalog that I can add to invoices**.
+- **Status:** Implemented - Full CRUD with search, product selection in invoices, 18 Cypress tests
+- **Status:** Implemented - Full CRUD with Products page, product selection in invoice line items, auto-fill description/price/unit, 17 Cypress tests passing
 
 **US-008: Invoice Email Delivery**
 - As a **free user**, in order to **send invoices to my clients**, I would like to **email invoices using Resend integration**.

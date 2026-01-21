@@ -12,6 +12,7 @@ export default function Sidebar() {
     { path: '/', label: t('nav.dashboard'), icon: '📊' },
     { path: '/invoices', label: t('nav.invoices'), icon: '📄' },
     { path: '/clients', label: t('nav.clients'), icon: '👥' },
+    { path: '/products', label: t('nav.products'), icon: '📦' },
     { path: '/templates', label: t('nav.templates'), icon: '🎨', premium: true },
     { path: '/teams', label: t('nav.teams'), icon: '🤝', premium: true },
     { path: '/settings', label: t('nav.settings'), icon: '⚙️' },

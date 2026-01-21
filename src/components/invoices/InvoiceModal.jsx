@@ -3,6 +3,7 @@ import { useDispatch, useSelector } from 'react-redux';
 import { useTranslation } from 'react-i18next';
 import { createInvoice, updateInvoice } from '../../features/invoices/invoicesSlice';
 import { fetchClients } from '../../features/clients/clientsSlice';
+import { fetchProducts } from '../../features/products/productsSlice';
 
 export default function InvoiceModal({ isOpen, onClose, invoice = null }) {
   const { t } = useTranslation();
@@ -10,6 +11,7 @@ export default function InvoiceModal({ isOpen, onClose, invoice = null }) {
   const isEditing = !!invoice;
   
   const clients = useSelector(state => state.clients.items);
+  const products = useSelector(state => state.products.items);
   const prevInvoiceIdRef = useRef();
 
   const [formData, setFormData] = useState({
@@ -58,7 +60,10 @@ export default function InvoiceModal({ isOpen, onClose, invoice = null }) {
     if (isOpen && clients.length === 0) {
       dispatch(fetchClients());
     }
-  }, [isOpen, clients.length, dispatch]);
+    if (isOpen && products.length === 0) {
+      dispatch(fetchProducts());
+    }
+  }, [isOpen, clients.length, products.length, dispatch]);
 
   const handleChange = (e) => {
     setFormData({
@@ -71,6 +76,24 @@ export default function InvoiceModal({ isOpen, onClose, invoice = null }) {
     const newRows = [...rows];
     newRows[index][field] = value;
     setRows(newRows);
+  };
+
+  const handleProductSelect = (index, productId) => {
+    if (!productId) return;
+    
+    const product = products.find(p => p.id === productId);
+    if (product) {
+      const newRows = [...rows];
+      newRows[index] = {
+        ...newRows[index],
+        product_id: product.id,
+        description: product.description || product.name,
+        unit_price: product.unit_price,
+        unit: product.unit,
+        tax_rate: product.tax_rate,
+      };
+      setRows(newRows);
+    }
   };
 
   const addRow = () => {
@@ -304,7 +327,28 @@ export default function InvoiceModal({ isOpen, onClose, invoice = null }) {
 
               <div className="space-y-3" data-cy="line-items-container">
                 {rows.map((row, index) => (
-                  <div key={index} data-cy={`line-item-${index}`} className="grid grid-cols-12 gap-2 p-3 bg-gray-50 dark:bg-gray-700/50 rounded-sm">
+                  <div key={index} data-cy={`line-item-${index}`} className="space-y-2">
+                    {/* Product Selector */}
+                    {products.length > 0 && (
+                      <div className="flex items-center gap-2">
+                        <select
+                          value={row.product_id || ''}
+                          onChange={(e) => handleProductSelect(index, e.target.value)}
+                          data-cy={`product-select-${index}`}
+                          className="flex-1 px-2 py-1 text-sm border border-gray-300 dark:border-gray-600 rounded-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:outline-none focus:ring-1 focus:ring-blue-500"
+                        >
+                          <option value="">-- Select product or enter manually --</option>
+                          {products.map((product) => (
+                            <option key={product.id} value={product.id}>
+                              {product.name} ({product.unit_price} SEK/{product.unit})
+                            </option>
+                          ))}
+                        </select>
+                      </div>
+                    )}
+                    
+                    {/* Line Item Fields */}
+                    <div className="grid grid-cols-12 gap-2 p-3 bg-gray-50 dark:bg-gray-700/50 rounded-sm">
                     {/* Description */}
                     <div className="col-span-12 sm:col-span-4">
                       <input
@@ -377,6 +421,7 @@ export default function InvoiceModal({ isOpen, onClose, invoice = null }) {
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
                         </svg>
                       </button>
+                    </div>
                     </div>
                   </div>
                 ))}
