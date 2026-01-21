@@ -199,6 +199,57 @@
     "manage": "Manage Subscription",
     "invoicesRemaining": "{{count}} invoices remaining"
   },
+  "organization": {
+    "title": "Organization",
+    "create": "Create Organization",
+    "edit": "Edit Organization",
+    "settings": "Organization Settings",
+    "switch": "Switch Organization",
+    "name": "Company Name",
+    "organizationNumber": "Organization Number",
+    "vatNumber": "VAT Registration Number",
+    "address": "Address",
+    "city": "City",
+    "postalCode": "Postal Code",
+    "municipality": "Municipality",
+    "country": "Country",
+    "email": "Email",
+    "phone": "Phone",
+    "website": "Website",
+    "bankAccount": "Bank Account",
+    "bankGiro": "Bankgiro",
+    "plusGiro": "Plusgiro",
+    "bankIban": "IBAN",
+    "bankBic": "BIC/SWIFT",
+    "fSkattApproved": "F-skatt Approved",
+    "invoiceNumberPrefix": "Invoice Number Prefix",
+    "nextInvoiceNumber": "Next Invoice Number",
+    "defaultPaymentTerms": "Default Payment Terms (days)",
+    "defaultCurrency": "Default Currency",
+    "defaultTaxRate": "Default Tax Rate (%)",
+    "logo": "Company Logo",
+    "uploadLogo": "Upload Logo",
+    "members": "Members",
+    "addMember": "Add Member",
+    "role": "Role",
+    "roles": {
+      "owner": "Owner",
+      "admin": "Admin",
+      "member": "Member",
+      "viewer": "Viewer"
+    },
+    "setupWizard": {
+      "title": "Set Up Your Organization",
+      "subtitle": "Let's get your company information configured",
+      "step1": "Basic Information",
+      "step2": "Address & Contact",
+      "step3": "Banking & Tax",
+      "step4": "Invoice Settings",
+      "complete": "Complete Setup"
+    },
+    "noOrganization": "No organization found. Please create one to get started.",
+    "requiredForInvoices": "Organization information is required to create invoices."
+  },
   "common": {
     "save": "Save",
     "saving": "Saving...",
@@ -212,6 +263,11 @@
     "loading": "Loading...",
     "error": "Error",
     "success": "Success",
-    "actions": "Actions"
+    "actions": "Actions",
+    "back": "Back",
+    "next": "Next"
+  },
+  "validation": {
+    "required": "{{field}} is required"
   }
 }

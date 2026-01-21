@@ -2,6 +2,7 @@ import { useEffect } from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
 import { checkSession } from './features/auth/authSlice';
+import { OrganizationProvider } from './contexts/OrganizationContext';
 
 // Layout
 import MainLayout from './components/layout/MainLayout';
@@ -49,38 +50,40 @@ function App() {
   }
 
   return (
-    <Router>
-      <Routes>
-        {/* Auth Routes */}
-        <Route element={<AuthLayout />}>
-          <Route path="/auth/signin" element={<SignIn />} />
-          <Route path="/auth/signup" element={<SignUp />} />
-          <Route path="/auth/callback" element={<AuthCallback />} />
-        </Route>
+    <OrganizationProvider>
+      <Router>
+        <Routes>
+          {/* Auth Routes */}
+          <Route element={<AuthLayout />}>
+            <Route path="/auth/signin" element={<SignIn />} />
+            <Route path="/auth/signup" element={<SignUp />} />
+            <Route path="/auth/callback" element={<AuthCallback />} />
+          </Route>
 
-        {/* Protected Routes */}
-        <Route element={<ProtectedRoute><MainLayout /></ProtectedRoute>}>
-          <Route path="/" element={<Dashboard />} />
-          <Route path="/invoices" element={<Invoices />} />
-          <Route path="/invoices/:id" element={<InvoiceDetail />} />
-          <Route path="/clients" element={<Clients />} />
-          <Route path="/products" element={<Products />} />
-          <Route path="/templates" element={<Templates />} />
-          <Route path="/templates/new" element={<TemplateEditor />} />
-          <Route path="/templates/edit/:id" element={<TemplateEditor />} />
-          <Route path="/teams" element={<Teams />} />
-          <Route path="/settings" element={<Settings />} />
-        </Route>
+          {/* Protected Routes */}
+          <Route element={<ProtectedRoute><MainLayout /></ProtectedRoute>}>
+            <Route path="/" element={<Dashboard />} />
+            <Route path="/invoices" element={<Invoices />} />
+            <Route path="/invoices/:id" element={<InvoiceDetail />} />
+            <Route path="/clients" element={<Clients />} />
+            <Route path="/products" element={<Products />} />
+            <Route path="/templates" element={<Templates />} />
+            <Route path="/templates/new" element={<TemplateEditor />} />
+            <Route path="/templates/edit/:id" element={<TemplateEditor />} />
+            <Route path="/teams" element={<Teams />} />
+            <Route path="/settings" element={<Settings />} />
+          </Route>
 
-        {/* Admin Routes */}
-        <Route element={<AdminRoute><MainLayout /></AdminRoute>}>
-          <Route path="/admin" element={<AdminDashboard />} />
-        </Route>
+          {/* Admin Routes */}
+          <Route element={<AdminRoute><MainLayout /></AdminRoute>}>
+            <Route path="/admin" element={<AdminDashboard />} />
+          </Route>
 
-        {/* Redirect */}
-        <Route path="*" element={<Navigate to="/" replace />} />
-      </Routes>
-    </Router>
+          {/* Redirect */}
+          <Route path="*" element={<Navigate to="/" replace />} />
+        </Routes>
+      </Router>
+    </OrganizationProvider>
   );
 }
 

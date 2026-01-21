@@ -196,6 +196,57 @@
     "manage": "Hantera prenumeration",
     "invoicesRemaining": "{{count}} fakturor kvar"
   },
+  "organization": {
+    "title": "Organisation",
+    "create": "Skapa organisation",
+    "edit": "Redigera organisation",
+    "settings": "Organisationsinställningar",
+    "switch": "Byt organisation",
+    "name": "Företagsnamn",
+    "organizationNumber": "Organisationsnummer",
+    "vatNumber": "Momsregistreringsnummer",
+    "address": "Adress",
+    "city": "Stad",
+    "postalCode": "Postnummer",
+    "municipality": "Kommun",
+    "country": "Land",
+    "email": "E-post",
+    "phone": "Telefon",
+    "website": "Webbplats",
+    "bankAccount": "Bankkonto",
+    "bankGiro": "Bankgiro",
+    "plusGiro": "Plusgiro",
+    "bankIban": "IBAN",
+    "bankBic": "BIC/SWIFT",
+    "fSkattApproved": "Godkänd för F-skatt",
+    "invoiceNumberPrefix": "Fakturanummerprefix",
+    "nextInvoiceNumber": "Nästa fakturanummer",
+    "defaultPaymentTerms": "Standard betalningsvillkor (dagar)",
+    "defaultCurrency": "Standardvaluta",
+    "defaultTaxRate": "Standard momssats (%)",
+    "logo": "Företagslogotyp",
+    "uploadLogo": "Ladda upp logotyp",
+    "members": "Medlemmar",
+    "addMember": "Lägg till medlem",
+    "role": "Roll",
+    "roles": {
+      "owner": "Ägare",
+      "admin": "Administratör",
+      "member": "Medlem",
+      "viewer": "Visare"
+    },
+    "setupWizard": {
+      "title": "Konfigurera din organisation",
+      "subtitle": "Låt oss ställa in din företagsinformation",
+      "step1": "Grundläggande information",
+      "step2": "Adress & kontakt",
+      "step3": "Bank & skatt",
+      "step4": "Fakturainställningar",
+      "complete": "Slutför konfiguration"
+    },
+    "noOrganization": "Ingen organisation hittades. Vänligen skapa en för att komma igång.",
+    "requiredForInvoices": "Organisationsinformation krävs för att skapa fakturor."
+  },
   "common": {
     "save": "Spara",
     "saving": "Sparar...",
@@ -209,6 +260,11 @@
     "loading": "Laddar...",
     "error": "Fel",
     "success": "Lyckades",
-    "actions": "Åtgärder"
+    "actions": "Åtgärder",
+    "back": "Tillbaka",
+    "next": "Nästa"
+  },
+  "validation": {
+    "required": "{{field}} är obligatoriskt"
   }
 }
