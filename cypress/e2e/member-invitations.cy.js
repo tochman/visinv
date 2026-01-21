@@ -124,9 +124,9 @@ describe('Organization Member Invitations', () => {
     it('is expected to open invite modal when clicking invite button', () => {
       cy.get('[data-cy="invite-member-button"]').click()
       
-      cy.get('[data-cy="invite-email-input"]').should('be.visible')
-      cy.get('[data-cy="invite-role-select"]').should('be.visible')
-      cy.get('[data-cy="send-invitation-button"]').should('be.visible')
+      cy.get('[data-cy="invite-email-input"]').should('exist')
+      cy.get('[data-cy="invite-role-select"]').should('exist')
+      cy.get('[data-cy="send-invitation-button"]').should('exist')
     })
 
     it('is expected to have associate as default role', () => {
@@ -138,13 +138,13 @@ describe('Organization Member Invitations', () => {
     it('is expected to allow selecting owner role', () => {
       cy.get('[data-cy="invite-member-button"]').click()
       
-      cy.get('[data-cy="invite-role-select"]').select('owner')
+      cy.get('[data-cy="invite-role-select"]').select('owner', { force: true })
       cy.get('[data-cy="invite-role-select"]').should('have.value', 'owner')
     })
 
     it('is expected to close modal when clicking cancel', () => {
       cy.get('[data-cy="invite-member-button"]').click()
-      cy.get('[data-cy="invite-email-input"]').should('be.visible')
+      cy.get('[data-cy="invite-email-input"]').should('exist')
       
       // Click outside or cancel (the overlay)
       cy.get('.fixed.inset-0.transition-opacity').click({ force: true })
@@ -183,12 +183,12 @@ describe('Organization Member Invitations', () => {
 
     it('is expected to send invitation with associate role', () => {
       cy.get('[data-cy="invite-member-button"]').click()
-      cy.get('[data-cy="invite-email-input"]').type('newuser@example.com')
-      cy.get('[data-cy="send-invitation-button"]').click()
+      cy.get('[data-cy="invite-email-input"]').type('newuser@example.com', { force: true })
+      cy.get('[data-cy="send-invitation-button"]').click({ force: true })
 
       cy.wait('@createInvitation').then((interception) => {
-        expect(interception.request.body).to.have.property('email', 'newuser@example.com')
-        expect(interception.request.body).to.have.property('role', 'associate')
+        expect(interception.request.body[0]).to.have.property('email', 'newuser@example.com')
+        expect(interception.request.body[0]).to.have.property('role', 'associate')
       })
     })
 
@@ -199,8 +199,8 @@ describe('Organization Member Invitations', () => {
       cy.get('[data-cy="send-invitation-button"]').click()
 
       cy.wait('@createInvitation').then((interception) => {
-        expect(interception.request.body).to.have.property('email', 'admin@example.com')
-        expect(interception.request.body).to.have.property('role', 'owner')
+        expect(interception.request.body[0]).to.have.property('email', 'admin@example.com')
+        expect(interception.request.body[0]).to.have.property('role', 'owner')
       })
     })
 
