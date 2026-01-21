@@ -30,6 +30,7 @@
     "number": "Invoice Number",
     "date": "Invoice Date",
     "issueDate": "Issue Date",
+    "deliveryDate": "Delivery Date",
     "dueDate": "Due Date",
     "status": "Status",
     "total": "Total",

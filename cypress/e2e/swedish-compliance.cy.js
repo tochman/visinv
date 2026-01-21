@@ -94,9 +94,8 @@ describe('Swedish Compliance - Mandatory Fields', () => {
     });
 
     it('is expected to have delivery date field', () => {
-      // Delivery date is required per migration but needs to be added to UI
-      // For now just verify other mandatory fields exist
-      cy.get('[data-cy="issue-date-input"]').should('exist');
+      // Delivery date is now added to the invoice form
+      cy.get('[data-cy="delivery-date-input"]').should('exist');
     });
 
     it('is expected to require at least one invoice item', () => {

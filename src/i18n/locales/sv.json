@@ -30,6 +30,7 @@
     "number": "Fakturanummer",
     "date": "Fakturadatum",
     "issueDate": "Utfärdandedatum",
+    "deliveryDate": "Leveransdatum",
     "dueDate": "Förfallodatum",
     "status": "Status",
     "total": "Totalt",

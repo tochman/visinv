@@ -17,6 +17,7 @@ export default function InvoiceModal({ isOpen, onClose, invoice = null }) {
   const [formData, setFormData] = useState({
     client_id: invoice?.client_id || '',
     issue_date: invoice?.issue_date || new Date().toISOString().split('T')[0],
+    delivery_date: invoice?.delivery_date || invoice?.issue_date || new Date().toISOString().split('T')[0],
     due_date: invoice?.due_date || new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
     tax_rate: invoice?.tax_rate || 25,
     currency: invoice?.currency || 'SEK',
@@ -39,6 +40,7 @@ export default function InvoiceModal({ isOpen, onClose, invoice = null }) {
       setFormData({
         client_id: invoice?.client_id || '',
         issue_date: invoice?.issue_date || new Date().toISOString().split('T')[0],
+        delivery_date: invoice?.delivery_date || invoice?.issue_date || new Date().toISOString().split('T')[0],
         due_date: invoice?.due_date || new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
         tax_rate: invoice?.tax_rate || 25,
         currency: invoice?.currency || 'SEK',
@@ -250,6 +252,23 @@ export default function InvoiceModal({ isOpen, onClose, invoice = null }) {
                     onChange={handleChange}
                     data-cy="issue-date-input"
                     required
+                    className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  />
+                </div>
+
+                {/* Delivery Date */}
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                    {t('invoice.deliveryDate')} *
+                  </label>
+                  <input
+                    type="date"
+                    name="delivery_date"
+                    value={formData.delivery_date}
+                    onChange={handleChange}
+                    data-cy="delivery-date-input"
+                    required
+                    max={new Date().toISOString().split('T')[0]}
                     className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
                   />
                 </div>
