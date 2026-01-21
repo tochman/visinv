@@ -383,7 +383,7 @@ export default function InvoiceModal({ isOpen, onClose, invoice = null }) {
                     {/* Line Item Fields */}
                     <div className="grid grid-cols-12 gap-2 p-3 bg-gray-50 dark:bg-gray-700/50 rounded-sm">
                     {/* Description */}
-                    <div className="col-span-12 sm:col-span-4">
+                    <div className="col-span-12 sm:col-span-3">
                       <input
                         type="text"
                         value={row.description}
@@ -395,7 +395,7 @@ export default function InvoiceModal({ isOpen, onClose, invoice = null }) {
                     </div>
 
                     {/* Quantity */}
-                    <div className="col-span-4 sm:col-span-2">
+                    <div className="col-span-3 sm:col-span-1">
                       <input
                         type="number"
                         value={row.quantity}
@@ -409,7 +409,7 @@ export default function InvoiceModal({ isOpen, onClose, invoice = null }) {
                     </div>
 
                     {/* Unit */}
-                    <div className="col-span-4 sm:col-span-2">
+                    <div className="col-span-3 sm:col-span-1">
                       <input
                         type="text"
                         value={row.unit}
@@ -421,7 +421,7 @@ export default function InvoiceModal({ isOpen, onClose, invoice = null }) {
                     </div>
 
                     {/* Unit Price */}
-                    <div className="col-span-4 sm:col-span-2">
+                    <div className="col-span-3 sm:col-span-2">
                       <input
                         type="number"
                         value={row.unit_price}
@@ -432,6 +432,21 @@ export default function InvoiceModal({ isOpen, onClose, invoice = null }) {
                         min="0"
                         className="w-full px-2 py-1 text-sm border border-gray-300 dark:border-gray-600 rounded-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:outline-none focus:ring-1 focus:ring-blue-500"
                       />
+                    </div>
+
+                    {/* VAT Rate */}
+                    <div className="col-span-4 sm:col-span-1">
+                      <select
+                        value={row.tax_rate || formData.tax_rate}
+                        onChange={(e) => handleRowChange(index, 'tax_rate', e.target.value)}
+                        data-cy={`tax-rate-select-${index}`}
+                        className="w-full px-2 py-1 text-sm border border-gray-300 dark:border-gray-600 rounded-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:outline-none focus:ring-1 focus:ring-blue-500"
+                      >
+                        <option value="25">25%</option>
+                        <option value="12">12%</option>
+                        <option value="6">6%</option>
+                        <option value="0">0%</option>
+                      </select>
                     </div>
 
                     {/* Amount */}
@@ -474,7 +489,7 @@ export default function InvoiceModal({ isOpen, onClose, invoice = null }) {
                   {vatGroups.length > 0 && vatGroups.map((group) => (
                     <div key={group.rate} className="flex justify-between text-sm">
                       <span className="text-gray-600 dark:text-gray-400">
-                        {t('invoices.vat')} {group.rate}%:
+                        {t('invoices.vat')} {group.rate}% ({t('invoices.on')} {group.base.toFixed(2)} {formData.currency}):
                       </span>
                       <span className="font-medium text-gray-900 dark:text-white" data-cy={`vat-${group.rate}-display`}>
                         {group.vat.toFixed(2)} {formData.currency}

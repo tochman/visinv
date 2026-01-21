@@ -60,7 +60,7 @@ describe('Product Catalog', () => {
       cy.get('[data-cy="product-description-input"]').type('24/7 premium customer support service')
       cy.get('[data-cy="product-price-input"]').type('2500')
       cy.get('[data-cy="product-unit-select"]').select('month')
-      cy.get('[data-cy="product-tax-rate-input"]').clear().type('12')
+      cy.get('[data-cy="product-tax-rate-select"]').select('12')
       cy.get('[data-cy="product-sku-input"]').type('SUP-PREM-001')
       cy.get('[data-cy="save-product-button"]').click()
 

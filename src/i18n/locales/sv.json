@@ -114,6 +114,7 @@
     "noTemplateAvailable": "Inga mallar tillgängliga. Skapa en mall först.",
     "pdfError": "Kunde inte generera PDF. Försök igen.",
     "vat": "Moms",
+    "on": "på",
     "of": "av"
   },
   "client": {

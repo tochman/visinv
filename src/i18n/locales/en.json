@@ -116,6 +116,7 @@
     "noTemplateAvailable": "No templates available. Please create a template first.",
     "pdfError": "Failed to generate PDF. Please try again.",
     "vat": "VAT",
+    "on": "on",
     "of": "of"
   },
   "client": {

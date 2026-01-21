@@ -100,6 +100,39 @@ Based on Swedish legal requirements (Mervärdesskattelagen, Bokföringslagen, Ak
 
 ---
 
+### US-076: Product Catalog Integration for Invoices
+**As a** user that issues an invoice  
+**I want** to be able to select products from my own organization's catalogue  
+**So that** the VAT rate for each product is accounted for and displayed both on the invoice line and summarized above the total
+
+**Acceptance Criteria:**
+- User can select products from organization's product catalogue when creating invoice
+- Product selection includes:
+  - Product name/description
+  - Pre-defined unit price
+  - Pre-configured VAT rate (25%, 12%, 6%, or 0%)
+- Invoice line items show:
+  - Product description
+  - Quantity
+  - Unit price
+  - VAT rate percentage
+  - Line total (excluding VAT)
+- Invoice summary displays:
+  - Subtotal (excluding VAT)
+  - VAT breakdown by rate (e.g., "Moms 25% (på 1000 SEK): 250 SEK")
+  - Total amount including VAT
+- User can still manually add items not in the catalogue
+- Product VAT rate can be overridden on individual invoice line if needed
+
+**Implementation Notes:**
+- Add product selector/dropdown to InvoiceItemRow component
+- Fetch products from organization's product catalogue
+- Auto-populate price and VAT rate when product selected
+- Update invoice calculations to group VAT by rate
+- Ensure VAT summary appears above total in invoice templates
+
+---
+
 ## Epic: Additional Required Information
 
 ### US-065: Late Payment Interest Terms
