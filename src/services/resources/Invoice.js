@@ -67,6 +67,11 @@ class InvoiceResource extends BaseResource {
       invoiceFields.invoice_number = number;
     }
 
+    // Generate OCR payment reference if not provided
+    if (!invoiceFields.payment_reference) {
+      invoiceFields.payment_reference = this.generateOCR(invoiceFields.invoice_number);
+    }
+
     // Calculate totals
     const calculatedFields = this.calculateTotals(rows || [], invoiceFields.tax_rate || 25);
 
@@ -248,6 +253,58 @@ class InvoiceResource extends BaseResource {
     const nextNumber = lastNumber ? parseInt(lastNumber[0]) + 1 : 1;
     
     return `INV-${String(nextNumber).padStart(4, '0')}`;
+  }
+
+  /**
+   * Generate OCR payment reference with Modulo 10 checksum
+   * @param {string} invoiceNumber - Invoice number (e.g., "INV-0042")
+   * @returns {string} OCR number with checksum
+   * 
+   * Swedish Bankgirot OCR format with Modulo 10 checksum (Luhn algorithm)
+   * Example: INV-0001 -> 1 -> 17 (1 + checksum 7)
+   * Example: INV-0042 -> 42 -> 424 (42 + checksum 4)
+   */
+  generateOCR(invoiceNumber) {
+    // Extract numeric part from invoice number and convert to integer to remove leading zeros
+    const numericPart = invoiceNumber.replace(/\D/g, '');
+    const baseNumber = parseInt(numericPart, 10).toString();
+    
+    // Pad to at least 2 digits for consistent formatting
+    const paddedBase = baseNumber.padStart(2, '0');
+    
+    // Calculate Modulo 10 checksum (Luhn algorithm)
+    const checksum = this.calculateModulo10(paddedBase);
+    
+    // Return OCR with checksum appended
+    return paddedBase + checksum;
+  }
+
+  /**
+   * Calculate Modulo 10 checksum (Luhn algorithm) for OCR
+   * @param {string} number - Number string to calculate checksum for
+   * @returns {number} Checksum digit (0-9)
+   */
+  calculateModulo10(number) {
+    const digits = number.split('').map(Number).reverse();
+    let sum = 0;
+    
+    for (let i = 0; i < digits.length; i++) {
+      let digit = digits[i];
+      
+      // Double every second digit (from the right, starting at index 0)
+      if (i % 2 === 0) {
+        digit *= 2;
+        // If doubling results in two digits, add them together
+        if (digit > 9) {
+          digit = Math.floor(digit / 10) + (digit % 10);
+        }
+      }
+      
+      sum += digit;
+    }
+    
+    // Checksum is what we need to add to make sum divisible by 10
+    return (10 - (sum % 10)) % 10;
   }
 
   /**

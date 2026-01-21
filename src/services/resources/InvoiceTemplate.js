@@ -226,13 +226,21 @@ class InvoiceTemplateResource extends BaseResource {
   </div>
   {{/if}}
 
+  {{#if payment_reference}}
+  <div class="section">
+    <div class="section-title">Betalningsinformation</div>
+    <p><strong>OCR-nummer:</strong> {{payment_reference}}</p>
+    <p>Ange alltid OCR-nummer vid betalning för snabb och korrekt hantering.</p>
+  </div>
+  {{/if}}
+
   <div class="footer">
     <p>Betalning sker till: {{organization_name}}</p>
     <p>Denna faktura är upprättad enligt Bokföringslagen (1999:1078) och Mervärdesskattelagen (2023:200)</p>
   </div>
 </body>
 </html>`,
-        variables: ['invoice_number', 'issue_date', 'delivery_date', 'due_date', 'reference', 'client_name', 'client_address', 'client_city', 'client_postal_code', 'client_country', 'client_email', 'organization_name', 'organization_number', 'organization_vat_number', 'organization_municipality', 'organization_address', 'organization_city', 'organization_postal_code', 'organization_email', 'organization_phone', 'organization_f_skatt_approved', 'line_items', 'subtotal', 'vat_groups', 'total', 'currency', 'notes', 'terms'],
+        variables: ['invoice_number', 'payment_reference', 'issue_date', 'delivery_date', 'due_date', 'reference', 'client_name', 'client_address', 'client_city', 'client_postal_code', 'client_country', 'client_email', 'organization_name', 'organization_number', 'organization_vat_number', 'organization_municipality', 'organization_address', 'organization_city', 'organization_postal_code', 'organization_email', 'organization_phone', 'organization_f_skatt_approved', 'line_items', 'subtotal', 'vat_groups', 'total', 'currency', 'notes', 'terms'],
         is_system: true,
       },
       {
@@ -367,13 +375,21 @@ class InvoiceTemplateResource extends BaseResource {
   </div>
   {{/if}}
 
+  {{#if payment_reference}}
+  <div class="section">
+    <div class="section-title">Betalningsinformation</div>
+    <p><strong>OCR-nummer:</strong> {{payment_reference}}</p>
+    <p>Ange alltid OCR-nummer vid betalning för snabb och korrekt hantering.</p>
+  </div>
+  {{/if}}
+
   <div class="footer">
     <p><strong>{{organization_name}}</strong></p>
     <p>Denna faktura är upprättad i enlighet med Bokföringslagen (1999:1078) och Mervärdesskattelagen (2023:200)</p>
   </div>
 </body>
 </html>`,
-        variables: ['invoice_number', 'issue_date', 'delivery_date', 'due_date', 'reference', 'client_name', 'client_address', 'client_city', 'client_postal_code', 'client_country', 'client_email', 'organization_name', 'organization_number', 'organization_vat_number', 'organization_municipality', 'organization_address', 'organization_city', 'organization_postal_code', 'organization_email', 'organization_phone', 'organization_f_skatt_approved', 'line_items', 'subtotal', 'vat_groups', 'total', 'currency', 'notes', 'terms'],
+        variables: ['invoice_number', 'payment_reference', 'issue_date', 'delivery_date', 'due_date', 'reference', 'client_name', 'client_address', 'client_city', 'client_postal_code', 'client_country', 'client_email', 'organization_name', 'organization_number', 'organization_vat_number', 'organization_municipality', 'organization_address', 'organization_city', 'organization_postal_code', 'organization_email', 'organization_phone', 'organization_f_skatt_approved', 'line_items', 'subtotal', 'vat_groups', 'total', 'currency', 'notes', 'terms'],
         is_system: true,
       },
     ];

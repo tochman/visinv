@@ -21,6 +21,7 @@ export async function generateInvoicePDF(invoice, template, organization) {
   const context = {
     // Invoice details
     invoice_number: invoice.invoice_number,
+    payment_reference: invoice.payment_reference || '',
     issue_date: formatDate(invoice.issue_date),
     due_date: formatDate(invoice.due_date),
     delivery_date: formatDate(invoice.delivery_date),
