@@ -94,30 +94,107 @@ Handlebars.registerHelper('indexPlusOne', function(index) {
 });
 
 /**
+ * Get sample invoice data for template preview
+ * Includes all Swedish-compliant fields for proper template rendering
+ */
+export function getSampleInvoiceData() {
+  return {
+    // Invoice basics
+    invoice_number: 'INV-2024-0042',
+    issue_date: new Date().toISOString().split('T')[0],
+    due_date: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
+    status: 'sent',
+    currency: 'SEK',
+    
+    // Organization details (sender)
+    organization_name: 'Nordic Design Studio AB',
+    organization_address: 'Designvägen 12',
+    organization_postal_code: '114 56',
+    organization_city: 'Stockholm',
+    organization_country: 'Sverige',
+    organization_email: 'faktura@nordicdesign.se',
+    organization_phone: '+46 8 123 45 67',
+    organization_org_number: '556789-0123',
+    organization_vat_number: 'SE556789012301',
+    organization_bankgiro: '123-4567',
+    organization_plusgiro: '12 34 56-7',
+    organization_iban: 'SE45 5000 0000 0583 9825 7466',
+    organization_bic: 'ESSESESS',
+    organization_f_skatt: true,
+    organization_website: 'www.nordicdesign.se',
+    
+    // Client details (recipient)
+    client_name: 'Acme Corporation AB',
+    client_email: 'ekonomi@acme.se',
+    client_address: 'Företagsvägen 88',
+    client_postal_code: '411 05',
+    client_city: 'Göteborg',
+    client_country: 'Sverige',
+    client_org_number: '556123-4567',
+    client_reference: 'Anna Andersson',
+    
+    // Payment details
+    payment_terms: 30,
+    payment_reference: '12345678901234',
+    ocr_number: '12345678901234',
+    your_reference: 'Order #2024-089',
+    our_reference: 'Erik Lindqvist',
+    
+    // Line items (Swedish-compliant with VAT details)
+    line_items: [
+      { 
+        description: 'UX Design Consultation', 
+        quantity: 16, 
+        unit: 'hours',
+        unit_price: 1200, 
+        tax_rate: 25,
+        amount: 19200 
+      },
+      { 
+        description: 'Brand Identity Package', 
+        quantity: 1, 
+        unit: 'st',
+        unit_price: 35000, 
+        tax_rate: 25,
+        amount: 35000 
+      },
+      { 
+        description: 'Project Management', 
+        quantity: 8, 
+        unit: 'hours',
+        unit_price: 950, 
+        tax_rate: 25,
+        amount: 7600 
+      }
+    ],
+    
+    // VAT breakdown by rate
+    vat_groups: [
+      { rate: 25, base: 61800, vat: 15450 }
+    ],
+    
+    // Totals
+    subtotal: 61800,
+    tax_rate: 25,
+    tax_amount: 15450,
+    total: 77250,
+    amount_due: 77250,
+    
+    // Notes and terms
+    notes: 'Betalningsvillkor: 30 dagar netto. Dröjsmålsränta enligt räntelagen.',
+    terms: 'Vid utebliven betalning debiteras påminnelseavgift enligt lag.',
+    
+    // Metadata
+    created_at: new Date().toISOString(),
+    updated_at: new Date().toISOString()
+  };
+}
+
+/**
  * Build template data context from invoice data
  */
 export function buildTemplateContext(invoiceData = {}) {
-  // Sample invoice data for preview
-  const sampleInvoice = {
-    invoice_number: 'INV-0001',
-    client_name: 'Acme Corporation',
-    client_email: 'contact@acme.com',
-    issue_date: new Date().toISOString().split('T')[0],
-    due_date: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
-    status: 'draft',
-    subtotal: 10000,
-    tax_rate: 25,
-    tax_amount: 2500,
-    total: 12500,
-    currency: 'SEK',
-    notes: 'Payment due within 30 days',
-    line_items: [
-      { description: 'Consulting Services', quantity: 10, unit_price: 800, amount: 8000 },
-      { description: 'Project Management', quantity: 5, unit_price: 400, amount: 2000 }
-    ]
-  };
-  
-  return invoiceData && Object.keys(invoiceData).length > 0 ? invoiceData : sampleInvoice;
+  return invoiceData && Object.keys(invoiceData).length > 0 ? invoiceData : getSampleInvoiceData();
 }
 
 /**

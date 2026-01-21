@@ -293,7 +293,8 @@
     "name": "Namn",
     "remove": "Ta bort",
     "confirmDelete": "Är du säker på att du vill ta bort detta?",
-    "days": "dagar"
+    "days": "dagar",
+    "preview": "Förhandsgranska"
   },
   "validation": {
     "required": "{{field}} är obligatoriskt"

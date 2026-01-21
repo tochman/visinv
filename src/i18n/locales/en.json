@@ -296,7 +296,8 @@
     "name": "Name",
     "remove": "Remove",
     "confirmDelete": "Are you sure you want to delete this?",
-    "days": "days"
+    "days": "days",
+    "preview": "Preview"
   },
   "validation": {
     "required": "{{field}} is required"

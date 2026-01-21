@@ -7,6 +7,7 @@ import {
   deleteTemplate,
   cloneTemplate 
 } from '../features/invoiceTemplates/invoiceTemplatesSlice';
+import TemplatePreview, { TemplatePreviewModal } from '../components/templates/TemplatePreview';
 
 export default function InvoiceTemplates() {
   const { t } = useTranslation();
@@ -17,6 +18,7 @@ export default function InvoiceTemplates() {
 
   const [searchTerm, setSearchTerm] = useState('');
   const [deleteConfirm, setDeleteConfirm] = useState(null);
+  const [previewTemplate, setPreviewTemplate] = useState(null);
 
   useEffect(() => {
     if (user) {
@@ -119,29 +121,49 @@ export default function InvoiceTemplates() {
               <h2 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
                 {t('invoiceTemplates.systemTemplate')}
               </h2>
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
                 {systemTemplates.map(template => (
                   <div
                     key={template.id}
                     data-cy={`template-${template.id}`}
-                    className="p-4 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-sm"
+                    className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-sm overflow-hidden hover:shadow-lg transition-shadow"
                   >
-                    <div className="flex items-start justify-between mb-2">
-                      <h3 className="font-medium text-gray-900 dark:text-white">
-                        {template.name}
-                      </h3>
-                      <span className="px-2 py-1 text-xs bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-200 rounded">
-                        System
-                      </span>
+                    {/* Preview thumbnail */}
+                    <div 
+                      className="flex justify-center p-3 bg-gray-50 dark:bg-gray-900 cursor-pointer"
+                      onClick={() => setPreviewTemplate(template)}
+                    >
+                      <TemplatePreview 
+                        template={template} 
+                        scale={0.22}
+                      />
                     </div>
-                    <div className="flex gap-2 mt-4">
-                      <button
-                        onClick={() => handleClone(template)}
-                        data-cy={`clone-template-${template.id}`}
-                        className="flex-1 px-3 py-2 text-sm text-blue-600 hover:text-blue-700 dark:text-blue-400 border border-blue-200 dark:border-blue-700 rounded-sm hover:bg-blue-50 dark:hover:bg-blue-900/20"
-                      >
-                        {t('invoiceTemplates.clone')}
-                      </button>
+                    
+                    {/* Template info */}
+                    <div className="p-4">
+                      <div className="flex items-start justify-between mb-3">
+                        <h3 className="font-medium text-gray-900 dark:text-white truncate pr-2">
+                          {template.name}
+                        </h3>
+                        <span className="px-2 py-1 text-xs bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-200 rounded flex-shrink-0">
+                          System
+                        </span>
+                      </div>
+                      <div className="flex gap-2">
+                        <button
+                          onClick={() => setPreviewTemplate(template)}
+                          className="flex-1 px-3 py-2 text-sm text-gray-600 hover:text-gray-700 dark:text-gray-400 border border-gray-200 dark:border-gray-600 rounded-sm hover:bg-gray-50 dark:hover:bg-gray-700"
+                        >
+                          {t('common.preview') || 'Preview'}
+                        </button>
+                        <button
+                          onClick={() => handleClone(template)}
+                          data-cy={`clone-template-${template.id}`}
+                          className="flex-1 px-3 py-2 text-sm text-blue-600 hover:text-blue-700 dark:text-blue-400 border border-blue-200 dark:border-blue-700 rounded-sm hover:bg-blue-50 dark:hover:bg-blue-900/20"
+                        >
+                          {t('invoiceTemplates.clone')}
+                        </button>
+                      </div>
                     </div>
                   </div>
                 ))}
@@ -154,36 +176,56 @@ export default function InvoiceTemplates() {
               <h2 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
                 {t('invoiceTemplates.userTemplate')}
               </h2>
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
                 {userTemplates.map(template => (
                   <div
                     key={template.id}
                     data-cy={`template-${template.id}`}
-                    className="p-4 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-sm"
+                    className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-sm overflow-hidden hover:shadow-lg transition-shadow"
                   >
-                    <div className="flex items-start justify-between mb-2">
-                      <h3 className="font-medium text-gray-900 dark:text-white">
-                        {template.name}
-                      </h3>
-                      <span className="px-2 py-1 text-xs bg-green-100 dark:bg-green-900 text-green-800 dark:text-green-200 rounded">
-                        Custom
-                      </span>
+                    {/* Preview thumbnail */}
+                    <div 
+                      className="flex justify-center p-3 bg-gray-50 dark:bg-gray-900 cursor-pointer"
+                      onClick={() => setPreviewTemplate(template)}
+                    >
+                      <TemplatePreview 
+                        template={template} 
+                        scale={0.22}
+                      />
                     </div>
-                    <div className="flex gap-2 mt-4">
-                      <button
-                        onClick={() => handleEdit(template)}
-                        data-cy={`edit-template-${template.id}`}
-                        className="flex-1 px-3 py-2 text-sm text-blue-600 hover:text-blue-700 dark:text-blue-400 border border-blue-200 dark:border-blue-700 rounded-sm hover:bg-blue-50 dark:hover:bg-blue-900/20"
-                      >
-                        {t('common.edit')}
-                      </button>
-                      <button
-                        onClick={() => setDeleteConfirm(template.id)}
-                        data-cy={`delete-template-${template.id}`}
-                        className="px-3 py-2 text-sm text-red-600 hover:text-red-700 dark:text-red-400 border border-red-200 dark:border-red-700 rounded-sm hover:bg-red-50 dark:hover:bg-red-900/20"
-                      >
-                        {t('common.delete')}
-                      </button>
+                    
+                    {/* Template info */}
+                    <div className="p-4">
+                      <div className="flex items-start justify-between mb-3">
+                        <h3 className="font-medium text-gray-900 dark:text-white truncate pr-2">
+                          {template.name}
+                        </h3>
+                        <span className="px-2 py-1 text-xs bg-green-100 dark:bg-green-900 text-green-800 dark:text-green-200 rounded flex-shrink-0">
+                          Custom
+                        </span>
+                      </div>
+                      <div className="flex gap-2">
+                        <button
+                          onClick={() => setPreviewTemplate(template)}
+                          className="px-3 py-2 text-sm text-gray-600 hover:text-gray-700 dark:text-gray-400 border border-gray-200 dark:border-gray-600 rounded-sm hover:bg-gray-50 dark:hover:bg-gray-700"
+                        >
+                          {t('common.preview') || 'Preview'}
+                        </button>
+                        <button
+                          onClick={() => handleEdit(template)}
+                          data-cy={`edit-template-${template.id}`}
+                          className="flex-1 px-3 py-2 text-sm text-blue-600 hover:text-blue-700 dark:text-blue-400 border border-blue-200 dark:border-blue-700 rounded-sm hover:bg-blue-50 dark:hover:bg-blue-900/20"
+                        >
+                          {t('common.edit')}
+                        </button>
+                        <button
+                          onClick={() => setDeleteConfirm(template.id)}
+                          data-cy={`delete-template-${template.id}`}
+                          className="px-3 py-2 text-sm text-red-600 hover:text-red-700 dark:text-red-400 border border-red-200 dark:border-red-700 rounded-sm hover:bg-red-50 dark:hover:bg-red-900/20"
+                        >
+                          {t('common.delete')}
+                        </button>
+                      </div>
                     </div>
                   </div>
                 ))}
@@ -225,6 +267,13 @@ export default function InvoiceTemplates() {
           </div>
         </div>
       )}
+
+      {/* Template Preview Modal */}
+      <TemplatePreviewModal
+        template={previewTemplate}
+        isOpen={!!previewTemplate}
+        onClose={() => setPreviewTemplate(null)}
+      />
     </div>
   );
 }
