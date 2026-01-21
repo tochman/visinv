@@ -166,7 +166,6 @@ export default function Settings() {
                       onChange={handleChange}
                       className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white"
                       data-cy="org-name"
-                      required
                     />
                     {validationErrors.name && (
                       <p className="mt-1 text-sm text-red-600 dark:text-red-400" data-cy="error-org-name">{validationErrors.name}</p>
@@ -190,7 +189,6 @@ export default function Settings() {
                       onChange={handleChange}
                       className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white"
                       data-cy="org-number"
-                      required
                     />
                     {validationErrors.organization_number && (
                       <p className="mt-1 text-sm text-red-600 dark:text-red-400" data-cy="error-org-number">{validationErrors.organization_number}</p>
@@ -216,7 +214,6 @@ export default function Settings() {
                       onChange={handleChange}
                       className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white"
                       data-cy="org-vat"
-                      required
                     />
                     {validationErrors.vat_number && (
                       <p className="mt-1 text-sm text-red-600 dark:text-red-400" data-cy="error-vat-number">{validationErrors.vat_number}</p>
@@ -250,7 +247,6 @@ export default function Settings() {
                       onChange={handleChange}
                       className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white"
                       data-cy="org-address"
-                      required
                     />
                     {validationErrors.address && (
                       <p className="mt-1 text-sm text-red-600 dark:text-red-400" data-cy="error-address">{validationErrors.address}</p>
@@ -276,7 +272,6 @@ export default function Settings() {
                       onChange={handleChange}
                       className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white"
                       data-cy="org-city"
-                      required
                     />
                     {validationErrors.city && (
                       <p className="mt-1 text-sm text-red-600 dark:text-red-400" data-cy="error-city">{validationErrors.city}</p>
@@ -300,7 +295,6 @@ export default function Settings() {
                       onChange={handleChange}
                       className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white"
                       data-cy="org-postal-code"
-                      required
                     />
                     {validationErrors.postal_code && (
                       <p className="mt-1 text-sm text-red-600 dark:text-red-400" data-cy="error-postal-code">{validationErrors.postal_code}</p>
@@ -324,7 +318,6 @@ export default function Settings() {
                       onChange={handleChange}
                       className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white"
                       data-cy="org-municipality"
-                      required
                     />
                     {validationErrors.municipality && (
                       <p className="mt-1 text-sm text-red-600 dark:text-red-400" data-cy="error-municipality">{validationErrors.municipality}</p>

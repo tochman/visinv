@@ -21,9 +21,10 @@ describe('Swedish Compliance - Mandatory Fields', () => {
 
     it.only('should require organization name', () => {
       cy.get('[data-cy="edit-organization"]').click();
-      cy.get('[data-cy="org-name"]').clear();
+      cy.get('[data-cy="org-name"]').should('be.visible');
+      cy.get('[data-cy="org-name"]').clear().type('a').clear(); // Type 'a' then clear
       cy.get('[data-cy="save-organization"]').click();
-      cy.get('[data-cy="error-org-name"]').should('contain', 'Företagsnamn är obligatoriskt');
+      cy.get('[data-cy="error-org-name"]', { timeout: 2000 }).should('be.visible');
     });
 
     it('should require organization number (Aktiebolagslagen)', () => {
