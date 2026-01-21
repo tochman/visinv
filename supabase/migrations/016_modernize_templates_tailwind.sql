@@ -2,6 +2,18 @@
 -- Updates Modern and Classic templates to use Tailwind utility classes
 -- Provides professional, responsive design without custom CSS
 
+-- Create invoice_templates table if it doesn't exist (in case migrations were run out of order)
+CREATE TABLE IF NOT EXISTS invoice_templates (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  user_id UUID REFERENCES auth.users(id) ON DELETE CASCADE,
+  name TEXT NOT NULL,
+  content TEXT NOT NULL,
+  variables TEXT[],
+  is_system BOOLEAN DEFAULT FALSE,
+  created_at TIMESTAMPTZ DEFAULT NOW(),
+  updated_at TIMESTAMPTZ DEFAULT NOW()
+);
+
 -- Delete existing system templates
 DELETE FROM invoice_templates WHERE is_system = true;
 
