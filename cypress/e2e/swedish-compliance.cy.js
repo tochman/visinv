@@ -219,23 +219,45 @@ describe('Swedish Compliance - Mandatory Fields', () => {
     });
   });
 
-  describe.only('US-067: F-skatt Display', () => {
+  describe.only('US-067: F-skatt Display - LEGAL REQUIREMENT', () => {
     it('should show F-skatt status in organization settings', () => {
       cy.visit('/settings');
       cy.get('[data-cy="org-f-skatt-approved"]').should('exist');
     });
 
-    it('should have F-skatt field available for editing', () => {
+    it('should have F-skatt checkbox available for editing', () => {
       cy.visit('/settings');
       cy.get('[data-cy="edit-organization"]').click();
-      cy.get('[data-cy="org-f-skatt-approved"]').should('exist');
+      
+      // Verify the F-skatt checkbox exists and can be interacted with
+      cy.get('input[name="f_skatt_approved"]').should('exist');
+      cy.get('input[name="f_skatt_approved"]').should('have.attr', 'type', 'checkbox');
     });
 
-    it('should show F-skatt checkbox in form', () => {
+    it('should allow toggling F-skatt checkbox', () => {
       cy.visit('/settings');
       cy.get('[data-cy="edit-organization"]').click();
-      // Verify the checkbox input exists
+      
+      // Get initial state
+      cy.get('input[name="f_skatt_approved"]').then($checkbox => {
+        const wasChecked = $checkbox.prop('checked');
+        
+        // Toggle it
+        cy.get('input[name="f_skatt_approved"]').click({ force: true });
+        
+        // Verify it changed
+        cy.get('input[name="f_skatt_approved"]').should(wasChecked ? 'not.be.checked' : 'be.checked');
+      });
+    });
+
+    it('should include F-skatt in organization form structure', () => {
+      cy.visit('/settings');
+      cy.get('[data-cy="edit-organization"]').click();
+      
+      // Verify F-skatt field is part of the organization settings
       cy.get('input[name="f_skatt_approved"]').should('exist');
+      // Should have a label or text explaining what it is
+      cy.contains(/f-skatt/i).should('exist');
     });
   });
 
