@@ -131,11 +131,17 @@ export default function Settings() {
         <div className="mb-6 p-4 bg-red-100 dark:bg-red-900/30 border border-red-400 dark:border-red-700 text-red-700 dark:text-red-400 rounded">
           {error}
         </div>
-      )successMessage && (
+      )}
+      
+      {successMessage && (
         <div className="mb-6 p-4 bg-green-100 dark:bg-green-900/30 border border-green-400 dark:border-green-700 text-green-700 dark:text-green-400 rounded" data-cy="success-message">
-          {successMessage}ationErrors).length && !isEditing && formData.name && (
+          {successMessage}
+        </div>
+      )}
+      
+      {!Object.keys(validationErrors).length && !isEditing && formData.name && (
         <div className="mb-6 p-4 bg-green-100 dark:bg-green-900/30 border border-green-400 dark:border-green-700 text-green-700 dark:text-green-400 rounded" data-cy="success-message">
-          Organisationen har sparad
+          Organisationen har sparats
         </div>
       )}
 

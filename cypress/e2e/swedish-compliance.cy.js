@@ -14,12 +14,12 @@ describe('Swedish Compliance - Mandatory Fields', () => {
     cy.login();
   });
 
-  describe('US-061: Organization Mandatory Fields', () => {
+  describe.only('US-061: Organization Mandatory Fields', () => {
     beforeEach(() => {
       cy.visit('/settings');
     });
 
-    it('should require organization name', () => {
+    it.only('should require organization name', () => {
       cy.get('[data-cy="edit-organization"]').click();
       cy.get('[data-cy="org-name"]').clear();
       cy.get('[data-cy="save-organization"]').click();
