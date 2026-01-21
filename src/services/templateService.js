@@ -73,6 +73,26 @@ Handlebars.registerHelper('json', function(context) {
   return JSON.stringify(context, null, 2);
 });
 
+// Currency formatting helper
+Handlebars.registerHelper('formatCurrency', function(amount, currency = 'SEK') {
+  if (amount === null || amount === undefined) return '';
+  const num = parseFloat(amount);
+  if (isNaN(num)) return '';
+  
+  // Format with Swedish locale by default
+  return new Intl.NumberFormat('sv-SE', {
+    style: 'currency',
+    currency: typeof currency === 'string' ? currency : 'SEK',
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2
+  }).format(num);
+});
+
+// Index helper for loops (1-based) - use as {{indexPlusOne @index}}
+Handlebars.registerHelper('indexPlusOne', function(index) {
+  return index + 1;
+});
+
 /**
  * Build template data context from invoice data
  */

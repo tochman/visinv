@@ -658,7 +658,7 @@ VALUES
       <tbody>
         {{#each items}}
         <tr>
-          <td class="item-number">{{@index_plus_one}}</td>
+          <td class="item-number">{{indexPlusOne @index}}</td>
           <td>
             <div class="item-name">{{name}}</div>
             {{#if description}}
