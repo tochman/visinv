@@ -1,5 +1,4 @@
 import Handlebars from 'handlebars';
-import html2pdf from 'html2pdf.js';
 import { supabase } from './supabase';
 
 /**
@@ -119,6 +118,7 @@ export function renderTemplate(templateContent, context) {
  * Expects a complete HTML document with styling already included
  */
 export async function exportToPDF(html, filename = 'report.pdf') {
+  const html2pdf = (await import('html2pdf.js')).default;
   // Helper to inline computed colors as rgb() values to avoid unsupported color
   // functions (e.g. oklch) used by Tailwind v4 color tokens. html2canvas
   // cannot parse these, so we convert computed styles to rgb before rendering.
