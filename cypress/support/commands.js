@@ -86,6 +86,7 @@ Cypress.Commands.add('login', (userType = 'user', options = {}) => {
     }
 
     const organizationToUse = options.customOrganization || defaultOrganization
+    const roleToUse = options.customOrganization?.role || 'owner'
 
     cy.intercept('GET', '**/rest/v1/organization_members*', {
       statusCode: 200,
@@ -93,7 +94,7 @@ Cypress.Commands.add('login', (userType = 'user', options = {}) => {
         id: 'test-org-member-id',
         user_id: userData.id,
         organization_id: organizationToUse.id,
-        role: 'owner',
+        role: roleToUse,
         is_default: true,
         joined_at: new Date().toISOString(),
         organizations: organizationToUse

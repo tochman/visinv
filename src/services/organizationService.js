@@ -361,6 +361,137 @@ const organizationService = {
 
     return { error };
   },
+
+  // ============================================
+  // INVITATION METHODS
+  // ============================================
+
+  /**
+   * Create an invitation to join an organization
+   */
+  async createInvitation(organizationId, email, role = 'associate') {
+    if (!supabase) {
+      return { data: null, error: { message: 'Supabase not configured.' } };
+    }
+
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) {
+      return { data: null, error: { message: 'Not authenticated.' } };
+    }
+
+    const { data, error } = await supabase
+      .from('organization_invitations')
+      .insert([{
+        organization_id: organizationId,
+        email: email.toLowerCase().trim(),
+        role,
+        invited_by: user.id,
+      }])
+      .select()
+      .single();
+
+    return { data, error };
+  },
+
+  /**
+   * Get all pending invitations for an organization
+   */
+  async getInvitations(organizationId) {
+    if (!supabase) {
+      return { data: null, error: { message: 'Supabase not configured.' } };
+    }
+
+    const { data, error } = await supabase
+      .from('organization_invitations')
+      .select(`
+        *,
+        organizations(name),
+        inviter:profiles!invited_by(full_name, email)
+      `)
+      .eq('organization_id', organizationId)
+      .gt('expires_at', new Date().toISOString())
+      .order('created_at', { ascending: false });
+
+    return { data, error };
+  },
+
+  /**
+   * Delete/cancel an invitation
+   */
+  async deleteInvitation(invitationId) {
+    if (!supabase) {
+      return { error: { message: 'Supabase not configured.' } };
+    }
+
+    const { error } = await supabase
+      .from('organization_invitations')
+      .delete()
+      .eq('id', invitationId);
+
+    return { error };
+  },
+
+  /**
+   * Get invitation by token (for accepting)
+   */
+  async getInvitationByToken(token) {
+    if (!supabase) {
+      return { data: null, error: { message: 'Supabase not configured.' } };
+    }
+
+    const { data, error } = await supabase
+      .from('organization_invitations')
+      .select(`
+        *,
+        organizations(id, name)
+      `)
+      .eq('token', token)
+      .gt('expires_at', new Date().toISOString())
+      .single();
+
+    return { data, error };
+  },
+
+  /**
+   * Accept an invitation and add user to organization
+   */
+  async acceptInvitation(token) {
+    if (!supabase) {
+      return { data: null, error: { message: 'Supabase not configured.' } };
+    }
+
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) {
+      return { data: null, error: { message: 'Not authenticated.' } };
+    }
+
+    // Get the invitation
+    const { data: invitation, error: invError } = await this.getInvitationByToken(token);
+    if (invError || !invitation) {
+      return { data: null, error: invError || { message: 'Invalid or expired invitation.' } };
+    }
+
+    // Check if email matches
+    if (invitation.email.toLowerCase() !== user.email?.toLowerCase()) {
+      return { data: null, error: { message: 'This invitation was sent to a different email address.' } };
+    }
+
+    // Add user to organization
+    const { data: membership, error: memberError } = await this.addMember(
+      invitation.organization_id,
+      user.id,
+      invitation.role
+    );
+
+    if (memberError) {
+      return { data: null, error: memberError };
+    }
+
+    // Delete the invitation
+    await this.deleteInvitation(invitation.id);
+
+    return { data: membership, error: null };
+  },
 };
 
 export default organizationService;

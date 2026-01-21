@@ -36,11 +36,15 @@
 - As an **organization**, in order to **maintain proper Swedish accounting compliance**, I would like to **have invoice numbers in unbroken sequence at organization level, shared by all users in the organization**.
 - **Technical:** Invoice numbers scoped to organization_id, not user_id
 
-**US-056: Organization Member Invitations**
-- As an **organization owner**, in order to **collaborate with colleagues**, I would like to **invite users to join my organization via email**.
+**US-056: Organization Member Invitations** 🔄
+- As an **organization owner**, in order to **allow my colleagues to use the application**, I would like to **invite them to my organization via email and choose their role ("owner" or "associate")**.
+- **Roles:**
+  - **Owner:** Full administrative access, can invite/remove members, manage organization settings
+  - **Associate:** Standard access to create invoices, clients, products within the organization
+- **Status:** In Progress - Database schema supports roles via organization_members table
 
 **US-057: Organization Member Management**
-- As an **organization owner**, in order to **control access**, I would like to **view all organization members, manage their roles (owner/admin/member), and remove users**.
+- As an **organization owner**, in order to **control access**, I would like to **view all organization members, manage their roles (owner/associate), and remove users**.
 
 **US-058: Multi-Organization Support**
 - As a **user**, in order to **work with multiple companies**, I would like to **belong to multiple organizations and switch between them**.

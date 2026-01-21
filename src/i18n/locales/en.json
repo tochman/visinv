@@ -236,9 +236,25 @@
     "role": "Role",
     "roles": {
       "owner": "Owner",
-      "admin": "Admin",
-      "member": "Member",
-      "viewer": "Viewer"
+      "associate": "Associate"
+    },
+    "invitations": {
+      "title": "Pending Invitations",
+      "invite": "Invite Member",
+      "inviteNew": "Invite New Member",
+      "email": "Email Address",
+      "role": "Role",
+      "send": "Send Invitation",
+      "cancel": "Cancel Invitation",
+      "sent": "Invitation sent successfully",
+      "deleted": "Invitation cancelled",
+      "expired": "Expired",
+      "pending": "Pending",
+      "noInvitations": "No pending invitations",
+      "roleDescription": {
+        "owner": "Full access to manage organization, members, and all settings",
+        "associate": "Can create invoices, clients, and products"
+      }
     },
     "setupWizard": {
       "title": "Set Up Your Organization",
@@ -250,6 +266,8 @@
       "complete": "Complete Setup"
     },
     "noOrganization": "No organization found. Please create one to get started.",
+    "noMembers": "No members found.",
+    "saved": "Organization saved successfully.",
     "requiredForInvoices": "Organization information is required to create invoices."
   },
   "common": {
@@ -267,7 +285,11 @@
     "success": "Success",
     "actions": "Actions",
     "back": "Back",
-    "next": "Next"
+    "next": "Next",
+    "name": "Name",
+    "remove": "Remove",
+    "confirmDelete": "Are you sure you want to delete this?",
+    "days": "days"
   },
   "validation": {
     "required": "{{field}} is required"

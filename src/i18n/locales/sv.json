@@ -233,9 +233,25 @@
     "role": "Roll",
     "roles": {
       "owner": "Ägare",
-      "admin": "Administratör",
-      "member": "Medlem",
-      "viewer": "Visare"
+      "associate": "Medarbetare"
+    },
+    "invitations": {
+      "title": "Väntande inbjudningar",
+      "invite": "Bjud in medlem",
+      "inviteNew": "Bjud in ny medlem",
+      "email": "E-postadress",
+      "role": "Roll",
+      "send": "Skicka inbjudan",
+      "cancel": "Avbryt inbjudan",
+      "sent": "Inbjudan skickad",
+      "deleted": "Inbjudan avbruten",
+      "expired": "Utgången",
+      "pending": "Väntande",
+      "noInvitations": "Inga väntande inbjudningar",
+      "roleDescription": {
+        "owner": "Full åtkomst att hantera organisation, medlemmar och alla inställningar",
+        "associate": "Kan skapa fakturor, kunder och produkter"
+      }
     },
     "setupWizard": {
       "title": "Konfigurera din organisation",
@@ -247,6 +263,8 @@
       "complete": "Slutför konfiguration"
     },
     "noOrganization": "Ingen organisation hittades. Vänligen skapa en för att komma igång.",
+    "noMembers": "Inga medlemmar hittades.",
+    "saved": "Organisationen har sparats.",
     "requiredForInvoices": "Organisationsinformation krävs för att skapa fakturor."
   },
   "common": {
@@ -264,7 +282,11 @@
     "success": "Lyckades",
     "actions": "Åtgärder",
     "back": "Tillbaka",
-    "next": "Nästa"
+    "next": "Nästa",
+    "name": "Namn",
+    "remove": "Ta bort",
+    "confirmDelete": "Är du säker på att du vill ta bort detta?",
+    "days": "dagar"
   },
   "validation": {
     "required": "{{field}} är obligatoriskt"
