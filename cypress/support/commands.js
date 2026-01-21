@@ -22,7 +22,7 @@ const users = {
   visitor: null
 }
 
-Cypress.Commands.add('login', (userType = 'user') => {
+Cypress.Commands.add('login', (userType = 'user', options = {}) => {
   const userData = users[userType]
   if (userData === undefined) {
     throw new Error(`Unknown user type: ${userType}. Use: admin, user, premium_user, or visitor`)
@@ -68,32 +68,38 @@ Cypress.Commands.add('login', (userType = 'user') => {
     body: [userData.profile]
   }).as('getProfile')
 
-  // Mock organization data
-  cy.intercept('GET', '**/rest/v1/organization_members*', {
-    statusCode: 200,
-    body: [{
-      id: 'test-org-member-id',
-      user_id: userData.id,
-      organization_id: 'test-org-id',
-      role: 'owner',
-      is_default: true,
-      joined_at: new Date().toISOString(),
-      organizations: {
-        id: 'test-org-id',
-        name: 'Test Organization',
-        organization_number: '',
-        vat_number: '',
-        municipality: '',
-        address: '',
-        city: '',
-        postal_code: '',
-        email: '',
-        created_by: userData.id,
-        created_at: new Date().toISOString(),
-        updated_at: new Date().toISOString()
-      }
-    }]
-  }).as('getOrganizations')
+  // Mock organization data - can be overridden by passing customOrganization in options
+  if (!options.skipOrgMock) {
+    const defaultOrganization = {
+      id: 'test-org-id',
+      name: 'Test Organization',
+      organization_number: '',
+      vat_number: '',
+      municipality: '',
+      address: '',
+      city: '',
+      postal_code: '',
+      email: '',
+      created_by: userData.id,
+      created_at: new Date().toISOString(),
+      updated_at: new Date().toISOString()
+    }
+
+    const organizationToUse = options.customOrganization || defaultOrganization
+
+    cy.intercept('GET', '**/rest/v1/organization_members*', {
+      statusCode: 200,
+      body: [{
+        id: 'test-org-member-id',
+        user_id: userData.id,
+        organization_id: organizationToUse.id,
+        role: 'owner',
+        is_default: true,
+        joined_at: new Date().toISOString(),
+        organizations: organizationToUse
+      }]
+    }).as('getOrganizations')
+  }
 
   cy.visit('/', {
     onBeforeLoad(win) {
