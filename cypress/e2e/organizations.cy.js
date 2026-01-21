@@ -1,38 +1,45 @@
+/// <reference types="cypress" />
+
 describe('Organization Management', () => {
   beforeEach(() => {
-    cy.login('user')
+    // Mock auth user
+    cy.intercept('GET', '**/auth/v1/user*', {
+      statusCode: 200,
+      body: { 
+        user: { 
+          id: 'test-user-id', 
+          email: 'test@example.com' 
+        }
+      }
+    }).as('getUser')
+
+    // Mock empty organizations list
+    cy.intercept('GET', '**/rest/v1/organizations*', {
+      statusCode: 200,
+      body: []
+    }).as('getOrganizations')
+
+    cy.intercept('POST', '**/rest/v1/organizations*', (req) => {
+      req.reply({
+        statusCode: 201,
+        body: [{ 
+          id: 'new-org-id', 
+          ...req.body[0],
+          created_at: new Date().toISOString(),
+          updated_at: new Date().toISOString()
+        }]
+      })
+    }).as('createOrganization')
+
+    cy.visit('/')
   })
 
-  // TODO: These tests will pass once organization UI is integrated
-  describe.skip('Organization Setup Wizard', () => {
+  describe('Organization Setup Wizard', () => {
     it('is expected to show setup wizard for new users without organization', () => {
-      // Intercept organization check to return empty
-      cy.intercept('GET', '**/organizations*', { data: [] }).as('getOrganizations')
-      
-      cy.visit('/')
-      cy.wait('@getOrganizations')
-      
-      // Should show setup wizard
       cy.contains('Set Up Your Organization').should('be.visible')
     })
 
-    it('is expected to create organization through 4-step wizard', () => {
-      cy.intercept('POST', '**/organizations', {
-        statusCode: 201,
-        body: {
-          data: {
-            id: '123e4567-e89b-12d3-a456-426614174000',
-            name: 'Acme AB',
-            organization_number: '556677-8899',
-            vat_number: 'SE556677889901',
-            created_at: new Date().toISOString()
-          }
-        }
-      }).as('createOrganization')
-
-      // Open wizard (assuming it's triggered somewhere)
-      cy.get('[data-cy="setup-organization-button"]').click()
-
+    it.skip('is expected to create organization through 4-step wizard', () => {
       // Step 1: Basic Information
       cy.get('[data-cy="org-name-input"]').type('Acme AB')
       cy.get('[data-cy="org-number-input"]').type('556677-8899')
@@ -68,9 +75,7 @@ describe('Organization Management', () => {
       cy.contains('Set Up Your Organization').should('not.exist')
     })
 
-    it('is expected to validate required fields in step 1', () => {
-      cy.get('[data-cy="setup-organization-button"]').click()
-      
+    it.skip('is expected to validate required fields in step 1', () => {
       // Try to proceed without company name
       cy.get('[data-cy="next-step-button"]').click()
       
@@ -103,34 +108,36 @@ describe('Organization Management', () => {
     }
 
     beforeEach(() => {
-      cy.intercept('GET', '**/organizations*', {
-        data: [mockOrganization]
+      cy.intercept('GET', '**/rest/v1/organizations*', {
+        statusCode: 200,
+        body: [mockOrganization]
       }).as('getOrganizations')
+
+      cy.intercept('GET', '**/rest/v1/organization_members*', {
+        statusCode: 200,
+        body: [{ organization_id: mockOrganization.id, user_id: 'test-user-id', role: 'owner', is_default: true }]
+      }).as('getMembers')
+
+      cy.visit('/settings')
+      cy.wait('@getOrganizations')
     })
 
     it('is expected to display organization settings', () => {
-      cy.visit('/settings')
-      cy.wait('@getOrganizations')
-
-      // Should show organization info
       cy.contains('Acme AB').should('be.visible')
       cy.contains('556677-8899').should('be.visible')
       cy.contains('SE556677889901').should('be.visible')
     })
 
     it('is expected to update organization details', () => {
-      cy.intercept('PATCH', '**/organizations/*', {
-        statusCode: 200,
-        body: {
-          data: {
+      cy.intercept('PATCH', '**/rest/v1/organizations*', (req) => {
+        req.reply({
+          statusCode: 200,
+          body: [{
             ...mockOrganization,
             name: 'Acme Sweden AB'
-          }
-        }
+          }]
+        })
       }).as('updateOrganization')
-
-      cy.visit('/settings')
-      cy.wait('@getOrganizations')
 
       cy.get('[data-cy="edit-organization-button"]').click()
       cy.get('[data-cy="org-name-input"]').clear().type('Acme Sweden AB')
@@ -141,19 +148,16 @@ describe('Organization Management', () => {
     })
 
     it('is expected to update invoice settings', () => {
-      cy.intercept('PATCH', '**/organizations/*', {
-        statusCode: 200,
-        body: {
-          data: {
+      cy.intercept('PATCH', '**/rest/v1/organizations*', (req) => {
+        req.reply({
+          statusCode: 200,
+          body: [{
             ...mockOrganization,
             invoice_number_prefix: 'FAK',
             default_payment_terms: 15
-          }
-        }
+          }]
+        })
       }).as('updateOrganization')
-
-      cy.visit('/settings')
-      cy.wait('@getOrganizations')
 
       cy.get('[data-cy="invoice-prefix-input"]').clear().type('FAK')
       cy.get('[data-cy="payment-terms-input"]').clear().type('15')
@@ -182,40 +186,41 @@ describe('Organization Management', () => {
     }
 
     beforeEach(() => {
-      cy.intercept('GET', '**/organizations*', {
-        data: [mockOrganization]
+      cy.intercept('GET', '**/rest/v1/organizations*', {
+        statusCode: 200,
+        body: [mockOrganization]
       }).as('getOrganizations')
 
-      cy.intercept('GET', '**/clients*', {
-        data: [mockClient]
+      cy.intercept('GET', '**/rest/v1/clients*', {
+        statusCode: 200,
+        body: [mockClient]
       }).as('getClients')
 
-      cy.intercept('GET', '**/products*', {
-        data: []
+      cy.intercept('GET', '**/rest/v1/products*', {
+        statusCode: 200,
+        body: []
       }).as('getProducts')
-    })
-
-    it('is expected to use organization invoice number prefix', () => {
-      cy.intercept('POST', '**/invoices', (req) => {
-        expect(req.body.invoice_number).to.match(/^FAK-\d{4}$/)
-        expect(req.body.organization_id).to.equal(mockOrganization.id)
-        
-        req.reply({
-          statusCode: 201,
-          body: {
-            data: {
-              id: 'invoice-123',
-              invoice_number: 'FAK-0005',
-              organization_id: mockOrganization.id,
-              ...req.body
-            }
-          }
-        })
-      }).as('createInvoice')
 
       cy.visit('/invoices')
       cy.wait('@getOrganizations')
       cy.wait('@getClients')
+    })
+
+    it('is expected to use organization invoice number prefix', () => {
+      cy.intercept('POST', '**/rest/v1/invoices*', (req) => {
+        expect(req.body[0].invoice_number).to.match(/^FAK-\d{4}$/)
+        expect(req.body[0].organization_id).to.equal(mockOrganization.id)
+        
+        req.reply({
+          statusCode: 201,
+          body: [{
+            id: 'invoice-123',
+            invoice_number: 'FAK-0005',
+            organization_id: mockOrganization.id,
+            ...req.body[0]
+          }]
+        })
+      }).as('createInvoice')
 
       cy.get('[data-cy="create-invoice-button"]').click()
       cy.wait('@getProducts')
@@ -231,30 +236,25 @@ describe('Organization Management', () => {
     it('is expected to increment invoice number per organization', () => {
       let invoiceCount = 5
 
-      cy.intercept('POST', '**/invoices', (req) => {
+      cy.intercept('POST', '**/rest/v1/invoices*', (req) => {
         const expectedNumber = `FAK-${String(invoiceCount).padStart(4, '0')}`
         
         req.reply({
           statusCode: 201,
-          body: {
-            data: {
-              id: `invoice-${invoiceCount}`,
-              invoice_number: expectedNumber,
-              organization_id: mockOrganization.id,
-              ...req.body
-            }
-          }
+          body: [{
+            id: `invoice-${invoiceCount}`,
+            invoice_number: expectedNumber,
+            organization_id: mockOrganization.id,
+            ...req.body[0]
+          }]
         })
         
         invoiceCount++
       }).as('createInvoice')
 
-      cy.visit('/invoices')
-      cy.wait('@getOrganizations')
-
       // Create first invoice
       cy.get('[data-cy="create-invoice-button"]').click()
-      cy.wait('@getClients')
+      cy.wait('@getProducts')
       cy.get('[data-cy="client-select"]').select(mockClient.id)
       cy.get('[data-cy="unit-price-input-0"]').type('1000')
       cy.get('[data-cy="save-invoice-button"]').click()
@@ -288,16 +288,16 @@ describe('Organization Management', () => {
     ]
 
     beforeEach(() => {
-      cy.intercept('GET', '**/organizations*', {
-        data: mockOrgs
+      cy.intercept('GET', '**/rest/v1/organizations*', {
+        statusCode: 200,
+        body: mockOrgs
       }).as('getOrganizations')
+
+      cy.visit('/settings')
+      cy.wait('@getOrganizations')
     })
 
     it('is expected to switch between organizations', () => {
-      cy.visit('/settings')
-      cy.wait('@getOrganizations')
-
-      // Should show default organization
       cy.contains('Acme AB').should('be.visible')
 
       // Switch to second organization
@@ -309,14 +309,16 @@ describe('Organization Management', () => {
     })
 
     it('is expected to scope data by current organization', () => {
-      cy.intercept('GET', '**/invoices*organization_id=org-1*', {
-        data: [
+      cy.intercept('GET', '**/rest/v1/invoices*organization_id=eq.org-1*', {
+        statusCode: 200,
+        body: [
           { id: 'inv-1', invoice_number: 'ACME-0001', organization_id: 'org-1' }
         ]
       }).as('getAcmeInvoices')
 
-      cy.intercept('GET', '**/invoices*organization_id=org-2*', {
-        data: [
+      cy.intercept('GET', '**/rest/v1/invoices*organization_id=eq.org-2*', {
+        statusCode: 200,
+        body: [
           { id: 'inv-2', invoice_number: 'BETA-0001', organization_id: 'org-2' }
         ]
       }).as('getBetaInvoices')
