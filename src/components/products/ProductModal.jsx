@@ -177,19 +177,20 @@ export default function ProductModal({ isOpen, onClose, product = null }) {
 
                 <div>
                   <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                    {t('products.taxRate')} (%)
+                    {t('products.taxRate')}
                   </label>
-                  <input
-                    type="number"
+                  <select
                     name="tax_rate"
                     value={formData.tax_rate}
                     onChange={handleChange}
-                    min="0"
-                    max="100"
-                    step="0.01"
-                    data-cy="product-tax-rate-input"
+                    data-cy="product-tax-rate-select"
                     className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
-                  />
+                  >
+                    <option value="0">0% ({t('products.vatRates.exempt')})</option>
+                    <option value="6">6% ({t('products.vatRates.reduced')})</option>
+                    <option value="12">12% ({t('products.vatRates.reduced')})</option>
+                    <option value="25">25% ({t('products.vatRates.standard')})</option>
+                  </select>
                 </div>
 
                 <div>

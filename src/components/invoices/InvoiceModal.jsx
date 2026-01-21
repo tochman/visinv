@@ -111,13 +111,27 @@ export default function InvoiceModal({ isOpen, onClose, invoice = null }) {
       return sum + (parseFloat(row.quantity || 0) * parseFloat(row.unit_price || 0));
     }, 0);
 
-    const taxAmount = (subtotal * parseFloat(formData.tax_rate)) / 100;
+    // Group by tax rate and calculate VAT per group
+    const vatGroups = {};
+    rows.forEach(row => {
+      const rowTotal = parseFloat(row.quantity || 0) * parseFloat(row.unit_price || 0);
+      const taxRate = parseFloat(row.tax_rate || formData.tax_rate || 0);
+      
+      if (!vatGroups[taxRate]) {
+        vatGroups[taxRate] = { rate: taxRate, base: 0, vat: 0 };
+      }
+      
+      vatGroups[taxRate].base += rowTotal;
+      vatGroups[taxRate].vat += (rowTotal * taxRate) / 100;
+    });
+
+    const taxAmount = Object.values(vatGroups).reduce((sum, group) => sum + group.vat, 0);
     const total = subtotal + taxAmount;
 
-    return { subtotal, taxAmount, total };
+    return { subtotal, taxAmount, total, vatGroups: Object.values(vatGroups).sort((a, b) => b.rate - a.rate) };
   };
 
-  const { subtotal, taxAmount, total } = calculateTotals();
+  const { subtotal, taxAmount, total, vatGroups } = calculateTotals();
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -436,12 +450,19 @@ export default function InvoiceModal({ isOpen, onClose, invoice = null }) {
                       {subtotal.toFixed(2)} {formData.currency}
                     </span>
                   </div>
-                  <div className="flex justify-between text-sm">
-                    <span className="text-gray-600 dark:text-gray-400">{t('invoice.tax')} ({formData.tax_rate}%):</span>
-                    <span className="font-medium text-gray-900 dark:text-white" data-cy="tax-display">
-                      {taxAmount.toFixed(2)} {formData.currency}
-                    </span>
-                  </div>
+                  
+                  {/* VAT Groups */}
+                  {vatGroups.length > 0 && vatGroups.map((group) => (
+                    <div key={group.rate} className="flex justify-between text-sm">
+                      <span className="text-gray-600 dark:text-gray-400">
+                        {t('invoices.vat')} {group.rate}%:
+                      </span>
+                      <span className="font-medium text-gray-900 dark:text-white" data-cy={`vat-${group.rate}-display`}>
+                        {group.vat.toFixed(2)} {formData.currency}
+                      </span>
+                    </div>
+                  ))}
+                  
                   <div className="flex justify-between text-base font-bold border-t border-gray-300 dark:border-gray-600 pt-2">
                     <span className="text-gray-900 dark:text-white">{t('invoice.total')}:</span>
                     <span className="text-gray-900 dark:text-white" data-cy="total-display">

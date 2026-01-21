@@ -95,7 +95,7 @@ describe('Invoice Management', () => {
 
       // Verify totals
       cy.get('[data-cy="subtotal-display"]').should('contain', '15000.00')
-      cy.get('[data-cy="tax-display"]').should('contain', '3750.00')  // 25% of 15000
+      cy.get('[data-cy="vat-25-display"]').should('contain', '3750.00')  // 25% of 15000
       cy.get('[data-cy="total-display"]').should('contain', '18750.00')
 
       cy.get('[data-cy="submit-button"]').click()
@@ -172,13 +172,8 @@ describe('Invoice Management', () => {
       cy.get('[data-cy="unit-price-input-0"]').clear().type('1000')
 
       // Default 25% tax
-      cy.get('[data-cy="tax-display"]').should('contain', '250.00')
+      cy.get('[data-cy="vat-25-display"]').should('contain', '250.00')
       cy.get('[data-cy="total-display"]').should('contain', '1250.00')
-
-      // Change to 12% tax (use force to avoid scroll issues)
-      cy.get('[data-cy="tax-rate-input"]').clear({ force: true }).type('12', { force: true })
-      cy.get('[data-cy="tax-display"]').should('contain', '120.00')
-      cy.get('[data-cy="total-display"]').should('contain', '1120.00')
     })
 
     it('is expected to close the modal when clicking cancel', () => {
@@ -499,6 +494,82 @@ describe('Invoice Management', () => {
 
       cy.get('[data-cy="download-pdf-button-inv-pdf"]').click()
       // Alert handling is automatic in Cypress
+    })
+  })
+
+  describe('VAT Grouping', () => {
+    beforeEach(() => {
+      cy.intercept('GET', '**/rest/v1/products*', {
+        statusCode: 200,
+        body: [
+          { id: 'prod-1', name: 'Standard Item', unit_price: 1000, tax_rate: 25, unit: 'st' },
+          { id: 'prod-2', name: 'Reduced Item', unit_price: 500, tax_rate: 12, unit: 'st' },
+          { id: 'prod-3', name: 'Food Item', unit_price: 300, tax_rate: 6, unit: 'st' }
+        ]
+      }).as('getProducts')
+    })
+
+    it('is expected to display separate VAT groups for different tax rates', () => {
+      cy.get('[data-cy="create-invoice-button"]').click()
+      cy.wait('@getProducts')
+      cy.get('[data-cy="client-select"]').select(mockClient.id)
+
+      // Select product with 25% VAT
+      cy.get('[data-cy="product-select-0"]').select('prod-1')
+      cy.get('[data-cy="unit-price-input-0"]').should('have.value', '1000')
+      
+      // Add second item and select product with 12% VAT
+      cy.get('[data-cy="add-line-item-button"]').click()
+      cy.get('[data-cy="product-select-1"]').select('prod-2')
+      cy.get('[data-cy="unit-price-input-1"]').should('have.value', '500')
+      cy.get('[data-cy="quantity-input-1"]').clear().type('2')
+
+      // Verify VAT groups are displayed
+      cy.get('[data-cy="vat-25-display"]').should('contain', '250.00')
+      cy.get('[data-cy="vat-12-display"]').should('contain', '120.00')
+      cy.get('[data-cy="total-display"]').should('contain', '2370.00')
+    })
+
+    it('is expected to calculate VAT correctly with mixed rates', () => {
+      cy.get('[data-cy="create-invoice-button"]').click()
+      cy.wait('@getProducts')
+      cy.get('[data-cy="client-select"]').select(mockClient.id)
+
+      // Standard rate (25%) - default
+      cy.get('[data-cy="unit-price-input-0"]').clear().type('1000')
+      
+      // Add another 25% item
+      cy.get('[data-cy="add-line-item-button"]').click()
+      cy.get('[data-cy="unit-price-input-1"]').clear().type('1000')
+
+      // Add another 25% item
+      cy.get('[data-cy="add-line-item-button"]').click()
+      cy.get('[data-cy="unit-price-input-2"]').clear().type('1000')
+
+      // Verify subtotal
+      cy.get('[data-cy="subtotal-display"]').should('contain', '3000.00')
+      
+      // Verify VAT (all items at 25%)
+      cy.get('[data-cy="vat-25-display"]').should('contain', '750.00')
+      
+      // Verify total (3000 + 750 = 3750)
+      cy.get('[data-cy="total-display"]').should('contain', '3750.00')
+    })
+
+    it('is expected to group items by same VAT rate', () => {
+      cy.get('[data-cy="create-invoice-button"]').click()
+      cy.wait('@getProducts')
+      cy.get('[data-cy="client-select"]').select(mockClient.id)
+
+      // Two items with default 25% VAT
+      cy.get('[data-cy="unit-price-input-0"]').clear().type('1000')
+
+      cy.get('[data-cy="add-line-item-button"]').click()
+      cy.get('[data-cy="unit-price-input-1"]').clear().type('1000')
+
+      cy.get('[data-cy="subtotal-display"]').should('contain', '2000.00')
+      cy.get('[data-cy="vat-25-display"]').should('contain', '500.00')
+      cy.get('[data-cy="total-display"]').should('contain', '2500.00')
     })
   })
 })

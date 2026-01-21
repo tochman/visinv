@@ -113,7 +113,9 @@
     "requiredFields": "Please fill in all required fields",
     "atLeastOneItem": "Add at least one line item",
     "noTemplateAvailable": "No templates available. Please create a template first.",
-    "pdfError": "Failed to generate PDF. Please try again."
+    "pdfError": "Failed to generate PDF. Please try again.",
+    "vat": "VAT",
+    "of": "of"
   },
   "client": {
     "name": "Client Name",
@@ -183,6 +185,11 @@
       "m": "meters",
       "m2": "m²",
       "l": "liters"
+    },
+    "vatRates": {
+      "exempt": "VAT exempt",
+      "reduced": "Reduced rate",
+      "standard": "Standard rate"
     }
   },
   "subscription": {

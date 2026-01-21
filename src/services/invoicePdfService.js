@@ -11,6 +11,11 @@ export async function generateInvoicePDF(invoice, template) {
     throw new Error('Invoice and template are required');
   }
 
+  const lineItems = invoice.invoice_rows || [];
+  const subtotal = calculateSubtotal(lineItems);
+  const vatGroups = calculateVATGroups(lineItems, invoice.tax_rate);
+  const totalVAT = vatGroups.reduce((sum, group) => sum + group.vat, 0);
+
   // Build context from invoice data
   const context = {
     invoice_number: invoice.invoice_number,
@@ -28,14 +33,16 @@ export async function generateInvoicePDF(invoice, template) {
     terms: invoice.terms || '',
     currency: invoice.currency || 'SEK',
     tax_rate: invoice.tax_rate || 0,
-    subtotal: calculateSubtotal(invoice.invoice_rows || []),
-    tax_amount: calculateTaxAmount(invoice.invoice_rows || [], invoice.tax_rate || 0),
-    total: invoice.total_amount || 0,
-    line_items: (invoice.invoice_rows || []).map(row => ({
+    subtotal: subtotal,
+    tax_amount: totalVAT,
+    vat_groups: vatGroups,
+    total: subtotal + totalVAT,
+    line_items: lineItems.map(row => ({
       description: row.description,
       quantity: row.quantity,
       unit: row.unit || 'st',
       unit_price: row.unit_price,
+      tax_rate: row.tax_rate || invoice.tax_rate || 0,
       amount: row.amount || (row.quantity * row.unit_price)
     }))
   };
@@ -74,4 +81,25 @@ function calculateSubtotal(lineItems) {
 function calculateTaxAmount(lineItems, taxRate) {
   const subtotal = calculateSubtotal(lineItems);
   return (subtotal * parseFloat(taxRate || 0)) / 100;
+}
+
+/**
+ * Calculate VAT groups by tax rate
+ */
+function calculateVATGroups(lineItems, defaultTaxRate) {
+  const groups = {};
+  
+  lineItems.forEach(item => {
+    const itemTotal = parseFloat(item.quantity || 0) * parseFloat(item.unit_price || 0);
+    const taxRate = parseFloat(item.tax_rate || defaultTaxRate || 0);
+    
+    if (!groups[taxRate]) {
+      groups[taxRate] = { rate: taxRate, base: 0, vat: 0 };
+    }
+    
+    groups[taxRate].base += itemTotal;
+    groups[taxRate].vat += (itemTotal * taxRate) / 100;
+  });
+  
+  return Object.values(groups).sort((a, b) => b.rate - a.rate);
 }

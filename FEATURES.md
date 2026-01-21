@@ -99,7 +99,6 @@
 
 **US-023: Tax/VAT Calculations** ✅
 - As a **user**, in order to **comply with tax regulations**, I would like to **automatically calculate and display taxes (including Swedish moms)**.
-- **Status:** Implemented - Real-time tax calculations in InvoiceModal, default 25% Swedish VAT, tested with tax rate changes
 - **Status:** Implemented - Automatic calculation in InvoiceModal, configurable tax rate (default 25% Swedish moms), tested in invoice tests
 
 **US-024: Multi-Currency Support**
@@ -107,6 +106,12 @@
 
 **US-025: Recurring Invoices**
 - As a **premium user**, in order to **automate subscription billing**, I would like to **set up recurring invoices with custom intervals**.
+
+**US-050: Product VAT Rates**
+- As a **user**, in order to **comply with tax regulations**, I would like to **set VAT percentage on each product (0%, 6%, 12%, or 25%)**.
+
+**US-051: VAT Breakdown by Rate**
+- As a **user**, in order to **clearly display how VAT values are calculated**, I would like to **see invoices display all VAT groups separately by rate (0%, 6%, 12%, 25%)**.
 
 ---
 
