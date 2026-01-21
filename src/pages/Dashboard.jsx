@@ -1,10 +1,26 @@
 import { useTranslation } from 'react-i18next';
 import { useSelector } from 'react-redux';
+import { useState } from 'react';
+import { useOrganization } from '../contexts/OrganizationContext';
+import OrganizationSetupWizard from '../components/organization/OrganizationSetupWizard';
 
 export default function Dashboard() {
   const { t } = useTranslation();
   const { user } = useSelector((state) => state.auth);
   const { isPremium, invoiceCount } = useSelector((state) => state.subscriptions);
+  const { currentOrganization, loading } = useOrganization();
+  const [showWizard, setShowWizard] = useState(false);
+
+  // Show wizard if no organization exists
+  const shouldShowWizard = !loading && !currentOrganization;
+
+  const handleWizardComplete = () => {
+    setShowWizard(false);
+  };
+
+  if (shouldShowWizard || showWizard) {
+    return <OrganizationSetupWizard onComplete={handleWizardComplete} />;
+  }
 
   return (
     <div>
@@ -29,8 +45,12 @@ export default function Dashboard() {
         </div>
 
         <div className="bg-white dark:bg-gray-800 rounded-sm shadow dark:shadow-gray-900/20 p-6">
-          <div className="text-sm font-medium text-gray-500 dark:text-gray-400">Email</div>
-          <div className="mt-2 text-lg font-medium text-gray-900 dark:text-white">{user?.email}</div>
+          <div className="text-sm font-medium text-gray-500 dark:text-gray-400">
+            {currentOrganization ? 'Organization' : 'Email'}
+          </div>
+          <div className="mt-2 text-lg font-medium text-gray-900 dark:text-white">
+            {currentOrganization?.name || user?.email}
+          </div>
         </div>
       </div>
 
