@@ -2,12 +2,15 @@ import { useState, useEffect } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { useTranslation } from 'react-i18next';
 import { fetchInvoices, deleteInvoice, markInvoiceAsSent, markInvoiceAsPaid } from '../features/invoices/invoicesSlice';
+import { fetchTemplates } from '../features/invoiceTemplates/invoiceTemplatesSlice';
 import InvoiceModal from '../components/invoices/InvoiceModal';
+import { generateInvoicePDF } from '../services/invoicePdfService';
 
 export default function Invoices() {
   const { t } = useTranslation();
   const dispatch = useDispatch();
   const { items: invoices, loading, error } = useSelector((state) => state.invoices);
+  const { items: templates } = useSelector((state) => state.invoiceTemplates);
   const { user } = useSelector((state) => state.auth);
 
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -15,10 +18,12 @@ export default function Invoices() {
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState('all');
   const [deleteConfirm, setDeleteConfirm] = useState(null);
+  const [generatingPDF, setGeneratingPDF] = useState(null);
 
   useEffect(() => {
     if (user) {
       dispatch(fetchInvoices());
+      dispatch(fetchTemplates());
     }
   }, [dispatch, user]);
 
@@ -43,6 +48,24 @@ export default function Invoices() {
 
   const handleMarkAsPaid = async (id) => {
     await dispatch(markInvoiceAsPaid({ id }));
+  };
+
+  const handleDownloadPDF = async (invoice) => {
+    setGeneratingPDF(invoice.id);
+    try {
+      // Use first available template (prioritize system templates)
+      const template = templates.find(t => t.user_id === null) || templates[0];
+      if (!template) {
+        alert(t('invoices.noTemplateAvailable'));
+        return;
+      }
+      await generateInvoicePDF(invoice, template);
+    } catch (error) {
+      console.error('PDF generation failed:', error);
+      alert(t('invoices.pdfError'));
+    } finally {
+      setGeneratingPDF(null);
+    }
   };
 
   const handleCloseModal = () => {
@@ -246,6 +269,24 @@ export default function Invoices() {
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                       <div className="flex justify-end gap-2">
+                        <button
+                          onClick={() => handleDownloadPDF(invoice)}
+                          data-cy={`download-pdf-button-${invoice.id}`}
+                          disabled={generatingPDF === invoice.id}
+                          className="text-purple-600 hover:text-purple-900 dark:text-purple-400 dark:hover:text-purple-300 disabled:opacity-50 disabled:cursor-not-allowed"
+                          title={t('invoice.downloadPDF')}
+                        >
+                          {generatingPDF === invoice.id ? (
+                            <svg className="w-5 h-5 animate-spin" fill="none" viewBox="0 0 24 24">
+                              <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                              <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
+                            </svg>
+                          ) : (
+                            <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M9 19l3 3m0 0l3-3m-3 3V10" />
+                            </svg>
+                          )}
+                        </button>
                         {invoice.status === 'draft' && (
                           <button
                             onClick={() => handleMarkAsSent(invoice.id)}

@@ -41,6 +41,7 @@
     "send": "Send Invoice",
     "print": "Print Invoice",
     "download": "Download PDF",
+    "downloadPDF": "Download PDF",
     "markAsSent": "Mark as Sent",
     "markAsPaid": "Mark as Paid",
     "statuses": {
@@ -109,7 +110,9 @@
     "total": "Total",
     "noClient": "No client selected",
     "requiredFields": "Please fill in all required fields",
-    "atLeastOneItem": "Add at least one line item"
+    "atLeastOneItem": "Add at least one line item",
+    "noTemplateAvailable": "No templates available. Please create a template first.",
+    "pdfError": "Failed to generate PDF. Please try again."
   },
   "client": {
     "name": "Client Name",

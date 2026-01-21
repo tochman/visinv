@@ -40,8 +40,9 @@
 **US-009: Invoice Printing**
 - As a **free user**, in order to **provide physical copies**, I would like to **print invoices in a professional format**.
 
-**US-010: PDF Generation**
+**US-010: PDF Generation** ✅
 - As a **free user**, in order to **share invoices in a standard format**, I would like to **download invoices as PDF files**.
+- **Status:** Implemented - invoicePdfService with template rendering, download button in invoice list, 31 Cypress tests (28 invoice + 3 PDF)
 
 **US-011: Predefined Invoice Templates** ✅
 - As a **free user**, in order to **create professional-looking invoices quickly**, I would like to **choose from a set of predefined invoice templates**.

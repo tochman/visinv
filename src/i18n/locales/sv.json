@@ -41,6 +41,7 @@
     "send": "Skicka faktura",
     "print": "Skriv ut faktura",
     "download": "Ladda ner PDF",
+    "downloadPDF": "Ladda ner PDF",
     "markAsSent": "Markera som skickad",
     "markAsPaid": "Markera som betald",
     "statuses": {
@@ -107,7 +108,9 @@
     "total": "Totalt",
     "noClient": "Ingen kund vald",
     "requiredFields": "Vänligen fyll i alla obligatoriska fält",
-    "atLeastOneItem": "Lägg till minst en fakturarad"
+    "atLeastOneItem": "Lägg till minst en fakturarad",
+    "noTemplateAvailable": "Inga mallar tillgängliga. Skapa en mall först.",
+    "pdfError": "Kunde inte generera PDF. Försök igen."
   },
   "client": {
     "name": "Kundnamn",

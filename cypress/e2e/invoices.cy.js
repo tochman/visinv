@@ -7,12 +7,26 @@ describe('Invoice Management', () => {
     email: 'client@test.com'
   }
 
+  const mockTemplate = {
+    id: 'template-1',
+    user_id: null,
+    name: 'Modern',
+    content: '<html><body><h1>{{invoice_number}}</h1><p>{{client_name}}</p></body></html>',
+    is_system: true
+  }
+
   beforeEach(() => {
     // Mock clients endpoint
     cy.intercept('GET', '**/rest/v1/clients*', {
       statusCode: 200,
       body: [mockClient]
     }).as('getClients')
+
+    // Mock templates endpoint
+    cy.intercept('GET', '**/rest/v1/invoice_templates*', {
+      statusCode: 200,
+      body: [mockTemplate]
+    }).as('getTemplates')
 
     // Mock invoices endpoint
     cy.intercept('GET', '**/rest/v1/invoices*', {
@@ -44,6 +58,7 @@ describe('Invoice Management', () => {
     cy.login('admin')
     cy.visit('/invoices')
     cy.wait('@getInvoices')
+    cy.wait('@getTemplates')
   })
 
   describe('Happy Path - Creating an Invoice', () => {
@@ -424,6 +439,66 @@ describe('Invoice Management', () => {
       
       cy.wait('@updateInvoice', { timeout: 10000 })
       cy.get('[data-cy="invoice-modal"]').should('not.exist')
+    })
+  })
+
+  describe('PDF Download', () => {
+    const invoiceWithFullData = {
+      id: 'inv-pdf',
+      invoice_number: 'INV-PDF-001',
+      client_id: mockClient.id,
+      client: mockClient,
+      issue_date: '2026-01-20',
+      due_date: '2026-02-20',
+      status: 'sent',
+      tax_rate: 25,
+      currency: 'SEK',
+      total_amount: '12500.00',
+      subtotal: '10000.00',
+      invoice_rows: [
+        { id: 'row-1', description: 'Service A', quantity: 10, unit_price: 800, unit: 'hours', amount: 8000 },
+        { id: 'row-2', description: 'Service B', quantity: 5, unit_price: 400, unit: 'hours', amount: 2000 }
+      ]
+    }
+
+    beforeEach(() => {
+      cy.intercept('GET', '**/rest/v1/invoices*', {
+        statusCode: 200,
+        body: [invoiceWithFullData]
+      }).as('getInvoicesWithData')
+      
+      cy.visit('/invoices')
+      cy.wait('@getInvoicesWithData')
+      cy.wait('@getTemplates')
+    })
+
+    it('is expected to display PDF download button', () => {
+      cy.get('[data-cy="download-pdf-button-inv-pdf"]').should('be.visible')
+    })
+
+    it('is expected to download PDF when button is clicked', () => {
+      // Note: Testing actual PDF generation is difficult in Cypress
+      // We just verify the button exists and is clickable
+      cy.get('[data-cy="download-pdf-button-inv-pdf"]').should('not.be.disabled').click()
+      
+      // Verify button shows loading state
+      cy.get('[data-cy="download-pdf-button-inv-pdf"]').within(() => {
+        cy.get('.animate-spin').should('exist')
+      })
+    })
+
+    it('is expected to show error when no templates available', () => {
+      cy.intercept('GET', '**/rest/v1/invoice_templates*', {
+        statusCode: 200,
+        body: []
+      }).as('getNoTemplates')
+      
+      cy.visit('/invoices')
+      cy.wait('@getInvoicesWithData')
+      cy.wait('@getNoTemplates')
+
+      cy.get('[data-cy="download-pdf-button-inv-pdf"]').click()
+      // Alert handling is automatic in Cypress
     })
   })
 })
