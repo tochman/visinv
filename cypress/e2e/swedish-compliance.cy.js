@@ -19,7 +19,7 @@ describe('Swedish Compliance - Mandatory Fields', () => {
       cy.visit('/settings');
     });
 
-    it('should validate and show errors for empty required fields', () => {
+    it('is expected to validate and show errors for empty required fields', () => {
       // The organization should already exist from login
       // Click edit to enter edit mode
       cy.get('[data-cy="edit-organization"]').click();
@@ -46,31 +46,31 @@ describe('Swedish Compliance - Mandatory Fields', () => {
       cy.get('[data-cy="create-client-button"]').click();
     });
 
-    it('should require client name', () => {
+    it('is expected to require client name', () => {
       cy.get('[data-cy="save-client-button"]').click();
       // HTML5 required validation should prevent submit
       cy.get('[data-cy="client-modal"]').should('exist');
     });
 
-    it('should require client address', () => {
+    it('is expected to require client address', () => {
       cy.get('[data-cy="client-name-input"]').type('Test Kund AB');
       // Check that address field exists and is required
       cy.get('input[name="address"]').should('exist');
     });
 
-    it('should require client city', () => {
+    it('is expected to require client city', () => {
       cy.get('[data-cy="client-name-input"]').type('Test Kund AB');
       // Check that city field exists and is required
       cy.get('input[name="city"]').should('exist');
     });
 
-    it('should require client postal code', () => {
+    it('is expected to require client postal code', () => {
       cy.get('[data-cy="client-name-input"]').type('Test Kund AB');
       // Check that postal_code field exists and is required
       cy.get('input[name="postal_code"]').should('exist');
     });
 
-    it('should have all mandatory fields available', () => {
+    it('is expected to have all mandatory fields available', () => {
       // Verify all mandatory fields exist
       cy.get('[data-cy="client-name-input"]').should('exist');
       cy.get('input[name="address"]').should('exist');
@@ -85,26 +85,26 @@ describe('Swedish Compliance - Mandatory Fields', () => {
       cy.get('[data-cy="create-invoice-button"]').click();
     });
 
-    it('should have invoice date field', () => {
+    it('is expected to have invoice date field', () => {
       cy.get('[data-cy="issue-date-input"]').should('exist');
     });
 
-    it('should have due date field', () => {
+    it('is expected to have due date field', () => {
       cy.get('[data-cy="due-date-input"]').should('exist');
     });
 
-    it('should have delivery date field', () => {
+    it('is expected to have delivery date field', () => {
       // Delivery date is required per migration but needs to be added to UI
       // For now just verify other mandatory fields exist
       cy.get('[data-cy="issue-date-input"]').should('exist');
     });
 
-    it('should require at least one invoice item', () => {
+    it('is expected to require at least one invoice item', () => {
       // Line items container should exist
       cy.get('[data-cy="line-items-container"]').should('exist');
     });
 
-    it('should have all necessary invoice fields', () => {
+    it('is expected to have all necessary invoice fields', () => {
       cy.get('[data-cy="client-select"]').should('exist');
       cy.get('[data-cy="issue-date-input"]').should('exist');
       cy.get('[data-cy="due-date-input"]').should('exist');
@@ -119,30 +119,30 @@ describe('Swedish Compliance - Mandatory Fields', () => {
       cy.get('[data-cy="add-line-item-button"]').click();
     });
 
-    it('should have VAT rate field for invoices', () => {
+    it('is expected to have VAT rate field for invoices', () => {
       // Tax rate is set at invoice level (not per line item in current UI)
       cy.get('[data-cy="tax-rate-input"]').should('exist');
     });
 
-    it('should default VAT rate to 25% (Swedish standard)', () => {
+    it('is expected to default VAT rate to 25% (Swedish standard)', () => {
       // The default tax rate should be 25% for new rows
       // This is set in the InvoiceModal component
       cy.get('[data-cy="line-item-0"]').should('exist');
     });
 
-    it('should allow entering line item details', () => {
+    it('is expected to allow entering line item details', () => {
       cy.get('[data-cy="description-input-0"]').should('exist');
       cy.get('[data-cy="quantity-input-0"]').should('exist');
       cy.get('[data-cy="unit-price-input-0"]').should('exist');
     });
 
-    it('should support multiple line items', () => {
+    it('is expected to support multiple line items', () => {
       cy.get('[data-cy="add-line-item-button"]').click();
       cy.get('[data-cy="line-item-0"]').should('exist');
       cy.get('[data-cy="line-item-1"]').should('exist');
     });
 
-    it('should have all necessary invoice item fields', () => {
+    it('is expected to have all necessary invoice item fields', () => {
       cy.get('[data-cy="line-items-container"]').should('exist');
       cy.get('[data-cy="description-input-0"]').should('exist');
       cy.get('[data-cy="quantity-input-0"]').should('exist');
@@ -151,12 +151,12 @@ describe('Swedish Compliance - Mandatory Fields', () => {
   });
 
   describe('US-067: F-skatt Display - LEGAL REQUIREMENT', () => {
-    it('should show F-skatt status in organization settings', () => {
+    it('is expected to show F-skatt status in organization settings', () => {
       cy.visit('/settings');
       cy.get('[data-cy="org-f-skatt-approved"]').should('exist');
     });
 
-    it('should have F-skatt checkbox available for editing', () => {
+    it('is expected to have F-skatt checkbox available for editing', () => {
       cy.visit('/settings');
       cy.get('[data-cy="edit-organization"]').click();
       
@@ -165,7 +165,7 @@ describe('Swedish Compliance - Mandatory Fields', () => {
       cy.get('input[name="f_skatt_approved"]').should('have.attr', 'type', 'checkbox');
     });
 
-    it('should allow toggling F-skatt checkbox', () => {
+    it('is expected to allow toggling F-skatt checkbox', () => {
       cy.visit('/settings');
       cy.get('[data-cy="edit-organization"]').click();
       
@@ -181,7 +181,7 @@ describe('Swedish Compliance - Mandatory Fields', () => {
       });
     });
 
-    it('should include F-skatt in organization form structure', () => {
+    it('is expected to include F-skatt in organization form structure', () => {
       cy.visit('/settings');
       cy.get('[data-cy="edit-organization"]').click();
       
@@ -193,7 +193,7 @@ describe('Swedish Compliance - Mandatory Fields', () => {
   });
 
   describe('US-072: Pre-Send Invoice Validation', () => {
-    it('should have database constraints preventing invalid data', () => {
+    it('is expected to have database constraints preventing invalid data', () => {
       // This test verifies that migration 013 is applied
       // The database has NOT NULL constraints on mandatory fields
       cy.visit('/settings');
@@ -201,7 +201,7 @@ describe('Swedish Compliance - Mandatory Fields', () => {
       cy.get('[data-cy="clients-page-title"]', { timeout: 1000 }).should('not.exist');
     });
 
-    it('should require all organization mandatory fields are filled', () => {
+    it('is expected to require all organization mandatory fields are filled', () => {
       cy.visit('/settings');
       cy.get('[data-cy="edit-organization"]').click();
       
@@ -216,7 +216,7 @@ describe('Swedish Compliance - Mandatory Fields', () => {
       cy.get('[data-cy="org-email"]').should('exist');
     });
 
-    it('should have validation function in database', () => {
+    it('is expected to have validation function in database', () => {
       // The validate_invoice_compliance() function exists in the database
       // This is verified by the successful migration
       // We test this indirectly by confirming the application loads
