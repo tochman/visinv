@@ -107,11 +107,13 @@
 **US-025: Recurring Invoices**
 - As a **premium user**, in order to **automate subscription billing**, I would like to **set up recurring invoices with custom intervals**.
 
-**US-050: Product VAT Rates**
+**US-050: Product VAT Rates** ✅
 - As a **user**, in order to **comply with tax regulations**, I would like to **set VAT percentage on each product (0%, 6%, 12%, or 25%)**.
+- **Status:** Implemented - Dropdown in ProductModal with standard Swedish VAT rates, i18n support
 
-**US-051: VAT Breakdown by Rate**
+**US-051: VAT Breakdown by Rate** ✅
 - As a **user**, in order to **clearly display how VAT values are calculated**, I would like to **see invoices display all VAT groups separately by rate (0%, 6%, 12%, 25%)**.
+- **Status:** Implemented - Invoice totals calculate and display VAT grouped by rate, PDF includes VAT groups, 3 Cypress tests
 
 ---
 
