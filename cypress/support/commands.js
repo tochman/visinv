@@ -65,8 +65,35 @@ Cypress.Commands.add('login', (userType = 'user') => {
 
   cy.intercept('GET', '**/rest/v1/profiles*', {
     statusCode: 200,
-    body: userData.profile
+    body: [userData.profile]
   }).as('getProfile')
+
+  // Mock organization data
+  cy.intercept('GET', '**/rest/v1/organization_members*', {
+    statusCode: 200,
+    body: [{
+      id: 'test-org-member-id',
+      user_id: userData.id,
+      organization_id: 'test-org-id',
+      role: 'owner',
+      is_default: true,
+      joined_at: new Date().toISOString(),
+      organizations: {
+        id: 'test-org-id',
+        name: 'Test Organization',
+        organization_number: '',
+        vat_number: '',
+        municipality: '',
+        address: '',
+        city: '',
+        postal_code: '',
+        email: '',
+        created_by: userData.id,
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString()
+      }
+    }]
+  }).as('getOrganizations')
 
   cy.visit('/', {
     onBeforeLoad(win) {
@@ -76,24 +103,13 @@ Cypress.Commands.add('login', (userType = 'user') => {
     }
   })
 
-  cy.window().its('store').should('exist').then((store) => {
-    store.dispatch({
-      type: 'auth/checkSession/fulfilled',
-      payload: {
-        session: mockSession,
-        profile: userData.profile
-      }
-    })
-  })
-
+  // Wait for the app to load - no Redux store needed
   cy.get('[data-cy="main-layout"], [data-cy="dashboard"], nav', { timeout: 10000 }).should('exist')
 })
 
 Cypress.Commands.add('logout', () => {
-  cy.window().its('store').then((store) => {
-    store.dispatch({ type: 'auth/setUser', payload: { user: null, session: null, profile: null } })
-  })
   cy.clearLocalStorage()
+  cy.clearCookies()
 })
 
 Cypress.Commands.add('getStore', () => {

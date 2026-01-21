@@ -9,6 +9,8 @@ export default function Settings() {
   const [formData, setFormData] = useState({});
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState(null);
+  const [validationErrors, setValidationErrors] = useState({});
+  const [successMessage, setSuccessMessage] = useState('');
 
   const handleEdit = () => {
     setFormData({ ...currentOrganization });
@@ -19,6 +21,8 @@ export default function Settings() {
     setIsEditing(false);
     setFormData({});
     setError(null);
+    setValidationErrors({});
+    setSuccessMessage('');
   };
 
   const handleChange = (e) => {
@@ -29,10 +33,51 @@ export default function Settings() {
     }));
   };
 
+  const validateForm = () => {
+    const errors = {};
+    
+    if (!formData.name?.trim()) {
+      errors.name = 'Företagsnamn är obligatoriskt';
+    }
+    if (!formData.organization_number?.trim()) {
+      errors.organization_number = 'Organisationsnummer är obligatoriskt enligt Aktiebolagslagen';
+    }
+    if (!formData.municipality?.trim()) {
+      errors.municipality = 'Kommun är obligatoriskt enligt Aktiebolagslagen';
+    }
+    if (!formData.vat_number?.trim()) {
+      errors.vat_number = 'Momsregistreringsnummer är obligatoriskt enligt Mervärdesskattelagen';
+    }
+    if (!formData.address?.trim()) {
+      errors.address = 'Adress är obligatorisk';
+    }
+    if (!formData.city?.trim()) {
+      errors.city = 'Stad är obligatorisk';
+    }
+    if (!formData.postal_code?.trim()) {
+      errors.postal_code = 'Postnummer är obligatoriskt';
+    }
+    if (!formData.email?.trim()) {
+      errors.email = 'E-post är obligatoriskt';
+    } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) {
+      errors.email = 'Ogiltig e-postadress';
+    }
+    
+    return errors;
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setSaving(true);
+    setValidationErrors({});
     setError(null);
+    
+    const errors = validateForm();
+    if (Object.keys(errors).length > 0) {
+      setValidationErrors(errors);
+      return;
+    }
+    
+    setSaving(true);
 
     const { error: updateError } = await updateOrganization(currentOrganization.id, formData);
 
@@ -42,6 +87,8 @@ export default function Settings() {
       return;
     }
 
+    setSuccessMessage('Organisationen har sparats');
+    setTimeout(() => setSuccessMessage(''), 3000);
     setIsEditing(false);
     setSaving(false);
   };
@@ -73,7 +120,7 @@ export default function Settings() {
           <button
             onClick={handleEdit}
             className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700"
-            data-cy="edit-organization-button"
+            data-cy="edit-organization"
           >
             {t('organization.edit')}
           </button>
@@ -83,6 +130,12 @@ export default function Settings() {
       {error && (
         <div className="mb-6 p-4 bg-red-100 dark:bg-red-900/30 border border-red-400 dark:border-red-700 text-red-700 dark:text-red-400 rounded">
           {error}
+        </div>
+      )successMessage && (
+        <div className="mb-6 p-4 bg-green-100 dark:bg-green-900/30 border border-green-400 dark:border-green-700 text-green-700 dark:text-green-400 rounded" data-cy="success-message">
+          {successMessage}ationErrors).length && !isEditing && formData.name && (
+        <div className="mb-6 p-4 bg-green-100 dark:bg-green-900/30 border border-green-400 dark:border-green-700 text-green-700 dark:text-green-400 rounded" data-cy="success-message">
+          Organisationen har sparad
         </div>
       )}
 
@@ -99,15 +152,20 @@ export default function Settings() {
                   {t('organization.name')}
                 </label>
                 {isEditing ? (
-                  <input
-                    type="text"
-                    name="name"
-                    value={formData.name || ''}
-                    onChange={handleChange}
-                    className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white"
-                    data-cy="org-name-input"
-                    required
-                  />
+                  <div>
+                    <input
+                      type="text"
+                      name="name"
+                      value={formData.name || ''}
+                      onChange={handleChange}
+                      className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white"
+                      data-cy="org-name"
+                      required
+                    />
+                    {validationErrors.name && (
+                      <p className="mt-1 text-sm text-red-600 dark:text-red-400" data-cy="error-org-name">{validationErrors.name}</p>
+                    )}
+                  </div>
                 ) : (
                   <div className="text-gray-900 dark:text-white py-2">{currentOrganization.name}</div>
                 )}
@@ -118,13 +176,20 @@ export default function Settings() {
                   {t('organization.organizationNumber')}
                 </label>
                 {isEditing ? (
-                  <input
-                    type="text"
-                    name="organization_number"
-                    value={formData.organization_number || ''}
-                    onChange={handleChange}
-                    className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white"
-                  />
+                  <div>
+                    <input
+                      type="text"
+                      name="organization_number"
+                      value={formData.organization_number || ''}
+                      onChange={handleChange}
+                      className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white"
+                      data-cy="org-number"
+                      required
+                    />
+                    {validationErrors.organization_number && (
+                      <p className="mt-1 text-sm text-red-600 dark:text-red-400" data-cy="error-org-number">{validationErrors.organization_number}</p>
+                    )}
+                  </div>
                 ) : (
                   <div className="text-gray-900 dark:text-white py-2">
                     {currentOrganization.organization_number || '-'}
@@ -137,13 +202,20 @@ export default function Settings() {
                   {t('organization.vatNumber')}
                 </label>
                 {isEditing ? (
-                  <input
-                    type="text"
-                    name="vat_number"
-                    value={formData.vat_number || ''}
-                    onChange={handleChange}
-                    className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white"
-                  />
+                  <div>
+                    <input
+                      type="text"
+                      name="vat_number"
+                      value={formData.vat_number || ''}
+                      onChange={handleChange}
+                      className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white"
+                      data-cy="org-vat"
+                      required
+                    />
+                    {validationErrors.vat_number && (
+                      <p className="mt-1 text-sm text-red-600 dark:text-red-400" data-cy="error-vat-number">{validationErrors.vat_number}</p>
+                    )}
+                  </div>
                 ) : (
                   <div className="text-gray-900 dark:text-white py-2">
                     {currentOrganization.vat_number || '-'}
@@ -164,13 +236,20 @@ export default function Settings() {
                   {t('organization.address')}
                 </label>
                 {isEditing ? (
-                  <input
-                    type="text"
-                    name="address"
-                    value={formData.address || ''}
-                    onChange={handleChange}
-                    className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white"
-                  />
+                  <div>
+                    <input
+                      type="text"
+                      name="address"
+                      value={formData.address || ''}
+                      onChange={handleChange}
+                      className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white"
+                      data-cy="org-address"
+                      required
+                    />
+                    {validationErrors.address && (
+                      <p className="mt-1 text-sm text-red-600 dark:text-red-400" data-cy="error-address">{validationErrors.address}</p>
+                    )}
+                  </div>
                 ) : (
                   <div className="text-gray-900 dark:text-white py-2">
                     {currentOrganization.address || '-'}
@@ -183,15 +262,46 @@ export default function Settings() {
                   {t('organization.city')}
                 </label>
                 {isEditing ? (
-                  <input
-                    type="text"
-                    name="city"
-                    value={formData.city || ''}
-                    onChange={handleChange}
-                    className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white"
-                  />
+                  <div>
+                    <input
+                      type="text"
+                      name="city"
+                      value={formData.city || ''}
+                      onChange={handleChange}
+                      className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white"
+                      data-cy="org-city"
+                      required
+                    />
+                    {validationErrors.city && (
+                      <p className="mt-1 text-sm text-red-600 dark:text-red-400" data-cy="error-city">{validationErrors.city}</p>
+                    )}
+                  </div>
                 ) : (
                   <div className="text-gray-900 dark:text-white py-2">{currentOrganization.city || '-'}</div>
+                )}
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                  Postnummer
+                </label>
+                {isEditing ? (
+                  <div>
+                    <input
+                      type="text"
+                      name="postal_code"
+                      value={formData.postal_code || ''}
+                      onChange={handleChange}
+                      className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white"
+                      data-cy="org-postal-code"
+                      required
+                    />
+                    {validationErrors.postal_code && (
+                      <p className="mt-1 text-sm text-red-600 dark:text-red-400" data-cy="error-postal-code">{validationErrors.postal_code}</p>
+                    )}
+                  </div>
+                ) : (
+                  <div className="text-gray-900 dark:text-white py-2">{currentOrganization.postal_code || '-'}</div>
                 )}
               </div>
 
@@ -200,13 +310,20 @@ export default function Settings() {
                   {t('organization.municipality')}
                 </label>
                 {isEditing ? (
-                  <input
-                    type="text"
-                    name="municipality"
-                    value={formData.municipality || ''}
-                    onChange={handleChange}
-                    className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white"
-                  />
+                  <div>
+                    <input
+                      type="text"
+                      name="municipality"
+                      value={formData.municipality || ''}
+                      onChange={handleChange}
+                      className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white"
+                      data-cy="org-municipality"
+                      required
+                    />
+                    {validationErrors.municipality && (
+                      <p className="mt-1 text-sm text-red-600 dark:text-red-400" data-cy="error-municipality">{validationErrors.municipality}</p>
+                    )}
+                  </div>
                 ) : (
                   <div className="text-gray-900 dark:text-white py-2">
                     {currentOrganization.municipality || '-'}
@@ -219,13 +336,20 @@ export default function Settings() {
                   {t('organization.email')}
                 </label>
                 {isEditing ? (
-                  <input
-                    type="email"
-                    name="email"
-                    value={formData.email || ''}
-                    onChange={handleChange}
-                    className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white"
-                  />
+                  <div>
+                    <input
+                      type="email"
+                      name="email"
+                      value={formData.email || ''}
+                      onChange={handleChange}
+                      className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white"
+                      data-cy="org-email"
+                      required
+                    />
+                    {validationErrors.email && (
+                      <p className="mt-1 text-sm text-red-600 dark:text-red-400" data-cy="error-email">{validationErrors.email}</p>
+                    )}
+                  </div>
                 ) : (
                   <div className="text-gray-900 dark:text-white py-2">{currentOrganization.email || '-'}</div>
                 )}
@@ -303,6 +427,7 @@ export default function Settings() {
                       checked={formData.f_skatt_approved || false}
                       onChange={handleChange}
                       className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+                      data-cy="org-f-skatt-approved"
                     />
                     <span className="ml-2 text-sm text-gray-700 dark:text-gray-300">
                       {t('organization.fSkattApproved')}
@@ -313,7 +438,7 @@ export default function Settings() {
                     <span className="text-sm font-medium text-gray-700 dark:text-gray-300">
                       {t('organization.fSkattApproved')}:{' '}
                     </span>
-                    <span className="text-gray-900 dark:text-white">
+                    <span className="text-gray-900 dark:text-white" data-cy="org-f-skatt-approved">
                       {currentOrganization.f_skatt_approved ? 'Yes' : 'No'}
                     </span>
                   </div>
@@ -430,7 +555,7 @@ export default function Settings() {
                 type="submit"
                 className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 disabled:opacity-50"
                 disabled={saving}
-                data-cy="save-organization-button"
+                data-cy="save-organization"
               >
                 {saving ? t('common.saving') : t('common.save')}
               </button>
