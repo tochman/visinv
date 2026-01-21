@@ -10,7 +10,7 @@ import { ColumnExtension } from './extensions/ColumnExtension';
 import CodeEditor from 'react-simple-code-editor';
 import Prism from 'prismjs';
 import 'prismjs/components/prism-markup';
-import 'prismjs/themes/prism-tomorrow.css';
+import { useTheme } from '../../context/ThemeContext';
 import { 
   renderTemplate, 
   validateTemplate, 
@@ -304,12 +304,19 @@ const generateThemeCSS = (theme) => {
   `;
 };
 
-// Generate full HTML document
+// Generate full HTML document (or pass through if already complete)
 const generateHtmlDocument = (content, theme) => {
+  // If the content is already a complete HTML document, return it as-is
+  if (content && content.trim().toLowerCase().startsWith('<!doctype html')) {
+    return content;
+  }
+  
+  // Otherwise, wrap the content in a basic HTML document with theme styles
   return `<!DOCTYPE html>
 <html>
 <head>
   <meta charset="UTF-8">
+  <script src="https://cdn.tailwindcss.com"></script>
   <style>${generateThemeCSS(theme)}</style>
 </head>
 <body>
@@ -882,6 +889,8 @@ export default function TemplateEditor({
   onCancel,
   invoiceData
 }) {
+  const { theme: appTheme } = useTheme();
+  const isDarkMode = appTheme === 'dark';
   const [name, setName] = useState(template?.name || '');
   const [description, setDescription] = useState(template?.description || '');
   const [templateContent, setTemplateContent] = useState(template?.template_content || '');
@@ -893,9 +902,26 @@ export default function TemplateEditor({
   const [sidebarTab, setSidebarTab] = useState('blocks'); // 'blocks' or 'variables'
   const [isSaving, setIsSaving] = useState(false);
   const [isExporting, setIsExporting] = useState(false);
-  const [editorMode, setEditorMode] = useState('visual'); // 'code', 'visual', or 'preview'
   const [showSettings, setShowSettings] = useState(false);
   const [showOutlines, setShowOutlines] = useState(true); // Show element borders in visual editor
+
+  // Check if template is a complete HTML document (with DOCTYPE, head, style, etc.)
+  const isCompleteHtmlDocument = useCallback((content) => {
+    if (!content) return false;
+    const trimmed = content.trim().toLowerCase();
+    return trimmed.startsWith('<!doctype html') || trimmed.startsWith('<html');
+  }, []);
+
+  // Start in appropriate mode based on template content
+  const [editorMode, setEditorMode] = useState(() => {
+    const content = template?.template_content || '';
+    // If it's a complete HTML document, start in preview mode
+    if (content.trim().toLowerCase().startsWith('<!doctype html') || 
+        content.trim().toLowerCase().startsWith('<html')) {
+      return 'preview';
+    }
+    return 'visual';
+  });
 
   // Syntax highlighting function for HTML + Handlebars
   const highlightCode = useCallback((code) => {
@@ -988,6 +1014,11 @@ export default function TemplateEditor({
       }),
       ColumnExtension,
     ],
+    editorProps: {
+      attributes: {
+        class: 'tiptap-editor prose prose-slate max-w-none focus:outline-none',
+      },
+    },
     content: templateContent || '<p>Börja skriva här...</p>',
     onUpdate: ({ editor }) => {
       if (editorMode === 'visual') {
@@ -998,6 +1029,12 @@ export default function TemplateEditor({
 
   // Sync content when switching modes
   const handleModeSwitch = useCallback((newMode) => {
+    // Prevent switching to visual mode for complete HTML documents
+    if (newMode === 'visual' && isCompleteHtmlDocument(templateContent)) {
+      alert('Visuellt läge stöder inte kompletta HTML-dokument med inbäddade stilar.\n\nAnvänd Kodläge för att redigera eller Förhandsgranskning för att se resultatet.');
+      return;
+    }
+    
     // When leaving visual mode, save TipTap content as HTML
     if (editorMode === 'visual' && visualEditor) {
       const content = visualEditor.getHTML();
@@ -1105,9 +1142,8 @@ export default function TemplateEditor({
     try {
       await onSave({
         name: name.trim(),
-        description: description.trim(),
         template_content: templateContent
-        // Note: category removed - not in database schema
+        // Note: description and category removed - not in database schema
       });
     } catch (error) {
       alert('Kunde inte spara mall: ' + error.message);
@@ -1274,12 +1310,17 @@ export default function TemplateEditor({
           <div className="flex items-center bg-gray-100 dark:bg-gray-700 rounded-sm p-0.5">
             <button
               onClick={() => handleModeSwitch('visual')}
+              disabled={isCompleteHtmlDocument(templateContent)}
               className={`px-3 py-1.5 text-sm font-medium rounded-md transition ${
-                editorMode === 'visual' 
-                  ? 'bg-white dark:bg-gray-800 text-gray-900 dark:text-white shadow-sm' 
-                  : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:text-white'
+                isCompleteHtmlDocument(templateContent)
+                  ? 'text-gray-400 dark:text-gray-500 cursor-not-allowed opacity-50'
+                  : editorMode === 'visual' 
+                    ? 'bg-white dark:bg-gray-800 text-gray-900 dark:text-white shadow-sm' 
+                    : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white'
               }`}
-              title="Visuell redigering med designade element"
+              title={isCompleteHtmlDocument(templateContent) 
+                ? "Visuellt läge ej tillgängligt för HTML-dokument med inbäddade stilar" 
+                : "Visuell redigering med designade element"}
             >
               <span className="flex items-center gap-1.5">
                 <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -1774,12 +1815,149 @@ export default function TemplateEditor({
               <div className="flex-1 overflow-auto bg-gray-100 dark:bg-gray-700 p-6">
                 <div className="mx-auto bg-white dark:bg-gray-800 shadow-xl" style={{ width: '794px', minHeight: '1123px' }}>
                   <style>{`
-                    .ProseMirror {
+                    /* TipTap Editor Base Styles - following official docs pattern */
+                    .tiptap {
                       padding: 48px 64px;
                       min-height: 1123px;
                       outline: none;
                       background: white;
                     }
+                    
+                    /* Typography - scoped to .tiptap per TipTap docs */
+                    .tiptap p {
+                      margin-bottom: 0.75rem;
+                      line-height: 1.7;
+                      color: #1e293b;
+                    }
+                    .tiptap h1 {
+                      font-size: 2rem;
+                      font-weight: 700;
+                      margin-bottom: 1rem;
+                      color: #1e293b;
+                      border-bottom: 3px solid #3b82f6;
+                      padding-bottom: 0.5rem;
+                    }
+                    .tiptap h2 {
+                      font-size: 1.5rem;
+                      font-weight: 600;
+                      margin-top: 2rem;
+                      margin-bottom: 0.75rem;
+                      color: #3b82f6;
+                    }
+                    .tiptap h3 {
+                      font-size: 1.125rem;
+                      font-weight: 600;
+                      margin-bottom: 0.5rem;
+                      color: #64748b;
+                    }
+                    .tiptap ul, .tiptap ol {
+                      padding-left: 1.5rem;
+                      margin-bottom: 0.75rem;
+                    }
+                    .tiptap li {
+                      margin-bottom: 0.25rem;
+                    }
+                    .tiptap blockquote {
+                      border-left: 4px solid #3b82f6;
+                      padding-left: 1rem;
+                      margin: 1rem 0;
+                      background: #f8fafc;
+                      padding: 1rem;
+                      border-radius: 0 8px 8px 0;
+                    }
+                    
+                    /* Variable chips */
+                    .tiptap .variable-chip { 
+                      background: linear-gradient(135deg, #dbeafe 0%, #bfdbfe 100%); 
+                      color: #1e40af; 
+                      padding: 4px 10px; 
+                      border-radius: 6px; 
+                      font-family: 'JetBrains Mono', 'Courier New', monospace; 
+                      font-size: 0.85rem;
+                      border: 1px solid #93c5fd;
+                      box-shadow: 0 1px 2px rgba(0,0,0,0.05);
+                      white-space: nowrap;
+                    }
+                    
+                    /* Common Tailwind utilities for visual editor */
+                    .tiptap .bg-gray-50 { background-color: #f9fafb; }
+                    .tiptap .bg-gray-100 { background-color: #f3f4f6; }
+                    .tiptap .bg-slate-50 { background-color: #f8fafc; }
+                    .tiptap .bg-slate-100 { background-color: #f1f5f9; }
+                    .tiptap .bg-blue-50 { background-color: #eff6ff; }
+                    .tiptap .bg-blue-600 { background-color: #2563eb; }
+                    .tiptap .bg-blue-700 { background-color: #1d4ed8; }
+                    .tiptap .bg-green-50 { background-color: #f0fdf4; }
+                    .tiptap .text-white { color: #ffffff; }
+                    .tiptap .text-gray-500 { color: #6b7280; }
+                    .tiptap .text-gray-600 { color: #4b5563; }
+                    .tiptap .text-gray-700 { color: #374151; }
+                    .tiptap .text-gray-900 { color: #111827; }
+                    .tiptap .text-slate-500 { color: #64748b; }
+                    .tiptap .text-slate-600 { color: #475569; }
+                    .tiptap .text-slate-900 { color: #0f172a; }
+                    .tiptap .text-blue-600 { color: #2563eb; }
+                    .tiptap .text-green-600 { color: #16a34a; }
+                    .tiptap .font-bold { font-weight: 700; }
+                    .tiptap .font-semibold { font-weight: 600; }
+                    .tiptap .font-medium { font-weight: 500; }
+                    .tiptap .text-xs { font-size: 0.75rem; }
+                    .tiptap .text-sm { font-size: 0.875rem; }
+                    .tiptap .text-lg { font-size: 1.125rem; }
+                    .tiptap .text-xl { font-size: 1.25rem; }
+                    .tiptap .text-2xl { font-size: 1.5rem; }
+                    .tiptap .text-3xl { font-size: 1.875rem; }
+                    .tiptap .text-5xl { font-size: 3rem; }
+                    .tiptap .p-2 { padding: 0.5rem; }
+                    .tiptap .p-4 { padding: 1rem; }
+                    .tiptap .p-6 { padding: 1.5rem; }
+                    .tiptap .p-8 { padding: 2rem; }
+                    .tiptap .px-4 { padding-left: 1rem; padding-right: 1rem; }
+                    .tiptap .px-6 { padding-left: 1.5rem; padding-right: 1.5rem; }
+                    .tiptap .px-10 { padding-left: 2.5rem; padding-right: 2.5rem; }
+                    .tiptap .py-2 { padding-top: 0.5rem; padding-bottom: 0.5rem; }
+                    .tiptap .py-4 { padding-top: 1rem; padding-bottom: 1rem; }
+                    .tiptap .py-8 { padding-top: 2rem; padding-bottom: 2rem; }
+                    .tiptap .m-0 { margin: 0; }
+                    .tiptap .mb-1 { margin-bottom: 0.25rem; }
+                    .tiptap .mb-2 { margin-bottom: 0.5rem; }
+                    .tiptap .mb-3 { margin-bottom: 0.75rem; }
+                    .tiptap .mb-4 { margin-bottom: 1rem; }
+                    .tiptap .mb-6 { margin-bottom: 1.5rem; }
+                    .tiptap .mb-8 { margin-bottom: 2rem; }
+                    .tiptap .mt-2 { margin-top: 0.5rem; }
+                    .tiptap .mt-4 { margin-top: 1rem; }
+                    .tiptap .mt-6 { margin-top: 1.5rem; }
+                    .tiptap .rounded { border-radius: 0.25rem; }
+                    .tiptap .rounded-lg { border-radius: 0.5rem; }
+                    .tiptap .rounded-xl { border-radius: 0.75rem; }
+                    .tiptap .shadow { box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
+                    .tiptap .shadow-lg { box-shadow: 0 10px 15px -3px rgba(0,0,0,0.1); }
+                    .tiptap .border { border-width: 1px; border-style: solid; border-color: #e5e7eb; }
+                    .tiptap .border-l-4 { border-left-width: 4px; border-left-style: solid; }
+                    .tiptap .border-gray-200 { border-color: #e5e7eb; }
+                    .tiptap .border-slate-200 { border-color: #e2e8f0; }
+                    .tiptap .border-blue-200 { border-color: #bfdbfe; }
+                    .tiptap .border-green-500 { border-color: #22c55e; }
+                    .tiptap .grid { display: grid; }
+                    .tiptap .grid-cols-2 { grid-template-columns: repeat(2, 1fr); }
+                    .tiptap .grid-cols-3 { grid-template-columns: repeat(3, 1fr); }
+                    .tiptap .gap-2 { gap: 0.5rem; }
+                    .tiptap .gap-4 { gap: 1rem; }
+                    .tiptap .gap-6 { gap: 1.5rem; }
+                    .tiptap .flex { display: flex; }
+                    .tiptap .flex-col { flex-direction: column; }
+                    .tiptap .items-center { align-items: center; }
+                    .tiptap .justify-between { justify-content: space-between; }
+                    .tiptap .space-y-1 > * + * { margin-top: 0.25rem; }
+                    .tiptap .space-y-2 > * + * { margin-top: 0.5rem; }
+                    .tiptap .uppercase { text-transform: uppercase; }
+                    .tiptap .tracking-wider { letter-spacing: 0.05em; }
+                    .tiptap .text-right { text-align: right; }
+                    .tiptap .text-center { text-align: center; }
+                    .tiptap .w-full { width: 100%; }
+                    .tiptap .max-w-5xl { max-width: 64rem; }
+                    .tiptap .mx-auto { margin-left: auto; margin-right: auto; }
                     /* Global drag handle styles */
                     .drag-handle {
                       position: fixed;
@@ -1816,38 +1994,23 @@ export default function TemplateEditor({
                       border-left: 2px solid #3b82f6 !important;
                       margin-left: -1px;
                     }
-                    .ProseMirror p { margin-bottom: 0.75rem; line-height: 1.7; color: #1e293b; }
-                    .ProseMirror h1 { font-size: 2rem; font-weight: 700; margin-bottom: 1rem; color: #1e293b; border-bottom: 3px solid #3b82f6; padding-bottom: 0.5rem; }
-                    .ProseMirror h2 { font-size: 1.5rem; font-weight: 600; margin-top: 2rem; margin-bottom: 0.75rem; color: #3b82f6; }
-                    .ProseMirror h3 { font-size: 1.125rem; font-weight: 600; margin-bottom: 0.5rem; color: #64748b; }
-                    .ProseMirror ul, .ProseMirror ol { padding-left: 1.5rem; margin-bottom: 0.75rem; }
-                    .ProseMirror li { margin-bottom: 0.25rem; }
-                    .ProseMirror blockquote { border-left: 4px solid #3b82f6; padding-left: 1rem; margin: 1rem 0; background: #f8fafc; padding: 1rem; border-radius: 0 8px 8px 0; }
-                    .ProseMirror .variable-chip { 
-                      background: linear-gradient(135deg, #dbeafe 0%, #bfdbfe 100%); 
-                      color: #1e40af; 
-                      padding: 4px 10px; 
-                      border-radius: 6px; 
-                      font-family: 'JetBrains Mono', 'Courier New', monospace; 
-                      font-size: 0.85rem;
-                      border: 1px solid #93c5fd;
-                      box-shadow: 0 1px 2px rgba(0,0,0,0.05);
-                      white-space: nowrap;
-                    }
+                    
                     /* Design classes for visual preview */
-                    .ProseMirror .section { margin: 1.5rem 0; padding: 1.25rem; background: #f8fafc; border-radius: 8px; border-left: 4px solid #3b82f6; }
-                    .ProseMirror .card { margin: 0.75rem 0; padding: 1.25rem; background: white; border: 1px solid #e2e8f0; border-radius: 8px; box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
-                    .ProseMirror .item { margin: 0.5rem 0; padding: 0.75rem 1rem; background: #f8fafc; border-left: 4px solid #0ea5e9; border-radius: 0 6px 6px 0; }
-                    .ProseMirror .stats-grid { display: flex; gap: 1rem; margin: 1.5rem 0; }
-                    .ProseMirror .stat-box { flex: 1; text-align: center; padding: 1.5rem; background: #f8fafc; border-radius: 8px; border: 1px solid #e2e8f0; }
-                    .ProseMirror .footer { margin-top: 3rem; padding-top: 1rem; border-top: 2px solid #e2e8f0; color: #64748b; font-size: 0.875rem; }
+                    .tiptap .section { margin: 1.5rem 0; padding: 1.25rem; background: #f8fafc; border-radius: 8px; border-left: 4px solid #3b82f6; }
+                    .tiptap .card { margin: 0.75rem 0; padding: 1.25rem; background: white; border: 1px solid #e2e8f0; border-radius: 8px; box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
+                    .tiptap .item { margin: 0.5rem 0; padding: 0.75rem 1rem; background: #f8fafc; border-left: 4px solid #0ea5e9; border-radius: 0 6px 6px 0; }
+                    .tiptap .stats-grid { display: flex; gap: 1rem; margin: 1.5rem 0; }
+                    .tiptap .stat-box { flex: 1; text-align: center; padding: 1.5rem; background: #f8fafc; border-radius: 8px; border: 1px solid #e2e8f0; }
+                    .tiptap .footer { margin-top: 3rem; padding-top: 1rem; border-top: 2px solid #e2e8f0; color: #64748b; font-size: 0.875rem; }
+                    
                     /* Grid layouts */
-                    .ProseMirror .two-columns { display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; margin: 1rem 0; }
-                    .ProseMirror .three-columns { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1rem; margin: 1rem 0; }
-                    .ProseMirror .four-columns { display: grid; grid-template-columns: repeat(4, 1fr); gap: 1rem; margin: 1rem 0; }
-                    .ProseMirror .sidebar-layout { display: grid; grid-template-columns: 2fr 1fr; gap: 2rem; margin: 1rem 0; }
+                    .tiptap .two-columns { display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; margin: 1rem 0; }
+                    .tiptap .three-columns { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1rem; margin: 1rem 0; }
+                    .tiptap .four-columns { display: grid; grid-template-columns: repeat(4, 1fr); gap: 1rem; margin: 1rem 0; }
+                    .tiptap .sidebar-layout { display: grid; grid-template-columns: 2fr 1fr; gap: 2rem; margin: 1rem 0; }
+                    
                     /* Column extension styles */
-                    .ProseMirror .column-block {
+                    .tiptap .column-block {
                       width: 100%;
                       display: grid;
                       grid-auto-flow: column;
@@ -1856,65 +2019,69 @@ export default function TemplateEditor({
                       padding: 8px 0;
                       margin: 1rem 0;
                     }
-                    .ProseMirror .column {
+                    .tiptap .column {
                       overflow: auto;
                       border: 1px #cbd5e1 dashed;
                       border-radius: 8px;
                       padding: 8px;
                       min-height: 100px;
                     }
+                    
                     ${showOutlines ? `
                     /* ALL ELEMENTS get visible borders when editing */
-                    .ProseMirror > * {
+                    .tiptap > * {
                       position: relative;
                       outline: 1px dashed #cbd5e1 !important;
                       outline-offset: 2px !important;
                       margin-bottom: 0.75rem;
                     }
-                    .ProseMirror > h1 {
+                    .tiptap > h1 {
                       outline-color: #3b82f6 !important;
                     }
-                    .ProseMirror > h2 {
+                    .tiptap > h2 {
                       outline-color: #8b5cf6 !important;
                     }
-                    .ProseMirror > h3 {
+                    .tiptap > h3 {
                       outline-color: #06b6d4 !important;
                     }
-                    .ProseMirror > p {
+                    .tiptap > p {
                       outline-color: #94a3b8 !important;
                     }
-                    .ProseMirror > ul, .ProseMirror > ol {
+                    .tiptap > ul, .tiptap > ol {
                       outline-color: #f59e0b !important;
                     }
+                    
                     /* Element type labels */
-                    .ProseMirror > h1::before { content: 'H1'; position: absolute; top: -8px; left: 0; font-size: 8px; font-weight: 700; color: white; background: #3b82f6; padding: 1px 4px; border-radius: 2px; z-index: 10; }
-                    .ProseMirror > h2::before { content: 'H2'; position: absolute; top: -8px; left: 0; font-size: 8px; font-weight: 700; color: white; background: #8b5cf6; padding: 1px 4px; border-radius: 2px; z-index: 10; }
-                    .ProseMirror > h3::before { content: 'H3'; position: absolute; top: -8px; left: 0; font-size: 8px; font-weight: 700; color: white; background: #06b6d4; padding: 1px 4px; border-radius: 2px; z-index: 10; }
-                    .ProseMirror > p::before { content: 'P'; position: absolute; top: -8px; left: 0; font-size: 8px; font-weight: 700; color: white; background: #64748b; padding: 1px 4px; border-radius: 2px; z-index: 10; }
-                    .ProseMirror > ul::before { content: 'UL'; position: absolute; top: -8px; left: 0; font-size: 8px; font-weight: 700; color: white; background: #f59e0b; padding: 1px 4px; border-radius: 2px; z-index: 10; }
-                    .ProseMirror > ol::before { content: 'OL'; position: absolute; top: -8px; left: 0; font-size: 8px; font-weight: 700; color: white; background: #f59e0b; padding: 1px 4px; border-radius: 2px; z-index: 10; }
-                    .ProseMirror > blockquote::before { content: 'QUOTE'; position: absolute; top: -8px; left: 0; font-size: 8px; font-weight: 700; color: white; background: #10b981; padding: 1px 4px; border-radius: 2px; z-index: 10; }
+                    .tiptap > h1::before { content: 'H1'; position: absolute; top: -8px; left: 0; font-size: 8px; font-weight: 700; color: white; background: #3b82f6; padding: 1px 4px; border-radius: 2px; z-index: 10; }
+                    .tiptap > h2::before { content: 'H2'; position: absolute; top: -8px; left: 0; font-size: 8px; font-weight: 700; color: white; background: #8b5cf6; padding: 1px 4px; border-radius: 2px; z-index: 10; }
+                    .tiptap > h3::before { content: 'H3'; position: absolute; top: -8px; left: 0; font-size: 8px; font-weight: 700; color: white; background: #06b6d4; padding: 1px 4px; border-radius: 2px; z-index: 10; }
+                    .tiptap > p::before { content: 'P'; position: absolute; top: -8px; left: 0; font-size: 8px; font-weight: 700; color: white; background: #64748b; padding: 1px 4px; border-radius: 2px; z-index: 10; }
+                    .tiptap > ul::before { content: 'UL'; position: absolute; top: -8px; left: 0; font-size: 8px; font-weight: 700; color: white; background: #f59e0b; padding: 1px 4px; border-radius: 2px; z-index: 10; }
+                    .tiptap > ol::before { content: 'OL'; position: absolute; top: -8px; left: 0; font-size: 8px; font-weight: 700; color: white; background: #f59e0b; padding: 1px 4px; border-radius: 2px; z-index: 10; }
+                    .tiptap > blockquote::before { content: 'QUOTE'; position: absolute; top: -8px; left: 0; font-size: 8px; font-weight: 700; color: white; background: #10b981; padding: 1px 4px; border-radius: 2px; z-index: 10; }
+                    
                     /* Custom class elements with stronger borders */
-                    .ProseMirror .section, .ProseMirror .card, .ProseMirror .item, 
-                    .ProseMirror .stat-box, .ProseMirror .footer,
-                    .ProseMirror .two-columns, .ProseMirror .three-columns, 
-                    .ProseMirror .four-columns, .ProseMirror .sidebar-layout,
-                    .ProseMirror .stats-grid {
+                    .tiptap .section, .tiptap .card, .tiptap .item, 
+                    .tiptap .stat-box, .tiptap .footer,
+                    .tiptap .two-columns, .tiptap .three-columns, 
+                    .tiptap .four-columns, .tiptap .sidebar-layout,
+                    .tiptap .stats-grid {
                       outline: 2px dashed #3b82f6 !important;
                       outline-offset: 2px !important;
                     }
-                    .ProseMirror .section::after { content: 'SECTION'; position: absolute; top: 4px; right: 4px; font-size: 9px; font-weight: 700; color: white; background: #3b82f6; padding: 2px 6px; border-radius: 3px; z-index: 10; }
-                    .ProseMirror .card::after { content: 'CARD'; position: absolute; top: 4px; right: 4px; font-size: 9px; font-weight: 700; color: white; background: #8b5cf6; padding: 2px 6px; border-radius: 3px; z-index: 10; }
-                    .ProseMirror .item::after { content: 'ITEM'; position: absolute; top: 4px; right: 4px; font-size: 9px; font-weight: 700; color: white; background: #0ea5e9; padding: 2px 6px; border-radius: 3px; z-index: 10; }
-                    .ProseMirror .stats-grid::after { content: 'STATS GRID'; position: absolute; top: 4px; right: 4px; font-size: 9px; font-weight: 700; color: white; background: #10b981; padding: 2px 6px; border-radius: 3px; z-index: 10; }
-                    .ProseMirror .stat-box::after { content: 'STAT'; position: absolute; top: 4px; right: 4px; font-size: 9px; font-weight: 700; color: white; background: #10b981; padding: 2px 6px; border-radius: 3px; z-index: 10; }
-                    .ProseMirror .footer::after { content: 'FOOTER'; position: absolute; top: 4px; right: 4px; font-size: 9px; font-weight: 700; color: white; background: #64748b; padding: 2px 6px; border-radius: 3px; z-index: 10; }
-                    .ProseMirror .two-columns::after { content: '2 COLUMNS'; position: absolute; top: 4px; right: 4px; font-size: 9px; font-weight: 700; color: white; background: #f59e0b; padding: 2px 6px; border-radius: 3px; z-index: 10; }
-                    .ProseMirror .three-columns::after { content: '3 COLUMNS'; position: absolute; top: 4px; right: 4px; font-size: 9px; font-weight: 700; color: white; background: #f59e0b; padding: 2px 6px; border-radius: 3px; z-index: 10; }
-                    .ProseMirror .four-columns::after { content: '4 COLUMNS'; position: absolute; top: 4px; right: 4px; font-size: 9px; font-weight: 700; color: white; background: #f59e0b; padding: 2px 6px; border-radius: 3px; z-index: 10; }
-                    .ProseMirror .sidebar-layout::after { content: 'SIDEBAR LAYOUT'; position: absolute; top: 4px; right: 4px; font-size: 9px; font-weight: 700; color: white; background: #f59e0b; padding: 2px 6px; border-radius: 3px; z-index: 10; }
+                    .tiptap .section::after { content: 'SECTION'; position: absolute; top: 4px; right: 4px; font-size: 9px; font-weight: 700; color: white; background: #3b82f6; padding: 2px 6px; border-radius: 3px; z-index: 10; }
+                    .tiptap .card::after { content: 'CARD'; position: absolute; top: 4px; right: 4px; font-size: 9px; font-weight: 700; color: white; background: #8b5cf6; padding: 2px 6px; border-radius: 3px; z-index: 10; }
+                    .tiptap .item::after { content: 'ITEM'; position: absolute; top: 4px; right: 4px; font-size: 9px; font-weight: 700; color: white; background: #0ea5e9; padding: 2px 6px; border-radius: 3px; z-index: 10; }
+                    .tiptap .stats-grid::after { content: 'STATS GRID'; position: absolute; top: 4px; right: 4px; font-size: 9px; font-weight: 700; color: white; background: #10b981; padding: 2px 6px; border-radius: 3px; z-index: 10; }
+                    .tiptap .stat-box::after { content: 'STAT'; position: absolute; top: 4px; right: 4px; font-size: 9px; font-weight: 700; color: white; background: #10b981; padding: 2px 6px; border-radius: 3px; z-index: 10; }
+                    .tiptap .footer::after { content: 'FOOTER'; position: absolute; top: 4px; right: 4px; font-size: 9px; font-weight: 700; color: white; background: #64748b; padding: 2px 6px; border-radius: 3px; z-index: 10; }
+                    .tiptap .two-columns::after { content: '2 COLUMNS'; position: absolute; top: 4px; right: 4px; font-size: 9px; font-weight: 700; color: white; background: #f59e0b; padding: 2px 6px; border-radius: 3px; z-index: 10; }
+                    .tiptap .three-columns::after { content: '3 COLUMNS'; position: absolute; top: 4px; right: 4px; font-size: 9px; font-weight: 700; color: white; background: #f59e0b; padding: 2px 6px; border-radius: 3px; z-index: 10; }
+                    .tiptap .four-columns::after { content: '4 COLUMNS'; position: absolute; top: 4px; right: 4px; font-size: 9px; font-weight: 700; color: white; background: #f59e0b; padding: 2px 6px; border-radius: 3px; z-index: 10; }
+                    .tiptap .sidebar-layout::after { content: 'SIDEBAR LAYOUT'; position: absolute; top: 4px; right: 4px; font-size: 9px; font-weight: 700; color: white; background: #f59e0b; padding: 2px 6px; border-radius: 3px; z-index: 10; }
+                    
                     /* Child elements in grid layouts */
-                    .ProseMirror .two-columns > *, .ProseMirror .three-columns > *, .ProseMirror .four-columns > *, .ProseMirror .sidebar-layout > * {
+                    .tiptap .two-columns > *, .tiptap .three-columns > *, .tiptap .four-columns > *, .tiptap .sidebar-layout > * {
                       outline: 1px solid #cbd5e1 !important;
                       outline-offset: -1px !important;
                       min-height: 80px;
@@ -1922,7 +2089,7 @@ export default function TemplateEditor({
                       background: rgba(248, 250, 252, 0.8) !important;
                       position: relative;
                     }
-                    .ProseMirror .two-columns > *::before, .ProseMirror .three-columns > *::before, .ProseMirror .four-columns > *::before, .ProseMirror .sidebar-layout > *::before {
+                    .tiptap .two-columns > *::before, .tiptap .three-columns > *::before, .tiptap .four-columns > *::before, .tiptap .sidebar-layout > *::before {
                       content: 'COLUMN';
                       position: absolute;
                       bottom: 4px;
@@ -1946,12 +2113,12 @@ export default function TemplateEditor({
           {/* Code Editor Mode */}
           {editorMode === 'code' && (
             <>
-              <div className="bg-gray-800 px-4 py-2 flex items-center justify-between">
+              <div className={`px-4 py-2 flex items-center justify-between ${isDarkMode ? 'bg-gray-800' : 'bg-gray-100 border-b border-gray-200'}`}>
                 <div className="flex items-center gap-4">
-                  <span className="text-xs text-gray-400 font-mono">HTML / Handlebars</span>
+                  <span className={`text-xs font-mono ${isDarkMode ? 'text-gray-400' : 'text-gray-600'}`}>HTML / Handlebars</span>
                   <button
                     onClick={formatCode}
-                    className="text-xs text-gray-400 hover:text-white px-2 py-1 rounded hover:bg-gray-700 transition flex items-center gap-1"
+                    className={`text-xs px-2 py-1 rounded transition flex items-center gap-1 ${isDarkMode ? 'text-gray-400 hover:text-white hover:bg-gray-700' : 'text-gray-600 hover:text-gray-900 hover:bg-gray-200'}`}
                     title="Formatera kod (indentation)"
                   >
                     <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -1961,14 +2128,14 @@ export default function TemplateEditor({
                   </button>
                 </div>
                 {validation.valid ? (
-                  <span className="text-xs text-green-400 flex items-center gap-1">
+                  <span className="text-xs text-green-500 flex items-center gap-1">
                     <svg className="w-3 h-3" fill="currentColor" viewBox="0 0 20 20">
                       <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
                     </svg>
                     Giltig syntax
                   </span>
                 ) : (
-                  <span className="text-xs text-red-400 flex items-center gap-1">
+                  <span className="text-xs text-red-500 flex items-center gap-1">
                     <svg className="w-3 h-3" fill="currentColor" viewBox="0 0 20 20">
                       <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
                     </svg>
@@ -1976,7 +2143,7 @@ export default function TemplateEditor({
                   </span>
                 )}
               </div>
-              <div className="flex-1 overflow-auto" style={{ background: '#1d1f21' }}>
+              <div className="flex-1 overflow-auto" style={{ background: isDarkMode ? '#1d1f21' : '#fafafa' }}>
                 <CodeEditor
                   value={templateContent}
                   onValueChange={code => setTemplateContent(code)}
@@ -1987,6 +2154,7 @@ export default function TemplateEditor({
                     fontSize: 14,
                     lineHeight: 1.6,
                     minHeight: '100%',
+                    color: isDarkMode ? '#abb2bf' : '#24292e',
                   }}
                   className="code-editor-container"
                   textareaId="template-editor"
@@ -1999,20 +2167,22 @@ export default function TemplateEditor({
                 }
                 .code-editor-container textarea {
                   outline: none !important;
+                  color: ${isDarkMode ? '#abb2bf' : '#24292e'} !important;
+                  caret-color: ${isDarkMode ? '#fff' : '#000'} !important;
                 }
                 .code-editor-container pre {
                   min-height: 100%;
                 }
-                /* Custom Handlebars/HTML highlighting */
-                .token.tag { color: #e06c75; }
-                .token.attr-name { color: #d19a66; }
-                .token.attr-value { color: #98c379; }
-                .token.punctuation { color: #abb2bf; }
-                .token.comment { color: #5c6370; font-style: italic; }
-                .token.handlebars-delimiter { color: #c678dd; font-weight: bold; }
-                .token.handlebars-variable { color: #61afef; }
-                .token.handlebars-helper { color: #c678dd; }
-                .token.handlebars-block { color: #e5c07b; }
+                /* Custom Handlebars/HTML highlighting - adapts to theme */
+                .token.tag { color: ${isDarkMode ? '#e06c75' : '#22863a'}; }
+                .token.attr-name { color: ${isDarkMode ? '#d19a66' : '#6f42c1'}; }
+                .token.attr-value { color: ${isDarkMode ? '#98c379' : '#032f62'}; }
+                .token.punctuation { color: ${isDarkMode ? '#abb2bf' : '#24292e'}; }
+                .token.comment { color: ${isDarkMode ? '#5c6370' : '#6a737d'}; font-style: italic; }
+                .token.handlebars-delimiter { color: ${isDarkMode ? '#c678dd' : '#d73a49'}; font-weight: bold; }
+                .token.handlebars-variable { color: ${isDarkMode ? '#61afef' : '#005cc5'}; }
+                .token.handlebars-helper { color: ${isDarkMode ? '#c678dd' : '#6f42c1'}; }
+                .token.handlebars-block { color: ${isDarkMode ? '#e5c07b' : '#e36209'}; }
               `}</style>
             </>
           )}
@@ -2020,24 +2190,35 @@ export default function TemplateEditor({
           {/* Preview Mode */}
           {editorMode === 'preview' && (
             <div className="flex-1 flex flex-col bg-gray-100 dark:bg-gray-700">
-              <div className="bg-gray-200 px-4 py-2 flex items-center justify-between">
+              <div className="bg-gray-200 dark:bg-gray-800 px-4 py-2 flex items-center justify-between">
                 <div className="flex items-center gap-3">
                   <span className="text-sm font-medium text-gray-700 dark:text-gray-300">Förhandsvisning</span>
-                  <span className="text-xs text-gray-500 dark:text-gray-400 bg-white dark:bg-gray-800 px-2 py-0.5 rounded">{theme.name}</span>
+                  {isCompleteHtmlDocument(templateContent) && (
+                    <span className="text-xs text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-900/30 px-2 py-0.5 rounded">
+                      Komplett HTML-mall
+                    </span>
+                  )}
                 </div>
-                <span className="text-xs text-gray-500 dark:text-gray-400">A4-format (210×297mm)</span>
+                <div className="flex items-center gap-3">
+                  {isCompleteHtmlDocument(templateContent) && (
+                    <span className="text-xs text-gray-500 dark:text-gray-400">
+                      Redigera med <button onClick={() => handleModeSwitch('code')} className="text-blue-600 dark:text-blue-400 hover:underline font-medium">Kodläge</button>
+                    </span>
+                  )}
+                  <span className="text-xs text-gray-500 dark:text-gray-400">A4-format (210×297mm)</span>
+                </div>
               </div>
               <div className="flex-1 overflow-auto p-6">
                 {preview ? (
                   <div className="mx-auto" style={{ maxWidth: '794px' }}>
                     <iframe
                       srcDoc={preview}
-                      className="bg-white dark:bg-gray-800 shadow-2xl mx-auto border-0 w-full rounded-sm"
+                      className="bg-white shadow-2xl mx-auto border-0 w-full rounded-sm"
                       style={{ height: '1123px' }}
                       title="Template Preview"
                     />
                     <p className="text-center text-xs text-gray-500 dark:text-gray-400 mt-4">
-                      Detta visar hur rapporten ser ut med verklig data från det valda hjulet
+                      Detta visar hur fakturan kommer se ut med verklig data
                     </p>
                   </div>
                 ) : (
@@ -2047,7 +2228,7 @@ export default function TemplateEditor({
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
                       </svg>
                       <p className="text-sm font-medium text-gray-600 dark:text-gray-400 mb-1">Ingen förhandsvisning tillgänglig</p>
-                      <p className="text-xs text-gray-500 dark:text-gray-400">Välj ett hjul ovan för att se rapporten med verklig data</p>
+                      <p className="text-xs text-gray-500 dark:text-gray-400">Ange mallinnehåll för att se förhandsvisningen</p>
                     </div>
                   </div>
                 )}
