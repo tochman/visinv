@@ -403,7 +403,7 @@ const OrganizationSetupWizard = ({ onClose, onComplete }) => {
   ];
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4" data-cy="organization-wizard">
       <div className="bg-white dark:bg-gray-800 rounded-lg shadow-xl max-w-2xl w-full max-h-[90vh] overflow-hidden">
         {/* Header */}
         <div className="px-6 py-4 border-b border-gray-200 dark:border-gray-700 flex justify-between items-center">
@@ -469,6 +469,7 @@ const OrganizationSetupWizard = ({ onClose, onComplete }) => {
             onClick={step === 1 ? onClose : handleBack}
             className="px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white"
             disabled={loading}
+            data-cy="back-button"
           >
             {step === 1 ? t('common.cancel') : t('common.back')}
           </button>

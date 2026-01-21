@@ -27,19 +27,36 @@ const organizationService = {
       return { data: null, error: { message: 'Supabase not configured.' } };
     }
 
-    const { data, error } = await supabase
-      .from('organizations')
-      .select(`
-        *,
-        organization_members!inner(
-          role,
-          is_default,
-          joined_at
-        )
-      `)
-      .order('created_at', { ascending: false });
+    const { data: user } = await supabase.auth.getUser();
+    if (!user?.user) {
+      return { data: [], error: null };
+    }
 
-    return { data, error };
+    // Get organizations through membership table
+    const { data: memberships, error } = await supabase
+      .from('organization_members')
+      .select(`
+        role,
+        is_default,
+        joined_at,
+        organizations(*)
+      `)
+      .eq('user_id', user.user.id)
+      .order('joined_at', { ascending: false });
+
+    if (error) {
+      return { data: null, error };
+    }
+
+    // Flatten the data structure
+    const organizations = (memberships || []).map(m => ({
+      ...m.organizations,
+      role: m.role,
+      is_default: m.is_default,
+      joined_at: m.joined_at
+    }));
+
+    return { data: organizations, error: null };
   },
 
   /**
@@ -81,26 +98,63 @@ const organizationService = {
       return { data: null, error: { message: 'Not authenticated' } };
     }
 
+    // First try to get the default organization
     const { data, error } = await supabase
-      .from('organizations')
+      .from('organization_members')
       .select(`
-        *,
-        organization_members!inner(
-          role,
-          is_default
-        )
+        organization_id,
+        role,
+        is_default,
+        organizations(*)
       `)
-      .eq('organization_members.user_id', user.user.id)
-      .eq('organization_members.is_default', true)
-      .single();
+      .eq('user_id', user.user.id)
+      .eq('is_default', true)
+      .maybeSingle();
 
-    // If no default, get the first organization
-    if (!data && !error) {
-      const { data: orgs } = await this.getAll();
-      return { data: orgs?.[0] || null, error: null };
+    if (error) {
+      return { data: null, error };
     }
 
-    return { data, error };
+    // If we found a default, return the organization
+    if (data?.organizations) {
+      return { 
+        data: { 
+          ...data.organizations, 
+          role: data.role 
+        }, 
+        error: null 
+      };
+    }
+
+    // If no default, get the first organization the user belongs to
+    const { data: firstMember, error: firstError } = await supabase
+      .from('organization_members')
+      .select(`
+        organization_id,
+        role,
+        organizations(*)
+      `)
+      .eq('user_id', user.user.id)
+      .order('joined_at', { ascending: true })
+      .limit(1)
+      .maybeSingle();
+
+    if (firstError) {
+      return { data: null, error: firstError };
+    }
+
+    if (firstMember?.organizations) {
+      return { 
+        data: { 
+          ...firstMember.organizations, 
+          role: firstMember.role 
+        }, 
+        error: null 
+      };
+    }
+
+    // No organizations found at all
+    return { data: null, error: null };
   },
 
   /**
