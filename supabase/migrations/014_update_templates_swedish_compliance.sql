@@ -1,94 +1,16 @@
-import { BaseResource } from './BaseResource';
+-- Migration 014: Update invoice templates for Swedish compliance
+-- Updates system templates (Modern and Classic) to include all mandatory Swedish fields
+-- Addresses US-067, US-069, US-070, US-071
 
-/**
- * InvoiceTemplate Resource
- * Handles CRUD operations for invoice templates
- */
-class InvoiceTemplateResource extends BaseResource {
-  constructor() {
-    super('invoice_templates');
-  }
+-- Delete old system templates
+DELETE FROM invoice_templates WHERE is_system = true;
 
-  /**
-   * Get all invoice templates for the current user
-   * Includes both user templates and system templates
-   * @returns {Promise<{data: Array|null, error: Error|null}>}
-   */
-  async index() {
-    const { user } = await this.getCurrentUser();
-    if (!user) return { data: null, error: new Error('Not authenticated') };
-
-    const { data, error } = await this.supabase
-      .from(this.tableName)
-      .select('*')
-      .or(`user_id.eq.${user.id},user_id.is.null`)
-      .order('is_system', { ascending: false })
-      .order('name', { ascending: true });
-
-    return { data, error };
-  }
-
-  /**
-   * Create a new template
-   * @param {Object} templateData - Template data
-   * @returns {Promise<{data: Object|null, error: Error|null}>}
-   */
-  async create(templateData) {
-    const { user } = await this.getCurrentUser();
-    if (!user) return { data: null, error: new Error('Not authenticated') };
-
-    const { data, error } = await this.supabase
-      .from(this.tableName)
-      .insert({
-        ...templateData,
-        user_id: user.id,
-        is_system: false,
-      })
-      .select()
-      .single();
-
-    return { data, error };
-  }
-
-  /**
-   * Clone a system template for editing
-   * @param {string} templateId - Template ID to clone
-   * @param {string} newName - Name for the cloned template
-   * @returns {Promise<{data: Object|null, error: Error|null}>}
-   */
-  async clone(templateId, newName) {
-    const { user } = await this.getCurrentUser();
-    if (!user) return { data: null, error: new Error('Not authenticated') };
-
-    // Fetch the template to clone
-    const { data: template, error: fetchError } = await this.show(templateId);
-    if (fetchError) return { data: null, error: fetchError };
-
-    // Create a new template based on the original
-    const { data, error } = await this.supabase
-      .from(this.tableName)
-      .insert({
-        name: newName || `${template.name} (Copy)`,
-        content: template.content,
-        variables: template.variables,
-        is_system: false,
-        user_id: user.id,
-      })
-      .select()
-      .single();
-
-    return { data, error };
-  }
-
-  /**
-   * Get default templates
-   * @returns {Array} Default template definitions
-   */
-  getDefaultTemplates() {
-    return [
-      {
-        name: 'Modern',
-        content: `<!DOCTYPE html>
+-- Insert updated Modern template with Swedish compliance
+INSERT INTO invoice_templates (name, content, variables, is_system, user_id)
+VALUES 
+(
+  'Modern',
+  '<!DOCTYPE html>
 <html>
 <head>
   <meta charset="UTF-8">
@@ -231,18 +153,19 @@ class InvoiceTemplateResource extends BaseResource {
     <p>Denna faktura är upprättad enligt Bokföringslagen (1999:1078) och Mervärdesskattelagen (2023:200)</p>
   </div>
 </body>
-</html>`,
-        variables: ['invoice_number', 'issue_date', 'delivery_date', 'due_date', 'reference', 'client_name', 'client_address', 'client_city', 'client_postal_code', 'client_country', 'client_email', 'organization_name', 'organization_number', 'organization_vat_number', 'organization_municipality', 'organization_address', 'organization_city', 'organization_postal_code', 'organization_email', 'organization_phone', 'organization_f_skatt_approved', 'line_items', 'subtotal', 'vat_groups', 'total', 'currency', 'notes', 'terms'],
-        is_system: true,
-      },
-      {
-        name: 'Classic',
-        content: `<!DOCTYPE html>
+</html>',
+  ARRAY['invoice_number', 'issue_date', 'delivery_date', 'due_date', 'reference', 'client_name', 'client_address', 'client_city', 'client_postal_code', 'client_country', 'client_email', 'organization_name', 'organization_number', 'organization_vat_number', 'organization_municipality', 'organization_address', 'organization_city', 'organization_postal_code', 'organization_email', 'organization_phone', 'organization_f_skatt_approved', 'line_items', 'subtotal', 'vat_groups', 'total', 'currency', 'notes', 'terms'],
+  true,
+  NULL
+),
+(
+  'Classic',
+  '<!DOCTYPE html>
 <html>
 <head>
   <meta charset="UTF-8">
   <style>
-    body { font-family: 'Times New Roman', serif; padding: 40px; color: #000; }
+    body { font-family: ''Times New Roman'', serif; padding: 40px; color: #000; }
     .header { text-align: center; margin-bottom: 40px; border-bottom: 2px solid #000; padding-bottom: 20px; }
     .invoice-title { font-size: 32px; font-weight: bold; letter-spacing: 2px; }
     .invoice-number { font-size: 16px; margin-top: 10px; }
@@ -372,12 +295,8 @@ class InvoiceTemplateResource extends BaseResource {
     <p>Denna faktura är upprättad i enlighet med Bokföringslagen (1999:1078) och Mervärdesskattelagen (2023:200)</p>
   </div>
 </body>
-</html>`,
-        variables: ['invoice_number', 'issue_date', 'delivery_date', 'due_date', 'reference', 'client_name', 'client_address', 'client_city', 'client_postal_code', 'client_country', 'client_email', 'organization_name', 'organization_number', 'organization_vat_number', 'organization_municipality', 'organization_address', 'organization_city', 'organization_postal_code', 'organization_email', 'organization_phone', 'organization_f_skatt_approved', 'line_items', 'subtotal', 'vat_groups', 'total', 'currency', 'notes', 'terms'],
-        is_system: true,
-      },
-    ];
-  }
-}
-
-export default new InvoiceTemplateResource();
+</html>',
+  ARRAY['invoice_number', 'issue_date', 'delivery_date', 'due_date', 'reference', 'client_name', 'client_address', 'client_city', 'client_postal_code', 'client_country', 'client_email', 'organization_name', 'organization_number', 'organization_vat_number', 'organization_municipality', 'organization_address', 'organization_city', 'organization_postal_code', 'organization_email', 'organization_phone', 'organization_f_skatt_approved', 'line_items', 'subtotal', 'vat_groups', 'total', 'currency', 'notes', 'terms'],
+  true,
+  NULL
+);

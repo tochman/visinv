@@ -5,6 +5,7 @@ import { fetchInvoices, deleteInvoice, markInvoiceAsSent, markInvoiceAsPaid } fr
 import { fetchTemplates } from '../features/invoiceTemplates/invoiceTemplatesSlice';
 import InvoiceModal from '../components/invoices/InvoiceModal';
 import { generateInvoicePDF } from '../services/invoicePdfService';
+import { useOrganization } from '../contexts/OrganizationContext';
 
 export default function Invoices() {
   const { t } = useTranslation();
@@ -12,6 +13,7 @@ export default function Invoices() {
   const { items: invoices, loading, error } = useSelector((state) => state.invoices);
   const { items: templates } = useSelector((state) => state.invoiceTemplates);
   const { user } = useSelector((state) => state.auth);
+  const { currentOrganization } = useOrganization();
 
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedInvoice, setSelectedInvoice] = useState(null);
@@ -59,7 +61,7 @@ export default function Invoices() {
         alert(t('invoices.noTemplateAvailable'));
         return;
       }
-      await generateInvoicePDF(invoice, template);
+      await generateInvoicePDF(invoice, template, currentOrganization);
     } catch (error) {
       console.error('PDF generation failed:', error);
       alert(t('invoices.pdfError'));

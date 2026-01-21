@@ -4,9 +4,10 @@ import { renderTemplate, exportToPDF } from './templateService';
  * Generate PDF from invoice data and template
  * @param {Object} invoice - Invoice with client and invoice_rows
  * @param {Object} template - Template with content (Handlebars HTML)
+ * @param {Object} organization - Organization data for Swedish compliance
  * @returns {Promise<void>}
  */
-export async function generateInvoicePDF(invoice, template) {
+export async function generateInvoicePDF(invoice, template, organization) {
   if (!invoice || !template) {
     throw new Error('Invoice and template are required');
   }
@@ -18,20 +19,40 @@ export async function generateInvoicePDF(invoice, template) {
 
   // Build context from invoice data
   const context = {
+    // Invoice details
     invoice_number: invoice.invoice_number,
+    issue_date: formatDate(invoice.issue_date),
+    due_date: formatDate(invoice.due_date),
+    delivery_date: formatDate(invoice.delivery_date),
+    status: invoice.status,
+    reference: invoice.reference || '',
+    notes: invoice.notes || '',
+    terms: invoice.terms || '',
+    currency: invoice.currency || 'SEK',
+    
+    // Client information
     client_name: invoice.client?.name || '',
     client_email: invoice.client?.email || '',
     client_address: invoice.client?.address || '',
     client_city: invoice.client?.city || '',
     client_postal_code: invoice.client?.postal_code || '',
     client_country: invoice.client?.country || '',
-    issue_date: formatDate(invoice.issue_date),
-    due_date: formatDate(invoice.due_date),
-    status: invoice.status,
-    reference: invoice.reference || '',
-    notes: invoice.notes || '',
-    terms: invoice.terms || '',
-    currency: invoice.currency || 'SEK',
+    
+    // Organization information (Swedish compliance)
+    organization_name: organization?.name || '',
+    organization_number: organization?.organization_number || '',
+    organization_vat_number: organization?.vat_number || '',
+    organization_municipality: organization?.municipality || '',
+    organization_address: organization?.address || '',
+    organization_city: organization?.city || '',
+    organization_postal_code: organization?.postal_code || '',
+    organization_country: organization?.country || 'Sweden',
+    organization_email: organization?.email || '',
+    organization_phone: organization?.phone || '',
+    organization_website: organization?.website || '',
+    organization_f_skatt_approved: organization?.f_skatt_approved || false,
+    
+    // Financial calculations
     tax_rate: invoice.tax_rate || 0,
     subtotal: subtotal,
     tax_amount: totalVAT,
