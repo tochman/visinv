@@ -112,6 +112,7 @@
 - As a **user**, in order to **vary what my invoices look like**, I would like to **choose either a system template or one of my custom templates to use for a specific invoice**.
 - **Status:** Implemented
   - Template selector dropdown in invoice creation/edit modal
+  - Template quick-change dropdown in invoice list view (per invoice row)
   - Grouped by "System Templates" and "My Templates"
   - Selected template stored with invoice (`invoice_template_id`)
   - PDF generation uses invoice's selected template (or falls back to default)

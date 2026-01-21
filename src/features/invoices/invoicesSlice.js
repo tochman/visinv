@@ -79,6 +79,15 @@ const invoicesSlice = createSlice({
     clearCurrentInvoice: (state) => {
       state.currentInvoice = null;
     },
+    // Optimistic update for template selection (no loading state)
+    setInvoiceTemplate: (state, action) => {
+      const { invoiceId, templateId, template } = action.payload;
+      const index = state.items.findIndex(item => item.id === invoiceId);
+      if (index !== -1) {
+        state.items[index].invoice_template_id = templateId;
+        state.items[index].invoice_template = template;
+      }
+    },
   },
   extraReducers: (builder) => {
     builder
@@ -163,5 +172,19 @@ const invoicesSlice = createSlice({
   },
 });
 
-export const { clearError, clearCurrentInvoice } = invoicesSlice.actions;
+export const { clearError, clearCurrentInvoice, setInvoiceTemplate } = invoicesSlice.actions;
+
+// Optimistic update for template selection - updates UI immediately, saves in background
+export const updateInvoiceTemplate = ({ invoiceId, templateId, template }) => async (dispatch) => {
+  // Optimistic update - immediate UI change
+  dispatch(setInvoiceTemplate({ invoiceId, templateId, template }));
+  
+  // Background save via Resource pattern
+  const { error } = await Invoice.update(invoiceId, { invoice_template_id: templateId });
+  if (error) {
+    console.error('Failed to save template selection:', error);
+    // Could dispatch a rollback action here if needed
+  }
+};
+
 export default invoicesSlice.reducer;

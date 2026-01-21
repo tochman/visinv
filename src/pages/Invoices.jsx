@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { useTranslation } from 'react-i18next';
-import { fetchInvoices, deleteInvoice, markInvoiceAsSent, markInvoiceAsPaid } from '../features/invoices/invoicesSlice';
+import { fetchInvoices, deleteInvoice, markInvoiceAsSent, markInvoiceAsPaid, updateInvoiceTemplate } from '../features/invoices/invoicesSlice';
 import { fetchTemplates } from '../features/invoiceTemplates/invoiceTemplatesSlice';
 import InvoiceModal from '../components/invoices/InvoiceModal';
 import { generateInvoicePDF, buildInvoiceContext } from '../services/invoicePdfService';
@@ -51,6 +51,15 @@ export default function Invoices() {
 
   const handleMarkAsPaid = async (id) => {
     await dispatch(markInvoiceAsPaid({ id }));
+  };
+
+  const handleTemplateChange = (invoice, templateId) => {
+    const template = templateId ? templates.find(t => t.id === templateId) : null;
+    dispatch(updateInvoiceTemplate({
+      invoiceId: invoice.id,
+      templateId: templateId || null,
+      template: template ? { id: template.id, name: template.name, is_system: template.is_system } : null
+    }));
   };
 
   const handleDownloadPDF = async (invoice) => {
@@ -266,6 +275,9 @@ export default function Invoices() {
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
                     {t('invoice.status')}
                   </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                    {t('invoice.template')}
+                  </th>
                   <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
                     {t('invoice.total')}
                   </th>
@@ -297,6 +309,34 @@ export default function Invoices() {
                       <span className={`px-2 py-1 text-xs font-medium rounded-full ${getStatusColor(invoice.status)}`} data-cy={`invoice-status-${invoice.id}`}>
                         {t(`invoice.statuses.${invoice.status}`)}
                       </span>
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      <select
+                        value={invoice.invoice_template_id || ''}
+                        onChange={(e) => handleTemplateChange(invoice, e.target.value)}
+                        data-cy={`template-select-${invoice.id}`}
+                        className="text-xs border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-900 dark:text-white px-2 py-1 focus:ring-1 focus:ring-blue-500 focus:border-blue-500 max-w-[140px]"
+                      >
+                        <option value="">{t('invoice.defaultTemplate')}</option>
+                        {templates.filter(t => t.is_system).length > 0 && (
+                          <optgroup label={t('invoice.systemTemplates')}>
+                            {templates.filter(t => t.is_system).map((template) => (
+                              <option key={template.id} value={template.id}>
+                                {template.name}
+                              </option>
+                            ))}
+                          </optgroup>
+                        )}
+                        {templates.filter(t => !t.is_system).length > 0 && (
+                          <optgroup label={t('invoice.myTemplates')}>
+                            {templates.filter(t => !t.is_system).map((template) => (
+                              <option key={template.id} value={template.id}>
+                                {template.name}
+                              </option>
+                            ))}
+                          </optgroup>
+                        )}
+                      </select>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium text-gray-900 dark:text-white">
                       {formatCurrency(invoice.total_amount, invoice.currency)}
