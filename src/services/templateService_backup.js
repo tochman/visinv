@@ -115,17 +115,99 @@ export function renderTemplate(templateContent, context) {
 
 /**
  * Export rendered HTML to PDF
- * Uses Tailwind v3 for compatibility with html2canvas (no oklch colors)
+ * Expects a complete HTML document with styling already included
  */
 export async function exportToPDF(html, filename = 'report.pdf') {
   const html2pdf = (await import('html2pdf.js')).default;
-  
-  // Replace Tailwind v4 CDN with v3 which uses rgb colors instead of oklch
-  let processedHtml = html.replace(
-    /<script src="https:\/\/cdn\.tailwindcss\.com"><\/script>/gi,
-    '<script src="https://cdn.tailwindcss.com/3.4.1"></script>'
-  );
-  
+  // Helper to inline computed colors as rgb() values to avoid unsupported color
+  // functions (e.g. oklch) used by Tailwind v4 color tokens. html2canvas
+  // cannot parse these, so we convert computed styles to rgb before rendering.
+  const inlineComputedColors = (doc) => {
+    try {
+      // Canvas-based color normalizer: converts any valid CSS color (incl. oklch)
+      // into a normalized rgb/rgba string that html2canvas can parse.
+      const ctx = doc.createElement('canvas').getContext('2d');
+      const isUnsupportedColorFn = (val) => /oklch\(|oklab\(|lch\(|lab\(|color-mix\(/i.test(val || ''));
+      const normalizeColor = (value, prop = '') => {
+        if (!value) return value;
+        try {
+          if (isUnsupportedColorFn(value)) {
+            // Fallback: backgrounds to white, others to black
+            return /background/i.test(prop) ? '#ffffff' : '#000000';
+          }
+          ctx.fillStyle = '#000';
+          ctx.fillStyle = value;
+          return ctx.fillStyle; // normalized to rgb()/rgba()/#hex
+        } catch {
+          // If canvas can't parse, provide conservative fallback
+          return /background/i.test(prop) ? '#ffffff' : '#000000';
+        }
+      };
+      const walker = doc.createTreeWalker(doc.body, NodeFilter.SHOW_ELEMENT);
+      const colorProps = [
+        'color',
+        'background',
+        'backgroundColor',
+        'borderColor',
+        'borderTopColor',
+        'borderRightColor',
+        'borderBottomColor',
+        'borderLeftColor',
+        'outlineColor',
+        'textDecorationColor',
+        'caretColor',
+        'columnRuleColor',
+        'fill',
+        'stroke'
+      ];
+
+      let node;
+      while ((node = walker.nextNode())) {
+        const cs = doc.defaultView?.getComputedStyle(node);
+        if (!cs) continue;
+
+        // If any value includes unsupported color functions, force inline as rgb()
+        colorProps.forEach((prop) => {
+          const val = cs.getPropertyValue(prop);
+          if (!val) return;
+          const normalized = normalizeColor(val, prop);
+          try {
+            // Force inline override
+            node.style.setProperty(prop, normalized || val, 'important');
+          } catch {
+            // ignore failures for read-only props
+          }
+        });
+
+        // Explicitly normalize background shorthand and remove images/gradients
+        const bgColor = cs.getPropertyValue('background-color');
+        if (bgColor) {
+          const normalizedBg = normalizeColor(bgColor, 'background');
+          node.style.setProperty('background-color', normalizedBg, 'important');
+          node.style.setProperty('background-image', 'none', 'important');
+          node.style.setProperty('background', normalizedBg, 'important');
+        }
+
+        // SVG fills/strokes
+        if (node instanceof doc.defaultView.SVGElement) {
+          const fill = normalizeColor(cs.getPropertyValue('fill'), 'fill');
+          const stroke = normalizeColor(cs.getPropertyValue('stroke'), 'stroke');
+          if (fill) node.setAttribute('fill', fill);
+          if (stroke) node.setAttribute('stroke', stroke);
+        }
+      }
+
+      // Ensure a white page background
+      if (doc.body && !doc.body.style.backgroundColor) {
+        doc.body.style.backgroundColor = '#ffffff';
+      }
+    } catch (err) {
+      // Best-effort; don't block PDF generation if this fails
+      // eslint-disable-next-line no-console
+      console.warn('Color inlining failed, continuing anyway:', err);
+    }
+  };
+
   const options = {
     margin: [10, 10],
     filename,
@@ -134,34 +216,62 @@ export async function exportToPDF(html, filename = 'report.pdf') {
       scale: 2,
       useCORS: true,
       backgroundColor: '#ffffff',
-      logging: false
+      onclone: (clonedDoc) => {
+        // First inline computed styles (colors, fills)
+        inlineComputedColors(clonedDoc);
+
+        // Then strip external styles to prevent html2canvas from parsing
+        // unsupported CSS functions (oklch, color-mix, etc.) from Tailwind
+        try {
+          const styles = clonedDoc.querySelectorAll('link[rel="stylesheet"], style');
+          styles.forEach((el) => el.parentNode && el.parentNode.removeChild(el));
+        } catch (e) {
+          // ignore
+        }
+
+        // Force-reset global CSS variables that Tailwind sets to oklch
+        try {
+          const root = clonedDoc.documentElement;
+          const style = root.style;
+          // Remove any --color-* variables to avoid oklch fallbacks
+          Array.from(root.ownerDocument.defaultView.getComputedStyle(root)).forEach((prop) => {
+            if (prop.startsWith('--')) {
+              style.removeProperty(prop);
+            }
+          });
+        } catch {}
+
+        // Ensure cloned root has a safe background
+        clonedDoc.documentElement.style.backgroundColor = '#ffffff';
+        clonedDoc.body.style.backgroundColor = '#ffffff';
+      }
     },
     jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
   };
 
   try {
-    // Create hidden container with the HTML
+    // Ensure we work with a real DOM node so that onclone can traverse it
     const container = document.createElement('div');
-    container.style.cssText = 'position: fixed; left: -10000px; top: 0; width: 210mm; background: #ffffff;';
-    container.innerHTML = processedHtml;
+    container.style.position = 'fixed';
+    container.style.left = '-10000px';
+    container.style.top = '0';
+    container.style.width = '800px';
+    container.style.background = '#ffffff';
+    container.innerHTML = html;
     document.body.appendChild(container);
 
-    // Wait for Tailwind CDN to load and apply styles
-    await new Promise((resolve) => {
-      const checkTailwind = setInterval(() => {
-        const computedStyle = window.getComputedStyle(container.querySelector('body') || container);
-        if (computedStyle.getPropertyValue('padding')) {
-          clearInterval(checkTailwind);
-          setTimeout(resolve, 500); // Extra time for all styles to apply
-        }
-      }, 100);
-      
-      // Timeout after 5 seconds
-      setTimeout(() => {
-        clearInterval(checkTailwind);
-        resolve();
-      }, 5000);
-    });
+    // As an extra safeguard, set all descendants to black text on white background
+    try {
+      container.style.setProperty('color', '#000000', 'important');
+      const all = container.getElementsByTagName('*');
+      for (let i = 0; i < all.length; i++) {
+        const el = all[i];
+        el.style.setProperty('color', '#000000', 'important');
+        el.style.setProperty('background', '#ffffff', 'important');
+        el.style.setProperty('background-image', 'none', 'important');
+        el.style.setProperty('background-color', '#ffffff', 'important');
+      }
+    } catch {}
 
     await html2pdf().set(options).from(container).save();
 
