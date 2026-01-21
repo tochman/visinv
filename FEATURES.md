@@ -4,14 +4,17 @@
 
 ### Authentication & User Management
 
-**US-001: Email Authentication**
+**US-001: Email Authentication** ✅
 - As a **user**, in order to **securely access my account**, I would like to **register and login using my email address and password**.
+- **Status:** Implemented - Email/password auth with sign up/sign in pages, protected routes, profile management
 
-**US-002: Google OAuth Authentication**
+**US-002: Google OAuth Authentication** ✅
 - As a **user**, in order to **quickly access the platform without creating a new password**, I would like to **sign in using my Google account**.
+- **Status:** Implemented - OAuth integration with redirect handling, configured in authService
 
 **US-003: User Profile Management**
 - As a **user**, in order to **personalize my account and invoices**, I would like to **upload my avatar and company logo to Supabase storage**.
+- **Status:** Partial - Profile table exists, storage buckets configured, UI needs implementation
 
 ---
 
