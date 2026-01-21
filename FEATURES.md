@@ -12,9 +12,45 @@
 - As a **user**, in order to **quickly access the platform without creating a new password**, I would like to **sign in using my Google account**.
 - **Status:** Implemented - OAuth integration with redirect handling, configured in authService
 
-**US-003: User Profile Management**
-- As a **user**, in order to **personalize my account and invoices**, I would like to **upload my avatar and company logo to Supabase storage**.
+**US-003: User Avatar Upload**
+- As a **user**, in order to **personalize my account**, I would like to **upload my avatar to Supabase storage**.
 - **Status:** Partial - Profile table exists, storage buckets configured, UI needs implementation
+
+---
+
+### Organization Management
+
+**US-052: Organization Creation**
+- As a **user**, in order to **represent my company on invoices**, I would like to **create an organization with company information (name, organization number, VAT number, address, municipality, bank details)**.
+- **Required fields (Swedish compliance):** Company name, organization number, VAT registration number, address, municipality
+- **Optional fields:** Bank/giro number, F-skatt approval, contact details, website
+
+**US-053: Organization Logo Upload**
+- As an **organization owner**, in order to **brand my invoices professionally**, I would like to **upload my company logo to appear on all invoices**.
+
+**US-054: Organization Settings Management**
+- As an **organization owner**, in order to **maintain accurate company information**, I would like to **edit organization details, payment terms, and invoice settings**.
+- **Invoice settings:** Default payment terms, currency, tax rate, invoice number prefix, next invoice number
+
+**US-055: Organization-Scoped Invoice Numbering**
+- As an **organization**, in order to **maintain proper Swedish accounting compliance**, I would like to **have invoice numbers in unbroken sequence at organization level, shared by all users in the organization**.
+- **Technical:** Invoice numbers scoped to organization_id, not user_id
+
+**US-056: Organization Member Invitations**
+- As an **organization owner**, in order to **collaborate with colleagues**, I would like to **invite users to join my organization via email**.
+
+**US-057: Organization Member Management**
+- As an **organization owner**, in order to **control access**, I would like to **view all organization members, manage their roles (owner/admin/member), and remove users**.
+
+**US-058: Multi-Organization Support**
+- As a **user**, in order to **work with multiple companies**, I would like to **belong to multiple organizations and switch between them**.
+
+**US-059: Team/Department Management**
+- As an **organization owner**, in order to **organize users by department**, I would like to **create teams within my organization and assign members to teams**.
+- **Use cases:** Sales team, Support team, Regional offices, Departments
+
+**US-060: Team-Scoped Data Access**
+- As a **team member**, in order to **collaborate efficiently**, I would like to **optionally scope clients and invoices to specific teams while maintaining organization-wide visibility for owners/admins**.
 
 ---
 
@@ -68,14 +104,14 @@
 - As a **premium user**, in order to **maintain multiple branding options**, I would like to **save, edit, and delete multiple custom templates**.
 - **Status:** Implemented - CRUD operations with search, clone system templates, edit/delete user templates, preview with sample data
 
-**US-016: Team Creation**
-- As a **premium user**, in order to **collaborate with my team**, I would like to **create teams and invite team members**.
+**US-016: Team Creation** → See US-059 (Team/Department Management)
+- Moved to Organization Management section
 
-**US-017: Team Collaboration**
-- As a **premium team member**, in order to **work efficiently with colleagues**, I would like to **share access to clients, invoices, and templates within my team**.
+**US-017: Team Collaboration** → See US-060 (Team-Scoped Data Access)
+- Moved to Organization Management section
 
-**US-018: Team Role Management**
-- As a **premium team owner**, in order to **control access levels**, I would like to **assign roles and permissions to team members**.
+**US-018: Team Role Management** → See US-057 (Organization Member Management)
+- Moved to Organization Management section
 
 ---
 
@@ -89,10 +125,10 @@
 **US-020: Payment Recording**
 - As a **user**, in order to **keep accurate financial records**, I would like to **record payments received against invoices**.
 
-**US-021: Invoice Numbering System** ✅
+**US-021: Invoice Numbering System** ✅ (Needs refactoring for US-055)
 - As a **user**, in order to **maintain professional record-keeping**, I would like to **automatically generate sequential invoice numbers with custom formats**.
-- **Status:** Implemented - Auto-generated sequential numbers (INV-XXXX format) in Invoice.create(), tested in invoice creation tests
 - **Status:** Implemented - generateInvoiceNumber() with INV-0001 format, auto-increments per user, tested in invoice creation tests
+- **TODO:** Refactor to use organization_id instead of user_id for Swedish compliance (US-055)
 
 **US-022: Per-Client Invoice Sequences**
 - As a **user**, in order to **organize invoices by client**, I would like to **maintain separate invoice number sequences for different clients** (optional).
