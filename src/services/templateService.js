@@ -115,122 +115,96 @@ export function renderTemplate(templateContent, context) {
 
 /**
  * Export rendered HTML to PDF
- * Strips CDN, uses app's Tailwind, inlines all computed styles as rgb
+ * Tries Edge Function first (Puppeteer/Browserless), falls back to browser print
  */
 export async function exportToPDF(html, filename = 'report.pdf') {
-  const html2pdf = (await import('html2pdf.js')).default;
-  
-  // Remove CDN script tags completely - we'll use app's styles
-  let processedHtml = html.replace(
-    /<script src="https:\/\/cdn\.tailwindcss\.com[^"]*"><\/script>/gi,
-    ''
-  );
-  
-  const options = {
-    margin: [10, 10],
-    filename,
-    image: { type: 'jpeg', quality: 0.98 },
-    html2canvas: {
-      scale: 2,
-      useCORS: true,
-      backgroundColor: '#ffffff',
-      logging: false,
-      // CRITICAL: Remove all stylesheets in cloned document before parsing
-      onclone: (clonedDoc) => {
-        // Remove ALL stylesheets from cloned document to prevent oklch parsing
-        const styles = clonedDoc.querySelectorAll('style, link[rel="stylesheet"]');
-        styles.forEach(el => el.remove());
-        
-        // Remove all class attributes since styles are already inlined
-        const elements = clonedDoc.querySelectorAll('*');
-        elements.forEach(el => el.removeAttribute('class'));
-      }
-    },
-    jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
-  };
-
+  // Try server-side PDF generation first
   try {
-    // Render in a hidden div with app's styles
-    const container = document.createElement('div');
-    container.style.cssText = 'position: fixed; left: -10000px; top: 0; width: 210mm; background: #ffffff;';
-    container.innerHTML = processedHtml;
-    document.body.appendChild(container);
-    
-    // Wait a moment for styles to apply
-    await new Promise(resolve => setTimeout(resolve, 100));
-    
-    // Walk through all elements and inline computed styles as rgb
-    const inlineAllStyles = (element) => {
-      const computedStyle = window.getComputedStyle(element);
-      const ctx = document.createElement('canvas').getContext('2d');
-      
-      // Helper to normalize colors to rgb
-      const normalizeColor = (value) => {
-        if (!value || value === 'none' || value === 'transparent') return value;
-        try {
-          ctx.fillStyle = '#000';
-          ctx.fillStyle = value;
-          return ctx.fillStyle; // Returns rgb()/rgba()/#hex
-        } catch {
-          return value;
-        }
-      };
-      
-      // Key style properties to inline
-      const styleProps = [
-        'color', 'backgroundColor', 'background', 
-        'borderColor', 'borderTopColor', 'borderRightColor', 'borderBottomColor', 'borderLeftColor',
-        'borderWidth', 'borderStyle', 'borderRadius',
-        'padding', 'margin', 'fontSize', 'fontWeight', 'fontFamily', 'lineHeight',
-        'display', 'width', 'height', 'textAlign', 'verticalAlign'
-      ];
-      
-      styleProps.forEach(prop => {
-        let value = computedStyle.getPropertyValue(prop.replace(/([A-Z])/g, '-$1').toLowerCase());
-        if (!value) return;
-        
-        // Normalize color values
-        if (prop.includes('color') || prop.includes('Color') || prop === 'background') {
-          value = normalizeColor(value);
-        }
-        
-        try {
-          element.style.setProperty(
-            prop.replace(/([A-Z])/g, '-$1').toLowerCase(), 
-            value, 
-            'important'
-          );
-        } catch (e) {
-          // ignore
-        }
-      });
-      
-      // Recursively process children
-      Array.from(element.children).forEach(child => inlineAllStyles(child));
-    };
-    
-    // Process all elements in the container
-    const body = container.querySelector('body') || container;
-    inlineAllStyles(body);
-    
-    // CRITICAL: Remove ALL stylesheets and style tags from container
-    // so html2canvas doesn't try to parse oklch colors from CSS rules
-    const styleElements = container.querySelectorAll('style, link[rel="stylesheet"]');
-    styleElements.forEach(el => el.remove());
-    
-    // Also remove class attributes since we've inlined everything
-    const allElements = container.querySelectorAll('*');
-    allElements.forEach(el => el.removeAttribute('class'));
+    const response = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/generate-pdf`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${import.meta.env.VITE_SUPABASE_ANON_KEY}`,
+      },
+      body: JSON.stringify({ html, filename }),
+    });
 
-    // Generate PDF
-    await html2pdf().set(options).from(body).save();
-
-    container.remove();
-    return true;
+    if (response.ok) {
+      const contentType = response.headers.get('Content-Type');
+      
+      if (contentType?.includes('application/pdf')) {
+        // Download the PDF
+        const blob = await response.blob();
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = filename;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+        return true;
+      }
+    }
+    
+    // If edge function fails or returns non-PDF, fall through to browser print
+    console.log('Edge function unavailable, using browser print');
   } catch (error) {
-    console.error('PDF export error:', error);
-    throw new Error(`PDF export failed: ${error.message}`);
+    console.log('Edge function error, using browser print:', error.message);
   }
+
+  // Fallback: Use browser's native print functionality
+  return exportToPDFViaPrint(html, filename);
+}
+
+/**
+ * Fallback: Export using browser print dialog
+ */
+function exportToPDFViaPrint(html, filename) {
+  // Add print-specific styles to the HTML
+  const printStyles = `
+    <style>
+      @media print {
+        body { 
+          -webkit-print-color-adjust: exact !important;
+          print-color-adjust: exact !important;
+        }
+        @page { 
+          size: A4; 
+          margin: 10mm; 
+        }
+      }
+    </style>
+  `;
+  
+  // Inject print styles before </head>
+  const htmlWithPrintStyles = html.replace('</head>', `${printStyles}</head>`);
+  
+  // Create a blob URL for the HTML
+  const blob = new Blob([htmlWithPrintStyles], { type: 'text/html' });
+  const blobUrl = URL.createObjectURL(blob);
+  
+  // Open in a new window
+  const printWindow = window.open(blobUrl, '_blank', 'width=900,height=1100');
+  
+  if (!printWindow) {
+    URL.revokeObjectURL(blobUrl);
+    throw new Error('Could not open print window. Please allow popups for this site.');
+  }
+  
+  // Wait for content to load, then trigger print
+  printWindow.onload = () => {
+    setTimeout(() => {
+      printWindow.print();
+      // Clean up after print dialog closes
+      printWindow.onafterprint = () => {
+        printWindow.close();
+        URL.revokeObjectURL(blobUrl);
+      };
+    }, 500);
+  };
+  
+  return true;
 }
 
 /**

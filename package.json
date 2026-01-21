@@ -26,7 +26,6 @@
     "@tiptap/starter-kit": "^3.16.0",
     "handlebars": "^4.7.8",
     "html2canvas": "^1.4.1",
-    "html2pdf.js": "^0.14.0",
     "i18next": "^25.8.0",
     "jspdf": "^4.0.0",
     "prismjs": "^1.30.0",

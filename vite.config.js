@@ -12,7 +12,7 @@ export default defineConfig({
           'react-vendor': ['react', 'react-dom', 'react-router-dom'],
           'redux': ['@reduxjs/toolkit', 'react-redux'],
           'supabase': ['@supabase/supabase-js'],
-          'pdf': ['html2pdf.js', 'html2canvas', 'jspdf', 'handlebars'],
+          'pdf': ['jspdf', 'handlebars'],
           'tiptap': [
             '@tiptap/react',
             '@tiptap/starter-kit',

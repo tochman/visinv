@@ -1,24 +1,16 @@
 import { renderTemplate, exportToPDF } from './templateService';
 
 /**
- * Generate PDF from invoice data and template
- * @param {Object} invoice - Invoice with client and invoice_rows
- * @param {Object} template - Template with content (Handlebars HTML)
- * @param {Object} organization - Organization data for Swedish compliance
- * @returns {Promise<void>}
+ * Build context object from invoice and organization data
+ * Exported so preview functionality can use it
  */
-export async function generateInvoicePDF(invoice, template, organization) {
-  if (!invoice || !template) {
-    throw new Error('Invoice and template are required');
-  }
-
+export function buildInvoiceContext(invoice, organization) {
   const lineItems = invoice.invoice_rows || [];
   const subtotal = calculateSubtotal(lineItems);
   const vatGroups = calculateVATGroups(lineItems, invoice.tax_rate);
   const totalVAT = vatGroups.reduce((sum, group) => sum + group.vat, 0);
 
-  // Build context from invoice data
-  const context = {
+  return {
     // Invoice details
     invoice_number: invoice.invoice_number,
     payment_reference: invoice.payment_reference || '',
@@ -68,9 +60,33 @@ export async function generateInvoicePDF(invoice, template, organization) {
       amount: row.amount || (row.quantity * row.unit_price)
     }))
   };
+}
+
+/**
+ * Generate PDF from invoice data and template
+ * @param {Object} invoice - Invoice with client and invoice_rows
+ * @param {Object} template - Template with content (Handlebars HTML)
+ * @param {Object} organization - Organization data for Swedish compliance
+ * @returns {Promise<void>}
+ */
+export async function generateInvoicePDF(invoice, template, organization) {
+  if (!invoice || !template) {
+    throw new Error('Invoice and template are required');
+  }
+
+  const context = buildInvoiceContext(invoice, organization);
+
+  // Log template content for debugging
+  console.log('=== TEMPLATE CONTENT ===');
+  console.log(template.content);
+  console.log('=== END TEMPLATE CONTENT ===');
 
   // Render template with invoice data
   const rendered = renderTemplate(template.content, context);
+  
+  console.log('=== RENDERED HTML ===');
+  console.log(rendered);
+  console.log('=== END RENDERED HTML ===');
 
   // Generate filename
   const filename = `${invoice.invoice_number.replace(/\s+/g, '_')}_${Date.now()}.pdf`;
