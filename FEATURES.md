@@ -79,20 +79,26 @@
 
 ### Invoice Management
 
-**US-019: Invoice Status Tracking**
+**US-019: Invoice Status Tracking** ✅
 - As a **user**, in order to **monitor payment progress**, I would like to **track invoice statuses (draft, sent, paid, overdue, cancelled)**.
+- **Status:** Implemented - Status badges, filter by status, mark as sent/paid actions, 11 tests in invoice suite
+- **Status:** Implemented - Full status management with markAsSent/markAsPaid, status badges, filtering, 11 Cypress tests
 
 **US-020: Payment Recording**
 - As a **user**, in order to **keep accurate financial records**, I would like to **record payments received against invoices**.
 
-**US-021: Invoice Numbering System**
+**US-021: Invoice Numbering System** ✅
 - As a **user**, in order to **maintain professional record-keeping**, I would like to **automatically generate sequential invoice numbers with custom formats**.
+- **Status:** Implemented - Auto-generated sequential numbers (INV-XXXX format) in Invoice.create(), tested in invoice creation tests
+- **Status:** Implemented - generateInvoiceNumber() with INV-0001 format, auto-increments per user, tested in invoice creation tests
 
 **US-022: Per-Client Invoice Sequences**
 - As a **user**, in order to **organize invoices by client**, I would like to **maintain separate invoice number sequences for different clients** (optional).
 
-**US-023: Tax/VAT Calculations**
+**US-023: Tax/VAT Calculations** ✅
 - As a **user**, in order to **comply with tax regulations**, I would like to **automatically calculate and display taxes (including Swedish moms)**.
+- **Status:** Implemented - Real-time tax calculations in InvoiceModal, default 25% Swedish VAT, tested with tax rate changes
+- **Status:** Implemented - Automatic calculation in InvoiceModal, configurable tax rate (default 25% Swedish moms), tested in invoice tests
 
 **US-024: Multi-Currency Support**
 - As a **premium user**, in order to **invoice international clients**, I would like to **create invoices in different currencies**.
