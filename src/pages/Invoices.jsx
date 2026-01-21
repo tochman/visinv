@@ -56,8 +56,15 @@ export default function Invoices() {
   const handleDownloadPDF = async (invoice) => {
     setGeneratingPDF(invoice.id);
     try {
-      // Use first available template (prioritize system templates)
-      const template = templates.find(t => t.user_id === null) || templates[0];
+      // Use invoice's selected template, or find first available
+      let template;
+      if (invoice.invoice_template_id) {
+        template = templates.find(t => t.id === invoice.invoice_template_id);
+      }
+      if (!template) {
+        // Fallback: prioritize system templates
+        template = templates.find(t => t.is_system) || templates[0];
+      }
       if (!template) {
         alert(t('invoices.noTemplateAvailable'));
         return;
@@ -72,8 +79,15 @@ export default function Invoices() {
   };
 
   const handlePreviewPDF = (invoice) => {
-    // Use first available template (prioritize system templates)
-    const template = templates.find(t => t.user_id === null) || templates[0];
+    // Use invoice's selected template, or find first available
+    let template;
+    if (invoice.invoice_template_id) {
+      template = templates.find(t => t.id === invoice.invoice_template_id);
+    }
+    if (!template) {
+      // Fallback: prioritize system templates
+      template = templates.find(t => t.is_system) || templates[0];
+    }
     if (!template) {
       alert(t('invoices.noTemplateAvailable'));
       return;

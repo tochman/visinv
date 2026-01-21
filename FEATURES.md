@@ -108,6 +108,15 @@
 - As a **premium user**, in order to **maintain multiple branding options**, I would like to **save, edit, and delete multiple custom templates**.
 - **Status:** Implemented - CRUD operations with search, clone system templates, edit/delete user templates, preview with sample data
 
+**US-061: Invoice Template Selection** ✅
+- As a **user**, in order to **vary what my invoices look like**, I would like to **choose either a system template or one of my custom templates to use for a specific invoice**.
+- **Status:** Implemented
+  - Template selector dropdown in invoice creation/edit modal
+  - Grouped by "System Templates" and "My Templates"
+  - Selected template stored with invoice (`invoice_template_id`)
+  - PDF generation uses invoice's selected template (or falls back to default)
+  - Preview functionality respects selected template
+
 **US-016: Team Creation** → See US-059 (Team/Department Management)
 - Moved to Organization Management section
 

@@ -4,6 +4,7 @@ import { useTranslation } from 'react-i18next';
 import { createInvoice, updateInvoice } from '../../features/invoices/invoicesSlice';
 import { fetchClients } from '../../features/clients/clientsSlice';
 import { fetchProducts } from '../../features/products/productsSlice';
+import { fetchTemplates } from '../../features/invoiceTemplates/invoiceTemplatesSlice';
 
 export default function InvoiceModal({ isOpen, onClose, invoice = null }) {
   const { t } = useTranslation();
@@ -12,10 +13,12 @@ export default function InvoiceModal({ isOpen, onClose, invoice = null }) {
   
   const clients = useSelector(state => state.clients.items);
   const products = useSelector(state => state.products.items);
+  const templates = useSelector(state => state.invoiceTemplates.items);
   const prevInvoiceIdRef = useRef();
 
   const [formData, setFormData] = useState({
     client_id: invoice?.client_id || '',
+    invoice_template_id: invoice?.invoice_template_id || '',
     issue_date: invoice?.issue_date || new Date().toISOString().split('T')[0],
     delivery_date: invoice?.delivery_date || invoice?.issue_date || new Date().toISOString().split('T')[0],
     due_date: invoice?.due_date || new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
@@ -39,6 +42,7 @@ export default function InvoiceModal({ isOpen, onClose, invoice = null }) {
     if (isOpen && prevInvoiceIdRef.current !== currentInvoiceId) {
       setFormData({
         client_id: invoice?.client_id || '',
+        invoice_template_id: invoice?.invoice_template_id || '',
         issue_date: invoice?.issue_date || new Date().toISOString().split('T')[0],
         delivery_date: invoice?.delivery_date || invoice?.issue_date || new Date().toISOString().split('T')[0],
         due_date: invoice?.due_date || new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
@@ -65,7 +69,14 @@ export default function InvoiceModal({ isOpen, onClose, invoice = null }) {
     if (isOpen && products.length === 0) {
       dispatch(fetchProducts());
     }
-  }, [isOpen, clients.length, products.length, dispatch]);
+    if (isOpen && templates.length === 0) {
+      dispatch(fetchTemplates());
+    }
+  }, [isOpen, clients.length, products.length, templates.length, dispatch]);
+
+  // Separate templates into system and user templates
+  const systemTemplates = templates.filter(t => t.is_system);
+  const userTemplates = templates.filter(t => !t.is_system);
 
   const handleChange = (e) => {
     setFormData({
@@ -237,6 +248,40 @@ export default function InvoiceModal({ isOpen, onClose, invoice = null }) {
                         {client.name}
                       </option>
                     ))}
+                  </select>
+                </div>
+
+                {/* Template Selection */}
+                <div className="md:col-span-2">
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                    {t('invoices.selectTemplate')}
+                  </label>
+                  <select
+                    name="invoice_template_id"
+                    value={formData.invoice_template_id}
+                    onChange={handleChange}
+                    data-cy="template-select"
+                    className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  >
+                    <option value="">{t('invoices.defaultTemplate')}</option>
+                    {systemTemplates.length > 0 && (
+                      <optgroup label={t('invoiceTemplates.systemTemplate')}>
+                        {systemTemplates.map(template => (
+                          <option key={template.id} value={template.id}>
+                            {template.name}
+                          </option>
+                        ))}
+                      </optgroup>
+                    )}
+                    {userTemplates.length > 0 && (
+                      <optgroup label={t('invoiceTemplates.myTemplates')}>
+                        {userTemplates.map(template => (
+                          <option key={template.id} value={template.id}>
+                            {template.name}
+                          </option>
+                        ))}
+                      </optgroup>
+                    )}
                   </select>
                 </div>
 

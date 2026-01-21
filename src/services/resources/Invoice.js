@@ -19,7 +19,8 @@ class InvoiceResource extends BaseResource {
       select: `
         *,
         client:clients(id, name, email),
-        invoice_rows(*)
+        invoice_rows(*),
+        invoice_template:invoice_templates(id, name, is_system)
       `,
       order: 'created_at',
       ascending: false,
@@ -39,7 +40,7 @@ class InvoiceResource extends BaseResource {
         *,
         client:clients(*),
         invoice_rows(*),
-        template:templates(*)
+        invoice_template:invoice_templates(*)
       `)
       .eq('id', id)
       .single();
