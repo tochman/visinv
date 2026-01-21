@@ -1,5 +1,9 @@
--- Migration 022: Add English invoice templates
--- Two professional English templates: Studio Dark and Elegant Floral
+-- Migration 022: Add/Update English invoice templates (Swedish-compliant)
+-- Two professional English templates with Swedish legal requirements
+
+-- First, delete existing versions of these templates (if they exist)
+DELETE FROM invoice_templates WHERE name = 'Studio Dark' AND is_system = true AND user_id IS NULL;
+DELETE FROM invoice_templates WHERE name = 'Elegant Floral' AND is_system = true AND user_id IS NULL;
 
 -- Insert "Studio Dark" template - Professional dark header style
 INSERT INTO invoice_templates (name, content, variables, is_system, user_id)
@@ -74,8 +78,24 @@ VALUES
       font-weight: 700;
       letter-spacing: 2px;
     }
+    .company-details {
+      font-size: 12px;
+      opacity: 0.9;
+      margin-top: 8px;
+      line-height: 1.6;
+    }
     .main-content {
       padding: 40px;
+    }
+    .f-skatt-badge {
+      background: #d1fae5;
+      border: 1px solid #10b981;
+      color: #065f46;
+      padding: 8px 16px;
+      font-size: 12px;
+      font-weight: 600;
+      display: inline-block;
+      margin-bottom: 30px;
     }
     .info-grid {
       display: grid;
@@ -154,6 +174,9 @@ VALUES
       color: #555;
       line-height: 1.8;
     }
+    .payment-info p {
+      margin-bottom: 4px;
+    }
     .notes-section {
       margin-top: 30px;
     }
@@ -177,7 +200,7 @@ VALUES
     }
     .totals-section {
       margin-left: auto;
-      width: 280px;
+      width: 300px;
     }
     .total-row {
       display: flex;
@@ -212,15 +235,33 @@ VALUES
       margin-top: 50px;
       padding: 20px 40px;
       background: #f8f8f8;
-      display: flex;
-      justify-content: space-between;
-      font-size: 13px;
-      color: #666;
+      border-top: 1px solid #e5e5e5;
     }
-    .footer-item {
-      display: flex;
-      align-items: center;
-      gap: 8px;
+    .footer-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 20px;
+      font-size: 12px;
+      color: #555;
+    }
+    .footer-section {
+      line-height: 1.6;
+    }
+    .footer-label {
+      font-weight: 600;
+      color: #333;
+      text-transform: uppercase;
+      font-size: 10px;
+      letter-spacing: 0.5px;
+      margin-bottom: 4px;
+    }
+    .legal-footer {
+      margin-top: 20px;
+      padding-top: 15px;
+      border-top: 1px solid #e5e5e5;
+      font-size: 11px;
+      color: #666;
+      text-align: center;
     }
     @media print {
       body { background: #fff; }
@@ -236,61 +277,72 @@ VALUES
           <h1>Invoice</h1>
           <div class="header-dates">
             <p>Due Date: {{due_date}}</p>
-            <p>Date of Issue: {{invoice_date}}</p>
+            <p>Issue Date: {{issue_date}}</p>
+            {{#if delivery_date}}<p>Delivery Date: {{delivery_date}}</p>{{/if}}
           </div>
         </div>
         <div class="header-right">
           <div class="company-name">{{organization_name}}</div>
+          <div class="company-details">
+            Org. No: {{organization_number}}<br>
+            {{#if organization_vat_number}}VAT No: {{organization_vat_number}}<br>{{/if}}
+            {{organization_address}}<br>
+            {{organization_postal_code}} {{organization_city}}
+          </div>
         </div>
       </div>
     </div>
 
     <div class="main-content">
+      {{#if organization_f_skatt_approved}}
+      <div class="f-skatt-badge">✓ Approved for F-tax (F-skatt)</div>
+      {{/if}}
+
       <div class="info-grid">
         <div class="info-section">
           <h3>Client Information</h3>
           <p><strong>{{client_name}}</strong></p>
-          {{#if client_company}}
-          <p>{{client_company}}</p>
-          {{/if}}
+          {{#if client_number}}<p>Customer No: {{client_number}}</p>{{/if}}
           <p>{{client_address}}</p>
           <p>{{client_postal_code}} {{client_city}}</p>
-          {{#if client_email}}
-          <p>{{client_email}}</p>
-          {{/if}}
+          {{#if client_country}}<p>{{client_country}}</p>{{/if}}
+          {{#if client_email}}<p>{{client_email}}</p>{{/if}}
         </div>
         <div class="info-section">
           <h3>Invoice Details</h3>
           <p><strong>Invoice Number:</strong> {{invoice_number}}</p>
-          <p><strong>Issue Date:</strong> {{invoice_date}}</p>
+          <p><strong>Issue Date:</strong> {{issue_date}}</p>
           <p><strong>Due Date:</strong> {{due_date}}</p>
-          {{#if payment_reference}}
-          <p><strong>Reference:</strong> {{payment_reference}}</p>
-          {{/if}}
+          {{#if delivery_date}}<p><strong>Delivery Date:</strong> {{delivery_date}}</p>{{/if}}
+          {{#if reference}}<p><strong>Your Reference:</strong> {{reference}}</p>{{/if}}
+          {{#if our_reference}}<p><strong>Our Reference:</strong> {{our_reference}}</p>{{/if}}
+          {{#if payment_reference}}<p><strong>Payment Reference (OCR):</strong> {{payment_reference}}</p>{{/if}}
         </div>
       </div>
 
       <table class="items-table">
         <thead>
           <tr>
-            <th style="width: 40%;">Service / Deliverable</th>
+            <th style="width: 35%;">Description</th>
             <th class="center">Qty</th>
+            <th class="center">Unit</th>
             <th class="right">Unit Price</th>
-            <th class="right">Total</th>
+            <th class="right">VAT %</th>
+            <th class="right">Amount</th>
           </tr>
         </thead>
         <tbody>
-          {{#each items}}
+          {{#each line_items}}
           <tr>
             <td>
-              <div class="item-name">{{name}}</div>
-              {{#if description}}
-              <div class="item-desc">{{description}}</div>
-              {{/if}}
+              <div class="item-name">{{description}}</div>
+              {{#if notes}}<div class="item-desc">{{notes}}</div>{{/if}}
             </td>
-            <td class="center">{{quantity}} {{#if unit}}{{unit}}{{/if}}</td>
-            <td class="right">{{formatCurrency price}}</td>
-            <td class="right">{{formatCurrency total}}</td>
+            <td class="center">{{quantity}}</td>
+            <td class="center">{{unit}}</td>
+            <td class="right">{{formatCurrency unit_price ../currency}}</td>
+            <td class="right">{{tax_rate}}%</td>
+            <td class="right">{{formatCurrency amount ../currency}}</td>
           </tr>
           {{/each}}
         </tbody>
@@ -299,20 +351,13 @@ VALUES
       <div class="bottom-section">
         <div class="left-section">
           <div class="payment-section">
-            <h4>Payment Method</h4>
+            <h4>Payment Details</h4>
             <div class="payment-info">
-              {{#if organization_bank_name}}
-              <p>Bank: {{organization_bank_name}}</p>
-              {{/if}}
-              {{#if organization_bank_account}}
-              <p>Account: {{organization_bank_account}}</p>
-              {{/if}}
-              {{#if organization_iban}}
-              <p>IBAN: {{organization_iban}}</p>
-              {{/if}}
-              {{#if organization_bic}}
-              <p>BIC/SWIFT: {{organization_bic}}</p>
-              {{/if}}
+              {{#if organization_bankgiro}}<p><strong>Bankgiro:</strong> {{organization_bankgiro}}</p>{{/if}}
+              {{#if organization_plusgiro}}<p><strong>Plusgiro:</strong> {{organization_plusgiro}}</p>{{/if}}
+              {{#if organization_iban}}<p><strong>IBAN:</strong> {{organization_iban}}</p>{{/if}}
+              {{#if organization_bic}}<p><strong>BIC/SWIFT:</strong> {{organization_bic}}</p>{{/if}}
+              {{#if payment_reference}}<p><strong>OCR/Reference:</strong> {{payment_reference}}</p>{{/if}}
             </div>
           </div>
 
@@ -322,22 +367,29 @@ VALUES
             <p>{{notes}}</p>
           </div>
           {{/if}}
+
+          {{#if terms}}
+          <div class="notes-section">
+            <h4>Payment Terms</h4>
+            <p>{{terms}}</p>
+          </div>
+          {{/if}}
         </div>
 
         <div class="totals-section">
           <div class="total-row">
-            <span>Subtotal:</span>
-            <span>{{formatCurrency subtotal}}</span>
+            <span>Subtotal (excl. VAT):</span>
+            <span>{{formatCurrency subtotal currency}}</span>
           </div>
-          {{#if vat_amount}}
+          {{#each vat_groups}}
           <div class="total-row">
-            <span>VAT ({{vat_rate}}%):</span>
-            <span>{{formatCurrency vat_amount}}</span>
+            <span>VAT {{rate}}% (on {{formatCurrency base ../currency}}):</span>
+            <span>{{formatCurrency vat ../currency}}</span>
           </div>
-          {{/if}}
+          {{/each}}
           <div class="total-row grand">
             <span>Total Amount Due:</span>
-            <span>{{formatCurrency total}}</span>
+            <span>{{formatCurrency total currency}}</span>
           </div>
         </div>
       </div>
@@ -350,20 +402,34 @@ VALUES
     </div>
 
     <div class="footer">
-      {{#if organization_phone}}
-      <div class="footer-item">📞 {{organization_phone}}</div>
-      {{/if}}
-      {{#if organization_address}}
-      <div class="footer-item">📍 {{organization_address}}, {{organization_city}}</div>
-      {{/if}}
-      {{#if organization_email}}
-      <div class="footer-item">🌐 {{organization_email}}</div>
-      {{/if}}
+      <div class="footer-grid">
+        <div class="footer-section">
+          <div class="footer-label">Address</div>
+          {{organization_name}}<br>
+          {{organization_address}}<br>
+          {{organization_postal_code}} {{organization_city}}
+        </div>
+        <div class="footer-section">
+          <div class="footer-label">Contact</div>
+          {{#if organization_phone}}Phone: {{organization_phone}}<br>{{/if}}
+          {{#if organization_email}}Email: {{organization_email}}<br>{{/if}}
+          {{#if organization_website}}Web: {{organization_website}}{{/if}}
+        </div>
+        <div class="footer-section">
+          <div class="footer-label">Company Details</div>
+          Org. No: {{organization_number}}<br>
+          {{#if organization_vat_number}}VAT No: {{organization_vat_number}}<br>{{/if}}
+          {{#if organization_f_skatt_approved}}Approved for F-tax{{/if}}
+        </div>
+      </div>
+      <div class="legal-footer">
+        This invoice is issued in accordance with the Swedish Bookkeeping Act (1999:1078) and the VAT Act (2023:200)
+      </div>
     </div>
   </div>
 </body>
 </html>',
-  ARRAY['invoice_number', 'invoice_date', 'due_date', 'client_name', 'client_company', 'client_address', 'client_postal_code', 'client_city', 'client_email', 'organization_name', 'organization_phone', 'organization_email', 'organization_address', 'organization_city', 'organization_bank_name', 'organization_bank_account', 'organization_iban', 'organization_bic', 'payment_reference', 'items', 'subtotal', 'vat_rate', 'vat_amount', 'total', 'notes'],
+  ARRAY['invoice_number', 'payment_reference', 'issue_date', 'delivery_date', 'due_date', 'reference', 'our_reference', 'client_name', 'client_number', 'client_address', 'client_city', 'client_postal_code', 'client_country', 'client_email', 'organization_name', 'organization_number', 'organization_vat_number', 'organization_address', 'organization_city', 'organization_postal_code', 'organization_email', 'organization_phone', 'organization_website', 'organization_bankgiro', 'organization_plusgiro', 'organization_iban', 'organization_bic', 'organization_f_skatt_approved', 'payment_terms', 'line_items', 'subtotal', 'vat_groups', 'total', 'currency', 'notes', 'terms'],
   true,
   NULL
 );
@@ -426,7 +492,7 @@ VALUES
       display: flex;
       justify-content: space-between;
       align-items: flex-start;
-      margin-bottom: 50px;
+      margin-bottom: 40px;
       position: relative;
       z-index: 1;
     }
@@ -459,6 +525,18 @@ VALUES
       font-size: 13px;
       color: #666;
       line-height: 1.8;
+    }
+    .f-skatt-badge {
+      background: #f0fdf4;
+      border: 1px solid #86efac;
+      color: #166534;
+      padding: 8px 16px;
+      font-size: 12px;
+      font-weight: 600;
+      display: inline-block;
+      margin-bottom: 25px;
+      position: relative;
+      z-index: 1;
     }
     .details-section {
       display: flex;
@@ -530,7 +608,7 @@ VALUES
       z-index: 1;
     }
     .totals-section {
-      width: 280px;
+      width: 300px;
       border-top: 1px solid #333;
       padding-top: 20px;
     }
@@ -583,6 +661,40 @@ VALUES
       font-size: 13px;
       color: #666;
     }
+    .footer {
+      margin-top: 50px;
+      padding-top: 25px;
+      border-top: 2px solid #333;
+      position: relative;
+      z-index: 1;
+    }
+    .footer-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 20px;
+      font-size: 12px;
+      color: #555;
+    }
+    .footer-section {
+      line-height: 1.6;
+    }
+    .footer-label {
+      font-weight: 700;
+      color: #333;
+      text-transform: uppercase;
+      font-size: 10px;
+      letter-spacing: 0.5px;
+      margin-bottom: 6px;
+    }
+    .legal-footer {
+      margin-top: 20px;
+      padding-top: 15px;
+      border-top: 1px solid #e5e5e5;
+      font-size: 10px;
+      color: #888;
+      text-align: center;
+      font-style: italic;
+    }
     @media print {
       body { padding: 20px; }
       .invoice-container::before,
@@ -596,52 +708,46 @@ VALUES
       <div class="company-section">
         <h1>{{organization_name}}</h1>
         <div class="address">
-          {{#if organization_address}}
           {{organization_address}}<br>
-          {{/if}}
-          {{#if organization_city}}
           {{organization_postal_code}} {{organization_city}}<br>
-          {{/if}}
-          {{#if organization_phone}}
-          {{organization_phone}}
-          {{/if}}
+          Org. No: {{organization_number}}
+          {{#if organization_vat_number}}<br>VAT No: {{organization_vat_number}}{{/if}}
+          {{#if organization_phone}}<br>{{organization_phone}}{{/if}}
         </div>
       </div>
       <div class="invoice-section">
         <div class="invoice-title">INVOICE</div>
         <div class="invoice-meta">
           Invoice Number: #{{invoice_number}}<br>
-          Date: {{invoice_date}}<br>
+          Issue Date: {{issue_date}}<br>
           Due Date: {{due_date}}
+          {{#if delivery_date}}<br>Delivery Date: {{delivery_date}}{{/if}}
         </div>
       </div>
     </div>
+
+    {{#if organization_f_skatt_approved}}
+    <div class="f-skatt-badge">✓ Approved for F-tax (F-skatt)</div>
+    {{/if}}
 
     <div class="details-section">
       <div class="bill-to">
         <h3>Bill To:</h3>
         <p><strong>{{client_name}}</strong></p>
-        {{#if client_address}}
+        {{#if client_number}}<p>Customer No: {{client_number}}</p>{{/if}}
         <p>{{client_address}}</p>
-        {{/if}}
-        {{#if client_city}}
         <p>{{client_postal_code}} {{client_city}}</p>
-        {{/if}}
-        {{#if client_phone}}
-        <p>{{client_phone}}</p>
-        {{/if}}
+        {{#if client_country}}<p>{{client_country}}</p>{{/if}}
+        {{#if client_email}}<p>{{client_email}}</p>{{/if}}
+        {{#if reference}}<p><strong>Your Ref:</strong> {{reference}}</p>{{/if}}
       </div>
       <div class="payment-method">
         <h3>Payment Method</h3>
-        {{#if organization_bank_name}}
-        <p>{{organization_bank_name}}</p>
-        {{/if}}
-        {{#if organization_bank_account}}
-        <p>{{organization_bank_account}}</p>
-        {{/if}}
-        {{#if organization_iban}}
-        <p>IBAN: {{organization_iban}}</p>
-        {{/if}}
+        {{#if organization_bankgiro}}<p><strong>Bankgiro:</strong> {{organization_bankgiro}}</p>{{/if}}
+        {{#if organization_plusgiro}}<p><strong>Plusgiro:</strong> {{organization_plusgiro}}</p>{{/if}}
+        {{#if organization_iban}}<p><strong>IBAN:</strong> {{organization_iban}}</p>{{/if}}
+        {{#if organization_bic}}<p><strong>BIC:</strong> {{organization_bic}}</p>{{/if}}
+        {{#if payment_reference}}<p><strong>OCR:</strong> {{payment_reference}}</p>{{/if}}
       </div>
     </div>
 
@@ -649,25 +755,27 @@ VALUES
       <thead>
         <tr>
           <th style="width: 50px;">No</th>
-          <th>Item Description</th>
-          <th class="right">Price</th>
+          <th>Description</th>
           <th class="center">Qty</th>
-          <th class="right">Total</th>
+          <th class="center">Unit</th>
+          <th class="right">Price</th>
+          <th class="right">VAT %</th>
+          <th class="right">Amount</th>
         </tr>
       </thead>
       <tbody>
-        {{#each items}}
+        {{#each line_items}}
         <tr>
           <td class="item-number">{{indexPlusOne @index}}</td>
           <td>
-            <div class="item-name">{{name}}</div>
-            {{#if description}}
-            <div class="item-desc">{{description}}</div>
-            {{/if}}
+            <div class="item-name">{{description}}</div>
+            {{#if notes}}<div class="item-desc">{{notes}}</div>{{/if}}
           </td>
-          <td class="right">{{formatCurrency price}}</td>
           <td class="center">{{quantity}}</td>
-          <td class="right">{{formatCurrency total}}</td>
+          <td class="center">{{unit}}</td>
+          <td class="right">{{formatCurrency unit_price ../currency}}</td>
+          <td class="right">{{tax_rate}}%</td>
+          <td class="right">{{formatCurrency amount ../currency}}</td>
         </tr>
         {{/each}}
       </tbody>
@@ -676,34 +784,24 @@ VALUES
     <div class="totals-wrapper">
       <div class="totals-section">
         <div class="total-row">
-          <span>Total</span>
-          <span>{{formatCurrency subtotal}}</span>
+          <span>Subtotal (excl. VAT)</span>
+          <span>{{formatCurrency subtotal currency}}</span>
         </div>
-        {{#if vat_amount}}
+        {{#each vat_groups}}
         <div class="total-row">
-          <span>Tax ({{vat_rate}}%)</span>
-          <span>{{formatCurrency vat_amount}}</span>
+          <span>VAT {{rate}}% (on {{formatCurrency base ../currency}})</span>
+          <span>{{formatCurrency vat ../currency}}</span>
         </div>
-        {{else}}
+        {{/each}}
+        {{#unless vat_groups}}
         <div class="total-row">
-          <span>Tax</span>
+          <span>VAT</span>
           <span>-</span>
         </div>
-        {{/if}}
-        {{#if discount}}
-        <div class="total-row">
-          <span>Discount</span>
-          <span>-{{formatCurrency discount}}</span>
-        </div>
-        {{else}}
-        <div class="total-row">
-          <span>Discount</span>
-          <span>-</span>
-        </div>
-        {{/if}}
+        {{/unless}}
         <div class="total-row grand">
-          <span>Sub Total</span>
-          <span>{{formatCurrency total}}</span>
+          <span>Total Amount Due</span>
+          <span>{{formatCurrency total currency}}</span>
         </div>
       </div>
     </div>
@@ -714,19 +812,45 @@ VALUES
         {{#if terms}}
         <p>{{terms}}</p>
         {{else}}
-        <p>Payment is due within the specified due date. Please include the invoice number in your payment reference.</p>
+        <p>Payment is due by the specified due date. Please include invoice number or OCR reference in your payment. Late payment may incur interest charges according to Swedish Interest Act.</p>
         {{/if}}
       </div>
       <div class="signature-section">
         <div class="signature-line">{{organization_name}}</div>
         <div class="signature-name">{{organization_name}}</div>
-        <div class="signature-title">Manager</div>
+        <div class="signature-title">Authorized Signature</div>
+      </div>
+    </div>
+
+    <div class="footer">
+      <div class="footer-grid">
+        <div class="footer-section">
+          <div class="footer-label">Address</div>
+          {{organization_name}}<br>
+          {{organization_address}}<br>
+          {{organization_postal_code}} {{organization_city}}
+        </div>
+        <div class="footer-section">
+          <div class="footer-label">Contact</div>
+          {{#if organization_phone}}Phone: {{organization_phone}}<br>{{/if}}
+          {{#if organization_email}}Email: {{organization_email}}<br>{{/if}}
+          {{#if organization_website}}Web: {{organization_website}}{{/if}}
+        </div>
+        <div class="footer-section">
+          <div class="footer-label">Company Information</div>
+          Org. No: {{organization_number}}<br>
+          {{#if organization_vat_number}}VAT No: {{organization_vat_number}}<br>{{/if}}
+          {{#if organization_f_skatt_approved}}Approved for F-tax{{/if}}
+        </div>
+      </div>
+      <div class="legal-footer">
+        This invoice is issued in accordance with the Swedish Bookkeeping Act (1999:1078) and the VAT Act (2023:200)
       </div>
     </div>
   </div>
 </body>
 </html>',
-  ARRAY['invoice_number', 'invoice_date', 'due_date', 'client_name', 'client_address', 'client_postal_code', 'client_city', 'client_phone', 'organization_name', 'organization_address', 'organization_postal_code', 'organization_city', 'organization_phone', 'organization_bank_name', 'organization_bank_account', 'organization_iban', 'items', 'subtotal', 'vat_rate', 'vat_amount', 'discount', 'total', 'terms'],
+  ARRAY['invoice_number', 'payment_reference', 'issue_date', 'delivery_date', 'due_date', 'reference', 'our_reference', 'client_name', 'client_number', 'client_address', 'client_city', 'client_postal_code', 'client_country', 'client_email', 'organization_name', 'organization_number', 'organization_vat_number', 'organization_address', 'organization_city', 'organization_postal_code', 'organization_email', 'organization_phone', 'organization_website', 'organization_bankgiro', 'organization_plusgiro', 'organization_iban', 'organization_bic', 'organization_f_skatt_approved', 'payment_terms', 'line_items', 'subtotal', 'vat_groups', 'total', 'currency', 'notes', 'terms'],
   true,
   NULL
 );
