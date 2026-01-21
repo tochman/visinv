@@ -115,7 +115,7 @@ export function renderTemplate(templateContent, context) {
 
 /**
  * Export rendered HTML to PDF
- * Uses Tailwind v3 for compatibility with html2canvas (no oklch colors)
+ * Uses Tailwind v3 in isolated iframe for compatibility with html2canvas (no oklch colors)
  */
 export async function exportToPDF(html, filename = 'report.pdf') {
   const html2pdf = (await import('html2pdf.js')).default;
@@ -125,6 +125,11 @@ export async function exportToPDF(html, filename = 'report.pdf') {
     /<script src="https:\/\/cdn\.tailwindcss\.com"><\/script>/gi,
     '<script src="https://cdn.tailwindcss.com/3.4.1"></script>'
   );
+  
+  // Ensure the HTML is a complete document
+  if (!processedHtml.includes('<!DOCTYPE html>')) {
+    processedHtml = `<!DOCTYPE html>${processedHtml}`;
+  }
   
   const options = {
     margin: [10, 10],
@@ -140,32 +145,46 @@ export async function exportToPDF(html, filename = 'report.pdf') {
   };
 
   try {
-    // Create hidden container with the HTML
-    const container = document.createElement('div');
-    container.style.cssText = 'position: fixed; left: -10000px; top: 0; width: 210mm; background: #ffffff;';
-    container.innerHTML = processedHtml;
-    document.body.appendChild(container);
+    // Create hidden iframe for complete style isolation
+    const iframe = document.createElement('iframe');
+    iframe.style.cssText = 'position: fixed; left: -10000px; top: 0; width: 210mm; height: 297mm; border: none;';
+    document.body.appendChild(iframe);
+    
+    const iframeDoc = iframe.contentDocument || iframe.contentWindow.document;
+    iframeDoc.open();
+    iframeDoc.write(processedHtml);
+    iframeDoc.close();
 
-    // Wait for Tailwind CDN to load and apply styles
+    // Wait for Tailwind CDN to load in the iframe
     await new Promise((resolve) => {
       const checkTailwind = setInterval(() => {
-        const computedStyle = window.getComputedStyle(container.querySelector('body') || container);
-        if (computedStyle.getPropertyValue('padding')) {
-          clearInterval(checkTailwind);
-          setTimeout(resolve, 500); // Extra time for all styles to apply
+        try {
+          const body = iframeDoc.body;
+          if (body) {
+            const computedStyle = iframe.contentWindow.getComputedStyle(body);
+            // Check if Tailwind has applied (bg-gray-50 should have background)
+            if (computedStyle.backgroundColor && computedStyle.backgroundColor !== 'rgba(0, 0, 0, 0)') {
+              clearInterval(checkTailwind);
+              setTimeout(resolve, 1000); // Extra time for all styles
+              return;
+            }
+          }
+        } catch (e) {
+          // ignore
         }
       }, 100);
       
-      // Timeout after 5 seconds
+      // Timeout after 8 seconds
       setTimeout(() => {
         clearInterval(checkTailwind);
         resolve();
-      }, 5000);
+      }, 8000);
     });
 
-    await html2pdf().set(options).from(container).save();
+    // Generate PDF from iframe body
+    await html2pdf().set(options).from(iframeDoc.body).save();
 
-    container.remove();
+    iframe.remove();
     return true;
   } catch (error) {
     console.error('PDF export error:', error);
