@@ -544,84 +544,262 @@ function VisualEditorToolbar({ editor, showOutlines, setShowOutlines }) {
   );
 }
 
-// Visual block templates for drag-and-drop style editing
+// Visual block templates for invoice templates
 const LAYOUT_BLOCKS = [
   {
-    id: 'header',
-    name: 'Rubrik',
+    id: 'invoice-header',
+    name: 'Fakturahuvud',
     icon: '📄',
     preview: (
-      <div className="border-b-2 border-blue-500 pb-1">
-        <div className="h-3 bg-gray-800 rounded w-3/4 mb-1"></div>
-        <div className="h-2 bg-gray-400 rounded w-1/2"></div>
-      </div>
-    ),
-    html: `<div class="mb-6">
-  <h1>{{wheel.title}}</h1>
-  <p class="text-muted">{{wheel.year}}</p>
-</div>`
-  },
-  {
-    id: 'section',
-    name: 'Sektion',
-    icon: '📦',
-    preview: (
-      <div className="border-l-4 border-blue-500 bg-blue-50 p-2 rounded-r">
-        <div className="h-2 bg-gray-600 rounded w-1/2 mb-1"></div>
-        <div className="h-1.5 bg-gray-300 rounded w-full"></div>
-        <div className="h-1.5 bg-gray-300 rounded w-3/4 mt-1"></div>
-      </div>
-    ),
-    html: `<div class="section">
-  <h2>Rubrik</h2>
-  <p>Innehåll här...</p>
-</div>`
-  },
-  {
-    id: 'card',
-    name: 'Kort',
-    icon: '🃏',
-    preview: (
-      <div className="border border-gray-300 dark:border-gray-600 rounded p-2 bg-white dark:bg-gray-800 shadow-sm">
-        <div className="h-2 bg-gray-600 rounded w-2/3 mb-1"></div>
-        <div className="h-1.5 bg-gray-300 rounded w-full"></div>
-      </div>
-    ),
-    html: `<div class="card">
-  <h3>Korttitel</h3>
-  <p>Kortinnehåll...</p>
-</div>`
-  },
-  {
-    id: 'stats-grid',
-    name: 'Statistik',
-    icon: '📊',
-    preview: (
-      <div className="grid grid-cols-3 gap-1">
-        <div className="bg-blue-100 rounded p-1 text-center">
-          <div className="text-xs font-bold text-blue-600">12</div>
+      <div className="border-b-2 border-blue-500 pb-1 flex justify-between">
+        <div>
+          <div className="h-3 bg-gray-800 rounded w-16 mb-0.5"></div>
+          <div className="h-2 bg-gray-400 rounded w-12"></div>
         </div>
-        <div className="bg-green-100 rounded p-1 text-center">
-          <div className="text-xs font-bold text-green-600">8</div>
-        </div>
-        <div className="bg-purple-100 rounded p-1 text-center">
-          <div className="text-xs font-bold text-purple-600">5</div>
+        <div className="text-right">
+          <div className="h-2 bg-gray-600 rounded w-16"></div>
         </div>
       </div>
     ),
-    html: `<div class="stats-grid">
-  <div class="stat-box">
-    <div class="stat-value">{{stats.totalItems}}</div>
-    <div class="stat-label">Aktiviteter</div>
+    html: `<div class="flex justify-between items-start border-b-3 border-blue-600 pb-5 mb-8">
+  <div>
+    <h1 class="text-4xl font-bold text-blue-600">FAKTURA</h1>
+    <p class="text-lg text-slate-600 mt-2">{{invoice_number}}</p>
   </div>
-  <div class="stat-box">
-    <div class="stat-value">{{stats.totalRings}}</div>
-    <div class="stat-label">Ringar</div>
+  <div class="text-right">
+    <p class="font-semibold text-slate-800">{{organization_name}}</p>
+    <p class="text-sm text-slate-600">Org.nr: {{organization_number}}</p>
   </div>
-  <div class="stat-box">
-    <div class="stat-value">{{stats.totalActivityGroups}}</div>
-    <div class="stat-label">Grupper</div>
+</div>`
+  },
+  {
+    id: 'client-info',
+    name: 'Kundinfo',
+    icon: '👤',
+    preview: (
+      <div className="bg-slate-50 p-2 rounded">
+        <div className="text-[8px] font-bold text-slate-500 mb-0.5">FAKTURAMOTTAGARE</div>
+        <div className="h-1.5 bg-slate-700 rounded w-3/4 mb-0.5"></div>
+        <div className="h-1 bg-slate-400 rounded w-2/3"></div>
+      </div>
+    ),
+    html: `<div class="bg-slate-50 p-4 rounded">
+  <h3 class="text-xs font-bold text-slate-500 uppercase mb-2">Fakturamottagare</h3>
+  <p class="font-semibold text-slate-900">{{client_name}}</p>
+  <p class="text-sm text-slate-600">{{client_address}}</p>
+  <p class="text-sm text-slate-600">{{client_postal_code}} {{client_city}}</p>
+  {{#if client_email}}<p class="text-sm text-slate-600">{{client_email}}</p>{{/if}}
+</div>`
+  },
+  {
+    id: 'organization-info',
+    name: 'Företagsinfo',
+    icon: '🏢',
+    preview: (
+      <div className="bg-blue-50 p-2 rounded border-l-4 border-blue-600">
+        <div className="h-1.5 bg-blue-800 rounded w-2/3 mb-0.5"></div>
+        <div className="h-1 bg-blue-400 rounded w-1/2"></div>
+      </div>
+    ),
+    html: `<div class="bg-blue-50 p-4 rounded border-l-4 border-blue-600">
+  <p class="font-bold text-blue-900">{{organization_name}}</p>
+  <p class="text-sm text-blue-700">Org.nr: {{organization_number}}</p>
+  {{#if organization_vat_number}}<p class="text-sm text-blue-700">Moms nr: {{organization_vat_number}}</p>{{/if}}
+  <p class="text-sm text-blue-700">{{organization_address}}</p>
+  <p class="text-sm text-blue-700">{{organization_postal_code}} {{organization_city}}</p>
+</div>`
+  },
+  {
+    id: 'f-skatt-badge',
+    name: 'F-skatt märkning',
+    icon: '✓',
+    preview: (
+      <div className="bg-blue-100 border-l-4 border-blue-600 p-1.5 rounded">
+        <div className="text-[10px] font-bold text-blue-800">✓ Godkänd för F-skatt</div>
+      </div>
+    ),
+    html: `{{#if organization_f_skatt_approved}}
+<div class="bg-blue-100 border-l-4 border-blue-600 p-3 rounded my-4">
+  <p class="text-blue-900 font-semibold">✓ Godkänd för F-skatt</p>
+</div>
+{{/if}}`
+  },
+  {
+    id: 'invoice-details',
+    name: 'Fakturadetaljer',
+    icon: '📅',
+    preview: (
+      <div className="grid grid-cols-2 gap-1">
+        <div>
+          <div className="text-[6px] text-slate-500 mb-0.5">FAKTURADATUM</div>
+          <div className="h-1 bg-slate-400 rounded w-3/4"></div>
+        </div>
+        <div>
+          <div className="text-[6px] text-slate-500 mb-0.5">FÖRFALLODATUM</div>
+          <div className="h-1 bg-slate-400 rounded w-3/4"></div>
+        </div>
+      </div>
+    ),
+    html: `<div class="grid grid-cols-2 gap-4 my-6">
+  <div>
+    <p class="text-xs font-bold text-slate-500 uppercase">Fakturadatum</p>
+    <p class="text-slate-900">{{issue_date}}</p>
   </div>
+  <div>
+    <p class="text-xs font-bold text-slate-500 uppercase">Leveransdatum</p>
+    <p class="text-slate-900">{{delivery_date}}</p>
+  </div>
+  <div>
+    <p class="text-xs font-bold text-slate-500 uppercase">Förfallodatum</p>
+    <p class="text-slate-900">{{due_date}}</p>
+  </div>
+  {{#if reference}}
+  <div>
+    <p class="text-xs font-bold text-slate-500 uppercase">Er referens</p>
+    <p class="text-slate-900">{{reference}}</p>
+  </div>
+  {{/if}}
+</div>`
+  },
+  {
+    id: 'line-items-table',
+    name: 'Radtabell',
+    icon: '📋',
+    preview: (
+      <div className="border border-slate-200 rounded overflow-hidden">
+        <div className="bg-slate-100 h-2"></div>
+        <div className="grid grid-cols-4 gap-px bg-slate-100 p-px">
+          <div className="bg-white h-1.5"></div>
+          <div className="bg-white h-1.5"></div>
+          <div className="bg-white h-1.5"></div>
+          <div className="bg-white h-1.5"></div>
+        </div>
+      </div>
+    ),
+    html: `<table class="w-full border-collapse my-8">
+  <thead>
+    <tr class="bg-slate-100 border-b-2 border-slate-300">
+      <th class="text-left p-3 font-semibold text-slate-700">Beskrivning</th>
+      <th class="text-center p-3 font-semibold text-slate-700">Antal</th>
+      <th class="text-right p-3 font-semibold text-slate-700">Á-pris</th>
+      <th class="text-right p-3 font-semibold text-slate-700">Moms %</th>
+      <th class="text-right p-3 font-semibold text-slate-700">Belopp</th>
+    </tr>
+  </thead>
+  <tbody>
+    {{#each line_items}}
+    <tr class="border-b border-slate-200 hover:bg-slate-50">
+      <td class="p-3">{{description}}</td>
+      <td class="text-center p-3">{{quantity}} {{unit}}</td>
+      <td class="text-right p-3">{{unit_price}} {{../currency}}</td>
+      <td class="text-right p-3">{{tax_rate}}%</td>
+      <td class="text-right p-3 font-semibold">{{amount}} {{../currency}}</td>
+    </tr>
+    {{/each}}
+  </tbody>
+</table>`
+  },
+  {
+    id: 'totals-summary',
+    name: 'Summering',
+    icon: '💰',
+    preview: (
+      <div className="ml-auto w-2/3">
+        <div className="flex justify-between border-b border-slate-200 py-0.5">
+          <div className="text-[8px] text-slate-600">Delsumma:</div>
+          <div className="text-[8px] font-semibold">1000</div>
+        </div>
+        <div className="flex justify-between border-t-2 border-blue-600 pt-0.5">
+          <div className="text-[9px] font-bold">Att betala:</div>
+          <div className="text-[9px] font-bold text-blue-600">1250</div>
+        </div>
+      </div>
+    ),
+    html: `<div class="mt-8">
+  <div class="ml-auto w-80">
+    <div class="flex justify-between py-2 text-slate-600">
+      <span>Delsumma:</span>
+      <span class="font-semibold">{{subtotal}} {{currency}}</span>
+    </div>
+    {{#each vat_groups}}
+    <div class="flex justify-between py-2 text-slate-600">
+      <span>Moms {{rate}}% ({{base}} {{../currency}}):</span>
+      <span class="font-semibold">{{vat}} {{../currency}}</span>
+    </div>
+    {{/each}}
+    <div class="flex justify-between py-3 border-t-2 border-blue-600 text-lg font-bold text-blue-600">
+      <span>Att betala:</span>
+      <span>{{total}} {{currency}}</span>
+    </div>
+  </div>
+</div>`
+  },
+  {
+    id: 'payment-info',
+    name: 'Betalningsinfo',
+    icon: '💳',
+    preview: (
+      <div className="bg-slate-50 p-2 rounded border border-slate-200">
+        <div className="text-[8px] font-bold text-slate-700 mb-0.5">BETALNINGSINFORMATION</div>
+        <div className="h-1 bg-slate-400 rounded w-2/3"></div>
+      </div>
+    ),
+    html: `{{#if payment_reference}}
+<div class="bg-slate-50 p-4 rounded border border-slate-200 my-6">
+  <h3 class="text-sm font-bold text-slate-700 uppercase mb-2">Betalningsinformation</h3>
+  <p class="text-slate-900"><strong>OCR-nummer:</strong> {{payment_reference}}</p>
+  <p class="text-sm text-slate-600 mt-2">Ange alltid OCR-nummer vid betalning för snabb och korrekt hantering.</p>
+</div>
+{{/if}}`
+  },
+  {
+    id: 'notes-section',
+    name: 'Noteringar',
+    icon: '📝',
+    preview: (
+      <div className="border-l-4 border-slate-300 pl-2">
+        <div className="text-[8px] font-bold text-slate-600 mb-0.5">NOTERINGAR</div>
+        <div className="h-1 bg-slate-300 rounded w-full mb-0.5"></div>
+        <div className="h-1 bg-slate-300 rounded w-4/5"></div>
+      </div>
+    ),
+    html: `{{#if notes}}
+<div class="my-6">
+  <h3 class="text-sm font-bold text-slate-700 uppercase mb-2">Noteringar</h3>
+  <p class="text-slate-600">{{notes}}</p>
+</div>
+{{/if}}`
+  },
+  {
+    id: 'terms-section',
+    name: 'Betalningsvillkor',
+    icon: '📜',
+    preview: (
+      <div className="border-l-4 border-blue-300 pl-2">
+        <div className="text-[8px] font-bold text-blue-700 mb-0.5">BETALNINGSVILLKOR</div>
+        <div className="h-1 bg-blue-300 rounded w-full"></div>
+      </div>
+    ),
+    html: `{{#if terms}}
+<div class="my-6">
+  <h3 class="text-sm font-bold text-slate-700 uppercase mb-2">Betalningsvillkor</h3>
+  <p class="text-slate-600">{{terms}}</p>
+</div>
+{{/if}}`
+  },
+  {
+    id: 'invoice-footer',
+    name: 'Sidfot',
+    icon: '⬇️',
+    preview: (
+      <div className="border-t border-slate-300 pt-1">
+        <div className="h-1 bg-slate-300 rounded w-2/3 mb-0.5"></div>
+        <div className="h-1 bg-slate-200 rounded w-full"></div>
+      </div>
+    ),
+    html: `<div class="mt-16 pt-4 border-t border-slate-200 text-xs text-slate-500">
+  <p>Betalning sker till: {{organization_name}}</p>
+  <p class="mt-1">Denna faktura är upprättad enligt Bokföringslagen (1999:1078) och Mervärdesskattelagen (2023:200)</p>
 </div>`
   },
   {
@@ -632,243 +810,23 @@ const LAYOUT_BLOCKS = [
     preset: '50-50',
     preview: (
       <div className="grid grid-cols-2 gap-1">
-        <div className="bg-gray-100 dark:bg-gray-700 rounded p-1">
-          <div className="h-1.5 bg-gray-400 rounded w-full"></div>
+        <div className="bg-slate-100 rounded p-1">
+          <div className="h-1.5 bg-slate-400 rounded w-full"></div>
         </div>
-        <div className="bg-gray-100 dark:bg-gray-700 rounded p-1">
-          <div className="h-1.5 bg-gray-400 rounded w-full"></div>
+        <div className="bg-slate-100 rounded p-1">
+          <div className="h-1.5 bg-slate-400 rounded w-full"></div>
         </div>
       </div>
     ),
-    html: `<div class="two-columns">
+    html: `<div class="grid grid-cols-2 gap-6">
   <div>
-    <h3>Vänster kolumn</h3>
-    <p>Innehåll...</p>
+    <h3 class="font-semibold text-slate-900">Vänster kolumn</h3>
+    <p class="text-slate-600">Innehåll...</p>
   </div>
   <div>
-    <h3>Höger kolumn</h3>
-    <p>Innehåll...</p>
+    <h3 class="font-semibold text-slate-900">Höger kolumn</h3>
+    <p class="text-slate-600">Innehåll...</p>
   </div>
-</div>`
-  },
-  {
-    id: 'three-columns',
-    name: '3 Kolumner',
-    icon: '▦',
-    isResizable: true,
-    preset: '33-33-33',
-    preview: (
-      <div className="grid grid-cols-3 gap-0.5">
-        <div className="bg-gray-100 dark:bg-gray-700 rounded p-0.5">
-          <div className="h-1.5 bg-gray-400 rounded w-full"></div>
-        </div>
-        <div className="bg-gray-100 dark:bg-gray-700 rounded p-0.5">
-          <div className="h-1.5 bg-gray-400 rounded w-full"></div>
-        </div>
-        <div className="bg-gray-100 dark:bg-gray-700 rounded p-0.5">
-          <div className="h-1.5 bg-gray-400 rounded w-full"></div>
-        </div>
-      </div>
-    ),
-    html: `<div class="three-columns">
-  <div class="card">
-    <h3>Kolumn 1</h3>
-    <p>Innehåll...</p>
-  </div>
-  <div class="card">
-    <h3>Kolumn 2</h3>
-    <p>Innehåll...</p>
-  </div>
-  <div class="card">
-    <h3>Kolumn 3</h3>
-    <p>Innehåll...</p>
-  </div>
-</div>`
-  },
-  {
-    id: 'sidebar-layout',
-    name: 'Sidofält',
-    icon: '◧',
-    isResizable: true,
-    preset: '66-33',
-    preview: (
-      <div className="grid grid-cols-3 gap-0.5">
-        <div className="col-span-2 bg-gray-100 dark:bg-gray-700 rounded p-1">
-          <div className="h-1.5 bg-gray-400 rounded w-full mb-0.5"></div>
-          <div className="h-1.5 bg-gray-300 rounded w-3/4"></div>
-        </div>
-        <div className="bg-blue-100 rounded p-1">
-          <div className="h-1 bg-blue-400 rounded w-full"></div>
-        </div>
-      </div>
-    ),
-    html: `<div class="sidebar-layout">
-  <div class="main-content">
-    <h2>Huvudinnehåll</h2>
-    <p>Det primära innehållet...</p>
-  </div>
-  <div class="sidebar">
-    <div class="card">
-      <h4>Sidofält</h4>
-      <p>Extra info...</p>
-    </div>
-  </div>
-</div>`
-  },
-  {
-    id: 'four-columns',
-    name: '4 Kolumner',
-    icon: '▤',
-    isResizable: true,
-    preset: '25-25-25-25',
-    preview: (
-      <div className="grid grid-cols-4 gap-0.5">
-        <div className="bg-gray-100 dark:bg-gray-700 rounded p-0.5">
-          <div className="h-1.5 bg-gray-400 rounded w-full"></div>
-        </div>
-        <div className="bg-gray-100 dark:bg-gray-700 rounded p-0.5">
-          <div className="h-1.5 bg-gray-400 rounded w-full"></div>
-        </div>
-        <div className="bg-gray-100 dark:bg-gray-700 rounded p-0.5">
-          <div className="h-1.5 bg-gray-400 rounded w-full"></div>
-        </div>
-        <div className="bg-gray-100 dark:bg-gray-700 rounded p-0.5">
-          <div className="h-1.5 bg-gray-400 rounded w-full"></div>
-        </div>
-      </div>
-    ),
-    html: `<div class="four-columns">
-  <div><p>Kolumn 1</p></div>
-  <div><p>Kolumn 2</p></div>
-  <div><p>Kolumn 3</p></div>
-  <div><p>Kolumn 4</p></div>
-</div>`
-  },
-  {
-    id: 'table',
-    name: 'Tabell',
-    icon: '📋',
-    preview: (
-      <div className="border border-gray-300 dark:border-gray-600 rounded overflow-hidden">
-        <div className="bg-blue-600 h-2"></div>
-        <div className="grid grid-cols-3 gap-px bg-gray-200">
-          <div className="bg-white dark:bg-gray-800 h-1.5"></div>
-          <div className="bg-white dark:bg-gray-800 h-1.5"></div>
-          <div className="bg-white dark:bg-gray-800 h-1.5"></div>
-        </div>
-      </div>
-    ),
-    html: `<table>
-  <thead>
-    <tr>
-      <th>Kolumn 1</th>
-      <th>Kolumn 2</th>
-      <th>Kolumn 3</th>
-    </tr>
-  </thead>
-  <tbody>
-    <tr>
-      <td>Data</td>
-      <td>Data</td>
-      <td>Data</td>
-    </tr>
-  </tbody>
-</table>`
-  },
-  {
-    id: 'activity-loop',
-    name: 'Aktivitetsgrupper',
-    icon: '🔄',
-    preview: (
-      <div className="space-y-1">
-        <div className="flex items-center gap-1">
-          <div className="w-2 h-2 rounded-full bg-green-500"></div>
-          <div className="h-1.5 bg-gray-400 rounded flex-1"></div>
-        </div>
-        <div className="flex items-center gap-1">
-          <div className="w-2 h-2 rounded-full bg-blue-500"></div>
-          <div className="h-1.5 bg-gray-400 rounded flex-1"></div>
-        </div>
-        <div className="flex items-center gap-1">
-          <div className="w-2 h-2 rounded-full bg-purple-500"></div>
-          <div className="h-1.5 bg-gray-400 rounded flex-1"></div>
-        </div>
-      </div>
-    ),
-    html: `{{#each activityGroups}}
-<div class="section" style="border-left-color: {{color}};">
-  <h3>{{name}}</h3>
-  <p>{{itemCount}} aktiviteter</p>
-  {{#each items}}
-  <div class="item">
-    <span class="item-name">{{name}}</span>
-    <span class="item-meta">{{formatDate startDate}} - {{formatDate endDate}}</span>
-  </div>
-  {{/each}}
-</div>
-{{/each}}`
-  },
-  {
-    id: 'month-loop',
-    name: 'Månadsöversikt',
-    icon: '📅',
-    preview: (
-      <div className="grid grid-cols-4 gap-0.5">
-        {[...Array(12)].map((_, i) => (
-          <div key={i} className="bg-gray-100 dark:bg-gray-700 rounded p-0.5 text-center">
-            <div className="text-[6px] text-gray-500 dark:text-gray-400">{['Jan','Feb','Mar','Apr','Maj','Jun','Jul','Aug','Sep','Okt','Nov','Dec'][i]}</div>
-          </div>
-        ))}
-      </div>
-    ),
-    html: `<h2>Månadsöversikt</h2>
-{{#each months}}
-<div class="card">
-  <h3>{{name}}</h3>
-  <p>{{itemCount}} aktiviteter</p>
-  {{#if items}}
-  <ul>
-    {{#each items}}
-    <li>{{name}}</li>
-    {{/each}}
-  </ul>
-  {{/if}}
-</div>
-{{/each}}`
-  },
-  {
-    id: 'ring-loop',
-    name: 'Ringlista',
-    icon: '⭕',
-    preview: (
-      <div className="space-y-1">
-        <div className="border-l-4 border-orange-400 pl-1">
-          <div className="h-1.5 bg-gray-400 rounded w-2/3"></div>
-        </div>
-        <div className="border-l-4 border-teal-400 pl-1">
-          <div className="h-1.5 bg-gray-400 rounded w-2/3"></div>
-        </div>
-      </div>
-    ),
-    html: `<h2>Per ring</h2>
-{{#each rings}}
-<div class="section">
-  <h3>{{name}}</h3>
-  <p>{{itemCount}} aktiviteter</p>
-</div>
-{{/each}}`
-  },
-  {
-    id: 'footer',
-    name: 'Sidfot',
-    icon: '📝',
-    preview: (
-      <div className="border-t border-gray-300 dark:border-gray-600 pt-1">
-        <div className="h-1.5 bg-gray-300 rounded w-1/3"></div>
-      </div>
-    ),
-    html: `<div class="footer">
-  <p>Genererad {{currentDate}} | {{wheel.title}}</p>
 </div>`
   },
   {
@@ -876,8 +834,8 @@ const LAYOUT_BLOCKS = [
     name: 'Sidbrytning',
     icon: '📃',
     preview: (
-      <div className="border-t-2 border-dashed border-gray-400 my-1 relative">
-        <span className="absolute -top-1.5 left-1/2 -translate-x-1/2 bg-white dark:bg-gray-800 px-1 text-[6px] text-gray-400">NY SIDA</span>
+      <div className="border-t-2 border-dashed border-slate-400 my-1 relative">
+        <span className="absolute -top-1.5 left-1/2 -translate-x-1/2 bg-white px-1 text-[6px] text-slate-400">NY SIDA</span>
       </div>
     ),
     html: `<div class="page-break"></div>`
@@ -1566,21 +1524,24 @@ export default function TemplateEditor({
                 </div>
               ) : (
                 <div className="p-3 space-y-4 text-xs">
-                  <p className="text-gray-500 dark:text-gray-400">Klicka för att infoga variabel</p>
+                  <p className="text-slate-500 dark:text-slate-400">Klicka för att infoga variabel</p>
                   
-                  {/* Wheel & Page variables */}
+                  {/* Invoice basics */}
                   <div>
-                    <h4 className="font-semibold text-gray-900 dark:text-white mb-2 flex items-center gap-1">
+                    <h4 className="font-semibold text-slate-900 dark:text-white mb-2 flex items-center gap-1">
                       <span className="w-2 h-2 bg-blue-500 rounded-full"></span>
-                      Hjul & Sida
+                      Faktura
                     </h4>
                     <div className="grid grid-cols-2 gap-1">
                       {[
-                        { var: '{{wheel.title}}', label: 'Hjultitel' },
-                        { var: '{{wheel.year}}', label: 'Hjulets år' },
-                        { var: '{{page.title}}', label: 'Sidtitel' },
-                        { var: '{{page.year}}', label: 'Sidans år' },
-                        { var: '{{currentDate}}', label: 'Idag' },
+                        { var: '{{invoice_number}}', label: 'Fakturanummer' },
+                        { var: '{{payment_reference}}', label: 'OCR-nummer' },
+                        { var: '{{issue_date}}', label: 'Fakturadatum' },
+                        { var: '{{delivery_date}}', label: 'Leveransdatum' },
+                        { var: '{{due_date}}', label: 'Förfallodatum' },
+                        { var: '{{reference}}', label: 'Er referens' },
+                        { var: '{{status}}', label: 'Status' },
+                        { var: '{{currency}}', label: 'Valuta' },
                       ].map(v => (
                         <button 
                           key={v.var}
@@ -1594,18 +1555,20 @@ export default function TemplateEditor({
                     </div>
                   </div>
 
-                  {/* Statistics */}
+                  {/* Client fields */}
                   <div>
-                    <h4 className="font-semibold text-gray-900 dark:text-white mb-2 flex items-center gap-1">
+                    <h4 className="font-semibold text-slate-900 dark:text-white mb-2 flex items-center gap-1">
                       <span className="w-2 h-2 bg-green-500 rounded-full"></span>
-                      Statistik
+                      Kund
                     </h4>
                     <div className="grid grid-cols-2 gap-1">
                       {[
-                        { var: '{{stats.totalItems}}', label: 'Antal aktiviteter' },
-                        { var: '{{stats.totalRings}}', label: 'Antal ringar' },
-                        { var: '{{stats.totalActivityGroups}}', label: 'Antal grupper' },
-                        { var: '{{stats.totalLabels}}', label: 'Antal etiketter' },
+                        { var: '{{client_name}}', label: 'Namn' },
+                        { var: '{{client_email}}', label: 'E-post' },
+                        { var: '{{client_address}}', label: 'Adress' },
+                        { var: '{{client_city}}', label: 'Stad' },
+                        { var: '{{client_postal_code}}', label: 'Postnummer' },
+                        { var: '{{client_country}}', label: 'Land' },
                       ].map(v => (
                         <button 
                           key={v.var}
@@ -1619,66 +1582,99 @@ export default function TemplateEditor({
                     </div>
                   </div>
 
+                  {/* Organization fields */}
+                  <div>
+                    <h4 className="font-semibold text-slate-900 dark:text-white mb-2 flex items-center gap-1">
+                      <span className="w-2 h-2 bg-purple-500 rounded-full"></span>
+                      Företag
+                    </h4>
+                    <div className="grid grid-cols-2 gap-1">
+                      {[
+                        { var: '{{organization_name}}', label: 'Namn' },
+                        { var: '{{organization_number}}', label: 'Org.nr' },
+                        { var: '{{organization_vat_number}}', label: 'Moms nr' },
+                        { var: '{{organization_municipality}}', label: 'Kommun' },
+                        { var: '{{organization_address}}', label: 'Adress' },
+                        { var: '{{organization_city}}', label: 'Stad' },
+                        { var: '{{organization_postal_code}}', label: 'Postnummer' },
+                        { var: '{{organization_email}}', label: 'E-post' },
+                        { var: '{{organization_phone}}', label: 'Telefon' },
+                        { var: '{{organization_website}}', label: 'Webbplats' },
+                        { var: '{{organization_f_skatt_approved}}', label: 'F-skatt' },
+                      ].map(v => (
+                        <button 
+                          key={v.var}
+                          onClick={() => insertVariable(v.var)} 
+                          className="px-2 py-1.5 bg-purple-50 hover:bg-purple-100 text-purple-700 rounded transition text-left truncate"
+                          title={v.var}
+                        >
+                          {v.label}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* Financial totals */}
+                  <div>
+                    <h4 className="font-semibold text-slate-900 dark:text-white mb-2 flex items-center gap-1">
+                      <span className="w-2 h-2 bg-emerald-500 rounded-full"></span>
+                      Belopp
+                    </h4>
+                    <div className="grid grid-cols-2 gap-1">
+                      {[
+                        { var: '{{subtotal}}', label: 'Delsumma' },
+                        { var: '{{tax_amount}}', label: 'Moms' },
+                        { var: '{{tax_rate}}', label: 'Momssats %' },
+                        { var: '{{total}}', label: 'Totalt' },
+                      ].map(v => (
+                        <button 
+                          key={v.var}
+                          onClick={() => insertVariable(v.var)} 
+                          className="px-2 py-1.5 bg-emerald-50 hover:bg-emerald-100 text-emerald-700 rounded transition text-left truncate"
+                          title={v.var}
+                        >
+                          {v.label}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+
                   {/* Loops */}
                   <div>
-                    <h4 className="font-semibold text-gray-900 dark:text-white mb-2 flex items-center gap-1">
-                      <span className="w-2 h-2 bg-purple-500 rounded-full"></span>
-                      Loopar (listor)
+                    <h4 className="font-semibold text-slate-900 dark:text-white mb-2 flex items-center gap-1">
+                      <span className="w-2 h-2 bg-amber-500 rounded-full"></span>
+                      Loopar
                     </h4>
                     <div className="space-y-1">
                       <button 
-                        onClick={() => insertVariable('{{#each activityGroups}}\n<div class="section" style="border-left-color: {{color}}">\n  <h3>{{name}}</h3>\n  <p>{{itemCount}} aktiviteter</p>\n  {{#each items}}\n  <div class="item">\n    <span class="item-name">{{name}}</span>\n    <span class="item-meta">{{formatDate startDate}} - {{formatDate endDate}}</span>\n  </div>\n  {{/each}}\n</div>\n{{/each}}')} 
-                        className="w-full px-2 py-1.5 bg-purple-50 hover:bg-purple-100 text-purple-700 rounded transition text-left"
+                        onClick={() => insertVariable('{{#each line_items}}\n<tr>\n  <td>{{description}}</td>\n  <td>{{quantity}}</td>\n  <td>{{unit_price}}</td>\n  <td>{{amount}}</td>\n</tr>\n{{/each}}')} 
+                        className="w-full px-2 py-1.5 bg-amber-50 hover:bg-amber-100 text-amber-700 rounded transition text-left"
                       >
-                        🔄 Aktivitetsgrupper → items
+                        📋 Fakturarader (line_items)
                       </button>
                       <button 
-                        onClick={() => insertVariable('{{#each months}}\n<div class="card">\n  <h3>{{name}}</h3>\n  <p>{{itemCount}} aktiviteter</p>\n  {{#each items}}\n  <p>• {{name}}</p>\n  {{/each}}\n</div>\n{{/each}}')} 
-                        className="w-full px-2 py-1.5 bg-purple-50 hover:bg-purple-100 text-purple-700 rounded transition text-left"
+                        onClick={() => insertVariable('{{#each vat_groups}}\n<tr>\n  <td>Moms {{rate}}%</td>\n  <td>{{base}} {{../currency}}</td>\n  <td>{{vat}} {{../currency}}</td>\n</tr>\n{{/each}}')} 
+                        className="w-full px-2 py-1.5 bg-amber-50 hover:bg-amber-100 text-amber-700 rounded transition text-left"
                       >
-                        📅 Månader → items
-                      </button>
-                      <button 
-                        onClick={() => insertVariable('{{#each rings}}\n<div class="section">\n  <h3>{{name}} ({{type}})</h3>\n  <p>{{itemCount}} aktiviteter</p>\n  {{#each items}}\n  <p>• {{name}}</p>\n  {{/each}}\n</div>\n{{/each}}')} 
-                        className="w-full px-2 py-1.5 bg-purple-50 hover:bg-purple-100 text-purple-700 rounded transition text-left"
-                      >
-                        ⭕ Ringar → items
-                      </button>
-                      <button 
-                        onClick={() => insertVariable('{{#each labels}}\n<div class="card">\n  <h3 style="color: {{color}}">{{name}}</h3>\n  <p>{{itemCount}} aktiviteter</p>\n</div>\n{{/each}}')} 
-                        className="w-full px-2 py-1.5 bg-purple-50 hover:bg-purple-100 text-purple-700 rounded transition text-left"
-                      >
-                        🏷️ Etiketter → items
-                      </button>
-                      <button 
-                        onClick={() => insertVariable('{{#each items}}\n<div class="item">\n  <span class="item-name">{{name}}</span>\n  <span class="item-meta">{{ringName}} | {{activityName}}</span>\n  <span class="item-meta">{{formatDate startDate}} - {{formatDate endDate}}</span>\n  {{#if description}}<p>{{description}}</p>{{/if}}\n</div>\n{{/each}}')} 
-                        className="w-full px-2 py-1.5 bg-purple-50 hover:bg-purple-100 text-purple-700 rounded transition text-left"
-                      >
-                        📋 Alla aktiviteter (detaljerat)
+                        💰 Momsgrupper (vat_groups)
                       </button>
                     </div>
                   </div>
 
-                  {/* Item fields (in loops) */}
+                  {/* Line item fields (in loops) */}
                   <div>
-                    <h4 className="font-semibold text-gray-900 dark:text-white mb-2 flex items-center gap-1">
+                    <h4 className="font-semibold text-slate-900 dark:text-white mb-2 flex items-center gap-1">
                       <span className="w-2 h-2 bg-teal-500 rounded-full"></span>
-                      Aktivitetsfält (i loopar)
+                      Radfält (i line_items loop)
                     </h4>
                     <div className="grid grid-cols-2 gap-1">
                       {[
-                        { var: '{{name}}', label: 'Namn' },
-                        { var: '{{startDate}}', label: 'Startdatum' },
-                        { var: '{{endDate}}', label: 'Slutdatum' },
                         { var: '{{description}}', label: 'Beskrivning' },
-                        { var: '{{time}}', label: 'Tid' },
-                        { var: '{{ringName}}', label: 'Ringnamn' },
-                        { var: '{{ringColor}}', label: 'Ringfärg' },
-                        { var: '{{activityName}}', label: 'Gruppnamn' },
-                        { var: '{{activityColor}}', label: 'Gruppfärg' },
-                        { var: '{{labelName}}', label: 'Etikettnamn' },
-                        { var: '{{labelColor}}', label: 'Etikettfärg' },
-                        { var: '{{itemCount}}', label: 'Antal items' },
+                        { var: '{{quantity}}', label: 'Antal' },
+                        { var: '{{unit}}', label: 'Enhet' },
+                        { var: '{{unit_price}}', label: 'Á-pris' },
+                        { var: '{{tax_rate}}', label: 'Moms %' },
+                        { var: '{{amount}}', label: 'Belopp' },
                       ].map(v => (
                         <button 
                           key={v.var}
@@ -1692,47 +1688,75 @@ export default function TemplateEditor({
                     </div>
                   </div>
 
-                  {/* Helpers */}
+                  {/* VAT group fields (in loops) */}
                   <div>
-                    <h4 className="font-semibold text-gray-900 dark:text-white mb-2 flex items-center gap-1">
-                      <span className="w-2 h-2 bg-orange-500 rounded-full"></span>
-                      Hjälpfunktioner
+                    <h4 className="font-semibold text-slate-900 dark:text-white mb-2 flex items-center gap-1">
+                      <span className="w-2 h-2 bg-indigo-500 rounded-full"></span>
+                      Momsfält (i vat_groups loop)
                     </h4>
                     <div className="grid grid-cols-2 gap-1">
-                      <button onClick={() => insertVariable('{{formatDate startDate}}')} className="px-2 py-1 bg-orange-50 hover:bg-orange-100 text-orange-700 rounded transition text-left" title="Formatera datum (sv-SE)">formatDate</button>
-                      <button onClick={() => insertVariable('{{formatDateTime startDate}}')} className="px-2 py-1 bg-orange-50 hover:bg-orange-100 text-orange-700 rounded transition text-left" title="Datum + tid">formatDateTime</button>
-                      <button onClick={() => insertVariable('{{uppercase name}}')} className="px-2 py-1 bg-orange-50 hover:bg-orange-100 text-orange-700 rounded transition text-left" title="VERSALER">uppercase</button>
-                      <button onClick={() => insertVariable('{{lowercase name}}')} className="px-2 py-1 bg-orange-50 hover:bg-orange-100 text-orange-700 rounded transition text-left" title="gemener">lowercase</button>
-                      <button onClick={() => insertVariable('{{truncate description 100}}')} className="px-2 py-1 bg-orange-50 hover:bg-orange-100 text-orange-700 rounded transition text-left" title="Korta av text">truncate</button>
-                      <button onClick={() => insertVariable('{{pluralize count "aktivitet" "aktiviteter"}}')} className="px-2 py-1 bg-orange-50 hover:bg-orange-100 text-orange-700 rounded transition text-left" title="Singular/plural">pluralize</button>
+                      {[
+                        { var: '{{rate}}', label: 'Momssats' },
+                        { var: '{{base}}', label: 'Underlag' },
+                        { var: '{{vat}}', label: 'Momsbelopp' },
+                      ].map(v => (
+                        <button 
+                          key={v.var}
+                          onClick={() => insertVariable(v.var)} 
+                          className="px-2 py-1 bg-indigo-50 hover:bg-indigo-100 text-indigo-700 rounded transition text-left truncate"
+                          title={v.var}
+                        >
+                          {v.label}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* Optional fields */}
+                  <div>
+                    <h4 className="font-semibold text-slate-900 dark:text-white mb-2 flex items-center gap-1">
+                      <span className="w-2 h-2 bg-slate-500 rounded-full"></span>
+                      Övrigt
+                    </h4>
+                    <div className="grid grid-cols-2 gap-1">
+                      {[
+                        { var: '{{notes}}', label: 'Noteringar' },
+                        { var: '{{terms}}', label: 'Villkor' },
+                      ].map(v => (
+                        <button 
+                          key={v.var}
+                          onClick={() => insertVariable(v.var)} 
+                          className="px-2 py-1 bg-slate-50 hover:bg-slate-100 text-slate-700 rounded transition text-left truncate"
+                          title={v.var}
+                        >
+                          {v.label}
+                        </button>
+                      ))}
                     </div>
                   </div>
 
                   {/* Conditionals */}
                   <div>
-                    <h4 className="font-semibold text-gray-900 dark:text-white mb-2 flex items-center gap-1">
+                    <h4 className="font-semibold text-slate-900 dark:text-white mb-2 flex items-center gap-1">
                       <span className="w-2 h-2 bg-pink-500 rounded-full"></span>
                       Villkor & Logik
                     </h4>
                     <div className="grid grid-cols-2 gap-1">
-                      <button onClick={() => insertVariable('{{#if items}}\n  ...\n{{else}}\n  <p>Inga aktiviteter</p>\n{{/if}}')} className="px-2 py-1 bg-pink-50 hover:bg-pink-100 text-pink-700 rounded transition text-left">#if...else</button>
-                      <button onClick={() => insertVariable('{{#unless items}}\n  <p>Tomt</p>\n{{/unless}}')} className="px-2 py-1 bg-pink-50 hover:bg-pink-100 text-pink-700 rounded transition text-left">#unless</button>
-                      <button onClick={() => insertVariable('{{#ifEquals type "outer"}}...{{/ifEquals}}')} className="px-2 py-1 bg-pink-50 hover:bg-pink-100 text-pink-700 rounded transition text-left" title="Jämför värden">ifEquals</button>
-                      <button onClick={() => insertVariable('{{add a b}}')} className="px-2 py-1 bg-pink-50 hover:bg-pink-100 text-pink-700 rounded transition text-left" title="Addition">add</button>
+                      <button onClick={() => insertVariable('{{#if payment_reference}}\n  ...\n{{/if}}')} className="px-2 py-1 bg-pink-50 hover:bg-pink-100 text-pink-700 rounded transition text-left">#if</button>
+                      <button onClick={() => insertVariable('{{#if notes}}\n  ...\n{{else}}\n  <p>Inga noteringar</p>\n{{/if}}')} className="px-2 py-1 bg-pink-50 hover:bg-pink-100 text-pink-700 rounded transition text-left">#if...else</button>
+                      <button onClick={() => insertVariable('{{#unless payment_reference}}\n  ...\n{{/unless}}')} className="px-2 py-1 bg-pink-50 hover:bg-pink-100 text-pink-700 rounded transition text-left">#unless</button>
                     </div>
                   </div>
 
                   {/* Layout */}
                   <div>
-                    <h4 className="font-semibold text-gray-900 dark:text-white mb-2 flex items-center gap-1">
-                      <span className="w-2 h-2 bg-gray-50 dark:bg-gray-9000 rounded-full"></span>
+                    <h4 className="font-semibold text-slate-900 dark:text-white mb-2 flex items-center gap-1">
+                      <span className="w-2 h-2 bg-gray-400 rounded-full"></span>
                       Layout & Print
                     </h4>
                     <div className="grid grid-cols-2 gap-1">
                       <button onClick={() => insertVariable('<div class="page-break"></div>')} className="px-2 py-1 bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 text-gray-700 dark:text-gray-300 rounded transition text-left">Sidbrytning</button>
                       <button onClick={() => insertVariable('<div class="no-break">\n  ...\n</div>')} className="px-2 py-1 bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 text-gray-700 dark:text-gray-300 rounded transition text-left">Ingen brytning</button>
-                      <button onClick={() => insertVariable('<div class="section">\n  ...\n</div>')} className="px-2 py-1 bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 text-gray-700 dark:text-gray-300 rounded transition text-left">Sektion</button>
-                      <button onClick={() => insertVariable('<div class="card">\n  ...\n</div>')} className="px-2 py-1 bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 text-gray-700 dark:text-gray-300 rounded transition text-left">Kort</button>
                     </div>
                   </div>
                 </div>
