@@ -23,6 +23,16 @@ export default function Settings() {
     }
   }, [currentOrganization, reset]);
 
+  // Re-initialize form when entering edit mode to ensure all fields are populated
+  useEffect(() => {
+    if (isEditing && currentOrganization) {
+      // Small delay to ensure conditionally rendered fields are in the DOM
+      setTimeout(() => {
+        reset(currentOrganization);
+      }, 0);
+    }
+  }, [isEditing, currentOrganization, reset]);
+
   const handleEdit = () => {
     setIsEditing(true);
   };
@@ -38,7 +48,10 @@ export default function Settings() {
     setError(null);
     setSaving(true);
 
-    const { error: updateError } = await updateOrganization(currentOrganization.id, data);
+    // Remove fields that don't belong to the organizations table
+    const { role, is_default, joined_at, ...organizationData } = data;
+
+    const { error: updateError } = await updateOrganization(currentOrganization.id, organizationData);
 
     if (updateError) {
       setError(updateError.message);
@@ -116,7 +129,7 @@ export default function Settings() {
                       type="text"
                       {...register('name', { 
                         required: 'Företagsnamn är obligatoriskt',
-                        validate: value => value?.trim() || 'Företagsnamn är obligatoriskt'
+                        validate: value => (value?.trim() ? true : 'Företagsnamn är obligatoriskt')
                       })}
                       className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white"
                       data-cy="org-name"
@@ -140,7 +153,7 @@ export default function Settings() {
                       type="text"
                       {...register('organization_number', { 
                         required: 'Organisationsnummer är obligatoriskt enligt Aktiebolagslagen',
-                        validate: value => value?.trim() || 'Organisationsnummer är obligatoriskt enligt Aktiebolagslagen'
+                        validate: value => (value?.trim() ? true : 'Organisationsnummer är obligatoriskt enligt Aktiebolagslagen')
                       })}
                       className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white"
                       data-cy="org-number"
@@ -166,7 +179,7 @@ export default function Settings() {
                       type="text"
                       {...register('vat_number', { 
                         required: 'Momsregistreringsnummer är obligatoriskt enligt Mervärdesskattelagen',
-                        validate: value => value?.trim() || 'Momsregistreringsnummer är obligatoriskt enligt Mervärdesskattelagen'
+                        validate: value => (value?.trim() ? true : 'Momsregistreringsnummer är obligatoriskt enligt Mervärdesskattelagen')
                       })}
                       className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white"
                       data-cy="org-vat"
@@ -200,7 +213,7 @@ export default function Settings() {
                       type="text"
                       {...register('address', { 
                         required: 'Adress är obligatorisk',
-                        validate: value => value?.trim() || 'Adress är obligatorisk'
+                        validate: value => (value?.trim() ? true : 'Adress är obligatorisk')
                       })}
                       className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white"
                       data-cy="org-address"
@@ -226,7 +239,7 @@ export default function Settings() {
                       type="text"
                       {...register('city', { 
                         required: 'Stad är obligatorisk',
-                        validate: value => value?.trim() || 'Stad är obligatorisk'
+                        validate: value => (value?.trim() ? true : 'Stad är obligatorisk')
                       })}
                       className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white"
                       data-cy="org-city"
@@ -250,7 +263,7 @@ export default function Settings() {
                       type="text"
                       {...register('postal_code', { 
                         required: 'Postnummer är obligatoriskt',
-                        validate: value => value?.trim() || 'Postnummer är obligatoriskt'
+                        validate: value => (value?.trim() ? true : 'Postnummer är obligatoriskt')
                       })}
                       className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white"
                       data-cy="org-postal-code"
@@ -274,7 +287,7 @@ export default function Settings() {
                       type="text"
                       {...register('municipality', { 
                         required: 'Kommun är obligatoriskt enligt Aktiebolagslagen',
-                        validate: value => value?.trim() || 'Kommun är obligatoriskt enligt Aktiebolagslagen'
+                        validate: value => (value?.trim() ? true : 'Kommun är obligatoriskt enligt Aktiebolagslagen')
                       })}
                       className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white"
                       data-cy="org-municipality"
@@ -300,7 +313,7 @@ export default function Settings() {
                       type="email"
                       {...register('email', { 
                         required: 'E-post är obligatoriskt',
-                        validate: value => value?.trim() || 'E-post är obligatoriskt',
+                        validate: value => (value?.trim() ? true : 'E-post är obligatoriskt'),
                         pattern: {
                           value: /^[^\s@]+@[^\s@]+\.[^\s@]+$/,
                           message: 'Ogiltig e-postadress'

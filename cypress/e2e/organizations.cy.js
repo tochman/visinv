@@ -1,31 +1,45 @@
 /// <reference types="cypress" />
 
 describe('Organization Management', () => {
-  describe.skip('Organization Setup Wizard', () => {
-    // Skipped: Organization wizard component may not be implemented or accessible in test environment
+  describe('Organization Setup Wizard', () => {
     beforeEach(() => {
-      // Mock empty organizations - must be set up BEFORE cy.login calls visit
-      cy.intercept('GET', '**/rest/v1/organizations*', {
+      // Mock empty organization_members to trigger wizard
+      cy.intercept('GET', '**/rest/v1/organization_members?*', {
         statusCode: 200,
         body: []
-      }).as('getOrganizations')
+      }).as('getOrgMembers')
 
       cy.intercept('POST', '**/rest/v1/organizations*', (req) => {
         req.reply({
           statusCode: 201,
-          body: { 
+          body: [{ 
             id: 'new-org-id', 
             ...req.body,
             created_at: new Date().toISOString(),
             updated_at: new Date().toISOString()
-          }
+          }]
         })
       }).as('createOrganization')
 
-      cy.login('admin')
+      cy.intercept('POST', '**/rest/v1/organization_members*', (req) => {
+        req.reply({
+          statusCode: 201,
+          body: [{
+            id: 'new-member-id',
+            ...req.body,
+            joined_at: new Date().toISOString()
+          }]
+        })
+      }).as('createOrgMember')
+
+      // Login with no organization
+      cy.login('admin', { skipOrgMock: true })
+      
       // Visit dashboard where wizard should appear
       cy.visit('/dashboard')
-      cy.wait('@getOrganizations')
+      
+      // Wait for page to load
+      cy.wait(1000)
     })
 
     it('is expected to show setup wizard for new users without organization', () => {
@@ -39,11 +53,13 @@ describe('Organization Management', () => {
     })
 
     it('is expected to navigate through wizard steps', () => {
-      // Fill step 1
+      // Fill step 1 - Basic Information
       cy.get('[data-cy="org-name-input"]').type('Test Company AB')
+      cy.get('[data-cy="org-number-input"]').type('556677-8899')
+      cy.get('[data-cy="vat-number-input"]').type('SE556677889901')
       cy.get('[data-cy="next-step-button"]').click()
       
-      // Should be on step 2
+      // Should be on step 2 - Address
       cy.contains('Address').should('be.visible')
       cy.get('[data-cy="org-address-input"]').should('be.visible')
     })
@@ -51,6 +67,8 @@ describe('Organization Management', () => {
     it('is expected to go back to previous step', () => {
       // Fill step 1 and go to step 2
       cy.get('[data-cy="org-name-input"]').type('Test Company AB')
+      cy.get('[data-cy="org-number-input"]').type('556677-8899')
+      cy.get('[data-cy="vat-number-input"]').type('SE556677889901')
       cy.get('[data-cy="next-step-button"]').click()
       
       // Go back
@@ -58,6 +76,38 @@ describe('Organization Management', () => {
       
       // Should be on step 1 with data preserved
       cy.get('[data-cy="org-name-input"]').should('have.value', 'Test Company AB')
+    })
+    
+    it('is expected to complete wizard and create organization', () => {
+      // Step 1: Basic Information
+      cy.get('[data-cy="org-name-input"]').type('Test Company AB')
+      cy.get('[data-cy="org-number-input"]').type('556677-8899')
+      cy.get('[data-cy="vat-number-input"]').type('SE556677889901')
+      cy.get('[data-cy="next-step-button"]').click()
+      
+      // Step 2: Address & Contact
+      cy.get('[data-cy="org-address-input"]').type('Storgatan 1')
+      cy.get('[data-cy="org-postal-code-input"]').type('11122')
+      cy.get('[data-cy="org-city-input"]').type('Stockholm')
+      cy.get('[data-cy="org-municipality-input"]').type('Stockholm')
+      cy.get('[data-cy="org-email-input"]').type('info@testcompany.se')
+      cy.get('[data-cy="org-phone-input"]').type('+46 8 123 456')
+      cy.get('[data-cy="next-step-button"]').click()
+      
+      // Step 3: Banking & Tax
+      cy.get('[data-cy="org-bank-giro-input"]').type('123-4567')
+      cy.get('[data-cy="org-f-skatt-checkbox"]').check()
+      cy.get('[data-cy="next-step-button"]').click()
+      
+      // Step 4: Invoice Settings
+      cy.get('[data-cy="org-invoice-prefix-input"]').type('INV')
+      cy.get('[data-cy="complete-setup-button"]').click()
+      
+      // Should create organization
+      cy.wait('@createOrganization')
+      
+      // Wizard should close/redirect
+      cy.get('[data-cy="organization-wizard"]').should('not.exist')
     })
   })
 
@@ -93,26 +143,45 @@ describe('Organization Management', () => {
       cy.get('[data-cy="org-name"]').should('be.visible')
     })
 
-    it.skip('is expected to update organization name', () => {
-      // Skipped: PATCH intercept pattern doesn't match actual API call format
-      // The update functionality works in the app, but cy.intercept doesn't catch the PATCH request
+    it('is expected to update organization name', () => {
       cy.fixture('organizations').then((data) => {
-        // Set up PATCH intercept with regex pattern to match Supabase query format
-        cy.intercept('PATCH', /\/rest\/v1\/organizations\?/, {
-          statusCode: 200,
-          body: [{
-            ...data.mockOrganization,
-            name: 'Acme Sweden AB',
-            updated_at: new Date().toISOString()
-          }]
+        // Intercept the PATCH request
+        cy.intercept('PATCH', '**/rest/v1/organizations**', (req) => {
+          // Return a successful response matching Supabase format
+          req.reply({
+            statusCode: 200,
+            body: {
+              ...data.mockOrganization,
+              ...req.body,
+              updated_at: new Date().toISOString()
+            }
+          })
         }).as('updateOrganization')
-
+        
+        // Click edit button
         cy.get('[data-cy="edit-organization"]').click()
+        
+        // Wait for form to initialize
+        cy.wait(500)
+        
+        // Verify the name field is populated
+        cy.get('[data-cy="org-name"]').should('be.visible').should('have.value', 'Acme AB')
+        
+        // Change the name
         cy.get('[data-cy="org-name"]').clear().type('Acme Sweden AB')
-        cy.get('button[type="submit"]').click()
-
-        cy.wait('@updateOrganization')
-        cy.get('[data-cy="success-message"]').should('be.visible')
+        
+        // Click save button
+        cy.get('[data-cy="save-organization"]').scrollIntoView().click()
+        
+        // Assert that the PATCH request was made with correct data
+        cy.wait('@updateOrganization').then((interception) => {
+          // Verify the request contains the updated name
+          expect(interception.request.body).to.have.property('name', 'Acme Sweden AB')
+          // Verify the role field is NOT sent (it belongs to organization_members)
+          expect(interception.request.body).to.not.have.property('role')
+          expect(interception.request.body).to.not.have.property('is_default')
+          expect(interception.request.body).to.not.have.property('joined_at')
+        })
       })
     })
   })
