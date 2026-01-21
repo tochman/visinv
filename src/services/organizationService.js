@@ -10,9 +10,15 @@ const organizationService = {
       return { data: null, error: { message: 'Supabase not configured.' } };
     }
 
+    // Get current user to set created_by (required for RLS policy)
+    const { data: user } = await supabase.auth.getUser();
+    if (!user?.user) {
+      return { data: null, error: { message: 'Not authenticated' } };
+    }
+
     const { data, error } = await supabase
       .from('organizations')
-      .insert([organizationData])
+      .insert([{ ...organizationData, created_by: user.user.id }])
       .select()
       .single();
 
