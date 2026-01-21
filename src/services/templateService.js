@@ -115,21 +115,16 @@ export function renderTemplate(templateContent, context) {
 
 /**
  * Export rendered HTML to PDF
- * Uses Tailwind v3 in isolated iframe for compatibility with html2canvas (no oklch colors)
+ * Strips CDN, uses app's Tailwind, inlines all computed styles as rgb
  */
 export async function exportToPDF(html, filename = 'report.pdf') {
   const html2pdf = (await import('html2pdf.js')).default;
   
-  // Replace Tailwind v4 CDN with v3 which uses rgb colors instead of oklch
+  // Remove CDN script tags completely - we'll use app's styles
   let processedHtml = html.replace(
-    /<script src="https:\/\/cdn\.tailwindcss\.com"><\/script>/gi,
-    '<script src="https://cdn.tailwindcss.com/3.4.1"></script>'
+    /<script src="https:\/\/cdn\.tailwindcss\.com[^"]*"><\/script>/gi,
+    ''
   );
-  
-  // Ensure the HTML is a complete document
-  if (!processedHtml.includes('<!DOCTYPE html>')) {
-    processedHtml = `<!DOCTYPE html>${processedHtml}`;
-  }
   
   const options = {
     margin: [10, 10],
@@ -139,52 +134,98 @@ export async function exportToPDF(html, filename = 'report.pdf') {
       scale: 2,
       useCORS: true,
       backgroundColor: '#ffffff',
-      logging: false
+      logging: false,
+      // CRITICAL: Remove all stylesheets in cloned document before parsing
+      onclone: (clonedDoc) => {
+        // Remove ALL stylesheets from cloned document to prevent oklch parsing
+        const styles = clonedDoc.querySelectorAll('style, link[rel="stylesheet"]');
+        styles.forEach(el => el.remove());
+        
+        // Remove all class attributes since styles are already inlined
+        const elements = clonedDoc.querySelectorAll('*');
+        elements.forEach(el => el.removeAttribute('class'));
+      }
     },
     jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
   };
 
   try {
-    // Create hidden iframe for complete style isolation
-    const iframe = document.createElement('iframe');
-    iframe.style.cssText = 'position: fixed; left: -10000px; top: 0; width: 210mm; height: 297mm; border: none;';
-    document.body.appendChild(iframe);
+    // Render in a hidden div with app's styles
+    const container = document.createElement('div');
+    container.style.cssText = 'position: fixed; left: -10000px; top: 0; width: 210mm; background: #ffffff;';
+    container.innerHTML = processedHtml;
+    document.body.appendChild(container);
     
-    const iframeDoc = iframe.contentDocument || iframe.contentWindow.document;
-    iframeDoc.open();
-    iframeDoc.write(processedHtml);
-    iframeDoc.close();
-
-    // Wait for Tailwind CDN to load in the iframe
-    await new Promise((resolve) => {
-      const checkTailwind = setInterval(() => {
+    // Wait a moment for styles to apply
+    await new Promise(resolve => setTimeout(resolve, 100));
+    
+    // Walk through all elements and inline computed styles as rgb
+    const inlineAllStyles = (element) => {
+      const computedStyle = window.getComputedStyle(element);
+      const ctx = document.createElement('canvas').getContext('2d');
+      
+      // Helper to normalize colors to rgb
+      const normalizeColor = (value) => {
+        if (!value || value === 'none' || value === 'transparent') return value;
         try {
-          const body = iframeDoc.body;
-          if (body) {
-            const computedStyle = iframe.contentWindow.getComputedStyle(body);
-            // Check if Tailwind has applied (bg-gray-50 should have background)
-            if (computedStyle.backgroundColor && computedStyle.backgroundColor !== 'rgba(0, 0, 0, 0)') {
-              clearInterval(checkTailwind);
-              setTimeout(resolve, 1000); // Extra time for all styles
-              return;
-            }
-          }
+          ctx.fillStyle = '#000';
+          ctx.fillStyle = value;
+          return ctx.fillStyle; // Returns rgb()/rgba()/#hex
+        } catch {
+          return value;
+        }
+      };
+      
+      // Key style properties to inline
+      const styleProps = [
+        'color', 'backgroundColor', 'background', 
+        'borderColor', 'borderTopColor', 'borderRightColor', 'borderBottomColor', 'borderLeftColor',
+        'borderWidth', 'borderStyle', 'borderRadius',
+        'padding', 'margin', 'fontSize', 'fontWeight', 'fontFamily', 'lineHeight',
+        'display', 'width', 'height', 'textAlign', 'verticalAlign'
+      ];
+      
+      styleProps.forEach(prop => {
+        let value = computedStyle.getPropertyValue(prop.replace(/([A-Z])/g, '-$1').toLowerCase());
+        if (!value) return;
+        
+        // Normalize color values
+        if (prop.includes('color') || prop.includes('Color') || prop === 'background') {
+          value = normalizeColor(value);
+        }
+        
+        try {
+          element.style.setProperty(
+            prop.replace(/([A-Z])/g, '-$1').toLowerCase(), 
+            value, 
+            'important'
+          );
         } catch (e) {
           // ignore
         }
-      }, 100);
+      });
       
-      // Timeout after 8 seconds
-      setTimeout(() => {
-        clearInterval(checkTailwind);
-        resolve();
-      }, 8000);
-    });
+      // Recursively process children
+      Array.from(element.children).forEach(child => inlineAllStyles(child));
+    };
+    
+    // Process all elements in the container
+    const body = container.querySelector('body') || container;
+    inlineAllStyles(body);
+    
+    // CRITICAL: Remove ALL stylesheets and style tags from container
+    // so html2canvas doesn't try to parse oklch colors from CSS rules
+    const styleElements = container.querySelectorAll('style, link[rel="stylesheet"]');
+    styleElements.forEach(el => el.remove());
+    
+    // Also remove class attributes since we've inlined everything
+    const allElements = container.querySelectorAll('*');
+    allElements.forEach(el => el.removeAttribute('class'));
 
-    // Generate PDF from iframe body
-    await html2pdf().set(options).from(iframeDoc.body).save();
+    // Generate PDF
+    await html2pdf().set(options).from(body).save();
 
-    iframe.remove();
+    container.remove();
     return true;
   } catch (error) {
     console.error('PDF export error:', error);
