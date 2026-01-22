@@ -1040,13 +1040,6 @@ export default function TemplateEditor({
     setEditorMode(newMode);
   }, [templateContent, editorMode]);
 
-  // Insert variable into editor
-  const insertVariable = useCallback((variable) => {
-    // In visual mode, CKEditor will handle this through onChange
-    // In code mode, we insert at cursor position
-    setTemplateContent(prev => prev + variable);
-  }, []);
-
   // Validate template and update preview on content or theme change
   useEffect(() => {
     if (templateContent) {
@@ -1762,6 +1755,7 @@ export default function TemplateEditor({
                   value={templateContent}
                   onChange={(data) => setTemplateContent(data)}
                   placeholder="Start editing your template..."
+                />
               </div>
             </div>
           )}
