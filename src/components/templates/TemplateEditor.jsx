@@ -294,7 +294,7 @@ export default function TemplateEditor({
           {/* Visual Editor Mode */}
           {editorMode === 'visual' && (
             <div className="flex-1 overflow-auto bg-gray-100 dark:bg-gray-700 p-6">
-              <div className="mx-auto bg-white dark:bg-gray-800 shadow-xl rounded-lg overflow-hidden" style={{ width: '794px', minHeight: '1123px' }}>
+              <div className="mx-auto bg-white dark:bg-gray-800 shadow-xl rounded-sm overflow-hidden" style={{ width: '794px', minHeight: '1123px' }}>
                 <VisualTemplateEditor
                   value={templateContent}
                   onChange={setTemplateContent}

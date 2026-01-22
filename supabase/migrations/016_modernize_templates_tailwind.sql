@@ -74,7 +74,7 @@ VALUES
       <div class="grid grid-cols-2 gap-6 mb-10">
         
         <!-- Client Info -->
-        <div class="bg-gradient-to-br from-slate-50 to-slate-100 p-6 rounded-lg border border-slate-200">
+        <div class="bg-gradient-to-br from-slate-50 to-slate-100 p-6 rounded-sm border border-slate-200">
           <div class="flex items-center mb-4">
             <div class="bg-blue-600 rounded-full p-2 mr-3">
               <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -97,7 +97,7 @@ VALUES
         </div>
 
         <!-- Invoice Details -->
-        <div class="bg-gradient-to-br from-blue-50 to-blue-100 p-6 rounded-lg border border-blue-200">
+        <div class="bg-gradient-to-br from-blue-50 to-blue-100 p-6 rounded-sm border border-blue-200">
           <div class="flex items-center mb-4">
             <div class="bg-blue-600 rounded-full p-2 mr-3">
               <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -130,7 +130,7 @@ VALUES
       </div>
 
       <!-- Line Items Table -->
-      <div class="mb-8 overflow-hidden rounded-lg border border-slate-200">
+      <div class="mb-8 overflow-hidden rounded-sm border border-slate-200">
         <table class="w-full">
           <thead>
             <tr class="bg-gradient-to-r from-slate-700 to-slate-800 text-white">
@@ -158,7 +158,7 @@ VALUES
       <!-- Totals Section -->
       <div class="flex justify-end mb-10">
         <div class="w-96">
-          <div class="bg-slate-50 rounded-lg p-6 border border-slate-200">
+          <div class="bg-slate-50 rounded-sm p-6 border border-slate-200">
             <div class="space-y-3">
               <div class="flex justify-between items-center text-slate-700">
                 <span class="font-medium">Delsumma:</span>
@@ -206,7 +206,7 @@ VALUES
       <!-- Notes & Terms -->
       <div class="grid grid-cols-1 gap-6 mb-8">
         {{#if notes}}
-        <div class="bg-blue-50 border border-blue-200 rounded-lg p-5">
+        <div class="bg-blue-50 border border-blue-200 rounded-sm p-5">
           <h3 class="text-sm font-bold text-blue-900 uppercase tracking-wider mb-2 flex items-center">
             <svg class="w-4 h-4 mr-2" fill="currentColor" viewBox="0 0 20 20">
               <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd"/>
@@ -218,7 +218,7 @@ VALUES
         {{/if}}
         
         {{#if terms}}
-        <div class="bg-slate-50 border border-slate-200 rounded-lg p-5">
+        <div class="bg-slate-50 border border-slate-200 rounded-sm p-5">
           <h3 class="text-sm font-bold text-slate-700 uppercase tracking-wider mb-2 flex items-center">
             <svg class="w-4 h-4 mr-2" fill="currentColor" viewBox="0 0 20 20">
               <path fill-rule="evenodd" d="M4 4a2 2 0 012-2h4.586A2 2 0 0112 2.586L15.414 6A2 2 0 0116 7.414V16a2 2 0 01-2 2H6a2 2 0 01-2-2V4z" clip-rule="evenodd"/>

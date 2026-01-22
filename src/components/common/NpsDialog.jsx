@@ -29,7 +29,7 @@ export default function NpsDialog({ isOpen, onClose, onSubmit }) {
 
   return (
     <div className="fixed inset-0 z-50 flex items-end justify-end p-4 pointer-events-none">
-      <div className="bg-white dark:bg-gray-800 rounded-lg shadow-2xl dark:shadow-gray-900/40 w-full max-w-md pointer-events-auto animate-slide-up">
+      <div className="bg-white dark:bg-gray-800 rounded-sm shadow-2xl dark:shadow-gray-900/40 w-full max-w-md pointer-events-auto animate-slide-up">
         {/* Header with logo and close button */}
         <div className="flex items-center justify-between p-4 border-b border-gray-100 dark:border-gray-700">
           <div className="flex items-center gap-2">

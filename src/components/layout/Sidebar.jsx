@@ -1,6 +1,17 @@
 import { Link, useLocation } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { useSelector } from 'react-redux';
+import {
+  HomeIcon,
+  DocumentTextIcon,
+  UsersIcon,
+  CubeIcon,
+  SwatchIcon,
+  UserGroupIcon,
+  Cog6ToothIcon,
+  WrenchScrewdriverIcon,
+  ShieldCheckIcon,
+} from '@heroicons/react/24/outline';
 
 export default function Sidebar() {
   const { t } = useTranslation();
@@ -9,17 +20,17 @@ export default function Sidebar() {
   const { isPremium } = useSelector((state) => state.subscriptions);
 
   const navItems = [
-    { path: '/', label: t('nav.dashboard'), icon: '📊' },
-    { path: '/invoices', label: t('nav.invoices'), icon: '📄' },
-    { path: '/clients', label: t('nav.clients'), icon: '👥' },
-    { path: '/products', label: t('nav.products'), icon: '📦' },
-    { path: '/templates', label: t('nav.templates'), icon: '🎨', premium: true },
-    { path: '/teams', label: t('nav.teams'), icon: '🤝', premium: true },
-    { path: '/settings', label: t('nav.settings'), icon: '⚙️' },
+    { path: '/', label: t('nav.dashboard'), icon: HomeIcon },
+    { path: '/invoices', label: t('nav.invoices'), icon: DocumentTextIcon },
+    { path: '/clients', label: t('nav.clients'), icon: UsersIcon },
+    { path: '/products', label: t('nav.products'), icon: CubeIcon },
+    { path: '/templates', label: t('nav.templates'), icon: SwatchIcon, premium: true },
+    { path: '/teams', label: t('nav.teams'), icon: UserGroupIcon, premium: true },
+    { path: '/settings', label: t('nav.settings'), icon: Cog6ToothIcon },
   ];
 
   if (isAdmin) {
-    navItems.push({ path: '/admin', label: t('nav.admin'), icon: '🔧' });
+    navItems.push({ path: '/admin', label: t('nav.admin'), icon: WrenchScrewdriverIcon });
   }
 
   const isActive = (path) => location.pathname === path;
@@ -30,11 +41,14 @@ export default function Sidebar() {
   return (
     <div className="w-64 bg-white dark:bg-gray-800 shadow-lg dark:shadow-gray-900/20">
       <div className="p-6">
-        <h1 className="text-2xl font-bold text-gray-900 dark:text-white">VisInv</h1>
+        <img src="/visinv_logo.svg" alt="VisInv" className="h-10 w-auto dark:invert-0 invert" />
         {isAdmin && (
-          <div className="mt-4 p-3 bg-purple-50 dark:bg-purple-900/30 rounded-sm text-sm">
-            <p className="text-purple-900 dark:text-purple-300 font-medium">👑 Admin</p>
-            <span className="text-purple-600 dark:text-purple-400 text-xs">Full access</span>
+          <div className="mt-4 p-3 bg-purple-50 dark:bg-purple-900/30 rounded-sm text-sm flex items-center gap-2">
+            <ShieldCheckIcon className="h-5 w-5 text-purple-600 dark:text-purple-400" />
+            <div>
+              <p className="text-purple-900 dark:text-purple-300 font-medium">Admin</p>
+              <span className="text-purple-600 dark:text-purple-400 text-xs">Full access</span>
+            </div>
           </div>
         )}
         {!hasPremiumAccess && (
@@ -50,6 +64,7 @@ export default function Sidebar() {
       <nav className="px-4 space-y-1">
         {navItems.map((item) => {
           const disabled = item.premium && !hasPremiumAccess;
+          const Icon = item.icon;
           
           return (
             <Link
@@ -64,7 +79,7 @@ export default function Sidebar() {
               }`}
               onClick={(e) => disabled && e.preventDefault()}
             >
-              <span className="mr-3 text-xl">{item.icon}</span>
+              <Icon className="h-5 w-5 mr-3" />
               <span className="flex-1">{item.label}</span>
               {item.premium && !hasPremiumAccess && (
                 <span className="text-xs bg-yellow-400 dark:bg-yellow-500 text-gray-900 px-2 py-1 rounded">

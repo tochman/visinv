@@ -1,4 +1,4 @@
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
 import { checkSession } from './features/auth/authSlice';
@@ -32,18 +32,36 @@ import AdminRoute from './components/auth/AdminRoute';
 function App() {
   const dispatch = useDispatch();
   const { initialized, loading } = useSelector((state) => state.auth);
+  const [showLoader, setShowLoader] = useState(true);
+  const [animateOut, setAnimateOut] = useState(false);
 
   useEffect(() => {
     dispatch(checkSession());
   }, [dispatch]);
 
-  // Show loading while checking session
-  if (!initialized || loading) {
+  // When loading is done, trigger exit animation then hide loader
+  useEffect(() => {
+    if (initialized && !loading && showLoader) {
+      // Start exit animation
+      setAnimateOut(true);
+      // Hide loader after animation completes
+      const timer = setTimeout(() => {
+        setShowLoader(false);
+      }, 600); // Match animation duration
+      return () => clearTimeout(timer);
+    }
+  }, [initialized, loading, showLoader]);
+
+  // Show loader while checking session or during exit animation
+  if (showLoader) {
     return (
       <div className="flex items-center justify-center min-h-screen bg-gray-100 dark:bg-gray-900">
-        <div className="text-center">
-          <div className="text-2xl font-bold text-gray-900 dark:text-white mb-2">VisInv</div>
-          <div className="text-gray-600 dark:text-gray-400">Loading...</div>
+        <div className={animateOut ? 'animate-logo-to-corner' : ''}>
+          <img 
+            src="/visinv_logo.svg" 
+            alt="VisInv" 
+            className={`h-16 w-auto dark:invert-0 invert ${!animateOut ? 'animate-pulse' : ''}`}
+          />
         </div>
       </div>
     );

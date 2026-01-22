@@ -110,97 +110,103 @@ export default function Dashboard() {
 
   return (
     <div>
-      <h1 className="text-2xl font-semibold text-gray-900 dark:text-white mb-6">
+      <h1 className="text-2xl font-semibold text-gray-900 dark:text-white mb-6 animate-fade-in-up">
         {t('dashboard.title')}
       </h1>
 
       {/* Top cards row */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
         {/* Invoices to handle card */}
-        <DashboardCard title={t('dashboard.invoicesToHandle')}>
-          <div className="min-h-[120px]">
-            {hasTasks ? (
-              <div className="space-y-3">
-                {/* Draft invoices */}
-                {dashboardStats.draftCount > 0 && (
-                  <Link 
-                    to="/invoices?status=draft" 
-                    className="flex items-center justify-between p-3 rounded-lg bg-yellow-50 dark:bg-yellow-900/20 hover:bg-yellow-100 dark:hover:bg-yellow-900/30 transition-colors"
-                  >
-                    <span className="text-yellow-800 dark:text-yellow-200">
-                      {t('dashboard.draftInvoices')}
-                    </span>
-                    <span className="text-xl font-bold text-yellow-600 dark:text-yellow-400">
-                      {dashboardStats.draftCount}
-                    </span>
-                  </Link>
-                )}
-                
-                {/* Overdue invoices */}
-                {dashboardStats.overdueCount > 0 && (
-                  <Link 
-                    to="/invoices?status=overdue" 
-                    className="flex items-center justify-between p-3 rounded-lg bg-red-50 dark:bg-red-900/20 hover:bg-red-100 dark:hover:bg-red-900/30 transition-colors"
-                  >
-                    <span className="text-red-800 dark:text-red-200">
-                      {t('dashboard.overdueInvoices')}
-                    </span>
-                    <span className="text-xl font-bold text-red-600 dark:text-red-400">
-                      {dashboardStats.overdueCount}
-                    </span>
-                  </Link>
-                )}
-                
-                {/* Active invoices */}
-                {dashboardStats.activeCount > 0 && (
-                  <Link 
-                    to="/invoices?status=sent" 
-                    className="flex items-center justify-between p-3 rounded-lg bg-blue-50 dark:bg-blue-900/20 hover:bg-blue-100 dark:hover:bg-blue-900/30 transition-colors"
-                  >
-                    <span className="text-blue-800 dark:text-blue-200">
-                      {t('dashboard.activeInvoices')}
-                    </span>
-                    <span className="text-xl font-bold text-blue-600 dark:text-blue-400">
-                      {dashboardStats.activeCount}
-                    </span>
-                  </Link>
-                )}
-              </div>
-            ) : (
-              <div className="flex items-center justify-center h-full min-h-[120px]">
-                <div className="text-gray-500 dark:text-gray-400">
-                  {t('dashboard.noOutstandingTasks')}
+        <div className="animate-fade-in-up animate-delay-100">
+          <DashboardCard title={t('dashboard.invoicesToHandle')}>
+            <div className="min-h-[120px]">
+              {hasTasks ? (
+                <div className="space-y-3">
+                  {/* Draft invoices */}
+                  {dashboardStats.draftCount > 0 && (
+                    <Link 
+                      to="/invoices?status=draft" 
+                      className="flex items-center justify-between p-3 rounded-sm bg-yellow-50 dark:bg-yellow-900/20 hover:bg-yellow-100 dark:hover:bg-yellow-900/30 transition-colors"
+                    >
+                      <span className="text-yellow-800 dark:text-yellow-200">
+                        {t('dashboard.draftInvoices')}
+                      </span>
+                      <span className="text-xl font-bold text-yellow-600 dark:text-yellow-400">
+                        {dashboardStats.draftCount}
+                      </span>
+                    </Link>
+                  )}
+                  
+                  {/* Overdue invoices */}
+                  {dashboardStats.overdueCount > 0 && (
+                    <Link 
+                      to="/invoices?status=overdue" 
+                      className="flex items-center justify-between p-3 rounded-sm bg-red-50 dark:bg-red-900/20 hover:bg-red-100 dark:hover:bg-red-900/30 transition-colors"
+                    >
+                      <span className="text-red-800 dark:text-red-200">
+                        {t('dashboard.overdueInvoices')}
+                      </span>
+                      <span className="text-xl font-bold text-red-600 dark:text-red-400">
+                        {dashboardStats.overdueCount}
+                      </span>
+                    </Link>
+                  )}
+                  
+                  {/* Active invoices */}
+                  {dashboardStats.activeCount > 0 && (
+                    <Link 
+                      to="/invoices?status=sent" 
+                      className="flex items-center justify-between p-3 rounded-sm bg-blue-50 dark:bg-blue-900/20 hover:bg-blue-100 dark:hover:bg-blue-900/30 transition-colors"
+                    >
+                      <span className="text-blue-800 dark:text-blue-200">
+                        {t('dashboard.activeInvoices')}
+                      </span>
+                      <span className="text-xl font-bold text-blue-600 dark:text-blue-400">
+                        {dashboardStats.activeCount}
+                      </span>
+                    </Link>
+                  )}
                 </div>
-              </div>
-            )}
-          </div>
-        </DashboardCard>
+              ) : (
+                <div className="flex items-center justify-center h-full min-h-[120px]">
+                  <div className="text-gray-500 dark:text-gray-400">
+                    {t('dashboard.noOutstandingTasks')}
+                  </div>
+                </div>
+              )}
+            </div>
+          </DashboardCard>
+        </div>
 
         {/* YTD Total card */}
-        <DashboardCard title={t('dashboard.sentInvoicesYtd')}>
-          <div className="flex flex-col items-center justify-center min-h-[120px]">
-            <div className="text-3xl font-bold text-gray-900 dark:text-white">
-              {formatCurrency(dashboardStats.ytdTotal, dashboardStats.primaryCurrency)}
+        <div className="animate-fade-in-up animate-delay-200">
+          <DashboardCard title={t('dashboard.sentInvoicesYtd')}>
+            <div className="flex flex-col items-center justify-center min-h-[120px]">
+              <div className="text-3xl font-bold text-gray-900 dark:text-white">
+                {formatCurrency(dashboardStats.ytdTotal, dashboardStats.primaryCurrency)}
+              </div>
             </div>
-          </div>
-        </DashboardCard>
+          </DashboardCard>
+        </div>
       </div>
 
       {/* Chart card */}
-      <DashboardCard>
-        {invoicesLoading ? (
-          <div className="flex items-center justify-center min-h-[250px]">
-            <div className="text-gray-500 dark:text-gray-400">
-              {t('common.loading')}
+      <div className="animate-fade-in-up animate-delay-300">
+        <DashboardCard>
+          {invoicesLoading ? (
+            <div className="flex items-center justify-center min-h-[250px]">
+              <div className="text-gray-500 dark:text-gray-400">
+                {t('common.loading')}
+              </div>
             </div>
-          </div>
-        ) : (
-          <MonthlyInvoiceChart 
-            data={dashboardStats.monthlyTotals} 
-            currency={dashboardStats.primaryCurrency}
-          />
-        )}
-      </DashboardCard>
+          ) : (
+            <MonthlyInvoiceChart 
+              data={dashboardStats.monthlyTotals} 
+              currency={dashboardStats.primaryCurrency}
+            />
+          )}
+        </DashboardCard>
+      </div>
     </div>
   );
 }
