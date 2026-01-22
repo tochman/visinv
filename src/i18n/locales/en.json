@@ -258,6 +258,18 @@
       "expired": "Expired",
       "pending": "Pending",
       "noInvitations": "No pending invitations",
+      "invalidLink": "Invalid invitation link",
+      "expiredOrInvalid": "This invitation has expired or is invalid.",
+      "invalidInvitation": "Invalid Invitation",
+      "youreInvited": "You're Invited!",
+      "invitedToJoin": "You've been invited to join {{name}}",
+      "sentTo": "Sent to",
+      "signInToAccept": "Sign in or create an account to accept the invitation.",
+      "acceptInvitation": "Accept Invitation",
+      "accepted": "Invitation Accepted!",
+      "welcomeToOrg": "Welcome to {{name}}!",
+      "redirecting": "Redirecting to dashboard...",
+      "emailMismatch": "This invitation was sent to {{invitedEmail}}, but you're signed in as {{currentEmail}}. Please sign in with the correct account.",
       "roleDescription": {
         "owner": "Full access to manage organization, members, and all settings",
         "associate": "Can create invoices, clients, and products"

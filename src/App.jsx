@@ -12,6 +12,7 @@ import AuthLayout from './components/layout/AuthLayout';
 import SignIn from './pages/auth/SignIn';
 import SignUp from './pages/auth/SignUp';
 import AuthCallback from './pages/auth/AuthCallback';
+import AcceptInvitation from './pages/auth/AcceptInvitation';
 
 // Main Pages
 import Dashboard from './pages/Dashboard';
@@ -76,6 +77,7 @@ function App() {
             <Route path="/auth/signin" element={<SignIn />} />
             <Route path="/auth/signup" element={<SignUp />} />
             <Route path="/auth/callback" element={<AuthCallback />} />
+            <Route path="/invite/:token" element={<AcceptInvitation />} />
           </Route>
 
           {/* Protected Routes */}

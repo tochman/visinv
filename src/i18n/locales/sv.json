@@ -255,6 +255,18 @@
       "expired": "Utgången",
       "pending": "Väntande",
       "noInvitations": "Inga väntande inbjudningar",
+      "invalidLink": "Ogiltig inbjudningslänk",
+      "expiredOrInvalid": "Denna inbjudan har utgått eller är ogiltig.",
+      "invalidInvitation": "Ogiltig inbjudan",
+      "youreInvited": "Du är inbjuden!",
+      "invitedToJoin": "Du har blivit inbjuden att gå med i {{name}}",
+      "sentTo": "Skickad till",
+      "signInToAccept": "Logga in eller skapa ett konto för att acceptera inbjudan.",
+      "acceptInvitation": "Acceptera inbjudan",
+      "accepted": "Inbjudan accepterad!",
+      "welcomeToOrg": "Välkommen till {{name}}!",
+      "redirecting": "Omdirigerar till översikten...",
+      "emailMismatch": "Denna inbjudan skickades till {{invitedEmail}}, men du är inloggad som {{currentEmail}}. Logga in med rätt konto.",
       "roleDescription": {
         "owner": "Full åtkomst att hantera organisation, medlemmar och alla inställningar",
         "associate": "Kan skapa fakturor, kunder och produkter"

@@ -36,12 +36,18 @@
 - As an **organization**, in order to **maintain proper Swedish accounting compliance**, I would like to **have invoice numbers in unbroken sequence at organization level, shared by all users in the organization**.
 - **Technical:** Invoice numbers scoped to organization_id, not user_id
 
-**US-056: Organization Member Invitations** 🔄
+**US-056: Organization Member Invitations** ✅
 - As an **organization owner**, in order to **allow my colleagues to use the application**, I would like to **invite them to my organization via email and choose their role ("owner" or "associate")**.
 - **Roles:**
   - **Owner:** Full administrative access, can invite/remove members, manage organization settings
   - **Associate:** Standard access to create invoices, clients, products within the organization
-- **Status:** In Progress - Database schema supports roles via organization_members table
+- **Status:** Implemented
+  - Database: `organization_invitations` table with token-based invites, 7-day expiry
+  - Service: `organizationService` with createInvitation, getInvitations, deleteInvitation, acceptInvitation methods
+  - UI: Invite modal in Settings > Members tab, pending invitations list with cancel option
+  - Acceptance: `/invite/:token` route with AcceptInvitation page
+  - Email validation: Ensures invited email matches logged-in user
+  - Full i18n support (Swedish/English)
 
 **US-057: Organization Member Management**
 - As an **organization owner**, in order to **control access**, I would like to **view all organization members, manage their roles (owner/associate), and remove users**.
