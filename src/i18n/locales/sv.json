@@ -309,8 +309,11 @@
   "dashboard": {
     "title": "Start",
     "invoicesToHandle": "Fakturor att hantera",
+    "draftInvoices": "Utkast",
     "overdueInvoices": "Förfallna fakturor",
+    "activeInvoices": "Aktiva fakturor",
     "noOverdueInvoices": "Inga förfallna fakturor",
+    "noOutstandingTasks": "Inga utestående uppgifter",
     "sentInvoicesYtd": "Summan av skickade fakturor YTD",
     "sentInvoicesTotal": "Summan av skickade fakturor",
     "months": {

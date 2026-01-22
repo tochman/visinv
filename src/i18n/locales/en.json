@@ -312,8 +312,11 @@
   "dashboard": {
     "title": "Start",
     "invoicesToHandle": "Invoices to handle",
+    "draftInvoices": "Drafts",
     "overdueInvoices": "Overdue invoices",
+    "activeInvoices": "Active invoices",
     "noOverdueInvoices": "No overdue invoices",
+    "noOutstandingTasks": "No outstanding tasks",
     "sentInvoicesYtd": "Sent invoices total YTD",
     "sentInvoicesTotal": "Sent invoices total",
     "months": {

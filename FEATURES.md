@@ -188,11 +188,21 @@
 **US-030: Invoice Reports**
 - As a **premium user**, in order to **analyze my billing activity**, I would like to **generate reports filtered by date range, client, or status**.
 
-**US-031: Outstanding Invoice Summary**
+**US-031: Outstanding Invoice Summary** ✅
 - As a **user**, in order to **manage cash flow**, I would like to **see a summary of all outstanding and overdue invoices**.
+- **Status:** Implemented - Dashboard displays draft invoices, overdue invoices, and active (sent but not overdue) invoices counts with color-coded cards and links to filtered invoice views
 
 **US-032: Client Revenue Breakdown**
 - As a **premium user**, in order to **identify top clients**, I would like to **view revenue breakdowns by client**.
+
+**US-062: Dashboard Invoice Overview** ✅
+- As a **user**, in order to **get a good overview of outstanding tasks**, I would like to **see draft invoices, overdue invoices, and currently active invoices counts on the dashboard**.
+- **Status:** Implemented - Dashboard "Invoices to handle" card shows:
+  - Draft invoices (yellow) - invoices not yet sent
+  - Overdue invoices (red) - sent invoices past due date
+  - Active invoices (blue) - sent invoices not yet overdue
+  - Each item links to filtered invoice list
+  - Shows "No outstanding tasks" when all caught up
 
 ---
 
