@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import CodeEditor from 'react-simple-code-editor';
-import CKEditorWrapper from './CKEditorWrapper';
+import VisualTemplateEditor from './VisualTemplateEditor';
 import Prism from 'prismjs';
 import 'prismjs/components/prism-markup';
 import { useTheme } from '../../context/ThemeContext';
@@ -1510,14 +1510,13 @@ export default function TemplateEditor({
 
         {/* Main Editor Area - 3 modes */}
         <div className="flex-1 flex flex-col overflow-hidden">
-          {/* Visual Editor Mode - CKEditor 5 */}
+          {/* Visual Editor Mode - Editable iframe for true WYSIWYG */}
           {editorMode === 'visual' && (
             <div className="flex-1 overflow-auto bg-gray-100 dark:bg-gray-700 p-6">
-              <div className="mx-auto bg-white dark:bg-gray-800 shadow-xl" style={{ width: '794px', minHeight: '1123px' }}>
-                <CKEditorWrapper
+              <div className="mx-auto bg-white dark:bg-gray-800 shadow-xl rounded-lg overflow-hidden" style={{ width: '794px', minHeight: '1123px' }}>
+                <VisualTemplateEditor
                   value={templateContent}
                   onChange={(data) => setTemplateContent(data)}
-                  placeholder="Start editing your template..."
                 />
               </div>
             </div>
