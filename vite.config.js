@@ -1,11 +1,25 @@
 import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
+import istanbul from 'vite-plugin-istanbul'
+
+const isCoverage = process.env.CYPRESS_COVERAGE === 'true'
 
 // https://vite.dev/config/
 export default defineConfig({
-  plugins: [react()],
+  plugins: [
+    react(),
+    // Only add istanbul plugin when running with coverage
+    ...(isCoverage ? [istanbul({
+      include: 'src/**/*',
+      exclude: ['node_modules', 'cypress', '**/*.test.*', '**/*.spec.*'],
+      extension: ['.js', '.jsx'],
+      requireEnv: true,
+      cypress: true,
+    })] : []),
+  ],
   build: {
     chunkSizeWarningLimit: 1500,
+    sourcemap: isCoverage,
     rollupOptions: {
       output: {
         manualChunks: {

@@ -5,12 +5,35 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
+    "dev:coverage": "CYPRESS_COVERAGE=true vite",
     "build": "vite build",
     "lint": "eslint .",
     "preview": "vite preview",
     "cy:open": "cypress open",
     "cy:run": "cypress run",
-    "test:e2e": "cypress run --spec 'cypress/e2e/**/*.cy.js'"
+    "test:e2e": "cypress run --spec 'cypress/e2e/**/*.cy.js'",
+    "test:coverage": "CYPRESS_COVERAGE=true cypress run",
+    "coverage:report": "nyc report --reporter=text-summary --reporter=lcov",
+    "coverage:check": "nyc report --check-coverage --lines 50"
+  },
+  "nyc": {
+    "all": true,
+    "include": [
+      "src/**/*.js",
+      "src/**/*.jsx"
+    ],
+    "exclude": [
+      "src/main.jsx",
+      "src/**/*.test.js",
+      "src/**/*.spec.js"
+    ],
+    "report-dir": "coverage",
+    "reporter": [
+      "text",
+      "text-summary",
+      "lcov",
+      "html"
+    ]
   },
   "dependencies": {
     "@heroicons/react": "^2.2.0",
@@ -29,6 +52,7 @@
     "react-simple-code-editor": "^0.14.1"
   },
   "devDependencies": {
+    "@cypress/code-coverage": "^3.14.7",
     "@eslint/js": "^9.39.1",
     "@tailwindcss/postcss": "^4.1.18",
     "@types/react": "^19.2.5",
@@ -40,8 +64,10 @@
     "eslint-plugin-react-hooks": "^7.0.1",
     "eslint-plugin-react-refresh": "^0.4.24",
     "globals": "^16.5.0",
+    "nyc": "^17.1.0",
     "postcss": "^8.5.6",
     "tailwindcss": "^4.1.18",
-    "vite": "^7.2.4"
+    "vite": "^7.2.4",
+    "vite-plugin-istanbul": "^7.2.1"
   }
 }

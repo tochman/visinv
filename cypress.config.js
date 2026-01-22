@@ -1,4 +1,5 @@
 import { defineConfig } from 'cypress'
+import codeCoverage from '@cypress/code-coverage/task.js'
 
 export default defineConfig({
   e2e: {
@@ -9,9 +10,15 @@ export default defineConfig({
     screenshotOnRunFailure: true,
     defaultCommandTimeout: 10000,
     env: {
-      SUPABASE_PROJECT_REF: 'huuytzuocdtgedlmmccx'
+      SUPABASE_PROJECT_REF: 'huuytzuocdtgedlmmccx',
+      codeCoverage: {
+        exclude: ['cypress/**/*.*'],
+        expectFrontendCoverageOnly: true,
+      },
     },
     setupNodeEvents(on, config) {
+      codeCoverage(on, config)
+      return config
     },
   },
 })

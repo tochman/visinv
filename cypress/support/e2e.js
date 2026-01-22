@@ -7,6 +7,7 @@
 // ***********************************************************
 
 import './commands'
+import '@cypress/code-coverage/support'
 
 // Prevent uncaught exceptions from failing tests
 Cypress.on('uncaught:exception', (err, runnable) => {

@@ -39,3 +39,7 @@ build
 
 # OS
 Thumbs.db
+
+# Code coverage
+coverage/
+.nyc_output/
