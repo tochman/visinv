@@ -25,7 +25,6 @@ import {
   Paragraph,
   RemoveFormat,
   SelectAll,
-  SourceEditing,
   SpecialCharacters,
   SpecialCharactersEssentials,
   Strikethrough,
@@ -45,17 +44,29 @@ import {
 
 import 'ckeditor5/ckeditor5.css';
 
+// Custom CSS to ensure inline styles are rendered properly in the editor
+const editorStyles = `
+  .ck-editor__editable {
+    min-height: 500px;
+    padding: 20px !important;
+  }
+  .ck-editor__editable * {
+    all: revert;
+  }
+  .ck-editor__editable [style] {
+    /* Allow inline styles to take effect */
+  }
+`;
+
 /**
  * CKEditorWrapper - A configured CKEditor component for template editing
- * Preserves HTML/CSS and provides both WYSIWYG and source editing modes
+ * Preserves HTML/CSS and provides WYSIWYG editing
  */
 export default function CKEditorWrapper({ value, onChange, placeholder, disabled = false, className = '' }) {
   const editorConfiguration = {
     licenseKey: 'GPL', // Open source license
     toolbar: {
       items: [
-        'sourceEditing',
-        '|',
         'undo',
         'redo',
         '|',
@@ -118,7 +129,6 @@ export default function CKEditorWrapper({ value, onChange, placeholder, disabled
       Paragraph,
       RemoveFormat,
       SelectAll,
-      SourceEditing,
       SpecialCharacters,
       SpecialCharactersEssentials,
       Strikethrough,
@@ -233,6 +243,7 @@ export default function CKEditorWrapper({ value, onChange, placeholder, disabled
 
   return (
     <div className={`ckeditor-wrapper ${className}`}>
+      <style>{editorStyles}</style>
       <CKEditor
         editor={ClassicEditor}
         config={editorConfiguration}
