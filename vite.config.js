@@ -12,17 +12,7 @@ export default defineConfig({
           'react-vendor': ['react', 'react-dom', 'react-router-dom'],
           'redux': ['@reduxjs/toolkit', 'react-redux'],
           'supabase': ['@supabase/supabase-js'],
-          'pdf': ['jspdf', 'handlebars'],
-          'tiptap': [
-            '@tiptap/react',
-            '@tiptap/starter-kit',
-            '@tiptap/extension-color',
-            '@tiptap/extension-highlight',
-            '@tiptap/extension-text-align',
-            '@tiptap/extension-text-style',
-            '@tiptap/extension-underline',
-            'tiptap-extension-global-drag-handle'
-          ],
+          'pdf': ['handlebars'],
           'i18n': ['i18next', 'react-i18next'],
           'prism': ['prismjs']
         }

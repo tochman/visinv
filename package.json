@@ -17,17 +17,8 @@
     "@reduxjs/toolkit": "^2.11.2",
     "@stripe/stripe-js": "^8.6.3",
     "@supabase/supabase-js": "^2.91.0",
-    "@tiptap/extension-color": "^3.16.0",
-    "@tiptap/extension-highlight": "^3.16.0",
-    "@tiptap/extension-text-align": "^3.16.0",
-    "@tiptap/extension-text-style": "^3.16.0",
-    "@tiptap/extension-underline": "^3.16.0",
-    "@tiptap/react": "^3.16.0",
-    "@tiptap/starter-kit": "^3.16.0",
     "handlebars": "^4.7.8",
-    "html2canvas": "^1.4.1",
     "i18next": "^25.8.0",
-    "jspdf": "^4.0.0",
     "prismjs": "^1.30.0",
     "react": "^19.2.0",
     "react-dom": "^19.2.0",
@@ -35,9 +26,7 @@
     "react-i18next": "^16.5.3",
     "react-redux": "^9.2.0",
     "react-router-dom": "^7.12.0",
-    "react-simple-code-editor": "^0.14.1",
-    "resend": "^6.8.0",
-    "tiptap-extension-global-drag-handle": "^0.1.18"
+    "react-simple-code-editor": "^0.14.1"
   },
   "devDependencies": {
     "@eslint/js": "^9.39.1",
