@@ -249,7 +249,8 @@ describe('Client Management', () => {
     it('is expected to open edit modal with prefilled values', () => {
       cy.get(`[data-cy="edit-client-${existingClient.id}"]`).click()
       cy.get('[data-cy="client-modal"]').should('be.visible')
-      cy.get('[data-cy="client-modal-title"]').should('contain', 'Redigera')
+      // Language is set to 'en' in login command
+      cy.get('[data-cy="client-modal-title"]').should('contain', 'Edit')
 
       // Verify all fields are prefilled
       cy.get('[data-cy="client-name-input"]').should('have.value', existingClient.name)
@@ -269,9 +270,9 @@ describe('Client Management', () => {
       cy.get(`[data-cy="edit-client-${existingClient.id}"]`).click()
       cy.get('[data-cy="client-modal"]').should('be.visible')
 
-      // Modify some fields
-      cy.get('[data-cy="client-name-input"]').clear().type('ACME Corporation Updated')
-      cy.get('[data-cy="client-email-input"]').clear().type('new-contact@acme.com')
+      // Modify some fields (using force: true to avoid sticky header coverage issues)
+      cy.get('[data-cy="client-name-input"]').clear({ force: true }).type('ACME Corporation Updated', { force: true })
+      cy.get('[data-cy="client-email-input"]').clear({ force: true }).type('new-contact@acme.com', { force: true })
       cy.get('[data-cy="save-client-button"]').click()
 
       cy.wait('@updateClient')
@@ -283,7 +284,7 @@ describe('Client Management', () => {
       cy.get('[data-cy="client-modal"]').should('be.visible')
 
       // Only change the name
-      cy.get('[data-cy="client-name-input"]').clear().type('ACME New Name')
+      cy.get('[data-cy="client-name-input"]').clear({ force: true }).type('ACME New Name', { force: true })
       cy.get('[data-cy="save-client-button"]').click()
 
       cy.wait('@updateClient').its('request.body').should('include', {
