@@ -1017,17 +1017,12 @@ export default function TemplateEditor({
           <div className="flex items-center bg-gray-100 dark:bg-gray-700 rounded-sm p-0.5">
             <button
               onClick={() => handleModeSwitch('visual')}
-              disabled={isCompleteHtmlDocument(templateContent)}
               className={`px-3 py-1.5 text-sm font-medium rounded-md transition ${
-                isCompleteHtmlDocument(templateContent)
-                  ? 'text-gray-400 dark:text-gray-500 cursor-not-allowed opacity-50'
-                  : editorMode === 'visual' 
-                    ? 'bg-white dark:bg-gray-800 text-gray-900 dark:text-white shadow-sm' 
-                    : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white'
+                editorMode === 'visual' 
+                  ? 'bg-white dark:bg-gray-800 text-gray-900 dark:text-white shadow-sm' 
+                  : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white'
               }`}
-              title={isCompleteHtmlDocument(templateContent) 
-                ? "Visuellt läge ej tillgängligt för HTML-dokument med inbäddade stilar" 
-                : "Visuell redigering med designade element"}
+              title="Visuell redigering med CKEditor"
             >
               <span className="flex items-center gap-1.5">
                 <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
