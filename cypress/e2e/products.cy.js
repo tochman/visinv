@@ -307,7 +307,7 @@ describe('Product Catalog', () => {
       cy.wait('@getClients')
       
       cy.get('[data-cy="invoice-modal"]').should('be.visible')
-      cy.get('[data-cy="product-select-0"]').should('be.visible')
+      cy.get('[data-cy="product-select-0"]').scrollIntoView().should('be.visible')
       cy.get('[data-cy="product-select-0"]').select('product-1')
       
       // Verify fields are populated
