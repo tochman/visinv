@@ -51,6 +51,7 @@ import 'ckeditor5/ckeditor5.css';
  */
 export default function CKEditorWrapper({ value, onChange, placeholder, disabled = false, className = '' }) {
   const editorConfiguration = {
+    licenseKey: 'GPL', // Open source license
     toolbar: {
       items: [
         'sourceEditing',
