@@ -301,5 +301,34 @@
   },
   "validation": {
     "required": "{{field}} is required"
+  },
+  "nps": {
+    "question": "How likely is it that you would recommend VisInv to a friend or colleague?",
+    "selectOption": "Select one option",
+    "notLikely": "0 - Not at all likely",
+    "veryLikely": "10 - Very likely",
+    "thankYou": "Thank you for your feedback!"
+  },
+  "dashboard": {
+    "title": "Start",
+    "invoicesToHandle": "Invoices to handle",
+    "overdueInvoices": "Overdue invoices",
+    "noOverdueInvoices": "No overdue invoices",
+    "sentInvoicesYtd": "Sent invoices total YTD",
+    "sentInvoicesTotal": "Sent invoices total",
+    "months": {
+      "jan": "Jan",
+      "feb": "Feb",
+      "mar": "Mar",
+      "apr": "Apr",
+      "may": "May",
+      "jun": "Jun",
+      "jul": "Jul",
+      "aug": "Aug",
+      "sep": "Sep",
+      "oct": "Oct",
+      "nov": "Nov",
+      "dec": "Dec"
+    }
   }
 }

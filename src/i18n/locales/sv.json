@@ -298,5 +298,34 @@
   },
   "validation": {
     "required": "{{field}} är obligatoriskt"
+  },
+  "nps": {
+    "question": "Hur sannolikt är det att du skulle rekommendera VisInv till en vän eller kollega?",
+    "selectOption": "Välj ett alternativ",
+    "notLikely": "0 - Inte alls sannolikt",
+    "veryLikely": "10 - Mycket sannolikt",
+    "thankYou": "Tack för din feedback!"
+  },
+  "dashboard": {
+    "title": "Start",
+    "invoicesToHandle": "Fakturor att hantera",
+    "overdueInvoices": "Förfallna fakturor",
+    "noOverdueInvoices": "Inga förfallna fakturor",
+    "sentInvoicesYtd": "Summan av skickade fakturor YTD",
+    "sentInvoicesTotal": "Summan av skickade fakturor",
+    "months": {
+      "jan": "Jan",
+      "feb": "Feb",
+      "mar": "Mar",
+      "apr": "Apr",
+      "may": "Maj",
+      "jun": "Jun",
+      "jul": "Jul",
+      "aug": "Aug",
+      "sep": "Sep",
+      "oct": "Okt",
+      "nov": "Nov",
+      "dec": "Dec"
+    }
   }
 }
