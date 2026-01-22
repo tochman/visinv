@@ -701,7 +701,7 @@ describe('Invoice Management', () => {
       cy.wait('@getProducts')
       
       // Product selector should be visible
-      cy.get('[data-cy="product-select-0"]').should('be.visible')
+      cy.get('[data-cy="product-select-0"]').scrollIntoView().should('be.visible')
       cy.get('[data-cy="product-select-0"]').should('contain', 'Consulting Services')
       cy.get('[data-cy="product-select-0"]').should('contain', 'Web Development')
     })
@@ -870,7 +870,7 @@ describe('Invoice Management', () => {
       cy.get('[data-cy="create-invoice-button"]').click()
       cy.wait('@getProducts')
       
-      cy.get('[data-cy="tax-rate-select-0"]').should('be.visible')
+      cy.get('[data-cy="tax-rate-select-0"]').scrollIntoView().should('be.visible')
       cy.get('[data-cy="tax-rate-select-0"] option').should('have.length', 4)
       cy.get('[data-cy="tax-rate-select-0"] option[value="25"]').should('exist')
       cy.get('[data-cy="tax-rate-select-0"] option[value="12"]').should('exist')
