@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import CKEditorWrapper from './CKEditorWrapper';
 import CodeEditor from 'react-simple-code-editor';
+import CKEditorWrapper from './CKEditorWrapper';
 import Prism from 'prismjs';
 import 'prismjs/components/prism-markup';
 import { useTheme } from '../../context/ThemeContext';
@@ -317,232 +317,6 @@ ${content}
 </body>
 </html>`;
 };
-
-// Toolbar component for visual editor
-function VisualEditorToolbar({ editor, showOutlines, setShowOutlines }) {
-  if (!editor) return null;
-
-  const buttonClass = (active) => 
-    `p-2 rounded ${active ? 'bg-blue-100 text-blue-700' : 'hover:bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300'}`;
-
-  return (
-    <div className="flex flex-wrap items-center gap-1 p-2 border-b border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800">
-      {/* Text formatting */}
-      <button
-        onClick={() => editor.chain().focus().toggleBold().run()}
-        className={buttonClass(editor.isActive('bold'))}
-        title="Fet (Ctrl+B)"
-      >
-        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 4h8a4 4 0 014 4 4 4 0 01-4 4H6z" />
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 12h9a4 4 0 014 4 4 4 0 01-4 4H6z" />
-        </svg>
-      </button>
-      <button
-        onClick={() => editor.chain().focus().toggleItalic().run()}
-        className={buttonClass(editor.isActive('italic'))}
-        title="Kursiv (Ctrl+I)"
-      >
-        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 4h4m-2 0v16m-4 0h8" transform="skewX(-10)" />
-        </svg>
-      </button>
-      <button
-        onClick={() => editor.chain().focus().toggleUnderline().run()}
-        className={buttonClass(editor.isActive('underline'))}
-        title="Understrykning (Ctrl+U)"
-      >
-        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 4v7a5 5 0 0010 0V4M5 20h14" />
-        </svg>
-      </button>
-      <button
-        onClick={() => editor.chain().focus().toggleStrike().run()}
-        className={buttonClass(editor.isActive('strike'))}
-        title="Genomstruken"
-      >
-        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 12h14M12 5v14" transform="rotate(45 12 12)" />
-        </svg>
-      </button>
-
-      <div className="w-px h-6 bg-gray-300 mx-1" />
-
-      {/* Headings */}
-      <button
-        onClick={() => editor.chain().focus().toggleHeading({ level: 1 }).run()}
-        className={buttonClass(editor.isActive('heading', { level: 1 }))}
-        title="Rubrik 1"
-      >
-        <span className="font-bold text-sm">H1</span>
-      </button>
-      <button
-        onClick={() => editor.chain().focus().toggleHeading({ level: 2 }).run()}
-        className={buttonClass(editor.isActive('heading', { level: 2 }))}
-        title="Rubrik 2"
-      >
-        <span className="font-bold text-sm">H2</span>
-      </button>
-      <button
-        onClick={() => editor.chain().focus().toggleHeading({ level: 3 }).run()}
-        className={buttonClass(editor.isActive('heading', { level: 3 }))}
-        title="Rubrik 3"
-      >
-        <span className="font-bold text-sm">H3</span>
-      </button>
-      <button
-        onClick={() => editor.chain().focus().setParagraph().run()}
-        className={buttonClass(editor.isActive('paragraph'))}
-        title="Brödtext"
-      >
-        <span className="text-sm">P</span>
-      </button>
-
-      <div className="w-px h-6 bg-gray-300 mx-1" />
-
-      {/* Lists */}
-      <button
-        onClick={() => editor.chain().focus().toggleBulletList().run()}
-        className={buttonClass(editor.isActive('bulletList'))}
-        title="Punktlista"
-      >
-        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
-        </svg>
-      </button>
-      <button
-        onClick={() => editor.chain().focus().toggleOrderedList().run()}
-        className={buttonClass(editor.isActive('orderedList'))}
-        title="Numrerad lista"
-      >
-        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 6h13M7 12h13M7 18h13M3 6h.01M3 12h.01M3 18h.01" />
-        </svg>
-      </button>
-
-      <div className="w-px h-6 bg-gray-300 mx-1" />
-
-      {/* Text alignment */}
-      <button
-        onClick={() => editor.chain().focus().setTextAlign('left').run()}
-        className={buttonClass(editor.isActive({ textAlign: 'left' }))}
-        title="Vänsterjustera"
-      >
-        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h10M4 18h14" />
-        </svg>
-      </button>
-      <button
-        onClick={() => editor.chain().focus().setTextAlign('center').run()}
-        className={buttonClass(editor.isActive({ textAlign: 'center' }))}
-        title="Centrera"
-      >
-        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M7 12h10M5 18h14" />
-        </svg>
-      </button>
-      <button
-        onClick={() => editor.chain().focus().setTextAlign('right').run()}
-        className={buttonClass(editor.isActive({ textAlign: 'right' }))}
-        title="Högerjustera"
-      >
-        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M10 12h10M6 18h14" />
-        </svg>
-      </button>
-
-      <div className="w-px h-6 bg-gray-300 mx-1" />
-
-      {/* Highlight */}
-      <button
-        onClick={() => editor.chain().focus().toggleHighlight().run()}
-        className={buttonClass(editor.isActive('highlight'))}
-        title="Markera"
-      >
-        <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
-          <path d="M15.243 4.515l-6.738 6.737-.707 2.121-1.04 1.041 2.828 2.829 1.04-1.041 2.122-.707 6.737-6.738-4.242-4.242zm6.364 3.536a1 1 0 010 1.414l-7.778 7.778-2.122.707-1.414 1.414a1 1 0 01-1.414 0l-4.243-4.243a1 1 0 010-1.414l1.414-1.414.707-2.121 7.778-7.778a1 1 0 011.414 0l5.658 5.657z" />
-        </svg>
-      </button>
-      <button
-        onClick={() => editor.chain().focus().toggleBlockquote().run()}
-        className={buttonClass(editor.isActive('blockquote'))}
-        title="Citat"
-      >
-        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z" />
-        </svg>
-      </button>
-
-      <div className="w-px h-6 bg-gray-300 mx-1" />
-
-      {/* Undo/Redo */}
-      <button
-        onClick={() => editor.chain().focus().undo().run()}
-        disabled={!editor.can().undo()}
-        className={`p-2 rounded ${editor.can().undo() ? 'hover:bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300' : 'text-gray-300'}`}
-        title="Ångra (Ctrl+Z)"
-      >
-        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 10h10a8 8 0 018 8v2M3 10l6 6m-6-6l6-6" />
-        </svg>
-      </button>
-      <button
-        onClick={() => editor.chain().focus().redo().run()}
-        disabled={!editor.can().redo()}
-        className={`p-2 rounded ${editor.can().redo() ? 'hover:bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300' : 'text-gray-300'}`}
-        title="Gör om (Ctrl+Y)"
-      >
-        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 10H11a8 8 0 00-8 8v2m18-10l-6 6m6-6l-6-6" />
-        </svg>
-      </button>
-
-      <div className="w-px h-6 bg-gray-300 mx-1" />
-
-      {/* Column controls */}
-      <button
-        onClick={() => editor.chain().focus().setColumns(2).run()}
-        className={buttonClass(false)}
-        title="Lägg till 2 kolumner"
-      >
-        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 4v16M9 4H4v16h5M9 4h6v16H9M15 4h5v16h-5" />
-        </svg>
-      </button>
-      <button
-        onClick={() => editor.chain().focus().setColumns(3).run()}
-        className={buttonClass(false)}
-        title="Lägg till 3 kolumner"
-      >
-        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 4v16M8 4H4v16h4M8 4h4v16H8M12 4h4v16h-4M16 4h4v16h-4" />
-        </svg>
-      </button>
-      <button
-        onClick={() => editor.chain().focus().unsetColumns().run()}
-        className={buttonClass(false)}
-        title="Ta bort kolumnlayout"
-      >
-        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-        </svg>
-      </button>
-
-      <div className="w-px h-6 bg-gray-300 mx-1" />
-
-      {/* Show outlines toggle */}
-      <button
-        onClick={() => setShowOutlines(!showOutlines)}
-        className={buttonClass(showOutlines)}
-        title={showOutlines ? "Dölj element-ramar" : "Visa element-ramar"}
-      >
-        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 5a1 1 0 011-1h4a1 1 0 011 1v4a1 1 0 01-1 1H5a1 1 0 01-1-1V5zm10 0a1 1 0 011-1h4a1 1 0 011 1v4a1 1 0 01-1 1h-4a1 1 0 01-1-1V5zM4 15a1 1 0 011-1h4a1 1 0 011 1v4a1 1 0 01-1 1H5a1 1 0 01-1-1v-4zm10 0a1 1 0 011-1h4a1 1 0 011 1v4a1 1 0 01-1 1h-4a1 1 0 01-1-1v-4z" />
-        </svg>
-      </button>
-    </div>
-  );
-}
 
 // Visual block templates for invoice templates
 const LAYOUT_BLOCKS = [
@@ -896,7 +670,6 @@ export default function TemplateEditor({
   const [isSaving, setIsSaving] = useState(false);
   const [isExporting, setIsExporting] = useState(false);
   const [showSettings, setShowSettings] = useState(false);
-  const [showOutlines, setShowOutlines] = useState(true); // Show element borders in visual editor
 
   // Check if template is a complete HTML document (with DOCTYPE, head, style, etc.)
   const isCompleteHtmlDocument = useCallback((content) => {
@@ -988,10 +761,15 @@ export default function TemplateEditor({
       }
     }
     
+    formatted = indentedLines.join('\n');
+    setTemplateContent(formatted);
+  }, [templateContent]);
   const theme = DESIGN_THEMES[selectedTheme];
 
   // Sync content when switching modes
   const handleModeSwitch = useCallback((newMode) => {
+    // CKEditor handles complete HTML documents natively - no restriction needed
+    
     // When entering code mode, auto-format the code
     if (newMode === 'code' && templateContent) {
       // Format on next tick to ensure state is updated
@@ -1038,7 +816,7 @@ export default function TemplateEditor({
       }, 10);
     }
     setEditorMode(newMode);
-  }, [templateContent, editorMode]);
+  }, [templateContent]);
 
   // Validate template and update preview on content or theme change
   useEffect(() => {
@@ -1111,7 +889,8 @@ export default function TemplateEditor({
   // Insert variable - handles both code and visual mode
   const insertVariable = useCallback((variable) => {
     if (editorMode === 'visual') {
-      insertVariableInVisual(variable);
+      // For CKEditor, we append the variable to the content
+      setTemplateContent(prev => prev + variable);
     } else {
       const textarea = document.getElementById('template-editor');
       if (!textarea) return;
@@ -1127,12 +906,14 @@ export default function TemplateEditor({
         textarea.setSelectionRange(start + variable.length, start + variable.length);
       }, 0);
     }
-  }, [editorMode, insertVariableInVisual, templateContent]);
+  }, [editorMode, templateContent]);
 
   // Insert layout block - handles both code and visual mode
+  // In visual mode with CKEditor, content is inserted via setTemplateContent
   const insertBlock = useCallback((blockHtml) => {
-    if (editorMode === 'visual' && visualEditor) {
-      visualEditor.chain().focus().insertContent(blockHtml).run();
+    if (editorMode === 'visual') {
+      // For CKEditor, we append to the content - CKEditor will render it
+      setTemplateContent(prev => prev + '\n' + blockHtml);
     } else {
       const textarea = document.getElementById('template-editor');
       if (!textarea) return;
@@ -1149,51 +930,38 @@ export default function TemplateEditor({
         textarea.setSelectionRange(start + formattedBlock.length, start + formattedBlock.length);
       }, 0);
     }
-  }, [editorMode, visualEditor, templateContent]);
+  }, [editorMode, templateContent]);
 
-  // Insert resizable columns - only works in visual mode
+  // Insert resizable columns
   const insertColumns = useCallback((preset) => {
-    if (editorMode === 'visual' && visualEditor) {
-      // Map presets to column counts for the ColumnExtension
-      const presetToColumns = {
-        '50-50': 2,
-        '33-33-33': 3,
-        '25-25-25-25': 4,
-        '66-33': 2,
-        '33-66': 2,
-      };
-      const columnCount = presetToColumns[preset] || 2;
-      visualEditor.chain().focus().setColumns(columnCount).run();
-    } else {
-      // In code mode, insert static HTML version
-      const presetMap = {
-        '50-50': `<div class="two-columns">
+    // Insert static HTML version for columns
+    const presetMap = {
+      '50-50': `<div class="two-columns">
   <div><p>Kolumn 1</p></div>
   <div><p>Kolumn 2</p></div>
 </div>`,
-        '33-33-33': `<div class="three-columns">
+      '33-33-33': `<div class="three-columns">
   <div><p>Kolumn 1</p></div>
   <div><p>Kolumn 2</p></div>
   <div><p>Kolumn 3</p></div>
 </div>`,
-        '25-25-25-25': `<div class="four-columns">
+      '25-25-25-25': `<div class="four-columns">
   <div><p>Kolumn 1</p></div>
   <div><p>Kolumn 2</p></div>
   <div><p>Kolumn 3</p></div>
   <div><p>Kolumn 4</p></div>
 </div>`,
-        '66-33': `<div class="sidebar-layout">
+      '66-33': `<div class="sidebar-layout">
   <div><p>Huvudinnehåll</p></div>
   <div><p>Sidofält</p></div>
 </div>`,
-        '33-66': `<div class="sidebar-layout" style="grid-template-columns: 1fr 2fr;">
+      '33-66': `<div class="sidebar-layout" style="grid-template-columns: 1fr 2fr;">
   <div><p>Sidofält</p></div>
   <div><p>Huvudinnehåll</p></div>
 </div>`,
-      };
-      insertBlock(presetMap[preset] || presetMap['50-50']);
-    }
-  }, [editorMode, visualEditor, insertBlock]);
+    };
+    insertBlock(presetMap[preset] || presetMap['50-50']);
+  }, [insertBlock]);
 
   // Handle block insertion - routes to correct function based on block type
   const handleBlockInsert = useCallback((block) => {
@@ -1747,7 +1515,7 @@ export default function TemplateEditor({
 
         {/* Main Editor Area - 3 modes */}
         <div className="flex-1 flex flex-col overflow-hidden">
-          {/* Visual Editor Mode - CKEditor */}
+          {/* Visual Editor Mode - CKEditor 5 */}
           {editorMode === 'visual' && (
             <div className="flex-1 overflow-auto bg-gray-100 dark:bg-gray-700 p-6">
               <div className="mx-auto bg-white dark:bg-gray-800 shadow-xl" style={{ width: '794px', minHeight: '1123px' }}>
@@ -1758,310 +1526,6 @@ export default function TemplateEditor({
                 />
               </div>
             </div>
-          )}
-
-          {/* Code Editor Mode */}
-          {editorMode === 'code' && (
-            <>
-              <div className={`px-4 py-2 flex items-center justify-between ${isDarkMode ? 'bg-gray-800' : 'bg-gray-100 border-b border-gray-200'}`}>
-                <div className="flex items-center gap-4">
-                  <span className={`text-xs font-mono ${isDarkMode ? 'text-gray-400' : 'text-gray-600'}`}>HTML / Handlebars</span>
-                  <button
-                    onClick={formatCode}
-                    className={`text-xs px-2 py-1 rounded transition flex items-center gap-1 ${isDarkMode ? 'text-gray-400 hover:text-white hover:bg-gray-700' : 'text-gray-600 hover:text-gray-900 hover:bg-gray-200'}`}
-                    title="Formatera kod (indentation)"
-                  >
-                      padding: 48px 64px;
-                      min-height: 1123px;
-                      outline: none;
-                      background: white;
-                    }
-                    
-                    /* Typography - scoped to .tiptap per TipTap docs */
-                    .tiptap p {
-                      margin-bottom: 0.75rem;
-                      line-height: 1.7;
-                      color: #1e293b;
-                    }
-                    .tiptap h1 {
-                      font-size: 2rem;
-                      font-weight: 700;
-                      margin-bottom: 1rem;
-                      color: #1e293b;
-                      border-bottom: 3px solid #3b82f6;
-                      padding-bottom: 0.5rem;
-                    }
-                    .tiptap h2 {
-                      font-size: 1.5rem;
-                      font-weight: 600;
-                      margin-top: 2rem;
-                      margin-bottom: 0.75rem;
-                      color: #3b82f6;
-                    }
-                    .tiptap h3 {
-                      font-size: 1.125rem;
-                      font-weight: 600;
-                      margin-bottom: 0.5rem;
-                      color: #64748b;
-                    }
-                    .tiptap ul, .tiptap ol {
-                      padding-left: 1.5rem;
-                      margin-bottom: 0.75rem;
-                    }
-                    .tiptap li {
-                      margin-bottom: 0.25rem;
-                    }
-                    .tiptap blockquote {
-                      border-left: 4px solid #3b82f6;
-                      padding-left: 1rem;
-                      margin: 1rem 0;
-                      background: #f8fafc;
-                      padding: 1rem;
-                      border-radius: 0 8px 8px 0;
-                    }
-                    
-                    /* Variable chips */
-                    .tiptap .variable-chip { 
-                      background: linear-gradient(135deg, #dbeafe 0%, #bfdbfe 100%); 
-                      color: #1e40af; 
-                      padding: 4px 10px; 
-                      border-radius: 6px; 
-                      font-family: 'JetBrains Mono', 'Courier New', monospace; 
-                      font-size: 0.85rem;
-                      border: 1px solid #93c5fd;
-                      box-shadow: 0 1px 2px rgba(0,0,0,0.05);
-                      white-space: nowrap;
-                    }
-                    
-                    /* Common Tailwind utilities for visual editor */
-                    .tiptap .bg-gray-50 { background-color: #f9fafb; }
-                    .tiptap .bg-gray-100 { background-color: #f3f4f6; }
-                    .tiptap .bg-slate-50 { background-color: #f8fafc; }
-                    .tiptap .bg-slate-100 { background-color: #f1f5f9; }
-                    .tiptap .bg-blue-50 { background-color: #eff6ff; }
-                    .tiptap .bg-blue-600 { background-color: #2563eb; }
-                    .tiptap .bg-blue-700 { background-color: #1d4ed8; }
-                    .tiptap .bg-green-50 { background-color: #f0fdf4; }
-                    .tiptap .text-white { color: #ffffff; }
-                    .tiptap .text-gray-500 { color: #6b7280; }
-                    .tiptap .text-gray-600 { color: #4b5563; }
-                    .tiptap .text-gray-700 { color: #374151; }
-                    .tiptap .text-gray-900 { color: #111827; }
-                    .tiptap .text-slate-500 { color: #64748b; }
-                    .tiptap .text-slate-600 { color: #475569; }
-                    .tiptap .text-slate-900 { color: #0f172a; }
-                    .tiptap .text-blue-600 { color: #2563eb; }
-                    .tiptap .text-green-600 { color: #16a34a; }
-                    .tiptap .font-bold { font-weight: 700; }
-                    .tiptap .font-semibold { font-weight: 600; }
-                    .tiptap .font-medium { font-weight: 500; }
-                    .tiptap .text-xs { font-size: 0.75rem; }
-                    .tiptap .text-sm { font-size: 0.875rem; }
-                    .tiptap .text-lg { font-size: 1.125rem; }
-                    .tiptap .text-xl { font-size: 1.25rem; }
-                    .tiptap .text-2xl { font-size: 1.5rem; }
-                    .tiptap .text-3xl { font-size: 1.875rem; }
-                    .tiptap .text-5xl { font-size: 3rem; }
-                    .tiptap .p-2 { padding: 0.5rem; }
-                    .tiptap .p-4 { padding: 1rem; }
-                    .tiptap .p-6 { padding: 1.5rem; }
-                    .tiptap .p-8 { padding: 2rem; }
-                    .tiptap .px-4 { padding-left: 1rem; padding-right: 1rem; }
-                    .tiptap .px-6 { padding-left: 1.5rem; padding-right: 1.5rem; }
-                    .tiptap .px-10 { padding-left: 2.5rem; padding-right: 2.5rem; }
-                    .tiptap .py-2 { padding-top: 0.5rem; padding-bottom: 0.5rem; }
-                    .tiptap .py-4 { padding-top: 1rem; padding-bottom: 1rem; }
-                    .tiptap .py-8 { padding-top: 2rem; padding-bottom: 2rem; }
-                    .tiptap .m-0 { margin: 0; }
-                    .tiptap .mb-1 { margin-bottom: 0.25rem; }
-                    .tiptap .mb-2 { margin-bottom: 0.5rem; }
-                    .tiptap .mb-3 { margin-bottom: 0.75rem; }
-                    .tiptap .mb-4 { margin-bottom: 1rem; }
-                    .tiptap .mb-6 { margin-bottom: 1.5rem; }
-                    .tiptap .mb-8 { margin-bottom: 2rem; }
-                    .tiptap .mt-2 { margin-top: 0.5rem; }
-                    .tiptap .mt-4 { margin-top: 1rem; }
-                    .tiptap .mt-6 { margin-top: 1.5rem; }
-                    .tiptap .rounded { border-radius: 0.25rem; }
-                    .tiptap .rounded-lg { border-radius: 0.5rem; }
-                    .tiptap .rounded-xl { border-radius: 0.75rem; }
-                    .tiptap .shadow { box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
-                    .tiptap .shadow-lg { box-shadow: 0 10px 15px -3px rgba(0,0,0,0.1); }
-                    .tiptap .border { border-width: 1px; border-style: solid; border-color: #e5e7eb; }
-                    .tiptap .border-l-4 { border-left-width: 4px; border-left-style: solid; }
-                    .tiptap .border-gray-200 { border-color: #e5e7eb; }
-                    .tiptap .border-slate-200 { border-color: #e2e8f0; }
-                    .tiptap .border-blue-200 { border-color: #bfdbfe; }
-                    .tiptap .border-green-500 { border-color: #22c55e; }
-                    .tiptap .grid { display: grid; }
-                    .tiptap .grid-cols-2 { grid-template-columns: repeat(2, 1fr); }
-                    .tiptap .grid-cols-3 { grid-template-columns: repeat(3, 1fr); }
-                    .tiptap .gap-2 { gap: 0.5rem; }
-                    .tiptap .gap-4 { gap: 1rem; }
-                    .tiptap .gap-6 { gap: 1.5rem; }
-                    .tiptap .flex { display: flex; }
-                    .tiptap .flex-col { flex-direction: column; }
-                    .tiptap .items-center { align-items: center; }
-                    .tiptap .justify-between { justify-content: space-between; }
-                    .tiptap .space-y-1 > * + * { margin-top: 0.25rem; }
-                    .tiptap .space-y-2 > * + * { margin-top: 0.5rem; }
-                    .tiptap .uppercase { text-transform: uppercase; }
-                    .tiptap .tracking-wider { letter-spacing: 0.05em; }
-                    .tiptap .text-right { text-align: right; }
-                    .tiptap .text-center { text-align: center; }
-                    .tiptap .w-full { width: 100%; }
-                    .tiptap .max-w-5xl { max-width: 64rem; }
-                    .tiptap .mx-auto { margin-left: auto; margin-right: auto; }
-                    /* Global drag handle styles */
-                    .drag-handle {
-                      position: fixed;
-                      opacity: 1;
-                      transition: opacity 0.2s ease, background-color 0.2s ease;
-                      border-radius: 4px;
-                      background: #f1f5f9;
-                      border: 1px solid #e2e8f0;
-                      width: 20px;
-                      height: 20px;
-                      display: flex;
-                      align-items: center;
-                      justify-content: center;
-                      cursor: grab;
-                      z-index: 50;
-                      user-select: none;
-                    }
-                    .drag-handle:hover {
-                      background: #e2e8f0;
-                      border-color: #cbd5e1;
-                    }
-                    .drag-handle:active {
-                      cursor: grabbing;
-                      background: #cbd5e1;
-                    }
-                    .drag-handle::before {
-                      content: '⋮⋮';
-                      font-size: 10px;
-                      color: #64748b;
-                      letter-spacing: -2px;
-                    }
-                    /* Drop indicator line */
-                    .ProseMirror-dropcursor {
-                      border-left: 2px solid #3b82f6 !important;
-                      margin-left: -1px;
-                    }
-                    
-                    /* Design classes for visual preview */
-                    .tiptap .section { margin: 1.5rem 0; padding: 1.25rem; background: #f8fafc; border-radius: 8px; border-left: 4px solid #3b82f6; }
-                    .tiptap .card { margin: 0.75rem 0; padding: 1.25rem; background: white; border: 1px solid #e2e8f0; border-radius: 8px; box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
-                    .tiptap .item { margin: 0.5rem 0; padding: 0.75rem 1rem; background: #f8fafc; border-left: 4px solid #0ea5e9; border-radius: 0 6px 6px 0; }
-                    .tiptap .stats-grid { display: flex; gap: 1rem; margin: 1.5rem 0; }
-                    .tiptap .stat-box { flex: 1; text-align: center; padding: 1.5rem; background: #f8fafc; border-radius: 8px; border: 1px solid #e2e8f0; }
-                    .tiptap .footer { margin-top: 3rem; padding-top: 1rem; border-top: 2px solid #e2e8f0; color: #64748b; font-size: 0.875rem; }
-                    
-                    /* Grid layouts */
-                    .tiptap .two-columns { display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; margin: 1rem 0; }
-                    .tiptap .three-columns { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1rem; margin: 1rem 0; }
-                    .tiptap .four-columns { display: grid; grid-template-columns: repeat(4, 1fr); gap: 1rem; margin: 1rem 0; }
-                    .tiptap .sidebar-layout { display: grid; grid-template-columns: 2fr 1fr; gap: 2rem; margin: 1rem 0; }
-                    
-                    /* Column extension styles */
-                    .tiptap .column-block {
-                      width: 100%;
-                      display: grid;
-                      grid-auto-flow: column;
-                      grid-auto-columns: 1fr;
-                      gap: 24px;
-                      padding: 8px 0;
-                      margin: 1rem 0;
-                    }
-                    .tiptap .column {
-                      overflow: auto;
-                      border: 1px #cbd5e1 dashed;
-                      border-radius: 8px;
-                      padding: 8px;
-                      min-height: 100px;
-                    }
-                    
-                    ${showOutlines ? `
-                    /* ALL ELEMENTS get visible borders when editing */
-                    .tiptap > * {
-                      position: relative;
-                      outline: 1px dashed #cbd5e1 !important;
-                      outline-offset: 2px !important;
-                      margin-bottom: 0.75rem;
-                    }
-                    .tiptap > h1 {
-                      outline-color: #3b82f6 !important;
-                    }
-                    .tiptap > h2 {
-                      outline-color: #8b5cf6 !important;
-                    }
-                    .tiptap > h3 {
-                      outline-color: #06b6d4 !important;
-                    }
-                    .tiptap > p {
-                      outline-color: #94a3b8 !important;
-                    }
-                    .tiptap > ul, .tiptap > ol {
-                      outline-color: #f59e0b !important;
-                    }
-                    
-                    /* Element type labels */
-                    .tiptap > h1::before { content: 'H1'; position: absolute; top: -8px; left: 0; font-size: 8px; font-weight: 700; color: white; background: #3b82f6; padding: 1px 4px; border-radius: 2px; z-index: 10; }
-                    .tiptap > h2::before { content: 'H2'; position: absolute; top: -8px; left: 0; font-size: 8px; font-weight: 700; color: white; background: #8b5cf6; padding: 1px 4px; border-radius: 2px; z-index: 10; }
-                    .tiptap > h3::before { content: 'H3'; position: absolute; top: -8px; left: 0; font-size: 8px; font-weight: 700; color: white; background: #06b6d4; padding: 1px 4px; border-radius: 2px; z-index: 10; }
-                    .tiptap > p::before { content: 'P'; position: absolute; top: -8px; left: 0; font-size: 8px; font-weight: 700; color: white; background: #64748b; padding: 1px 4px; border-radius: 2px; z-index: 10; }
-                    .tiptap > ul::before { content: 'UL'; position: absolute; top: -8px; left: 0; font-size: 8px; font-weight: 700; color: white; background: #f59e0b; padding: 1px 4px; border-radius: 2px; z-index: 10; }
-                    .tiptap > ol::before { content: 'OL'; position: absolute; top: -8px; left: 0; font-size: 8px; font-weight: 700; color: white; background: #f59e0b; padding: 1px 4px; border-radius: 2px; z-index: 10; }
-                    .tiptap > blockquote::before { content: 'QUOTE'; position: absolute; top: -8px; left: 0; font-size: 8px; font-weight: 700; color: white; background: #10b981; padding: 1px 4px; border-radius: 2px; z-index: 10; }
-                    
-                    /* Custom class elements with stronger borders */
-                    .tiptap .section, .tiptap .card, .tiptap .item, 
-                    .tiptap .stat-box, .tiptap .footer,
-                    .tiptap .two-columns, .tiptap .three-columns, 
-                    .tiptap .four-columns, .tiptap .sidebar-layout,
-                    .tiptap .stats-grid {
-                      outline: 2px dashed #3b82f6 !important;
-                      outline-offset: 2px !important;
-                    }
-                    .tiptap .section::after { content: 'SECTION'; position: absolute; top: 4px; right: 4px; font-size: 9px; font-weight: 700; color: white; background: #3b82f6; padding: 2px 6px; border-radius: 3px; z-index: 10; }
-                    .tiptap .card::after { content: 'CARD'; position: absolute; top: 4px; right: 4px; font-size: 9px; font-weight: 700; color: white; background: #8b5cf6; padding: 2px 6px; border-radius: 3px; z-index: 10; }
-                    .tiptap .item::after { content: 'ITEM'; position: absolute; top: 4px; right: 4px; font-size: 9px; font-weight: 700; color: white; background: #0ea5e9; padding: 2px 6px; border-radius: 3px; z-index: 10; }
-                    .tiptap .stats-grid::after { content: 'STATS GRID'; position: absolute; top: 4px; right: 4px; font-size: 9px; font-weight: 700; color: white; background: #10b981; padding: 2px 6px; border-radius: 3px; z-index: 10; }
-                    .tiptap .stat-box::after { content: 'STAT'; position: absolute; top: 4px; right: 4px; font-size: 9px; font-weight: 700; color: white; background: #10b981; padding: 2px 6px; border-radius: 3px; z-index: 10; }
-                    .tiptap .footer::after { content: 'FOOTER'; position: absolute; top: 4px; right: 4px; font-size: 9px; font-weight: 700; color: white; background: #64748b; padding: 2px 6px; border-radius: 3px; z-index: 10; }
-                    .tiptap .two-columns::after { content: '2 COLUMNS'; position: absolute; top: 4px; right: 4px; font-size: 9px; font-weight: 700; color: white; background: #f59e0b; padding: 2px 6px; border-radius: 3px; z-index: 10; }
-                    .tiptap .three-columns::after { content: '3 COLUMNS'; position: absolute; top: 4px; right: 4px; font-size: 9px; font-weight: 700; color: white; background: #f59e0b; padding: 2px 6px; border-radius: 3px; z-index: 10; }
-                    .tiptap .four-columns::after { content: '4 COLUMNS'; position: absolute; top: 4px; right: 4px; font-size: 9px; font-weight: 700; color: white; background: #f59e0b; padding: 2px 6px; border-radius: 3px; z-index: 10; }
-                    .tiptap .sidebar-layout::after { content: 'SIDEBAR LAYOUT'; position: absolute; top: 4px; right: 4px; font-size: 9px; font-weight: 700; color: white; background: #f59e0b; padding: 2px 6px; border-radius: 3px; z-index: 10; }
-                    
-                    /* Child elements in grid layouts */
-                    .tiptap .two-columns > *, .tiptap .three-columns > *, .tiptap .four-columns > *, .tiptap .sidebar-layout > * {
-                      outline: 1px solid #cbd5e1 !important;
-                      outline-offset: -1px !important;
-                      min-height: 80px;
-                      padding: 12px !important;
-                      background: rgba(248, 250, 252, 0.8) !important;
-                      position: relative;
-                    }
-                    .tiptap .two-columns > *::before, .tiptap .three-columns > *::before, .tiptap .four-columns > *::before, .tiptap .sidebar-layout > *::before {
-                      content: 'COLUMN';
-                      position: absolute;
-                      bottom: 4px;
-                      right: 4px;
-                      font-size: 8px;
-                      font-weight: 600;
-                      color: #94a3b8;
-                      background: white;
-                      padding: 1px 4px;
-                      border-radius: 2px;
-                      border: 1px solid #cbd5e1;
-                    }
-                    ` : ''}
-                  `}</style>
-                  <EditorContent editor={visualEditor} className="h-full" />
-                </div>
-              </div>
-            </>
           )}
 
           {/* Code Editor Mode */}
