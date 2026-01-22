@@ -1,12 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { useEditor, EditorContent } from '@tiptap/react';
-import StarterKit from '@tiptap/starter-kit';
-import { TextAlign } from '@tiptap/extension-text-align';
-import { TextStyle } from '@tiptap/extension-text-style';
-import { Color } from '@tiptap/extension-color';
-import { Highlight } from '@tiptap/extension-highlight';
-import GlobalDragHandle from 'tiptap-extension-global-drag-handle';
-import { ColumnExtension } from './extensions/ColumnExtension';
+import CKEditorWrapper from './CKEditorWrapper';
 import CodeEditor from 'react-simple-code-editor';
 import Prism from 'prismjs';
 import 'prismjs/components/prism-markup';
@@ -995,55 +988,10 @@ export default function TemplateEditor({
       }
     }
     
-    formatted = indentedLines.join('\n');
-    setTemplateContent(formatted);
-  }, [templateContent]);
   const theme = DESIGN_THEMES[selectedTheme];
-
-  // TipTap editor for visual mode
-  const visualEditor = useEditor({
-    extensions: [
-      StarterKit,
-      TextStyle,
-      Color,
-      Highlight.configure({ multicolor: true }),
-      TextAlign.configure({ types: ['heading', 'paragraph'] }),
-      GlobalDragHandle.configure({
-        dragHandleWidth: 24,
-        scrollTreshold: 100,
-      }),
-      ColumnExtension,
-    ],
-    editorProps: {
-      attributes: {
-        class: 'tiptap-editor prose prose-slate max-w-none focus:outline-none',
-      },
-    },
-    content: templateContent || '<p>Börja skriva här...</p>',
-    onUpdate: ({ editor }) => {
-      if (editorMode === 'visual') {
-        setTemplateContent(editor.getHTML());
-      }
-    },
-  });
 
   // Sync content when switching modes
   const handleModeSwitch = useCallback((newMode) => {
-    // Prevent switching to visual mode for complete HTML documents
-    if (newMode === 'visual' && isCompleteHtmlDocument(templateContent)) {
-      alert('Visuellt läge stöder inte kompletta HTML-dokument med inbäddade stilar.\n\nAnvänd Kodläge för att redigera eller Förhandsgranskning för att se resultatet.');
-      return;
-    }
-    
-    // When leaving visual mode, save TipTap content as HTML
-    if (editorMode === 'visual' && visualEditor) {
-      const content = visualEditor.getHTML();
-      setTemplateContent(content);
-    }
-    // When entering visual mode, load content from HTML (now works with parseHTML!)
-    if (newMode === 'visual' && visualEditor) {
-      visualEditor.commands.setContent(templateContent || '<p></p>');
-    }
     // When entering code mode, auto-format the code
     if (newMode === 'code' && templateContent) {
       // Format on next tick to ensure state is updated
@@ -1090,16 +1038,14 @@ export default function TemplateEditor({
       }, 10);
     }
     setEditorMode(newMode);
-  }, [visualEditor, templateContent, editorMode]);
+  }, [templateContent, editorMode]);
 
-  // Insert variable into visual editor
-  const insertVariableInVisual = useCallback((variable) => {
-    if (visualEditor) {
-      visualEditor.chain().focus().insertContent(
-        `<span class="variable-chip" style="background: #dbeafe; color: #1e40af; padding: 2px 6px; border-radius: 4px; font-family: monospace; font-size: 0.875rem;">${variable}</span>`
-      ).run();
-    }
-  }, [visualEditor]);
+  // Insert variable into editor
+  const insertVariable = useCallback((variable) => {
+    // In visual mode, CKEditor will handle this through onChange
+    // In code mode, we insert at cursor position
+    setTemplateContent(prev => prev + variable);
+  }, []);
 
   // Validate template and update preview on content or theme change
   useEffect(() => {
@@ -1808,15 +1754,29 @@ export default function TemplateEditor({
 
         {/* Main Editor Area - 3 modes */}
         <div className="flex-1 flex flex-col overflow-hidden">
-          {/* Visual Editor Mode */}
+          {/* Visual Editor Mode - CKEditor */}
           {editorMode === 'visual' && (
+            <div className="flex-1 overflow-auto bg-gray-100 dark:bg-gray-700 p-6">
+              <div className="mx-auto bg-white dark:bg-gray-800 shadow-xl" style={{ width: '794px', minHeight: '1123px' }}>
+                <CKEditorWrapper
+                  value={templateContent}
+                  onChange={(data) => setTemplateContent(data)}
+                  placeholder="Start editing your template..."
+              </div>
+            </div>
+          )}
+
+          {/* Code Editor Mode */}
+          {editorMode === 'code' && (
             <>
-              <VisualEditorToolbar editor={visualEditor} showOutlines={showOutlines} setShowOutlines={setShowOutlines} />
-              <div className="flex-1 overflow-auto bg-gray-100 dark:bg-gray-700 p-6">
-                <div className="mx-auto bg-white dark:bg-gray-800 shadow-xl" style={{ width: '794px', minHeight: '1123px' }}>
-                  <style>{`
-                    /* TipTap Editor Base Styles - following official docs pattern */
-                    .tiptap {
+              <div className={`px-4 py-2 flex items-center justify-between ${isDarkMode ? 'bg-gray-800' : 'bg-gray-100 border-b border-gray-200'}`}>
+                <div className="flex items-center gap-4">
+                  <span className={`text-xs font-mono ${isDarkMode ? 'text-gray-400' : 'text-gray-600'}`}>HTML / Handlebars</span>
+                  <button
+                    onClick={formatCode}
+                    className={`text-xs px-2 py-1 rounded transition flex items-center gap-1 ${isDarkMode ? 'text-gray-400 hover:text-white hover:bg-gray-700' : 'text-gray-600 hover:text-gray-900 hover:bg-gray-200'}`}
+                    title="Formatera kod (indentation)"
+                  >
                       padding: 48px 64px;
                       min-height: 1123px;
                       outline: none;
