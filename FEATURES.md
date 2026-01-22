@@ -227,14 +227,31 @@
 
 ### Administration
 
-**US-036: Admin Dashboard Access**
+**US-036: Admin Dashboard Access** ✅
 - As an **admin (thomas@communitaslabs.io)**, in order to **manage the platform**, I would like to **access a dedicated admin dashboard with full system access**.
+- **Status:** Implemented - Admin-only route protection, dashboard with platform stats (users, organizations, invoices), 3 Cypress tests
 
-**US-037: User Management**
-- As an **admin**, in order to **support users**, I would like to **view and manage all user accounts, teams, and subscriptions**.
+**US-037: User Management - List & Search**
+- As an **admin**, in order to **support and monitor users**, I would like to **view a searchable list of all user accounts with their email, name, plan type, registration date, and last login**.
 
-**US-038: Platform Analytics**
+**US-037-A: User Profile Administration**
+- As an **admin**, in order to **assist users with account issues**, I would like to **view and edit user profile details including name, email, and plan type**.
+
+**US-037-B: Password Reset**
+- As an **admin**, in order to **help users who are locked out**, I would like to **trigger a password reset email for any user account**.
+
+**US-037-C: User Account Suspension**
+- As an **admin**, in order to **enforce platform policies**, I would like to **ban/suspend user accounts temporarily (1 day, 1 week, N weeks, 1 month, N months) or permanently**.
+- **Banned users:** Cannot sign in, see "Account suspended" message with reason and expiry date (if temporary)
+- **Suspension options:** 1 day, 1 week, 2 weeks, 4 weeks, 1 month, 3 months, 6 months, 12 months, permanent
+- **Features:** Add ban reason, view suspension history, unban users, automatic unban when period expires
+
+**US-037-D: Global Invoice Overview**
+- As an **admin**, in order to **monitor platform activity and support billing issues**, I would like to **view all invoices across all users, grouped by status (draft, sent, paid, overdue, cancelled) with filtering and search capabilities**.
+
+**US-038: Platform Analytics** ✅
 - As an **admin**, in order to **monitor platform health**, I would like to **view metrics on user signups, active subscriptions, and invoice volumes**.
+- **Status:** Implemented - Dashboard displays total users, organizations, and invoices with stats cards
 
 **US-039: Feature Access Control**
 - As an **admin**, in order to **test and configure features**, I would like to **access all premium features regardless of subscription status**.
