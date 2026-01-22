@@ -63,9 +63,13 @@ Cypress.Commands.add('login', (userType = 'user', options = {}) => {
     body: mockSession
   }).as('refreshToken')
 
-  cy.intercept('GET', '**/rest/v1/profiles*', {
-    statusCode: 200,
-    body: [userData.profile]
+  cy.intercept('GET', '**/rest/v1/profiles*', (req) => {
+    // When .single() is used, Supabase adds specific headers
+    // Return single object directly, not array
+    req.reply({
+      statusCode: 200,
+      body: userData.profile
+    })
   }).as('getProfile')
 
   // Mock organization data - can be overridden by passing customOrganization in options

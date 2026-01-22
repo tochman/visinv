@@ -77,7 +77,7 @@ export default function AcceptInvitation() {
 
   if (success) {
     return (
-      <div className="bg-white dark:bg-gray-800 rounded-lg shadow-xl p-8 text-center" data-cy="invitation-accepted">
+      <div className="bg-white dark:bg-gray-800 rounded-sm shadow-xl p-8 text-center" data-cy="invitation-accepted">
         <div className="w-16 h-16 mx-auto mb-4 bg-green-100 dark:bg-green-900/30 rounded-full flex items-center justify-center">
           <svg className="w-8 h-8 text-green-600 dark:text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
@@ -98,7 +98,7 @@ export default function AcceptInvitation() {
 
   if (error && !invitation) {
     return (
-      <div className="bg-white dark:bg-gray-800 rounded-lg shadow-xl p-8 text-center" data-cy="invitation-error">
+      <div className="bg-white dark:bg-gray-800 rounded-sm shadow-xl p-8 text-center" data-cy="invitation-error">
         <div className="w-16 h-16 mx-auto mb-4 bg-red-100 dark:bg-red-900/30 rounded-full flex items-center justify-center">
           <svg className="w-8 h-8 text-red-600 dark:text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
@@ -124,7 +124,7 @@ export default function AcceptInvitation() {
   const emailMismatch = user && invitation && user.email?.toLowerCase() !== invitation.email?.toLowerCase();
 
   return (
-    <div className="bg-white dark:bg-gray-800 rounded-lg shadow-xl p-8">
+    <div className="bg-white dark:bg-gray-800 rounded-sm shadow-xl p-8">
       <div className="text-center mb-6">
         <div className="w-16 h-16 mx-auto mb-4 bg-blue-100 dark:bg-blue-900/30 rounded-full flex items-center justify-center">
           <svg className="w-8 h-8 text-blue-600 dark:text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -139,7 +139,7 @@ export default function AcceptInvitation() {
         </p>
       </div>
 
-      <div className="bg-gray-50 dark:bg-gray-700/50 rounded-lg p-4 mb-6">
+      <div className="bg-gray-50 dark:bg-gray-700/50 rounded-sm p-4 mb-6">
         <div className="flex justify-between items-center mb-2">
           <span className="text-sm text-gray-500 dark:text-gray-400">
             {t('organization.title')}
