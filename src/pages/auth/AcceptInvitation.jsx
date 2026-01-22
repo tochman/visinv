@@ -69,7 +69,7 @@ export default function AcceptInvitation() {
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center min-h-[300px]">
+      <div className="flex items-center justify-center min-h-[300px]" data-cy="loading-indicator">
         <div className="text-gray-600 dark:text-gray-400">{t('common.loading')}</div>
       </div>
     );
@@ -77,7 +77,7 @@ export default function AcceptInvitation() {
 
   if (success) {
     return (
-      <div className="bg-white dark:bg-gray-800 rounded-lg shadow-xl p-8 text-center">
+      <div className="bg-white dark:bg-gray-800 rounded-lg shadow-xl p-8 text-center" data-cy="invitation-accepted">
         <div className="w-16 h-16 mx-auto mb-4 bg-green-100 dark:bg-green-900/30 rounded-full flex items-center justify-center">
           <svg className="w-8 h-8 text-green-600 dark:text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
@@ -98,7 +98,7 @@ export default function AcceptInvitation() {
 
   if (error && !invitation) {
     return (
-      <div className="bg-white dark:bg-gray-800 rounded-lg shadow-xl p-8 text-center">
+      <div className="bg-white dark:bg-gray-800 rounded-lg shadow-xl p-8 text-center" data-cy="invitation-error">
         <div className="w-16 h-16 mx-auto mb-4 bg-red-100 dark:bg-red-900/30 rounded-full flex items-center justify-center">
           <svg className="w-8 h-8 text-red-600 dark:text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
@@ -152,7 +152,7 @@ export default function AcceptInvitation() {
           <span className="text-sm text-gray-500 dark:text-gray-400">
             {t('organization.role')}
           </span>
-          <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${
+          <span data-cy="invitation-role" className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${
             invitation?.role === 'owner' 
               ? 'bg-purple-100 text-purple-800 dark:bg-purple-900/30 dark:text-purple-300'
               : 'bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300'
@@ -171,13 +171,13 @@ export default function AcceptInvitation() {
       </div>
 
       {error && (
-        <div className="mb-4 p-3 bg-red-50 dark:bg-red-900/30 border border-red-200 dark:border-red-800 rounded-md">
+        <div className="mb-4 p-3 bg-red-50 dark:bg-red-900/30 border border-red-200 dark:border-red-800 rounded-md" data-cy="error-message">
           <p className="text-red-600 dark:text-red-400 text-sm">{error}</p>
         </div>
       )}
 
       {emailMismatch && (
-        <div className="mb-4 p-3 bg-yellow-50 dark:bg-yellow-900/30 border border-yellow-200 dark:border-yellow-800 rounded-md">
+        <div className="mb-4 p-3 bg-yellow-50 dark:bg-yellow-900/30 border border-yellow-200 dark:border-yellow-800 rounded-md" data-cy="email-mismatch-warning">
           <p className="text-yellow-700 dark:text-yellow-400 text-sm">
             {t('organization.invitations.emailMismatch', { 
               invitedEmail: invitation?.email,
@@ -209,6 +209,7 @@ export default function AcceptInvitation() {
         <button
           onClick={handleAccept}
           disabled={accepting || emailMismatch}
+          data-cy="accept-invitation-button"
           className="w-full px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed"
         >
           {accepting ? t('common.loading') : t('organization.invitations.acceptInvitation')}

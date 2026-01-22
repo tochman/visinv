@@ -293,4 +293,418 @@ describe('Organization Member Invitations', () => {
       cy.get('[data-cy="remove-member-button"]').should('not.exist')
     })
   })
+
+  describe('Accept Invitation Page', () => {
+    const validToken = 'valid-invitation-token-123'
+    const expiredToken = 'expired-token-456'
+    const invitedEmail = 'invited@example.com'
+
+    const mockInvitation = {
+      id: 'invitation-id-1',
+      organization_id: mockOrganization.id,
+      email: invitedEmail,
+      role: 'associate',
+      token: validToken,
+      expires_at: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString(),
+      created_at: new Date().toISOString(),
+      organizations: {
+        id: mockOrganization.id,
+        name: mockOrganization.name
+      }
+    }
+
+    const mockOwnerInvitation = {
+      ...mockInvitation,
+      role: 'owner'
+    }
+
+    describe('Valid Invitation - Unauthenticated User', () => {
+      beforeEach(() => {
+        // Clear any existing session
+        cy.clearLocalStorage()
+        cy.clearCookies()
+
+        // Intercept auth endpoints to simulate no user
+        cy.intercept('GET', '**/auth/v1/user', {
+          statusCode: 401,
+          body: { error: 'not authenticated' }
+        }).as('getUser')
+
+        cy.intercept('POST', '**/auth/v1/token*', {
+          statusCode: 401,
+          body: { error: 'not authenticated' }
+        }).as('refreshToken')
+
+        // Intercept the invitation lookup
+        cy.intercept('GET', `**/rest/v1/organization_invitations?*token=eq.${validToken}*`, {
+          statusCode: 200,
+          body: mockInvitation
+        }).as('getInvitation')
+
+        // Set language to English
+        cy.visit(`/invite/${validToken}`, {
+          onBeforeLoad(win) {
+            win.localStorage.setItem('language', 'en')
+          }
+        })
+      })
+
+      it('is expected to display invitation details', () => {
+        cy.wait('@getInvitation')
+        cy.contains(mockOrganization.name).should('be.visible')
+        cy.contains(invitedEmail).should('be.visible')
+      })
+
+      it('is expected to show sign in and sign up links for unauthenticated users', () => {
+        cy.wait('@getInvitation')
+        cy.get('a[href*="/auth/signin"]').should('be.visible')
+        cy.get('a[href*="/auth/signup"]').should('be.visible')
+      })
+
+      it('is expected to redirect sign in link with return URL', () => {
+        cy.wait('@getInvitation')
+        cy.get('a[href*="/auth/signin"]')
+          .should('have.attr', 'href')
+          .and('include', `/auth/signin?redirect=/invite/${validToken}`)
+      })
+
+      it('is expected to redirect sign up link with return URL', () => {
+        cy.wait('@getInvitation')
+        cy.get('a[href*="/auth/signup"]')
+          .should('have.attr', 'href')
+          .and('include', `/auth/signup?redirect=/invite/${validToken}`)
+      })
+
+      it('is expected to display the invited role badge', () => {
+        cy.wait('@getInvitation')
+        cy.get('[data-cy="invitation-role"]').should('be.visible')
+      })
+    })
+
+    describe('Valid Invitation - Owner Role', () => {
+      beforeEach(() => {
+        cy.clearLocalStorage()
+        cy.clearCookies()
+
+        cy.intercept('GET', '**/auth/v1/user', {
+          statusCode: 401,
+          body: { error: 'not authenticated' }
+        }).as('getUser')
+
+        cy.intercept('GET', `**/rest/v1/organization_invitations?*token=eq.${validToken}*`, {
+          statusCode: 200,
+          body: mockOwnerInvitation
+        }).as('getInvitation')
+
+        cy.visit(`/invite/${validToken}`, {
+          onBeforeLoad(win) {
+            win.localStorage.setItem('language', 'en')
+          }
+        })
+      })
+
+      it('is expected to display owner role badge with purple styling', () => {
+        cy.wait('@getInvitation')
+        cy.get('[data-cy="invitation-role"]')
+          .should('be.visible')
+          .and('have.class', 'bg-purple-100')
+      })
+    })
+
+    describe('Valid Invitation - Authenticated User with Matching Email', () => {
+      beforeEach(() => {
+        // First set up invitation intercept
+        cy.intercept('GET', `**/rest/v1/organization_invitations?*token=eq.${validToken}*`, {
+          statusCode: 200,
+          body: mockInvitation
+        }).as('getInvitation')
+
+        // Login as user with matching email
+        cy.login('user', { 
+          customOrganization: mockOrganization 
+        })
+
+        // Override the user's email to match the invitation
+        cy.window().then((win) => {
+          const storageKey = `sb-${Cypress.env('SUPABASE_PROJECT_REF') || 'test'}-auth-token`
+          const sessionData = JSON.parse(win.localStorage.getItem(storageKey))
+          sessionData.user.email = invitedEmail
+          win.localStorage.setItem(storageKey, JSON.stringify(sessionData))
+        })
+
+        // Visit invite page
+        cy.visit(`/invite/${validToken}`)
+      })
+
+      it('is expected to show accept button for authenticated user', () => {
+        cy.wait('@getInvitation')
+        cy.get('[data-cy="accept-invitation-button"]').should('be.visible')
+      })
+
+      it('is expected to NOT show email mismatch warning', () => {
+        cy.wait('@getInvitation')
+        cy.get('[data-cy="email-mismatch-warning"]').should('not.exist')
+      })
+    })
+
+    describe('Valid Invitation - Authenticated User with Different Email', () => {
+      beforeEach(() => {
+        cy.intercept('GET', `**/rest/v1/organization_invitations?*token=eq.${validToken}*`, {
+          statusCode: 200,
+          body: mockInvitation
+        }).as('getInvitation')
+
+        // Login as user with different email
+        cy.login('admin', { 
+          customOrganization: mockOrganization 
+        })
+
+        cy.visit(`/invite/${validToken}`)
+      })
+
+      it('is expected to show email mismatch warning', () => {
+        cy.wait('@getInvitation')
+        cy.get('[data-cy="email-mismatch-warning"]').should('be.visible')
+        cy.contains(invitedEmail).should('be.visible')
+      })
+
+      it('is expected to disable accept button when emails do not match', () => {
+        cy.wait('@getInvitation')
+        cy.get('[data-cy="accept-invitation-button"]').should('be.disabled')
+      })
+    })
+
+    describe('Accept Invitation Flow', () => {
+      beforeEach(() => {
+        cy.intercept('GET', `**/rest/v1/organization_invitations?*token=eq.${validToken}*`, {
+          statusCode: 200,
+          body: mockInvitation
+        }).as('getInvitation')
+
+        // Mock the accept flow - adding member
+        cy.intercept('POST', '**/rest/v1/organization_members*', (req) => {
+          req.reply({
+            statusCode: 201,
+            body: [{
+              id: 'new-member-id',
+              organization_id: mockOrganization.id,
+              user_id: 'test-user-id',
+              role: mockInvitation.role,
+              joined_at: new Date().toISOString()
+            }]
+          })
+        }).as('addMember')
+
+        // Mock deleting the invitation after acceptance
+        cy.intercept('DELETE', '**/rest/v1/organization_invitations?*', {
+          statusCode: 204,
+          body: null
+        }).as('deleteInvitation')
+
+        // Login as user with matching email
+        cy.login('user', { 
+          customOrganization: null,
+          skipOrgMock: true
+        })
+
+        // Set user email to match invitation
+        cy.window().then((win) => {
+          const storageKey = `sb-${Cypress.env('SUPABASE_PROJECT_REF') || 'test'}-auth-token`
+          const sessionData = JSON.parse(win.localStorage.getItem(storageKey))
+          sessionData.user.email = invitedEmail
+          win.localStorage.setItem(storageKey, JSON.stringify(sessionData))
+        })
+
+        // Re-mock auth user endpoint with matching email
+        cy.intercept('GET', '**/auth/v1/user', {
+          statusCode: 200,
+          body: {
+            id: 'test-regular-user-id',
+            email: invitedEmail,
+            user_metadata: { full_name: 'Invited User' }
+          }
+        }).as('getAuthUser')
+
+        cy.visit(`/invite/${validToken}`)
+      })
+
+      it('is expected to show success state after accepting invitation', () => {
+        cy.wait('@getInvitation')
+        cy.get('[data-cy="accept-invitation-button"]').click()
+
+        cy.wait('@addMember')
+        cy.get('[data-cy="invitation-accepted"]').should('be.visible')
+        cy.contains('Welcome').should('be.visible')
+      })
+
+      it('is expected to delete invitation after successful acceptance', () => {
+        cy.wait('@getInvitation')
+        cy.get('[data-cy="accept-invitation-button"]').click()
+
+        cy.wait('@addMember')
+        cy.wait('@deleteInvitation')
+      })
+
+      it('is expected to show loading state while accepting', () => {
+        cy.wait('@getInvitation')
+        
+        // Delay the response to see loading state
+        cy.intercept('POST', '**/rest/v1/organization_members*', (req) => {
+          req.on('response', (res) => {
+            res.setDelay(500)
+          })
+          req.reply({
+            statusCode: 201,
+            body: [{
+              id: 'new-member-id',
+              organization_id: mockOrganization.id,
+              user_id: 'test-user-id',
+              role: mockInvitation.role,
+              joined_at: new Date().toISOString()
+            }]
+          })
+        }).as('addMemberDelayed')
+
+        cy.get('[data-cy="accept-invitation-button"]').click()
+        cy.get('[data-cy="accept-invitation-button"]').should('be.disabled')
+      })
+    })
+
+    describe('Accept Invitation Error Handling', () => {
+      beforeEach(() => {
+        cy.intercept('GET', `**/rest/v1/organization_invitations?*token=eq.${validToken}*`, {
+          statusCode: 200,
+          body: mockInvitation
+        }).as('getInvitation')
+
+        // Mock error response when trying to add member
+        cy.intercept('POST', '**/rest/v1/organization_members*', {
+          statusCode: 400,
+          body: { message: 'User is already a member of this organization.' }
+        }).as('addMemberError')
+
+        // Login as user with matching email
+        cy.login('user', { skipOrgMock: true })
+
+        cy.window().then((win) => {
+          const storageKey = `sb-${Cypress.env('SUPABASE_PROJECT_REF') || 'test'}-auth-token`
+          const sessionData = JSON.parse(win.localStorage.getItem(storageKey))
+          sessionData.user.email = invitedEmail
+          win.localStorage.setItem(storageKey, JSON.stringify(sessionData))
+        })
+
+        cy.intercept('GET', '**/auth/v1/user', {
+          statusCode: 200,
+          body: {
+            id: 'test-regular-user-id',
+            email: invitedEmail,
+            user_metadata: { full_name: 'Invited User' }
+          }
+        }).as('getAuthUser')
+
+        cy.visit(`/invite/${validToken}`)
+      })
+
+      it('is expected to display error message when acceptance fails', () => {
+        cy.wait('@getInvitation')
+        cy.get('[data-cy="accept-invitation-button"]').click()
+
+        cy.wait('@addMemberError')
+        cy.get('[data-cy="error-message"]').should('be.visible')
+      })
+
+      it('is expected to re-enable accept button after error', () => {
+        cy.wait('@getInvitation')
+        cy.get('[data-cy="accept-invitation-button"]').click()
+
+        cy.wait('@addMemberError')
+        cy.get('[data-cy="accept-invitation-button"]').should('not.be.disabled')
+      })
+    })
+
+    describe('Invalid/Expired Invitation', () => {
+      beforeEach(() => {
+        // Clear auth state to prevent login redirects
+        cy.clearLocalStorage()
+        cy.clearCookies()
+
+        cy.intercept('GET', '**/auth/v1/user', {
+          statusCode: 401,
+          body: { error: 'not authenticated' }
+        }).as('getUser')
+      })
+
+      it('is expected to show error for invalid token', () => {
+        cy.intercept('GET', `**/rest/v1/organization_invitations?*token=eq.invalid-token*`, {
+          statusCode: 200,
+          body: null
+        }).as('getInvalidInvitation')
+
+        cy.visit('/invite/invalid-token', {
+          onBeforeLoad(win) {
+            win.localStorage.setItem('language', 'en')
+          }
+        })
+        cy.wait('@getInvalidInvitation')
+
+        cy.get('[data-cy="invitation-error"]').should('be.visible')
+      })
+
+      it('is expected to show error for expired invitation', () => {
+        const expiredInvitation = {
+          ...mockInvitation,
+          token: expiredToken,
+          expires_at: new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString() // expired yesterday
+        }
+
+        // Supabase will return empty for expired (gt filter fails)
+        cy.intercept('GET', `**/rest/v1/organization_invitations?*token=eq.${expiredToken}*`, {
+          statusCode: 200,
+          body: null
+        }).as('getExpiredInvitation')
+
+        cy.visit(`/invite/${expiredToken}`, {
+          onBeforeLoad(win) {
+            win.localStorage.setItem('language', 'en')
+          }
+        })
+        cy.wait('@getExpiredInvitation')
+
+        cy.get('[data-cy="invitation-error"]').should('be.visible')
+      })
+
+      it('is expected to show back link on error page', () => {
+        cy.intercept('GET', `**/rest/v1/organization_invitations?*token=eq.invalid-token*`, {
+          statusCode: 200,
+          body: null
+        }).as('getInvalidInvitation')
+
+        cy.visit('/invite/invalid-token', {
+          onBeforeLoad(win) {
+            win.localStorage.setItem('language', 'en')
+          }
+        })
+        cy.wait('@getInvalidInvitation')
+
+        cy.get('[data-cy="invitation-error"]').find('a[href="/"]').should('be.visible')
+      })
+    })
+
+    describe('Loading State', () => {
+      it('is expected to show loading indicator while fetching invitation', () => {
+        cy.intercept('GET', `**/rest/v1/organization_invitations?*token=eq.${validToken}*`, (req) => {
+          req.on('response', (res) => {
+            res.setDelay(1000)
+          })
+          req.reply({
+            statusCode: 200,
+            body: mockInvitation
+          })
+        }).as('getInvitationDelayed')
+
+        cy.visit(`/invite/${validToken}`)
+        cy.get('[data-cy="loading-indicator"]').should('be.visible')
+      })
+    })
+  })
 })
