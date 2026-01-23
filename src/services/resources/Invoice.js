@@ -267,6 +267,91 @@ class InvoiceResource extends BaseResource {
   }
 
   /**
+   * Create a credit invoice for an existing invoice
+   * @param {string} originalInvoiceId - ID of the invoice to credit
+   * @param {Object} creditData - Credit invoice data
+   * @param {Array} creditData.rows - Line items to credit (if partial), or omit for full credit
+   * @returns {Promise<{data: Object|null, error: Error|null}>}
+   */
+  async createCredit(originalInvoiceId, creditData = {}) {
+    // Fetch original invoice
+    const { data: originalInvoice, error: fetchError } = await this.show(originalInvoiceId);
+    if (fetchError || !originalInvoice) {
+      return { data: null, error: fetchError || new Error('Original invoice not found') };
+    }
+
+    // Prepare credit invoice data
+    const creditInvoiceData = {
+      client_id: originalInvoice.client_id,
+      invoice_template_id: originalInvoice.invoice_template_id,
+      issue_date: creditData.issue_date || new Date().toISOString().split('T')[0],
+      due_date: creditData.due_date || new Date().toISOString().split('T')[0],
+      tax_rate: originalInvoice.tax_rate,
+      status: creditData.status || 'draft',
+      invoice_type: 'CREDIT',
+      credited_invoice_id: originalInvoiceId,
+      notes: creditData.notes || `Credit for invoice ${originalInvoice.invoice_number}`,
+      ...creditData,
+    };
+
+    // If rows not provided, credit all items from original invoice
+    if (!creditData.rows) {
+      creditInvoiceData.rows = originalInvoice.invoice_rows.map(row => ({
+        ...row,
+        quantity: -Math.abs(parseFloat(row.quantity)), // Negative quantity for credit
+        id: undefined,
+        invoice_id: undefined,
+        created_at: undefined,
+        updated_at: undefined,
+      }));
+    } else {
+      // Use provided rows (should have negative quantities)
+      creditInvoiceData.rows = creditData.rows.map(row => ({
+        ...row,
+        quantity: -Math.abs(parseFloat(row.quantity)), // Ensure negative
+      }));
+    }
+
+    // Create the credit invoice
+    return this.create(creditInvoiceData);
+  }
+
+  /**
+   * Get all credit invoices for a given invoice
+   * @param {string} invoiceId - Invoice ID
+   * @returns {Promise<{data: Array|null, error: Error|null}>}
+   */
+  async getCredits(invoiceId) {
+    const { data, error } = await this.supabase
+      .from(this.tableName)
+      .select(`
+        *,
+        client:clients(id, name, email),
+        invoice_rows(*)
+      `)
+      .eq('credited_invoice_id', invoiceId)
+      .order('created_at', { ascending: false });
+
+    return { data, error };
+  }
+
+  /**
+   * Calculate total credited amount for an invoice
+   * @param {string} invoiceId - Invoice ID
+   * @returns {Promise<{amount: number, error: Error|null}>}
+   */
+  async getCreditedAmount(invoiceId) {
+    const { data: credits, error } = await this.getCredits(invoiceId);
+    if (error) return { amount: 0, error };
+
+    const totalCredited = credits.reduce((sum, credit) => {
+      return sum + Math.abs(parseFloat(credit.total_amount || 0));
+    }, 0);
+
+    return { amount: totalCredited, error: null };
+  }
+
+  /**
    * Generate next invoice number for an organization
    * @param {string} organizationId - Organization ID
    * @returns {Promise<string>}

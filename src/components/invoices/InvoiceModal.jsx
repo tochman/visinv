@@ -15,6 +15,7 @@ export default function InvoiceModal({ isOpen, onClose, invoice = null }) {
   const clients = useSelector(state => state.clients.items);
   const products = useSelector(state => state.products.items);
   const templates = useSelector(state => state.invoiceTemplates.items);
+  const invoices = useSelector(state => state.invoices.items);
   const prevInvoiceIdRef = useRef();
 
   const { currentOrganization } = useOrganization();
@@ -24,6 +25,8 @@ export default function InvoiceModal({ isOpen, onClose, invoice = null }) {
     client_id: invoice?.client_id || '',
     invoice_template_id: invoice?.invoice_template_id || '',
     invoice_number: invoice?.invoice_number || '',
+    invoice_type: invoice?.invoice_type || 'DEBET',
+    credited_invoice_id: invoice?.credited_invoice_id || '',
     issue_date: invoice?.issue_date || new Date().toISOString().split('T')[0],
     delivery_date: invoice?.delivery_date || invoice?.issue_date || new Date().toISOString().split('T')[0],
     due_date: invoice?.due_date || new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
@@ -49,6 +52,8 @@ export default function InvoiceModal({ isOpen, onClose, invoice = null }) {
         client_id: invoice?.client_id || '',
         invoice_template_id: invoice?.invoice_template_id || '',
         invoice_number: invoice?.invoice_number || '',
+        invoice_type: invoice?.invoice_type || 'DEBET',
+        credited_invoice_id: invoice?.credited_invoice_id || '',
         issue_date: invoice?.issue_date || new Date().toISOString().split('T')[0],
         delivery_date: invoice?.delivery_date || invoice?.issue_date || new Date().toISOString().split('T')[0],
         due_date: invoice?.due_date || new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
@@ -295,6 +300,55 @@ export default function InvoiceModal({ isOpen, onClose, invoice = null }) {
                     )}
                   </select>
                 </div>
+
+                {/* Invoice Type */}
+                {!isEditing && (
+                  <div className="md:col-span-2">
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                      {t('invoices.invoiceType')} *
+                    </label>
+                    <select
+                      name="invoice_type"
+                      value={formData.invoice_type}
+                      onChange={handleChange}
+                      data-cy="invoice-type-select"
+                      required
+                      className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    >
+                      <option value="DEBET">{t('invoices.invoiceTypeDebet')}</option>
+                      <option value="CREDIT">{t('invoices.invoiceTypeCredit')}</option>
+                    </select>
+                  </div>
+                )}
+
+                {/* Credited Invoice Selection (only for CREDIT invoices) */}
+                {!isEditing && formData.invoice_type === 'CREDIT' && (
+                  <div className="md:col-span-2">
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                      {t('invoices.creditedInvoice')} *
+                    </label>
+                    <select
+                      name="credited_invoice_id"
+                      value={formData.credited_invoice_id}
+                      onChange={handleChange}
+                      data-cy="credited-invoice-select"
+                      required
+                      className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    >
+                      <option value="">{t('invoices.selectCreditedInvoice')}</option>
+                      {clients
+                        .find(c => c.id === formData.client_id)
+                        ? invoices
+                            .filter(inv => inv.client_id === formData.client_id && inv.invoice_type === 'DEBET')
+                            .map(inv => (
+                              <option key={inv.id} value={inv.id}>
+                                {inv.invoice_number} - {inv.total_amount} {inv.currency}
+                              </option>
+                            ))
+                        : null}
+                    </select>
+                  </div>
+                )}
 
                 {/* Invoice Number (Manual Mode Only) */}
                 {isManualNumbering && !isEditing && (
