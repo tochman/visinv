@@ -7,6 +7,7 @@ import OrganizationSetupWizard from '../components/organization/OrganizationSetu
 import DashboardCard from '../components/dashboard/DashboardCard';
 import MonthlyInvoiceChart from '../components/dashboard/MonthlyInvoiceChart';
 import { fetchInvoices } from '../features/invoices/invoicesSlice';
+import { formatCurrency as formatCurrencyUtil } from '../config/currencies';
 
 export default function Dashboard() {
   const { t } = useTranslation();
@@ -90,13 +91,13 @@ export default function Dashboard() {
     };
   }, [invoices, currentOrganization]);
 
-  // Format currency for display
+  // Format currency for display with K suffix for large numbers
   const formatCurrency = (amount, currency = 'SEK') => {
-    // Format large numbers with K suffix
     if (amount >= 1000) {
-      return `${(amount / 1000).toFixed(2)}K ${currency}`;
+      const thousands = amount / 1000;
+      return `${formatCurrencyUtil(thousands, currency).replace(/[^\d.,\s€$£¥kr]/g, '')}K`;
     }
-    return `${amount.toFixed(2)} ${currency}`;
+    return formatCurrencyUtil(amount, currency);
   };
 
   // Check if there are any tasks (drafts, overdue, or active)

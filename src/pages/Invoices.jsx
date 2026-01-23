@@ -7,6 +7,7 @@ import InvoiceModal from '../components/invoices/InvoiceModal';
 import { generateInvoicePDF, buildInvoiceContext } from '../services/invoicePdfService';
 import { renderTemplate } from '../services/templateService';
 import { useOrganization } from '../contexts/OrganizationContext';
+import { formatCurrency } from '../config/currencies';
 
 export default function Invoices() {
   const { t } = useTranslation();
@@ -180,10 +181,6 @@ export default function Invoices() {
   const formatDate = (dateString) => {
     if (!dateString) return '-';
     return new Date(dateString).toLocaleDateString('sv-SE');
-  };
-
-  const formatCurrency = (amount, currency = 'SEK') => {
-    return `${parseFloat(amount || 0).toFixed(2)} ${currency}`;
   };
 
   return (

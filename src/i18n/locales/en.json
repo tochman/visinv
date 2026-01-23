@@ -42,6 +42,7 @@
     "deliveryDate": "Delivery Date",
     "dueDate": "Due Date",
     "status": "Status",
+    "currency": "Currency",
     "template": "Template",
     "defaultTemplate": "Default",
     "systemTemplates": "System Templates",
@@ -66,6 +67,15 @@
       "overdue": "Overdue",
       "cancelled": "Cancelled"
     }
+  },
+  "currencies": {
+    "SEK": "Swedish Krona",
+    "EUR": "Euro",
+    "USD": "US Dollar",
+    "GBP": "British Pound",
+    "NOK": "Norwegian Krone",
+    "DKK": "Danish Krone",
+    "selectCurrency": "Select currency"
   },
   "invoiceTemplates": {
     "title": "Invoice Templates",

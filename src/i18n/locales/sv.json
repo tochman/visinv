@@ -33,6 +33,7 @@
     "deliveryDate": "Leveransdatum",
     "dueDate": "Förfallodatum",
     "status": "Status",
+    "currency": "Valuta",
     "template": "Mall",
     "defaultTemplate": "Standard",
     "systemTemplates": "Systemmallar",
@@ -57,6 +58,15 @@
       "overdue": "Förfallen",
       "cancelled": "Avbruten"
     }
+  },
+  "currencies": {
+    "SEK": "Svenska kronor",
+    "EUR": "Euro",
+    "USD": "Amerikansk dollar",
+    "GBP": "Brittiskt pund",
+    "NOK": "Norska kronor",
+    "DKK": "Danska kronor",
+    "selectCurrency": "Välj valuta"
   },  "invoiceTemplates": {
     "title": "Fakturamallar",
     "create": "Skapa Mall",

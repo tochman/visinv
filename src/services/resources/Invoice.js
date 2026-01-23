@@ -1,5 +1,6 @@
 import { BaseResource } from './BaseResource';
 import { Organization } from './Organization';
+import { getCurrency, getExchangeRate } from '../../config/currencies';
 
 /**
  * Invoice Resource
@@ -107,6 +108,12 @@ class InvoiceResource extends BaseResource {
     if (!invoiceFields.payment_reference) {
       invoiceFields.payment_reference = this.generateOCR(invoiceFields.invoice_number);
     }
+
+    // Set currency and exchange rate
+    const currency = invoiceFields.currency || 'SEK';
+    const exchangeRate = getExchangeRate(currency, 'SEK');
+    invoiceFields.currency = currency;
+    invoiceFields.exchange_rate = exchangeRate;
 
     // Calculate totals
     const calculatedFields = this.calculateTotals(rows || [], invoiceFields.tax_rate || 25);

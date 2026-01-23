@@ -222,8 +222,31 @@ These additions position VisInv as a comprehensive solution for:
 - As a **user**, in order to **comply with tax regulations**, I would like to **automatically calculate and display taxes (including Swedish moms)**.
 - **Status:** Implemented - Automatic calculation in InvoiceModal, configurable tax rate (default 25% Swedish moms), tested in invoice tests
 
-**US-024: Multi-Currency Support**
+**US-024: Multi-Currency Support** ✅
 - As a **premium user**, in order to **invoice international clients**, I would like to **create invoices in different currencies**.
+- **Supported Currencies:** SEK (Swedish Krona), EUR (Euro), USD (US Dollar), GBP (British Pound), NOK (Norwegian Krone), DKK (Danish Krone)
+- **Features:**
+  - Currency selector in invoice creation with all major currencies
+  - Currency symbol display with proper positioning (before/after amount)
+  - Automatic exchange rate calculation and storage for historical accuracy
+  - Static exchange rates configurable in `currencies.js`
+  - Proper currency formatting in invoice list, detail view, and PDF
+  - Multi-currency aware dashboard (shows primary currency)
+  - i18n support with currency names in English and Swedish
+- **Technical:** 
+  - Database: `currency` column (default SEK), `exchange_rate` column (DECIMAL(12,6))
+  - Config: Centralized currency configuration with formatting utilities
+  - Resource: Automatic exchange rate calculation on invoice creation
+  - PDF: All monetary values formatted with correct currency symbols
+- **Status:** Implemented
+  - Migration: 029_add_exchange_rate_to_invoices.sql
+  - Config: src/config/currencies.js with 6 currencies and utilities
+  - Resource: Invoice.js sets currency and exchange_rate on create
+  - UI: InvoiceModal dropdown, InvoiceDetail/Invoices list formatting
+  - PDF: invoicePdfService formats all amounts with currency
+  - i18n: English/Swedish translations for all currencies
+  - Tests: Comprehensive Cypress test suite (multi-currency.cy.js)
+  - Documentation: docs/MULTI_CURRENCY.md
 
 **US-025: Recurring Invoices**
 - As a **premium user**, in order to **automate subscription billing**, I would like to **set up recurring invoices with custom intervals**.
