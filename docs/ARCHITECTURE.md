@@ -8,9 +8,9 @@ VisInv follows a clean architecture pattern with clear separation of concerns:
 - **Redux Slices** - State management
 - **Services** - External integrations (Supabase, Stripe, etc.)
 
-## Resource Pattern
+## Resource Pattern (ORM-like)
 
-We use a Resource pattern for all data operations, providing a clean REST-like API that abstracts Supabase away from components and Redux slices.
+We use a Resource pattern for all data operations, similar to an Object-Relational Mapper (ORM). This pattern provides a clean, object-oriented REST-like API that abstracts database operations away from components and Redux slices.
 
 ### Why Resources?
 
@@ -19,6 +19,7 @@ We use a Resource pattern for all data operations, providing a clean REST-like A
 ✅ **Testability** - Easy to mock for testing  
 ✅ **Reusability** - Share logic across features  
 ✅ **Type Safety** - Single source of truth for data operations  
+✅ **ORM-like Interface** - Work with JavaScript classes instead of raw SQL  
 
 ### BaseResource Class
 
@@ -36,16 +37,26 @@ class MyResource extends BaseResource {
 
 #### Standard Methods
 
-| Method | Description | Usage |
-|--------|-------------|-------|
-| `index(options)` | Get all records | `await Resource.index()` |
-| `show(id)` | Get one record | `await Resource.show(id)` |
-| `create(data)` | Create record | `await Resource.create({...})` |
-| `update(id, data)` | Update record | `await Resource.update(id, {...})` |
-| `destroy(id)` | Delete record | `await Resource.destroy(id)` |
-| `where(conditions)` | Custom query | `await Resource.where([...])` |
+All resources follow RESTful conventions:
+
+| Method | HTTP Equivalent | Description | Usage |
+|--------|----------------|-------------|-------|
+| `index(options)` | GET /resources | Get all records | `await Resource.index()` |
+| `show(id)` | GET /resources/:id | Get one record | `await Resource.show(id)` |
+| `create(data)` | POST /resources | Create record | `await Resource.create({...})` |
+| `update(id, data)` | PATCH /resources/:id | Update record | `await Resource.update(id, {...})` |
+| `delete(id)` | DELETE /resources/:id | Delete record | `await Resource.delete(id)` |
+| `where(conditions)` | GET /resources?filter | Custom query | `await Resource.where([...])` |
 
 All methods return `{ data, error }` following Supabase conventions.
+
+**ORM-like Features:**
+- **Object-oriented interface** - Work with JavaScript classes instead of raw SQL
+- **Query builder** - Chain methods like `.where()` for complex filtering
+- **Automatic user isolation** - RLS policies handle multi-tenancy transparently
+- **Convention over configuration** - Table names map directly to resource names
+- **Consistent return types** - All methods return `{ data, error }` objects
+- **Custom methods** - Extend resources with domain-specific queries (e.g., `Client.search()`, `Invoice.byClient()`)
 
 ### Example: Client Resource
 
@@ -181,9 +192,9 @@ async index() {
 
 ### Creating New Resources
 
-When adding a new feature (e.g., Invoices), create a new Resource:
+When adding a new feature, follow the RESTful resource pattern:
 
-1. **Create the resource file:**
+**1. Create the Resource class**
 
 ```javascript
 // src/services/resources/Invoice.js
@@ -191,10 +202,10 @@ import { BaseResource } from './BaseResource';
 
 class InvoiceResource extends BaseResource {
   constructor() {
-    super('invoices');
+    super('invoices'); // table name
   }
 
-  // Custom methods specific to invoices
+  // Add custom methods for business logic
   async byClient(clientId) {
     return this.where([
       { column: 'client_id', value: clientId }
@@ -206,25 +217,37 @@ class InvoiceResource extends BaseResource {
       { column: 'status', value: 'pending' }
     ]);
   }
+
+  async markAsPaid(id) {
+    return this.update(id, { 
+      status: 'paid',
+      paid_at: new Date().toISOString()
+    });
+  }
 }
 
 export const Invoice = new InvoiceResource();
 ```
 
-2. **Export from index:**
+**2. Export from resources index**
+
+**2. Export from resources index**
 
 ```javascript
 // src/services/resources/index.js
 export { Client } from './Client';
 export { Invoice } from './Invoice';
+export { Product } from './Product';
+// ... other resources
 ```
 
-3. **Use in Redux slice:**
+**3. Use in Redux slice**
 
 ```javascript
 // src/features/invoices/invoicesSlice.js
 import { Invoice } from '../../services/resources';
 
+// Fetch all invoices
 export const fetchInvoices = createAsyncThunk(
   'invoices/fetchInvoices',
   async (_, { rejectWithValue }) => {
@@ -233,7 +256,44 @@ export const fetchInvoices = createAsyncThunk(
     return data;
   }
 );
+
+// Create invoice
+export const createInvoice = createAsyncThunk(
+  'invoices/create',
+  async (invoiceData, { rejectWithValue }) => {
+    const { data, error } = await Invoice.create(invoiceData);
+    if (error) return rejectWithValue(error.message);
+    return data;
+  }
+);
+
+// Update invoice  
+export const updateInvoice = createAsyncThunk(
+  'invoices/update',
+  async ({ id, updates }, { rejectWithValue }) => {
+    const { data, error } = await Invoice.update(id, updates);
+    if (error) return rejectWithValue(error.message);
+    return data;
+  }
+);
+
+// Delete invoice
+export const deleteInvoice = createAsyncThunk(
+  'invoices/delete',
+  async (id, { rejectWithValue }) => {
+    const { error } = await Invoice.delete(id);
+    if (error) return rejectWithValue(error.message);
+    return id;
+  }
+);
 ```
+
+**RESTful Pattern Summary:**
+- `.index()` - GET all
+- `.show(id)` - GET one  
+- `.create(data)` - POST
+- `.update(id, data)` - PATCH
+- `.delete(id)` - DELETE
 
 ## Authentication & Authorization
 

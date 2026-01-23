@@ -40,7 +40,7 @@ export const updateInvoice = createAsyncThunk(
 export const deleteInvoice = createAsyncThunk(
   'invoices/deleteInvoice',
   async (id, { rejectWithValue }) => {
-    const { error } = await Invoice.destroy(id);
+    const { error } = await Invoice.delete(id);
     if (error) return rejectWithValue(error.message);
     return id;
   }

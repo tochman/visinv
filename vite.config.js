@@ -13,8 +13,9 @@ export default defineConfig({
       include: 'src/**/*',
       exclude: ['node_modules', 'cypress', '**/*.test.*', '**/*.spec.*'],
       extension: ['.js', '.jsx'],
-      requireEnv: true,
+      requireEnv: false, // Changed from true - don't require env var, use isCoverage flag instead
       cypress: true,
+      forceBuildInstrument: isCoverage,
     })] : []),
   ],
   build: {

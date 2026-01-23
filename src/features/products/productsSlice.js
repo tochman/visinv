@@ -40,7 +40,7 @@ export const updateProduct = createAsyncThunk(
 export const deleteProduct = createAsyncThunk(
   'products/deleteProduct',
   async (id, { rejectWithValue }) => {
-    const { error } = await Product.destroy(id);
+    const { error } = await Product.delete(id);
     if (error) return rejectWithValue(error.message);
     return id;
   }

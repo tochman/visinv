@@ -106,17 +106,25 @@ export class BaseResource {
   }
 
   /**
-   * Destroy - Delete a record
+   * Delete - Delete a record
    * @param {string} id - Record ID
    * @returns {Promise<{data: null, error: Error|null}>}
    */
-  async destroy(id) {
+  async delete(id) {
     const { error } = await this.supabase
       .from(this.tableName)
       .delete()
       .eq('id', id);
 
     return { data: null, error };
+  }
+
+  /**
+   * Destroy - Alias for delete (for Rails-style compatibility)
+   * @deprecated Use .delete() instead
+   */
+  async destroy(id) {
+    return this.delete(id);
   }
 
   /**

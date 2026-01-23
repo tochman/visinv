@@ -9,6 +9,8 @@ export default defineConfig({
     video: false,
     screenshotOnRunFailure: true,
     defaultCommandTimeout: 10000,
+    numTestsKeptInMemory: 0, // Optimize memory for parallel execution
+    experimentalMemoryManagement: true, // Enable memory management
     env: {
       SUPABASE_PROJECT_REF: 'huuytzuocdtgedlmmccx',
       codeCoverage: {

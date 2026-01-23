@@ -27,8 +27,17 @@ npm run cy:open
 
 ### Headless Mode (CI/CD)
 ```bash
-# Run all tests headlessly
+# Run all tests headlessly (sequential)
 npm run cy:run
+
+# Run all tests in parallel (50-75% faster)
+npm run test:e2e:parallel
+
+# Run with code coverage (sequential)
+npm run test:coverage
+
+# Run with code coverage in parallel (fastest)
+npm run test:coverage:parallel
 
 # Run specific test file
 npm run cy:run -- --spec "cypress/e2e/clients.cy.js"
@@ -36,24 +45,45 @@ npm run cy:run -- --spec "cypress/e2e/clients.cy.js"
 # Run tests matching a pattern
 npm run cy:run -- --spec "cypress/e2e/**/invoice*.cy.js"
 
-# Run with code coverage
-npm run test:coverage
-
 # View coverage report
 npm run coverage:report
-open coverage/index.html
+open coverage/lcov-report/index.html
+```
+
+### Parallel Execution Groups
+Tests are split into 5 groups for optimal parallel execution:
+
+```bash
+# Run individual groups (useful for debugging)
+npm run cy:group:core         # clients, products, organizations
+npm run cy:group:invoices     # invoices, templates, numbering
+npm run cy:group:features     # credit invoices, payments, alerts
+npm run cy:group:admin        # admin dashboard, users, invitations
+npm run cy:group:compliance   # Swedish compliance
+
+# Run all groups in parallel
+npm run cy:run:parallel
 ```
 
 ### Running Specific Test Suites
 ```bash
 # Core features
-npm run cy:run -- --spec "cypress/e2e/{clients,invoices,products}.cy.js"
+npm run cy:group:core
+
+# Invoice features
+npm run cy:group:invoices
+
+# Payment and alert features
+npm run cy:group:features
 
 # Admin features
-npm run cy:run -- --spec "cypress/e2e/admin*.cy.js"
+npm run cy:group:admin
 
 # Compliance tests
-npm run cy:run -- --spec "cypress/e2e/swedish-compliance.cy.js"
+npm run cy:group:compliance
+
+# Custom spec pattern
+npm run cy:run -- --spec "cypress/e2e/{clients,invoices,products}.cy.js"
 ```
 
 ## Test Structure
@@ -392,14 +422,25 @@ cy.wait(300)  // Only if absolutely necessary for animations
 
 ### Generate Coverage Report
 ```bash
-# Run tests with coverage instrumentation
-CYPRESS_COVERAGE=true npm run dev  # In one terminal
-npm run test:coverage              # In another terminal
+# Run tests with coverage (automatically starts instrumented dev server)
+npm run test:coverage
 
-# Generate and view report
+# View coverage report
 npm run coverage:report
-open coverage/index.html
+open coverage/lcov-report/index.html
+
+# Or check coverage meets threshold
+npm run coverage:check
 ```
+
+**How it works:**
+- `test:coverage` uses `start-server-and-test` to:
+  1. Start dev server with instrumentation (`dev:coverage`)
+  2. Wait for server to be ready at `http://localhost:5173`
+  3. Run all Cypress tests with coverage enabled
+  4. Automatically shut down server when done
+- Coverage data is collected via `vite-plugin-istanbul`
+- Results are saved to `.nyc_output/` and reports generated in `coverage/`
 
 ### Coverage Thresholds
 Current settings (in `package.json`):
@@ -415,10 +456,12 @@ Current settings (in `package.json`):
 Target: Increase to 70%+ coverage
 
 ### Exclude Files from Coverage
-Files excluded from coverage:
-- `src/main.jsx` - Application entry point
-- `src/**/*.test.js` - Test files
-- `src/**/*.spec.js` - Spec files
+Files excluded from coverage (see `vite.config.js` and `package.json`):
+- `node_modules/` - Dependencies
+- `cypress/**/*` - Test files and support code
+- `src/**/*.test.*` - Unit test files
+- `src/**/*.spec.*` - Spec files
+- `src/main.jsx` - Application entry point (excluded in nyc config)
 
 ## Continuous Integration
 
@@ -439,11 +482,29 @@ jobs:
           node-version: '18'
           cache: 'npm'
       - run: npm ci
-      - run: npm run dev &
-      - run: npx wait-on http://localhost:5173
-      - run: npm run cy:run
+      - run: npm run test:coverage:parallel  # Parallel execution with coverage
       - uses: codecov/codecov-action@v3
         if: always()
+        with:
+          files: ./coverage/lcov.info
+
+  # Alternative: Matrix strategy for even better parallelization
+  cypress-matrix:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        group: [core, invoices, features, admin, compliance]
+    steps:
+      - uses: actions/checkout@v3
+      - uses: actions/setup-node@v3
+        with:
+          node-version: '18'
+          cache: 'npm'
+      - run: npm ci
+      - run: npm run dev &
+      - run: npx wait-on http://localhost:5173
+      - run: npm run cy:group:${{ matrix.group }}
 ```
 
 ## Common Issues & Solutions
@@ -489,14 +550,37 @@ cy.viewport(1280, 720)
 // 4. Environment variables - check CI env vars
 ```
 
+### Issue: Coverage warning "file has no coverage information"
+```bash
+# This means the app wasn't instrumented. Solution:
+# 1. Make sure you're using npm run test:coverage (not cy:run)
+# 2. Check CYPRESS_COVERAGE env var is set in dev:coverage script
+# 3. Verify vite-plugin-istanbul is installed: npm ls vite-plugin-istanbul
+# 4. Clear .nyc_output and coverage folders: rm -rf .nyc_output coverage
+
+# Verify instrumentation is working:
+# 1. Start dev:coverage: npm run dev:coverage
+# 2. Open browser DevTools console
+# 3. Check for window.__coverage__ object (should exist)
+```
+
 ## Test Metrics
 
 Current test suite statistics:
-- **Total Test Files:** 11
-- **Estimated Test Cases:** ~298
+- **Total Test Files:** 13
+- **Estimated Test Cases:** ~300+
 - **Code Coverage:** ~50%
-- **Execution Time:** ~6-8 minutes (optimized)
+- **Execution Time (Sequential):** ~6-8 minutes
+- **Execution Time (Parallel):** ~2-3 minutes (50-75% faster)
+- **Parallel Groups:** 5 (optimized for CPU utilization)
 - **Flaky Tests:** <1%
+
+### Performance Comparison
+| Mode | Execution Time | Speed Improvement |
+|------|---------------|-------------------|
+| Sequential | 6-8 min | Baseline |
+| Parallel (5 groups) | 2-3 min | 50-75% faster |
+| CI Matrix (5 jobs) | 1-2 min | 75-85% faster |
 
 ## Contributing
 

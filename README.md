@@ -151,7 +151,7 @@ We follow a clean **Resource Pattern** for data access:
 - **Resources** → REST-like API wrapping Supabase
 - **BaseResource** → Shared CRUD logic
 
-See [ARCHITECTURE.md](ARCHITECTURE.md) for detailed patterns and best practices.
+See [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) for detailed patterns and best practices.
 
 ## Development
 
@@ -170,7 +170,7 @@ See [ARCHITECTURE.md](ARCHITECTURE.md) for detailed patterns and best practices.
 
 ## Database Setup
 
-See [DATABASE.md](DATABASE.md) for complete database schema and setup instructions.
+See [docs/DATABASE.md](docs/DATABASE.md) for complete database schema and setup instructions.
 
 Key tables:
 - `profiles` - User profiles
@@ -225,9 +225,19 @@ Admin can:
 
 ## Documentation
 
-- [ARCHITECTURE.md](ARCHITECTURE.md) - Code patterns, Resource pattern, best practices
-- [FEATURES.md](FEATURES.md) - Complete feature list with user stories
-- [DATABASE.md](DATABASE.md) - Database schema and setup
+For detailed information about the application, please refer to:
+
+- [Architecture](docs/ARCHITECTURE.md) - Code patterns, Resource pattern (ORM-like), best practices
+- [Redux Best Practices](docs/REDUX_BEST_PRACTICES.md) - Redux Toolkit patterns and optimization strategies
+- [Features](docs/FEATURES.md) - Complete feature list with user stories
+- [Database Schema](docs/DATABASE.md) - Database schema and setup
+- [Workflow](docs/WORKFLOW.md) - Development workflow and processes
+
+### Swedish Compliance Documentation
+- [Swedish Invoice Requirements](docs/SWEDISH_INVOICE_FORM_REQS.md)
+- [Implementation Guide](docs/IMPLEMENTATION_SWEDISH_TEMPLATES.md)
+- [User Stories](docs/USER_STORIES_SWEDISH_COMPLIANCE.md)
+- [Test Documentation](docs/TEST_SWEDISH_COMPLIANCE_TEMPLATES.md)
 
 ## Support
 
