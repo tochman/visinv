@@ -203,9 +203,10 @@ These additions position VisInv as a comprehensive solution for:
   - **US-020-D: Automatic Status Updates** - Automatically mark invoice as 'paid' when fully paid, revert to 'sent' if payment deleted
   - Database: payments table with invoice_id FK, amount, payment_date, payment_method, reference, notes
   - Backend: Payment resource with validation against remaining balance, Invoice methods for balance calculation
-  - UI: PaymentModal for recording payments with real-time balance validation
+  - UI: PaymentModal for recording payments with real-time balance validation, InvoiceDetail with payment history
   - i18n: Full English/Swedish translations for payment terminology
   - Features: Prevent overpayment, calculate remaining balance, support 6 payment methods (bank_transfer, swish, card, cash, check, other)
+  - Tests: 12 Cypress E2E tests covering recording, validation, history, partial payments
 
 **US-021: Invoice Numbering System** ✅
 - As a **user**, in order to **maintain professional record-keeping**, I would like to **automatically generate sequential invoice numbers with custom formats**.

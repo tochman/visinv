@@ -158,7 +158,6 @@ export default function PaymentModal({ isOpen, onClose, invoice, onPaymentRecord
                 onChange={handleChange}
                 step="0.01"
                 min="0.01"
-                max={remainingBalance}
                 required
                 data-cy="payment-amount"
                 className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500"

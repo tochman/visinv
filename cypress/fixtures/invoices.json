@@ -1,0 +1,187 @@
+{
+  "list": [
+    {
+      "id": "24226b6c-cb71-4a61-986b-ba724a5a6b89",
+      "user_id": "ebba58bf-5f55-4173-a953-3c0567041bb0",
+      "team_id": null,
+      "client_id": "c413f63d-cb63-4e00-98d2-f8ea1f7603d3",
+      "invoice_number": "INV-0001",
+      "issue_date": "2026-01-21",
+      "due_date": "2026-02-20",
+      "status": "sent",
+      "currency": "SEK",
+      "subtotal": 11700.00,
+      "tax_rate": 25.00,
+      "tax_amount": 2925.00,
+      "total_amount": 14625.00,
+      "notes": "",
+      "terms": "10 dagar netto",
+      "reference": "",
+      "sent_at": "2026-01-22T22:55:44.97+00:00",
+      "paid_at": null,
+      "created_at": "2026-01-21T18:31:18.138077+00:00",
+      "updated_at": "2026-01-22T22:55:45.208659+00:00",
+      "organization_id": null,
+      "delivery_date": "2026-01-21",
+      "payment_reference": "018",
+      "invoice_template_id": "3850a63a-82a7-41c0-b85b-ae51e611a746",
+      "invoice_type": "DEBET",
+      "credited_invoice_id": null,
+      "reminder_sent_at": null,
+      "reminder_count": 0,
+      "client": {
+        "id": "c413f63d-cb63-4e00-98d2-f8ea1f7603d3",
+        "name": "ACME Corp",
+        "email": ""
+      },
+      "invoice_rows": [
+        {
+          "id": "fa89e541-efe7-4e78-a733-0ba118d43ab1",
+          "unit": "h",
+          "amount": 7800.00,
+          "quantity": 10.00,
+          "tax_rate": 25.00,
+          "created_at": "2026-01-21T18:31:18.311005+00:00",
+          "invoice_id": "24226b6c-cb71-4a61-986b-ba724a5a6b89",
+          "product_id": "81d4b446-0c46-44db-bfaa-06975108e79a",
+          "sort_order": 0,
+          "unit_price": 780.00,
+          "description": "IT-strategi (tjänst)"
+        },
+        {
+          "id": "1476c0b3-9464-4630-9b6a-99a4a4349907",
+          "unit": "h",
+          "amount": 3900.00,
+          "quantity": 5.00,
+          "tax_rate": 25.00,
+          "created_at": "2026-01-21T18:31:18.311005+00:00",
+          "invoice_id": "24226b6c-cb71-4a61-986b-ba724a5a6b89",
+          "product_id": "81d4b446-0c46-44db-bfaa-06975108e79a",
+          "sort_order": 1,
+          "unit_price": 780.00,
+          "description": "IT-strategi (tjänst)"
+        }
+      ],
+      "invoice_template": {
+        "id": "3850a63a-82a7-41c0-b85b-ae51e611a746",
+        "name": "Kompakt - Enkel",
+        "is_system": true
+      }
+    }
+  ],
+  "unpaidInvoice": {
+    "id": "test-invoice-001",
+    "user_id": "ebba58bf-5f55-4173-a953-3c0567041bb0",
+    "team_id": null,
+    "client_id": "c413f63d-cb63-4e00-98d2-f8ea1f7603d3",
+    "invoice_number": "INV-2026-001",
+    "issue_date": "2026-01-21",
+    "due_date": "2026-02-20",
+    "status": "sent",
+    "currency": "SEK",
+    "subtotal": 800.00,
+    "tax_rate": 25.00,
+    "tax_amount": 200.00,
+    "total_amount": 1000.00,
+    "notes": "",
+    "terms": "30 dagar netto",
+    "reference": "",
+    "sent_at": "2026-01-22T10:00:00.000+00:00",
+    "paid_at": null,
+    "created_at": "2026-01-21T18:31:18.138077+00:00",
+    "updated_at": "2026-01-22T22:55:45.208659+00:00",
+    "organization_id": null,
+    "delivery_date": "2026-01-21",
+    "payment_reference": "001",
+    "invoice_template_id": "3850a63a-82a7-41c0-b85b-ae51e611a746",
+    "invoice_type": "DEBET",
+    "credited_invoice_id": null,
+    "reminder_sent_at": null,
+    "reminder_count": 0,
+    "client": {
+      "id": "c413f63d-cb63-4e00-98d2-f8ea1f7603d3",
+      "name": "ACME Corp",
+      "email": "acme@example.com",
+      "address": "123 Main St",
+      "city": "Stockholm",
+      "postal_code": "111 22",
+      "country": "Sweden",
+      "organization_number": "556123-4567"
+    },
+    "invoice_rows": [
+      {
+        "id": "row-001",
+        "unit": "st",
+        "amount": 800.00,
+        "quantity": 1.00,
+        "tax_rate": 25.00,
+        "created_at": "2026-01-21T18:31:18.311005+00:00",
+        "invoice_id": "test-invoice-001",
+        "product_id": "product-001",
+        "sort_order": 0,
+        "unit_price": 800.00,
+        "description": "Consulting Service"
+      }
+    ],
+    "invoice_template": {
+      "id": "3850a63a-82a7-41c0-b85b-ae51e611a746",
+      "name": "Kompakt - Enkel",
+      "is_system": true
+    }
+  },
+  "overdueInvoice": {
+    "id": "test-invoice-overdue",
+    "user_id": "ebba58bf-5f55-4173-a953-3c0567041bb0",
+    "team_id": null,
+    "client_id": "c413f63d-cb63-4e00-98d2-f8ea1f7603d3",
+    "invoice_number": "INV-2025-099",
+    "issue_date": "2025-12-01",
+    "due_date": "2025-12-31",
+    "status": "sent",
+    "currency": "SEK",
+    "subtotal": 4000.00,
+    "tax_rate": 25.00,
+    "tax_amount": 1000.00,
+    "total_amount": 5000.00,
+    "notes": "",
+    "terms": "30 dagar netto",
+    "reference": "",
+    "sent_at": "2025-12-01T10:00:00.000+00:00",
+    "paid_at": null,
+    "created_at": "2025-12-01T10:00:00.000+00:00",
+    "updated_at": "2025-12-01T10:00:00.000+00:00",
+    "organization_id": null,
+    "delivery_date": "2025-12-01",
+    "payment_reference": "099",
+    "invoice_template_id": "3850a63a-82a7-41c0-b85b-ae51e611a746",
+    "invoice_type": "DEBET",
+    "credited_invoice_id": null,
+    "reminder_sent_at": null,
+    "reminder_count": 0,
+    "client": {
+      "id": "c413f63d-cb63-4e00-98d2-f8ea1f7603d3",
+      "name": "ACME Corp",
+      "email": "acme@example.com"
+    },
+    "invoice_rows": [
+      {
+        "id": "row-overdue-001",
+        "unit": "st",
+        "amount": 4000.00,
+        "quantity": 1.00,
+        "tax_rate": 25.00,
+        "created_at": "2025-12-01T10:00:00.000+00:00",
+        "invoice_id": "test-invoice-overdue",
+        "product_id": "product-001",
+        "sort_order": 0,
+        "unit_price": 4000.00,
+        "description": "Annual Service"
+      }
+    ],
+    "invoice_template": {
+      "id": "3850a63a-82a7-41c0-b85b-ae51e611a746",
+      "name": "Kompakt - Enkel",
+      "is_system": true
+    }
+  }
+}

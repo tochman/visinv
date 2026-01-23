@@ -44,7 +44,8 @@ export default function InvoiceDetail() {
       setPayments(paymentsData || []);
       
       // Calculate remaining balance
-      const balance = await Invoice.getRemainingBalance(id);
+      const { balance, error: balanceError } = await Invoice.getRemainingBalance(id);
+      if (balanceError) throw new Error(balanceError.message);
       setRemainingBalance(balance);
       
     } catch (err) {
@@ -163,7 +164,10 @@ export default function InvoiceDetail() {
               </div>
               <div>
                 <dt className="text-sm text-gray-600 dark:text-gray-400">{t('payment.remainingBalance')}</dt>
-                <dd className={`text-lg font-bold ${remainingBalance === 0 ? 'text-green-600 dark:text-green-400' : 'text-gray-900 dark:text-white'}`}>
+                <dd 
+                  className={`text-lg font-bold ${remainingBalance === 0 ? 'text-green-600 dark:text-green-400' : 'text-gray-900 dark:text-white'}`}
+                  data-cy="remaining-balance"
+                >
                   {remainingBalance.toFixed(2)} {invoice.currency}
                 </dd>
               </div>
