@@ -109,11 +109,8 @@ describe('Invoice Template Management', () => {
       
       cy.get('[data-cy="submit-button"]').click()
       
-      // Wait a bit for async operations
-      cy.wait(1000)
-      
-      // Check that there are no errors
-      cy.get('[data-cy="template-form-error"]').should('not.exist')
+      // Check that there are no errors (wait for response)
+      cy.get('[data-cy="template-form-error"]', { timeout: 3000 }).should('not.exist')
       
       // Modal should close after successful creation
       cy.get('[data-cy="template-modal"]').should('not.exist')
