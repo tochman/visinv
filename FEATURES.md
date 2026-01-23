@@ -36,6 +36,18 @@
 - As an **organization**, in order to **maintain proper Swedish accounting compliance**, I would like to **have invoice numbers in unbroken sequence at organization level, shared by all users in the organization**.
 - **Technical:** Invoice numbers scoped to organization_id, not user_id
 
+**US-064: Manual vs Automatic Invoice Numbering**
+- As a **user that issues an invoice**, in order to **keep my books in good order**, I would like to **be able to choose whether invoice numbering is auto-incremented or manually set by me**.
+- **Configuration:** Organization-level setting in Settings > Organization
+- **Options:**
+  - **Automatic:** System generates sequential invoice numbers (INV-0001, INV-0002, etc.)
+  - **Manual:** User must enter invoice number for each invoice (with validation for uniqueness within organization)
+- **Behavior:**
+  - Automatic mode: Invoice number field auto-populated and read-only in invoice form
+  - Manual mode: Invoice number field required and editable, system validates uniqueness
+  - Setting stored in `organizations` table: `invoice_numbering_mode` (enum: 'automatic', 'manual')
+  - Default: Automatic
+
 **US-056: Organization Member Invitations** ✅
 - As an **organization owner**, in order to **allow my colleagues to use the application**, I would like to **invite them to my organization via email and choose their role ("owner" or "associate")**.
 - **Roles:**
@@ -145,10 +157,12 @@
 **US-020: Payment Recording**
 - As a **user**, in order to **keep accurate financial records**, I would like to **record payments received against invoices**.
 
-**US-021: Invoice Numbering System** ✅ (Needs refactoring for US-055)
+**US-021: Invoice Numbering System** ✅ (Needs refactoring for US-055 and US-064)
 - As a **user**, in order to **maintain professional record-keeping**, I would like to **automatically generate sequential invoice numbers with custom formats**.
 - **Status:** Implemented - generateInvoiceNumber() with INV-0001 format, auto-increments per user, tested in invoice creation tests
-- **TODO:** Refactor to use organization_id instead of user_id for Swedish compliance (US-055)
+- **TODO:** 
+  - Refactor to use organization_id instead of user_id for Swedish compliance (US-055)
+  - Add support for manual invoice numbering mode (US-064)
 
 **US-022: Per-Client Invoice Sequences**
 - As a **user**, in order to **organize invoices by client**, I would like to **maintain separate invoice number sequences for different clients** (optional).
@@ -162,6 +176,18 @@
 
 **US-025: Recurring Invoices**
 - As a **premium user**, in order to **automate subscription billing**, I would like to **set up recurring invoices with custom intervals**.
+
+**US-063: Credit Invoices**
+- As a **user that issues an invoice**, in order to **keep my books in good order**, I would like to **be able to issue CREDIT invoices (either partial or whole) for previously issued invoices**.
+- **Invoice types:** DEBET (standard invoice), CREDIT (corrects/reverses a previous invoice)
+- **Features:**
+  - Link credit invoice to original invoice
+  - Support partial credits (specify line items and amounts to credit)
+  - Support full credits (credit entire invoice)
+  - Display credit invoice relationships in invoice list and detail views
+  - Automatically mark original invoice status when fully credited
+  - Include reference to original invoice number on credit invoice
+- **Compliance:** Required for proper Swedish accounting (Bokföringslagen)
 
 **US-050: Product VAT Rates** ✅
 - As a **user**, in order to **comply with tax regulations**, I would like to **set VAT percentage on each product (0%, 6%, 12%, or 25%)**.
