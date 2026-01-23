@@ -242,6 +242,41 @@ class InvoiceResource extends BaseResource {
   }
 
   /**
+   * Get overdue invoices grouped by age
+   * @returns {Promise<{data: Object, error: Error|null}>}
+   * Returns: { recent: [], moderate: [], old: [] }
+   */
+  async getOverdueByAge() {
+    const { data: overdueInvoices, error } = await this.overdue();
+    
+    if (error) {
+      return { data: { recent: [], moderate: [], old: [] }, error };
+    }
+
+    const today = new Date();
+    const grouped = {
+      recent: [],    // 1-7 days overdue
+      moderate: [],  // 8-30 days overdue
+      old: []        // 30+ days overdue
+    };
+
+    overdueInvoices.forEach(invoice => {
+      const dueDate = new Date(invoice.due_date);
+      const daysOverdue = Math.floor((today - dueDate) / (1000 * 60 * 60 * 24));
+
+      if (daysOverdue <= 7) {
+        grouped.recent.push(invoice);
+      } else if (daysOverdue <= 30) {
+        grouped.moderate.push(invoice);
+      } else {
+        grouped.old.push(invoice);
+      }
+    });
+
+    return { data: grouped, error: null };
+  }
+
+  /**
    * Mark invoice as sent
    * @param {string} id - Invoice ID
    * @returns {Promise<{data: Object|null, error: Error|null}>}
@@ -250,6 +285,29 @@ class InvoiceResource extends BaseResource {
     return this.update(id, {
       status: 'sent',
       sent_at: new Date().toISOString(),
+    });
+  }
+
+  /**
+   * Mark reminder as sent for an invoice
+   * @param {string} id - Invoice ID
+   * @returns {Promise<{data: Object|null, error: Error|null}>}
+   */
+  async markReminderSent(id) {
+    // Get current reminder count
+    const { data: invoice, error: fetchError } = await this.supabase
+      .from(this.tableName)
+      .select('reminder_count')
+      .eq('id', id)
+      .single();
+
+    if (fetchError || !invoice) {
+      return { data: null, error: fetchError || new Error('Invoice not found') };
+    }
+
+    return this.update(id, {
+      reminder_sent_at: new Date().toISOString(),
+      reminder_count: (invoice.reminder_count || 0) + 1,
     });
   }
 

@@ -177,6 +177,23 @@
       "invalidAmount": "Please enter a valid amount"
     }
   },
+  "reminder": {
+    "sendReminder": "Send Reminder",
+    "reminderSent": "Reminder Sent",
+    "lastReminder": "Last reminder",
+    "reminderCount": "Reminders sent",
+    "markReminderSent": "Mark Reminder as Sent",
+    "overdueInvoices": "Overdue Invoices",
+    "overdueBy": "Overdue by",
+    "days": "days",
+    "day": "day",
+    "overdueGroups": {
+      "recent": "Recently Overdue (1-7 days)",
+      "moderate": "Moderately Overdue (8-30 days)",
+      "old": "Long Overdue (30+ days)"
+    },
+    "noOverdueInvoices": "No overdue invoices"
+  },
   "client": {
     "name": "Client Name",
     "email": "Email",

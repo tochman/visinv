@@ -166,6 +166,23 @@
       "invalidAmount": "Ange ett giltigt belopp"
     }
   },
+  "reminder": {
+    "sendReminder": "Skicka påminnelse",
+    "reminderSent": "Påminnelse skickad",
+    "lastReminder": "Senaste påminnelse",
+    "reminderCount": "Påminnelser skickade",
+    "markReminderSent": "Markera påminnelse som skickad",
+    "overdueInvoices": "Förfallna fakturor",
+    "overdueBy": "Förfallen med",
+    "days": "dagar",
+    "day": "dag",
+    "overdueGroups": {
+      "recent": "Nyligen förfallna (1-7 dagar)",
+      "moderate": "Måttligt förfallna (8-30 dagar)",
+      "old": "Långt förfallna (30+ dagar)"
+    },
+    "noOverdueInvoices": "Inga förfallna fakturor"
+  },
   "client": {
     "name": "Kundnamn",
     "email": "E-post",

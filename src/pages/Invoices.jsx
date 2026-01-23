@@ -53,6 +53,20 @@ export default function Invoices() {
     await dispatch(markInvoiceAsPaid({ id }));
   };
 
+  const handleSendReminder = async (invoice) => {
+    try {
+      const { Invoice } = await import('../services/resources');
+      await Invoice.markReminderSent(invoice.id);
+      // Refresh invoices to show updated reminder status
+      dispatch(fetchInvoices());
+      // TODO: In future, this would trigger email sending
+      alert(`Reminder marked as sent for invoice ${invoice.invoice_number}`);
+    } catch (error) {
+      console.error('Failed to mark reminder as sent:', error);
+      alert('Failed to mark reminder as sent');
+    }
+  };
+
   const handleTemplateChange = (invoice, templateId) => {
     const template = templateId ? templates.find(t => t.id === templateId) : null;
     dispatch(updateInvoiceTemplate({
@@ -141,7 +155,26 @@ export default function Invoices() {
   const getTypeColor = (type) => {
     return type === 'CREDIT'
       ? 'bg-orange-100 text-orange-800 dark:bg-orange-900/30 dark:text-orange-300'
-      : 'bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300';
+      : 'bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300'
+  };
+
+  const isOverdue = (invoice) => {
+    if (invoice.status !== 'sent') return false;
+    const today = new Date();
+    const dueDate = new Date(invoice.due_date);
+    return dueDate < today;
+  };
+
+  const getDaysOverdue = (invoice) => {
+    if (!isOverdue(invoice)) return 0;
+    const today = new Date();
+    const dueDate = new Date(invoice.due_date);
+    return Math.floor((today - dueDate) / (1000 * 60 * 60 * 24));
+  };
+
+  const getOverdueClass = (invoice) => {
+    if (!isOverdue(invoice)) return '';
+    return 'bg-red-50 dark:bg-red-900/10 border-l-4 border-red-500';
   };
 
   const formatDate = (dateString) => {
@@ -294,10 +327,19 @@ export default function Invoices() {
               </thead>
               <tbody className="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
                 {filteredInvoices.map((invoice) => (
-                  <tr key={invoice.id} data-cy={`invoice-row-${invoice.id}`} className="hover:bg-gray-50 dark:hover:bg-gray-700/50">
+                  <tr 
+                    key={invoice.id} 
+                    data-cy={`invoice-row-${invoice.id}`} 
+                    className={`hover:bg-gray-50 dark:hover:bg-gray-700/50 ${getOverdueClass(invoice)}`}
+                  >
                     <td className="px-6 py-4 whitespace-nowrap">
                       <div className="text-sm font-medium text-gray-900 dark:text-white">
                         {invoice.invoice_number}
+                        {isOverdue(invoice) && (
+                          <div className="text-xs text-red-600 dark:text-red-400 mt-1" data-cy={`overdue-indicator-${invoice.id}`}>
+                            {t('reminder.overdueBy')} {getDaysOverdue(invoice)} {getDaysOverdue(invoice) === 1 ? t('reminder.day') : t('reminder.days')}
+                          </div>
+                        )}
                       </div>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
@@ -319,6 +361,15 @@ export default function Invoices() {
                         {invoice.invoice_type === 'CREDIT' && (
                           <span className={`px-2 py-1 text-xs font-medium rounded-full ${getTypeColor('CREDIT')}`} data-cy={`invoice-type-${invoice.id}`}>
                             {t('invoices.creditNote')}
+                          </span>
+                        )}
+                        {invoice.reminder_sent_at && (
+                          <span 
+                            className="px-2 py-1 text-xs font-medium rounded-full bg-purple-100 text-purple-800 dark:bg-purple-900/30 dark:text-purple-300"
+                            data-cy={`reminder-badge-${invoice.id}`}
+                            title={`${t('reminder.lastReminder')}: ${formatDate(invoice.reminder_sent_at)}`}
+                          >
+                            {t('reminder.reminderSent')} ({invoice.reminder_count || 1})
                           </span>
                         )}
                       </div>
@@ -406,6 +457,18 @@ export default function Invoices() {
                           >
                             <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                            </svg>
+                          </button>
+                        )}
+                        {isOverdue(invoice) && (
+                          <button
+                            onClick={() => handleSendReminder(invoice)}
+                            data-cy={`send-reminder-button-${invoice.id}`}
+                            className="text-orange-600 hover:text-orange-900 dark:text-orange-400 dark:hover:text-orange-300"
+                            title={t('reminder.sendReminder')}
+                          >
+                            <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
                             </svg>
                           </button>
                         )}
