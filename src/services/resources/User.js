@@ -44,17 +44,58 @@ class UserResource extends BaseResource {
   /**
    * Update user profile (admin only)
    * @param {string} id - User ID
-   * @param {Object} updates - Profile updates
+   * @param {Object} updates - Profile updates (can include plan_type)
    * @returns {Promise<{data: Object|null, error: Error|null}>}
    */
   async update(id, updates) {
-    // Add updated_at timestamp
-    const dataToUpdate = {
-      ...updates,
-      updated_at: new Date().toISOString(),
-    };
+    const { plan_type, ...profileUpdates } = updates;
 
-    return super.update(id, dataToUpdate);
+    // Update profile fields
+    const { error: profileError } = await this.supabase
+      .from(this.tableName)
+      .update({
+        ...profileUpdates,
+        updated_at: new Date().toISOString(),
+      })
+      .eq('id', id);
+
+    if (profileError) return { data: null, error: profileError };
+
+    // Update subscription plan_type if provided
+    if (plan_type) {
+      const { error: subError } = await this.supabase
+        .from('subscriptions')
+        .update({ plan_type })
+        .eq('user_id', id);
+
+      if (subError) return { data: null, error: subError };
+    }
+
+    // Fetch updated user with plan_type
+    const { data: profile, error: fetchError } = await this.supabase
+      .from(this.tableName)
+      .select('id, email, full_name, is_admin, created_at, updated_at')
+      .eq('id', id)
+      .single();
+
+    if (fetchError || !profile) {
+      return { data: null, error: fetchError || new Error('User not found') };
+    }
+
+    // Get subscription
+    const { data: subscription } = await this.supabase
+      .from('subscriptions')
+      .select('plan_type')
+      .eq('user_id', id)
+      .single();
+
+    return { 
+      data: {
+        ...profile,
+        plan_type: subscription?.plan_type || 'free'
+      }, 
+      error: null 
+    };
   }
 
   /**

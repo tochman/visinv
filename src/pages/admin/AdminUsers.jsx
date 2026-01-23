@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { adminUsersService } from '../../services/adminUsersService';
+import { User } from '../../services/resources';
 import UserEditModal from '../../components/admin/UserEditModal';
 
 export default function AdminUsers() {
@@ -13,8 +13,9 @@ export default function AdminUsers() {
   useEffect(() => {
     const load = async () => {
       try {
-        const data = await adminUsersService.list();
-        setUsers(data);
+        const { data, error } = await User.index();
+        if (error) throw error;
+        setUsers(data || []);
       } finally {
         setLoading(false);
       }
@@ -32,7 +33,11 @@ export default function AdminUsers() {
   }, [users, search]);
 
   const handleSave = async (updates) => {
-    const updated = await adminUsersService.update(selectedUser.id, updates);
+    const { data: updated, error } = await User.update(selectedUser.id, updates);
+    if (error) {
+      console.error('Failed to update user:', error);
+      return;
+    }
     setUsers(prev => prev.map(u => u.id === updated.id ? updated : u));
     setSelectedUser(null);
   };

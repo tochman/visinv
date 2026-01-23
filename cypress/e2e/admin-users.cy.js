@@ -9,18 +9,36 @@ describe('Admin Users Management', () => {
 
   beforeEach(() => {
     cy.login('admin')
+  })
 
+  // Helper to set up intercepts AFTER login
+  const setupAdminIntercepts = () => {
     // Prevent wizard and noise
     cy.intercept('GET', '**/rest/v1/organizations*', { statusCode: 200, body: [{ id: 'org-1', name: 'Test Org' }] }).as('getOrganizations')
     cy.intercept('GET', '**/rest/v1/organization_members*', { statusCode: 200, body: [{ organization_id: 'org-1', user_id: 'test-admin-user-id', role: 'owner' }] }).as('getOrgMembers')
     cy.intercept('GET', '**/rest/v1/invoices*', { statusCode: 200, body: [] }).as('getInvoices')
 
-    // Users list - target the specific select used by adminUsersService to avoid clobbering auth profile fetch
-    cy.intercept('GET', '**/rest/v1/profiles?select=id%2Cemail%2Cfull_name%2Cplan_type%2Ccreated_at%2Cupdated_at*', { statusCode: 200, body: users }).as('getUsers')
-  })
+    // Users list - match the actual query from User.index()
+    cy.intercept('GET', '**/rest/v1/profiles?select=id%2Cemail%2Cfull_name%2Cis_admin%2Ccreated_at%2Cupdated_at*', (req) => {
+      req.reply({ statusCode: 200, body: users })
+    }).as('getUsers')
+
+    // Subscriptions for plan_type
+    cy.intercept('GET', '**/rest/v1/subscriptions?select=user_id%2Cplan_type', (req) => {
+      req.reply({ 
+        statusCode: 200, 
+        body: [
+          { user_id: 'u-1', plan_type: 'free' },
+          { user_id: 'u-2', plan_type: 'premium' },
+          { user_id: 'u-3', plan_type: 'free' }
+        ]
+      })
+    }).as('getSubscriptions')
+  }
 
   context('US-037: User Management - List & Search', () => {
     it('is expected to show users and filter by search', () => {
+      setupAdminIntercepts()
       cy.visit('/admin/users')
       cy.wait('@getUsers')
       cy.get('[data-cy="admin-users-page"]').should('be.visible')
@@ -49,6 +67,7 @@ describe('Admin Users Management', () => {
 
   context('US-037-A: User Profile Administration', () => {
     it('is expected to edit user profile details', () => {
+      setupAdminIntercepts()
       cy.visit('/admin/users')
       cy.wait('@getUsers')
       cy.get('[data-cy="admin-users-page"]').should('be.visible')
@@ -62,14 +81,44 @@ describe('Admin Users Management', () => {
       cy.get('[data-cy="edit-email"]').clear().type('alice+new@example.com')
       cy.get('[data-cy="edit-plan"]').select('premium')
 
-      // Mock update request - return single object for .single()
+      // Mock profile update request
       cy.intercept('PATCH', '**/rest/v1/profiles*', (req) => {
-        const body = { id: 'u-1', email: 'alice+new@example.com', full_name: 'Alice A.', plan_type: 'premium', created_at: '2025-12-01T10:00:00Z', updated_at: new Date().toISOString() }
-        req.reply({ statusCode: 200, body })
-      }).as('updateUser')
+        req.reply({ statusCode: 204 }) // Supabase returns 204 for successful PATCH without select
+      }).as('updateProfile')
+
+      // Mock subscription update request
+      cy.intercept('PATCH', '**/rest/v1/subscriptions*', (req) => {
+        req.reply({ statusCode: 204 })
+      }).as('updateSubscription')
+
+      // Mock profile fetch after update (with .eq() and .single())
+      cy.intercept('GET', '**/rest/v1/profiles?select=id%2Cemail%2Cfull_name%2Cis_admin%2Ccreated_at%2Cupdated_at&id=eq.u-1*', (req) => {
+        req.reply({ 
+          statusCode: 200, 
+          body: { 
+            id: 'u-1', 
+            email: 'alice+new@example.com', 
+            full_name: 'Alice A.',
+            is_admin: false, 
+            created_at: '2025-12-01T10:00:00Z', 
+            updated_at: new Date().toISOString() 
+          }
+        })
+      }).as('getUpdatedUser')
+
+      // Mock subscription fetch after update
+      cy.intercept('GET', '**/rest/v1/subscriptions?select=plan_type&user_id=eq.u-1*', (req) => {
+        req.reply({ 
+          statusCode: 200, 
+          body: { user_id: 'u-1', plan_type: 'premium' }
+        })
+      }).as('getUpdatedSubscription')
 
       cy.get('[data-cy="save-edit"]').click()
-      cy.wait('@updateUser')
+      cy.wait('@updateProfile')
+      cy.wait('@updateSubscription')
+      cy.wait('@getUpdatedUser')
+      cy.wait('@getUpdatedSubscription')
 
       // Verify row updated
       cy.get('[data-cy="user-row-u-1"]').within(() => {
