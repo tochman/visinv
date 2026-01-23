@@ -136,6 +136,36 @@
     "on": "på",
     "of": "av"
   },
+  "payment": {
+    "payments": "Betalningar",
+    "recordPayment": "Registrera betalning",
+    "paymentHistory": "Betalningshistorik",
+    "amount": "Belopp",
+    "paymentDate": "Betalningsdatum",
+    "paymentMethod": "Betalningsmetod",
+    "reference": "Referens",
+    "notes": "Anteckningar",
+    "totalPaid": "Totalt betalt",
+    "remainingBalance": "Återstående belopp",
+    "fullyPaid": "Helt betald",
+    "partiallyPaid": "Delvis betald",
+    "noPayments": "Inga betalningar registrerade",
+    "deletePayment": "Ta bort betalning",
+    "confirmDeletePayment": "Är du säker på att du vill ta bort denna betalning?",
+    "paymentMethods": {
+      "bank_transfer": "Bankgiro",
+      "swish": "Swish",
+      "card": "Kort",
+      "cash": "Kontant",
+      "check": "Check",
+      "other": "Annat"
+    },
+    "errors": {
+      "exceedsBalance": "Betalningsbeloppet överstiger återstående saldo",
+      "required": "Detta fält är obligatoriskt",
+      "invalidAmount": "Ange ett giltigt belopp"
+    }
+  },
   "client": {
     "name": "Kundnamn",
     "email": "E-post",

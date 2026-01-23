@@ -352,6 +352,79 @@ class InvoiceResource extends BaseResource {
   }
 
   /**
+   * Get remaining balance for an invoice (total - payments)
+   * @param {string} invoiceId - Invoice ID
+   * @returns {Promise<{balance: number, totalPaid: number, error: Error|null}>}
+   */
+  async getRemainingBalance(invoiceId) {
+    // Get invoice total
+    const { data: invoice, error: invoiceError } = await this.supabase
+      .from(this.tableName)
+      .select('total_amount')
+      .eq('id', invoiceId)
+      .single();
+
+    if (invoiceError || !invoice) {
+      return { balance: 0, totalPaid: 0, error: invoiceError || new Error('Invoice not found') };
+    }
+
+    // Get total payments
+    const { data: payments, error: paymentsError } = await this.supabase
+      .from('payments')
+      .select('amount')
+      .eq('invoice_id', invoiceId);
+
+    if (paymentsError) {
+      return { balance: 0, totalPaid: 0, error: paymentsError };
+    }
+
+    const totalPaid = (payments || []).reduce((sum, payment) => {
+      return sum + parseFloat(payment.amount || 0);
+    }, 0);
+
+    const balance = parseFloat(invoice.total_amount) - totalPaid;
+
+    return { balance, totalPaid, error: null };
+  }
+
+  /**
+   * Update invoice status based on payment status
+   * Automatically marks invoice as paid when fully paid
+   * @param {string} invoiceId - Invoice ID
+   * @returns {Promise<{data: Object|null, error: Error|null}>}
+   */
+  async updateStatusBasedOnPayments(invoiceId) {
+    const { balance, totalPaid, error } = await this.getRemainingBalance(invoiceId);
+    
+    if (error) {
+      return { data: null, error };
+    }
+
+    // Get current invoice status
+    const { data: invoice, error: invoiceError } = await this.supabase
+      .from(this.tableName)
+      .select('status, total_amount')
+      .eq('id', invoiceId)
+      .single();
+
+    if (invoiceError || !invoice) {
+      return { data: null, error: invoiceError || new Error('Invoice not found') };
+    }
+
+    // Update status if fully paid
+    if (balance <= 0.01 && invoice.status !== 'paid') {
+      return this.markAsPaid(invoiceId);
+    }
+
+    // If partially paid but was marked as paid, revert to sent
+    if (balance > 0.01 && invoice.status === 'paid') {
+      return this.update(invoiceId, { status: 'sent', paid_at: null });
+    }
+
+    return { data: invoice, error: null };
+  }
+
+  /**
    * Generate next invoice number for an organization
    * @param {string} organizationId - Organization ID
    * @returns {Promise<string>}

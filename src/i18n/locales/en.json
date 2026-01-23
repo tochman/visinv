@@ -147,6 +147,36 @@
     "on": "on",
     "of": "of"
   },
+  "payment": {
+    "payments": "Payments",
+    "recordPayment": "Record Payment",
+    "paymentHistory": "Payment History",
+    "amount": "Amount",
+    "paymentDate": "Payment Date",
+    "paymentMethod": "Payment Method",
+    "reference": "Reference",
+    "notes": "Notes",
+    "totalPaid": "Total Paid",
+    "remainingBalance": "Remaining Balance",
+    "fullyPaid": "Fully Paid",
+    "partiallyPaid": "Partially Paid",
+    "noPayments": "No payments recorded",
+    "deletePayment": "Delete Payment",
+    "confirmDeletePayment": "Are you sure you want to delete this payment?",
+    "paymentMethods": {
+      "bank_transfer": "Bank Transfer",
+      "swish": "Swish",
+      "card": "Card",
+      "cash": "Cash",
+      "check": "Check",
+      "other": "Other"
+    },
+    "errors": {
+      "exceedsBalance": "Payment amount exceeds remaining balance",
+      "required": "This field is required",
+      "invalidAmount": "Please enter a valid amount"
+    }
+  },
   "client": {
     "name": "Client Name",
     "email": "Email",
