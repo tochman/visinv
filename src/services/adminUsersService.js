@@ -3,16 +3,29 @@ import { supabase } from './supabase';
 export const adminUsersService = {
   list: async () => {
     if (!supabase) return [];
-    const { data, error } = await supabase
+    
+    // Fetch profiles
+    const { data: profiles, error: profileError } = await supabase
       .from('profiles')
-      .select('id, email, full_name, created_at, updated_at, subscriptions(plan_type)')
+      .select('id, email, full_name, created_at, updated_at')
       .order('created_at', { ascending: false });
-    if (error) throw error;
-    // Flatten subscription data
-    return (data || []).map(user => ({
+    
+    if (profileError) throw profileError;
+    
+    // Fetch subscriptions
+    const { data: subscriptions, error: subError } = await supabase
+      .from('subscriptions')
+      .select('user_id, plan_type');
+    
+    if (subError) throw subError;
+    
+    // Create subscription map for quick lookup
+    const subMap = new Map((subscriptions || []).map(s => [s.user_id, s.plan_type]));
+    
+    // Merge data
+    return (profiles || []).map(user => ({
       ...user,
-      plan_type: user.subscriptions?.plan_type || 'free',
-      subscriptions: undefined,
+      plan_type: subMap.get(user.id) || 'free',
     }));
   },
   update: async (id, updates) => {
@@ -40,19 +53,25 @@ export const adminUsersService = {
       if (subError) throw subError;
     }
 
-    // Fetch updated user with subscription
-    const { data, error } = await supabase
+    // Fetch updated profile
+    const { data: profile, error: fetchError } = await supabase
       .from('profiles')
-      .select('id, email, full_name, created_at, updated_at, subscriptions(plan_type)')
+      .select('id, email, full_name, created_at, updated_at')
       .eq('id', id)
       .single();
     
-    if (error) throw error;
+    if (fetchError) throw fetchError;
+    
+    // Fetch subscription
+    const { data: subscription } = await supabase
+      .from('subscriptions')
+      .select('plan_type')
+      .eq('user_id', id)
+      .single();
     
     return {
-      ...data,
-      plan_type: data.subscriptions?.plan_type || 'free',
-      subscriptions: undefined,
+      ...profile,
+      plan_type: subscription?.plan_type || 'free',
     };
   },
 };

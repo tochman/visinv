@@ -16,29 +16,29 @@ class UserResource extends BaseResource {
    * @returns {Promise<{data: Array|null, error: Error|null}>}
    */
   async index(options = {}) {
-    const { data, error } = await this.supabase
+    // Fetch profiles
+    const { data: profiles, error: profileError } = await this.supabase
       .from(this.tableName)
-      .select(`
-        id,
-        email,
-        full_name,
-        is_admin,
-        created_at,
-        updated_at,
-        subscriptions(plan_type)
-      `)
+      .select('id, email, full_name, is_admin, created_at, updated_at')
       .order('created_at', { ascending: false });
 
-    if (error) return { data: null, error };
+    if (profileError) return { data: null, error: profileError };
 
-    // Flatten subscription data
-    const flattenedData = (data || []).map(user => ({
+    // Fetch subscriptions
+    const { data: subscriptions } = await this.supabase
+      .from('subscriptions')
+      .select('user_id, plan_type');
+
+    // Create subscription map
+    const subMap = new Map((subscriptions || []).map(s => [s.user_id, s.plan_type]));
+
+    // Merge data
+    const merged = (profiles || []).map(user => ({
       ...user,
-      plan_type: user.subscriptions?.plan_type || 'free',
-      subscriptions: undefined,
+      plan_type: subMap.get(user.id) || 'free',
     }));
 
-    return { data: flattenedData, error: null };
+    return { data: merged, error: null };
   }
 
   /**
@@ -63,30 +63,30 @@ class UserResource extends BaseResource {
    * @returns {Promise<{data: Array|null, error: Error|null}>}
    */
   async search(query) {
-    const { data, error } = await this.supabase
+    // Fetch matching profiles
+    const { data: profiles, error: profileError } = await this.supabase
       .from(this.tableName)
-      .select(`
-        id,
-        email,
-        full_name,
-        is_admin,
-        created_at,
-        updated_at,
-        subscriptions(plan_type)
-      `)
+      .select('id, email, full_name, is_admin, created_at, updated_at')
       .or(`email.ilike.%${query}%,full_name.ilike.%${query}%`)
       .order('created_at', { ascending: false });
 
-    if (error) return { data: null, error };
+    if (profileError) return { data: null, error: profileError };
 
-    // Flatten subscription data
-    const flattenedData = (data || []).map(user => ({
+    // Fetch subscriptions
+    const { data: subscriptions } = await this.supabase
+      .from('subscriptions')
+      .select('user_id, plan_type');
+
+    // Create subscription map
+    const subMap = new Map((subscriptions || []).map(s => [s.user_id, s.plan_type]));
+
+    // Merge data
+    const merged = (profiles || []).map(user => ({
       ...user,
-      plan_type: user.subscriptions?.plan_type || 'free',
-      subscriptions: undefined,
+      plan_type: subMap.get(user.id) || 'free',
     }));
 
-    return { data: flattenedData, error: null };
+    return { data: merged, error: null };
   }
 
   /**
