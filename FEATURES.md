@@ -231,11 +231,13 @@
 - As an **admin (thomas@communitaslabs.io)**, in order to **manage the platform**, I would like to **access a dedicated admin dashboard with full system access**.
 - **Status:** Implemented - Admin-only route protection, dashboard with platform stats (users, organizations, invoices), 3 Cypress tests
 
-**US-037: User Management - List & Search**
+**US-037: User Management - List & Search** ✅
 - As an **admin**, in order to **support and monitor users**, I would like to **view a searchable list of all user accounts with their email, name, plan type, registration date, and last login**.
+- **Status:** Implemented - AdminUsers page with searchable user list, displays email, name, plan, registered date, last login; 1 Cypress test
 
-**US-037-A: User Profile Administration**
+**US-037-A: User Profile Administration** ✅
 - As an **admin**, in order to **assist users with account issues**, I would like to **view and edit user profile details including name, email, and plan type**.
+- **Status:** Implemented - UserEditModal component for editing user details, updates reflected in list; 1 Cypress test
 
 **US-037-B: Password Reset**
 - As an **admin**, in order to **help users who are locked out**, I would like to **trigger a password reset email for any user account**.

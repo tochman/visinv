@@ -13,6 +13,15 @@
     "settings": "Settings",
     "admin": "Admin"
   },
+  "adminUsers": {
+    "title": "Users",
+    "search": "Search users...",
+    "name": "Name",
+    "email": "Email",
+    "plan": "Plan",
+    "registered": "Registered",
+    "lastLogin": "Last Login"
+  },
   "auth": {
     "signIn": "Sign In",
     "signUp": "Sign Up",

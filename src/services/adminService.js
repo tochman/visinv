@@ -18,5 +18,37 @@ export const adminService = {
       console.error('Error fetching admin stats:', error);
       throw error;
     }
+  },
+
+  getAllUsers: async () => {
+    try {
+      const { data, error } = await supabase
+        .from('profiles')
+        .select('*')
+        .order('created_at', { ascending: false });
+
+      if (error) throw error;
+      return data;
+    } catch (error) {
+      console.error('Error fetching users:', error);
+      throw error;
+    }
+  },
+
+  updateUser: async (userId, updates) => {
+    try {
+      const { data, error } = await supabase
+        .from('profiles')
+        .update(updates)
+        .eq('id', userId)
+        .select()
+        .single();
+
+      if (error) throw error;
+      return data;
+    } catch (error) {
+      console.error('Error updating user:', error);
+      throw error;
+    }
   }
 };

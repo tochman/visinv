@@ -25,6 +25,7 @@ import TemplateEditor from './pages/TemplateEditor';
 import Teams from './pages/Teams';
 import Settings from './pages/Settings';
 import AdminDashboard from './pages/admin/AdminDashboard';
+import AdminUsers from './pages/admin/AdminUsers';
 
 // Components
 import ProtectedRoute from './components/auth/ProtectedRoute';
@@ -97,6 +98,7 @@ function App() {
           {/* Admin Routes */}
           <Route element={<AdminRoute><MainLayout /></AdminRoute>}>
             <Route path="/admin" element={<AdminDashboard />} />
+            <Route path="/admin/users" element={<AdminUsers />} />
           </Route>
 
           {/* Redirect */}
