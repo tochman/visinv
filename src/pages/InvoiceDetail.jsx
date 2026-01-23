@@ -3,6 +3,7 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { Invoice, Payment } from '../services/resources';
 import PaymentModal from '../components/invoices/PaymentModal';
+import { formatCurrency } from '../config/currencies';
 
 export default function InvoiceDetail() {
   const { id } = useParams();
@@ -144,7 +145,7 @@ export default function InvoiceDetail() {
               <div>
                 <dt className="text-sm text-gray-600 dark:text-gray-400">{t('invoices.totalAmount')}</dt>
                 <dd className="text-lg font-bold text-gray-900 dark:text-white">
-                  {parseFloat(invoice.total_amount).toFixed(2)} {invoice.currency}
+                  {formatCurrency(parseFloat(invoice.total_amount), invoice.currency)}
                 </dd>
               </div>
             </dl>
@@ -159,7 +160,7 @@ export default function InvoiceDetail() {
               <div>
                 <dt className="text-sm text-gray-600 dark:text-gray-400">{t('payment.totalPaid')}</dt>
                 <dd className="text-sm font-medium text-gray-900 dark:text-white">
-                  {(parseFloat(invoice.total_amount) - remainingBalance).toFixed(2)} {invoice.currency}
+                  {formatCurrency(parseFloat(invoice.total_amount) - remainingBalance, invoice.currency)}
                 </dd>
               </div>
               <div>
@@ -168,7 +169,7 @@ export default function InvoiceDetail() {
                   className={`text-lg font-bold ${remainingBalance === 0 ? 'text-green-600 dark:text-green-400' : 'text-gray-900 dark:text-white'}`}
                   data-cy="remaining-balance"
                 >
-                  {remainingBalance.toFixed(2)} {invoice.currency}
+                  {formatCurrency(remainingBalance, invoice.currency)}
                 </dd>
               </div>
               {isPartiallyPaid && (
@@ -221,7 +222,7 @@ export default function InvoiceDetail() {
                       {payment.payment_date}
                     </td>
                     <td className="py-3 px-3 text-sm font-medium text-gray-900 dark:text-white">
-                      {parseFloat(payment.amount).toFixed(2)} {invoice.currency}
+                      {formatCurrency(parseFloat(payment.amount), invoice.currency)}
                     </td>
                     <td className="py-3 px-3 text-sm text-gray-700 dark:text-gray-300">
                       {t(`payment.paymentMethods.${payment.payment_method}`)}

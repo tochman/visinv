@@ -1,4 +1,5 @@
 import { renderTemplate, exportToPDF } from './templateService';
+import { formatCurrency } from '../config/currencies';
 
 /**
  * Build context object from invoice and organization data
@@ -9,6 +10,7 @@ export function buildInvoiceContext(invoice, organization) {
   const subtotal = calculateSubtotal(lineItems);
   const vatGroups = calculateVATGroups(lineItems, invoice.tax_rate);
   const totalVAT = vatGroups.reduce((sum, group) => sum + group.vat, 0);
+  const currency = invoice.currency || 'SEK';
 
   return {
     // Invoice details
@@ -21,7 +23,7 @@ export function buildInvoiceContext(invoice, organization) {
     reference: invoice.reference || '',
     notes: invoice.notes || '',
     terms: invoice.terms || '',
-    currency: invoice.currency || 'SEK',
+    currency: currency,
     
     // Client information
     client_name: invoice.client?.name || '',
@@ -45,19 +47,23 @@ export function buildInvoiceContext(invoice, organization) {
     organization_website: organization?.website || '',
     organization_f_skatt_approved: organization?.f_skatt_approved || false,
     
-    // Financial calculations
+    // Financial calculations (formatted with currency)
     tax_rate: invoice.tax_rate || 0,
-    subtotal: subtotal,
-    tax_amount: totalVAT,
-    vat_groups: vatGroups,
-    total: subtotal + totalVAT,
+    subtotal: formatCurrency(subtotal, currency),
+    tax_amount: formatCurrency(totalVAT, currency),
+    vat_groups: vatGroups.map(group => ({
+      ...group,
+      base: formatCurrency(group.base, currency),
+      vat: formatCurrency(group.vat, currency)
+    })),
+    total: formatCurrency(subtotal + totalVAT, currency),
     line_items: lineItems.map(row => ({
       description: row.description,
       quantity: row.quantity,
       unit: row.unit || 'st',
-      unit_price: row.unit_price,
+      unit_price: formatCurrency(row.unit_price, currency),
       tax_rate: row.tax_rate || invoice.tax_rate || 0,
-      amount: row.amount || (row.quantity * row.unit_price)
+      amount: formatCurrency(row.amount || (row.quantity * row.unit_price), currency)
     }))
   };
 }

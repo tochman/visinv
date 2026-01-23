@@ -6,6 +6,7 @@ import { createInvoice, updateInvoice } from '../../features/invoices/invoicesSl
 import { fetchClients } from '../../features/clients/clientsSlice';
 import { fetchProducts } from '../../features/products/productsSlice';
 import { fetchTemplates } from '../../features/invoiceTemplates/invoiceTemplatesSlice';
+import { getCurrencyCodes, getCurrency } from '../../config/currencies';
 
 export default function InvoiceModal({ isOpen, onClose, invoice = null }) {
   const { t } = useTranslation();
@@ -442,7 +443,7 @@ export default function InvoiceModal({ isOpen, onClose, invoice = null }) {
                 {/* Currency */}
                 <div>
                   <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                    {t('invoices.currency')}
+                    {t('invoice.currency')}
                   </label>
                   <select
                     name="currency"
@@ -451,9 +452,14 @@ export default function InvoiceModal({ isOpen, onClose, invoice = null }) {
                     data-cy="currency-select"
                     className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
                   >
-                    <option value="SEK">SEK</option>
-                    <option value="EUR">EUR</option>
-                    <option value="USD">USD</option>
+                    {getCurrencyCodes().map(code => {
+                      const currency = getCurrency(code);
+                      return (
+                        <option key={code} value={code}>
+                          {code} - {currency.symbol} {t(`currencies.${code}`)}
+                        </option>
+                      );
+                    })}
                   </select>
                 </div>
 
