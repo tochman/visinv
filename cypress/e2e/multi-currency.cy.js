@@ -18,20 +18,20 @@ describe('Multi-Currency Support', () => {
     cy.visit('/invoices');
     cy.wait('@getInvoices');
 
-    cy.get('[data-cy="create-invoice-button"]').click();
-    cy.get('[data-cy="invoice-modal"]').should('be.visible');
+    cy.getByCy('create-invoice-button').click();
+    cy.getByCy('invoice-modal').should('be.visible');
 
     // Verify currency dropdown exists
-    cy.get('[data-cy="currency-select"]').should('be.visible');
+    cy.getByCy('currency-select').should('be.visible');
     
     // Verify all 6 currencies are available
     const currencies = ['SEK', 'EUR', 'USD', 'GBP', 'NOK', 'DKK'];
     currencies.forEach(currency => {
-      cy.get('[data-cy="currency-select"]').find('option').should('contain', currency);
+      cy.getByCy('currency-select').find('option').should('contain', currency);
     });
 
     // Default should be SEK
-    cy.get('[data-cy="currency-select"]').should('have.value', 'SEK');
+    cy.getByCy('currency-select').should('have.value', 'SEK');
   });
 
   it('should display currency symbols in dropdown options', () => {
@@ -48,8 +48,8 @@ describe('Multi-Currency Support', () => {
     cy.visit('/invoices');
     cy.wait('@getInvoices');
 
-    cy.get('[data-cy="create-invoice-button"]').click();
-    cy.get('[data-cy="invoice-modal"]').should('be.visible');
+    cy.getByCy('create-invoice-button').click();
+    cy.getByCy('invoice-modal').should('be.visible');
     
     // Test that each currency shows its symbol in the dropdown
     const currencyTests = [
@@ -62,8 +62,8 @@ describe('Multi-Currency Support', () => {
     ];
 
     currencyTests.forEach(({ code, symbol }) => {
-      cy.get('[data-cy="currency-select"]').select(code);
-      cy.get('[data-cy="currency-select"] option:selected').should('contain', symbol);
+      cy.getByCy('currency-select').select(code);
+      cy.getByCy('currency-select').find('option:selected').should('contain', symbol);
     });
   });
 
@@ -108,15 +108,15 @@ describe('Multi-Currency Support', () => {
     cy.visit('/invoices');
     cy.wait('@getInvoices');
 
-    cy.get('[data-cy="create-invoice-button"]').click();
-    cy.get('[data-cy="invoice-modal"]').should('be.visible');
+    cy.getByCy('create-invoice-button').click();
+    cy.getByCy('invoice-modal').should('be.visible');
 
     // Select EUR currency
-    cy.get('[data-cy="currency-select"]').select('EUR');
+    cy.getByCy('currency-select').select('EUR');
 
     // Fill minimal required fields and try to save
-    cy.get('[data-cy="client-select"]').select(mockClient.id);
-    cy.get('[data-cy="template-select"]').select(mockTemplate.id);
+    cy.getByCy('client-select').select(mockClient.id);
+    cy.getByCy('template-select').select(mockTemplate.id);
     
     // Note: This test validates that IF an invoice is created with EUR,
     // the backend would receive currency='EUR' and exchange_rate=11.5
@@ -144,8 +144,8 @@ describe('Multi-Currency Support', () => {
           name: 'Test Org'
         }]);
         
-        cy.get('[data-cy="create-invoice-button"]').click();
-        cy.get('[data-cy="currency-select"]').find('option').should('have.length', 6);
+        cy.getByCy('create-invoice-button').click();
+        cy.getByCy('currency-select').find('option').should('have.length', 6);
       });
     });
   });
@@ -161,20 +161,20 @@ describe('Multi-Currency Support', () => {
     }]);
 
     cy.visit('/invoices');
-    cy.get('[data-cy="create-invoice-button"]').click();
-    cy.get('[data-cy="invoice-modal"]').should('be.visible');
+    cy.getByCy('create-invoice-button').click();
+    cy.getByCy('invoice-modal').should('be.visible');
 
     // Test switching between currencies
-    cy.get('[data-cy="currency-select"]').select('EUR');
-    cy.get('[data-cy="currency-select"]').should('have.value', 'EUR');
+    cy.getByCy('currency-select').select('EUR');
+    cy.getByCy('currency-select').should('have.value', 'EUR');
     
-    cy.get('[data-cy="currency-select"]').select('USD');
-    cy.get('[data-cy="currency-select"]').should('have.value', 'USD');
+    cy.getByCy('currency-select').select('USD');
+    cy.getByCy('currency-select').should('have.value', 'USD');
     
-    cy.get('[data-cy="currency-select"]').select('GBP');
-    cy.get('[data-cy="currency-select"]').should('have.value', 'GBP');
+    cy.getByCy('currency-select').select('GBP');
+    cy.getByCy('currency-select').should('have.value', 'GBP');
     
-    cy.get('[data-cy="currency-select"]').select('SEK');
-    cy.get('[data-cy="currency-select"]').should('have.value', 'SEK');
+    cy.getByCy('currency-select').select('SEK');
+    cy.getByCy('currency-select').should('have.value', 'SEK');
   });
 });
