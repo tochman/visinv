@@ -16,12 +16,29 @@ class UserResource extends BaseResource {
    * @returns {Promise<{data: Array|null, error: Error|null}>}
    */
   async index(options = {}) {
-    return super.index({
-      select: 'id, email, full_name, plan_type, is_admin, created_at, updated_at',
-      order: 'created_at',
-      ascending: false,
-      ...options,
-    });
+    const { data, error } = await this.supabase
+      .from(this.tableName)
+      .select(`
+        id,
+        email,
+        full_name,
+        is_admin,
+        created_at,
+        updated_at,
+        subscriptions(plan_type)
+      `)
+      .order('created_at', { ascending: false });
+
+    if (error) return { data: null, error };
+
+    // Flatten subscription data
+    const flattenedData = (data || []).map(user => ({
+      ...user,
+      plan_type: user.subscriptions?.plan_type || 'free',
+      subscriptions: undefined,
+    }));
+
+    return { data: flattenedData, error: null };
   }
 
   /**
@@ -48,11 +65,28 @@ class UserResource extends BaseResource {
   async search(query) {
     const { data, error } = await this.supabase
       .from(this.tableName)
-      .select('id, email, full_name, plan_type, is_admin, created_at, updated_at')
+      .select(`
+        id,
+        email,
+        full_name,
+        is_admin,
+        created_at,
+        updated_at,
+        subscriptions(plan_type)
+      `)
       .or(`email.ilike.%${query}%,full_name.ilike.%${query}%`)
       .order('created_at', { ascending: false });
 
-    return { data, error };
+    if (error) return { data: null, error };
+
+    // Flatten subscription data
+    const flattenedData = (data || []).map(user => ({
+      ...user,
+      plan_type: user.subscriptions?.plan_type || 'free',
+      subscriptions: undefined,
+    }));
+
+    return { data: flattenedData, error: null };
   }
 
   /**
