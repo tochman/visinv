@@ -63,7 +63,7 @@ describe('Admin Dashboard', () => {
 
       // Check URL and Page content
       cy.url().should('include', '/admin')
-      cy.get('[data-cy="admin-dashboard-page"]').should('be.visible')
+      cy.getByCy('admin-dashboard-page').should('be.visible')
       cy.get('h1').should('contain', 'Admin')
     })
   })
@@ -101,14 +101,14 @@ describe('Admin Dashboard', () => {
     })
 
     it('is expected to display platform statistics', () => {
-      cy.get('[data-cy="stats-users"]').should('be.visible')
-      cy.get('[data-cy="stats-users-count"]').should('contain', '150')
+      cy.getByCy('stats-users').should('be.visible')
+      cy.getByCy('stats-users-count').should('contain', '150')
       
-      cy.get('[data-cy="stats-orgs"]').should('be.visible')
-      cy.get('[data-cy="stats-orgs-count"]').should('contain', '50')
+      cy.getByCy('stats-orgs').should('be.visible')
+      cy.getByCy('stats-orgs-count').should('contain', '50')
 
-      cy.get('[data-cy="stats-invoices"]').should('be.visible')
-      cy.get('[data-cy="stats-invoices-count"]').should('contain', '1250')
+      cy.getByCy('stats-invoices').should('be.visible')
+      cy.getByCy('stats-invoices-count').should('contain', '1250')
     })
   })
 })

@@ -149,7 +149,7 @@ describe('Overdue Invoice Alerts (US-026-A)', () => {
       cy.contains(overdueInvoice.invoice_number)
         .parents('tr')
         .within(() => {
-          cy.get('[data-cy=send-reminder]').should('be.visible');
+          cy.getByCy('send-reminder').should('be.visible');
         });
     });
 
@@ -160,7 +160,7 @@ describe('Overdue Invoice Alerts (US-026-A)', () => {
       cy.contains(notDueInvoice.invoice_number)
         .parents('tr')
         .within(() => {
-          cy.get('[data-cy=send-reminder]').should('not.exist');
+          cy.getByCy('send-reminder').should('not.exist');
         });
     });
 
@@ -171,7 +171,7 @@ describe('Overdue Invoice Alerts (US-026-A)', () => {
       cy.contains(overdueInvoice.invoice_number)
         .parents('tr')
         .within(() => {
-          cy.get('[data-cy=send-reminder]').click();
+          cy.getByCy('send-reminder').click();
         });
       
       cy.wait('@updateInvoice');
@@ -180,8 +180,8 @@ describe('Overdue Invoice Alerts (US-026-A)', () => {
       cy.contains(overdueInvoice.invoice_number)
         .parents('tr')
         .within(() => {
-          cy.get('[data-cy=reminder-badge]').should('be.visible');
-          cy.get('[data-cy=reminder-badge]').should('contain', '1');
+          cy.getByCy('reminder-badge').should('be.visible');
+          cy.getByCy('reminder-badge').should('contain', '1');
         });
     });
 
@@ -195,7 +195,7 @@ describe('Overdue Invoice Alerts (US-026-A)', () => {
       cy.contains(overdueInvoice.invoice_number)
         .parents('tr')
         .within(() => {
-          cy.get('[data-cy=send-reminder]').click();
+          cy.getByCy('send-reminder').click();
         });
       
       cy.wait('@updateInvoice');
@@ -203,7 +203,7 @@ describe('Overdue Invoice Alerts (US-026-A)', () => {
       cy.contains(overdueInvoice.invoice_number)
         .parents('tr')
         .within(() => {
-          cy.get('[data-cy=reminder-badge]').should('contain', '2');
+          cy.getByCy('reminder-badge').should('contain', '2');
         });
     });
   });
@@ -219,8 +219,8 @@ describe('Overdue Invoice Alerts (US-026-A)', () => {
       cy.contains(veryOverdueInvoice.invoice_number)
         .parents('tr')
         .within(() => {
-          cy.get('[data-cy=reminder-badge]').should('be.visible');
-          cy.get('[data-cy=reminder-badge]').should('have.class', 'bg-purple-100');
+          cy.getByCy('reminder-badge').should('be.visible');
+          cy.getByCy('reminder-badge').should('have.class', 'bg-purple-100');
         });
     });
 
@@ -234,7 +234,7 @@ describe('Overdue Invoice Alerts (US-026-A)', () => {
       cy.contains(overdueInvoice.invoice_number)
         .parents('tr')
         .within(() => {
-          cy.get('[data-cy=reminder-badge]').should('contain', '3');
+          cy.getByCy('reminder-badge').should('contain', '3');
         });
     });
 
@@ -247,7 +247,7 @@ describe('Overdue Invoice Alerts (US-026-A)', () => {
       cy.contains(notDueInvoice.invoice_number)
         .parents('tr')
         .within(() => {
-          cy.get('[data-cy=reminder-badge]').should('not.exist');
+          cy.getByCy('reminder-badge').should('not.exist');
         });
     });
   });
