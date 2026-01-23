@@ -36,7 +36,7 @@
 - As an **organization**, in order to **maintain proper Swedish accounting compliance**, I would like to **have invoice numbers in unbroken sequence at organization level, shared by all users in the organization**.
 - **Technical:** Invoice numbers scoped to organization_id, not user_id
 
-**US-064: Manual vs Automatic Invoice Numbering**
+**US-064: Manual vs Automatic Invoice Numbering** ✅
 - As a **user that issues an invoice**, in order to **keep my books in good order**, I would like to **be able to choose whether invoice numbering is auto-incremented or manually set by me**.
 - **Configuration:** Organization-level setting in Settings > Organization
 - **Options:**
@@ -47,6 +47,14 @@
   - Manual mode: Invoice number field required and editable, system validates uniqueness
   - Setting stored in `organizations` table: `invoice_numbering_mode` (enum: 'automatic', 'manual')
   - Default: Automatic
+- **Status:** Implemented
+  - Database: Added `invoice_numbering_mode` column to organizations table with CHECK constraint
+  - Backend: Invoice.js resource updated to check organization mode, validate manual numbers for uniqueness
+  - UI: OrganizationSettings with dropdown selector for numbering mode
+  - Form: InvoiceModal conditionally shows invoice_number input based on organization setting
+  - Validation: Required field validation in manual mode, duplicate prevention
+  - i18n: Full English/Swedish translations
+  - Tests: Cypress test suite with 7 scenarios (mode toggle, field visibility, manual/auto creation, validation, duplicates)
 
 **US-056: Organization Member Invitations** ✅
 - As an **organization owner**, in order to **allow my colleagues to use the application**, I would like to **invite them to my organization via email and choose their role ("owner" or "associate")**.
@@ -157,12 +165,12 @@
 **US-020: Payment Recording**
 - As a **user**, in order to **keep accurate financial records**, I would like to **record payments received against invoices**.
 
-**US-021: Invoice Numbering System** ✅ (Needs refactoring for US-055 and US-064)
+**US-021: Invoice Numbering System** ✅
 - As a **user**, in order to **maintain professional record-keeping**, I would like to **automatically generate sequential invoice numbers with custom formats**.
-- **Status:** Implemented - generateInvoiceNumber() with INV-0001 format, auto-increments per user, tested in invoice creation tests
-- **TODO:** 
-  - Refactor to use organization_id instead of user_id for Swedish compliance (US-055)
-  - Add support for manual invoice numbering mode (US-064)
+- **Status:** Implemented - generateInvoiceNumber() with INV-0001 format, auto-increments per organization (refactored for US-055, US-064)
+- **Completed:**
+  - ✅ Refactored to use organization_id instead of user_id for Swedish compliance (US-055)
+  - ✅ Added support for manual invoice numbering mode (US-064)
 
 **US-022: Per-Client Invoice Sequences**
 - As a **user**, in order to **organize invoices by client**, I would like to **maintain separate invoice number sequences for different clients** (optional).

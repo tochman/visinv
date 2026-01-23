@@ -1,4 +1,5 @@
 import { BaseResource } from './BaseResource';
+import { Organization } from './Organization';
 
 /**
  * Invoice Resource
@@ -60,12 +61,46 @@ class InvoiceResource extends BaseResource {
       return { data: null, error: authError || new Error('Not authenticated') };
     }
 
+    // Get current organization to check numbering mode
+    const { data: currentOrg, error: orgError } = await Organization.getDefault();
+    if (orgError || !currentOrg) {
+      return { data: null, error: orgError || new Error('No organization found') };
+    }
+
     const { rows, ...invoiceFields } = invoiceData;
 
-    // Generate invoice number if not provided
-    if (!invoiceFields.invoice_number) {
-      const number = await this.generateInvoiceNumber();
-      invoiceFields.invoice_number = number;
+    // Handle invoice numbering based on organization settings
+    const isManualMode = currentOrg.invoice_numbering_mode === 'manual';
+    
+    if (isManualMode) {
+      // Manual mode: Validate that invoice_number is provided
+      if (!invoiceFields.invoice_number || !invoiceFields.invoice_number.trim()) {
+        return { 
+          data: null, 
+          error: new Error('Invoice number is required when manual numbering is enabled') 
+        };
+      }
+
+      // Check for duplicate invoice numbers within the organization
+      const { data: existing } = await this.supabase
+        .from(this.tableName)
+        .select('id')
+        .eq('invoice_number', invoiceFields.invoice_number)
+        .eq('organization_id', currentOrg.id)
+        .single();
+
+      if (existing) {
+        return {
+          data: null,
+          error: new Error('Invoice number already exists in this organization')
+        };
+      }
+    } else {
+      // Automatic mode: Generate invoice number
+      if (!invoiceFields.invoice_number) {
+        const number = await this.generateInvoiceNumber(currentOrg.id);
+        invoiceFields.invoice_number = number;
+      }
     }
 
     // Generate OCR payment reference if not provided
@@ -83,6 +118,7 @@ class InvoiceResource extends BaseResource {
         ...invoiceFields,
         ...calculatedFields,
         user_id: user.id,
+        organization_id: currentOrg.id,
       })
       .select()
       .single();
@@ -231,17 +267,17 @@ class InvoiceResource extends BaseResource {
   }
 
   /**
-   * Generate next invoice number
+   * Generate next invoice number for an organization
+   * @param {string} organizationId - Organization ID
    * @returns {Promise<string>}
    */
-  async generateInvoiceNumber() {
-    const { user } = await this.getCurrentUser();
-    if (!user) return 'INV-0001';
+  async generateInvoiceNumber(organizationId) {
+    if (!organizationId) return 'INV-0001';
 
     const { data } = await this.supabase
       .from(this.tableName)
       .select('invoice_number')
-      .eq('user_id', user.id)
+      .eq('organization_id', organizationId)
       .order('created_at', { ascending: false })
       .limit(1);
 
