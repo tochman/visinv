@@ -162,8 +162,18 @@
 - **Status:** Implemented - Status badges, filter by status, mark as sent/paid actions, 11 tests in invoice suite
 - **Status:** Implemented - Full status management with markAsSent/markAsPaid, status badges, filtering, 11 Cypress tests
 
-**US-020: Payment Recording**
+**US-020: Payment Recording** ✅
 - As a **user**, in order to **keep accurate financial records**, I would like to **record payments received against invoices**.
+- **Status:** Implemented
+  - **US-020-A: Single Payment Recording** - Record a single payment with amount, date, method, reference, and notes
+  - **US-020-B: Partial Payment Support** - Support multiple partial payments against one invoice, track remaining balance
+  - **US-020-C: Payment History** - View complete payment history for each invoice with dates, amounts, and methods
+  - **US-020-D: Automatic Status Updates** - Automatically mark invoice as 'paid' when fully paid, revert to 'sent' if payment deleted
+  - Database: payments table with invoice_id FK, amount, payment_date, payment_method, reference, notes
+  - Backend: Payment resource with validation against remaining balance, Invoice methods for balance calculation
+  - UI: PaymentModal for recording payments with real-time balance validation
+  - i18n: Full English/Swedish translations for payment terminology
+  - Features: Prevent overpayment, calculate remaining balance, support 6 payment methods (bank_transfer, swish, card, cash, check, other)
 
 **US-021: Invoice Numbering System** ✅
 - As a **user**, in order to **maintain professional record-keeping**, I would like to **automatically generate sequential invoice numbers with custom formats**.
@@ -218,6 +228,19 @@
 
 **US-026: Email Notifications**
 - As a **user**, in order to **stay informed about invoice activity**, I would like to **receive email notifications when invoices are viewed or paid**.
+
+**US-026-A: Overdue Invoice Alerts**
+- As a **user**, in order to **stay on top of unpaid invoices**, I would like to **receive alerts when my invoices become overdue**.
+- **Alert types:**
+  - Dashboard notification badge showing overdue count
+  - Email digest of overdue invoices (daily or weekly)
+  - In-app notification when invoice transitions to overdue status
+  - Visual indicators in invoice list (red badges, highlighted rows)
+- **Features:**
+  - Configurable alert preferences (email frequency, in-app notifications on/off)
+  - Group overdue invoices by age (1-7 days, 8-30 days, 30+ days)
+  - Quick action to send reminder to client from alert
+  - Mark invoice as "reminder sent" to track follow-ups
 
 **US-027: Overdue Reminders**
 - As a **premium user**, in order to **improve payment collection**, I would like to **automatically send email reminders for overdue invoices**.
