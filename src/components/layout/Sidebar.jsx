@@ -31,11 +31,6 @@ export default function Sidebar() {
 
   if (isAdmin) {
     navItems.push({ path: '/admin', label: t('nav.admin'), icon: ShieldCheckIcon });
-    navItems.push({ path: '/admin/users', label: t('adminUsers.title') || 'Users', icon: UsersIcon });
-  }
-
-  if (isAdmin) {
-    navItems.push({ path: '/admin', label: t('nav.admin'), icon: WrenchScrewdriverIcon });
   }
 
   const isActive = (path) => location.pathname === path;
