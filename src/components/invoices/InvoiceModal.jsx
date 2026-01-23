@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { useTranslation } from 'react-i18next';
+import { useOrganization } from '../../contexts/OrganizationContext';
 import { createInvoice, updateInvoice } from '../../features/invoices/invoicesSlice';
 import { fetchClients } from '../../features/clients/clientsSlice';
 import { fetchProducts } from '../../features/products/productsSlice';
@@ -16,9 +17,13 @@ export default function InvoiceModal({ isOpen, onClose, invoice = null }) {
   const templates = useSelector(state => state.invoiceTemplates.items);
   const prevInvoiceIdRef = useRef();
 
+  const { currentOrganization } = useOrganization();
+  const isManualNumbering = currentOrganization?.invoice_numbering_mode === 'manual';
+
   const [formData, setFormData] = useState({
     client_id: invoice?.client_id || '',
     invoice_template_id: invoice?.invoice_template_id || '',
+    invoice_number: invoice?.invoice_number || '',
     issue_date: invoice?.issue_date || new Date().toISOString().split('T')[0],
     delivery_date: invoice?.delivery_date || invoice?.issue_date || new Date().toISOString().split('T')[0],
     due_date: invoice?.due_date || new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
@@ -43,6 +48,7 @@ export default function InvoiceModal({ isOpen, onClose, invoice = null }) {
       setFormData({
         client_id: invoice?.client_id || '',
         invoice_template_id: invoice?.invoice_template_id || '',
+        invoice_number: invoice?.invoice_number || '',
         issue_date: invoice?.issue_date || new Date().toISOString().split('T')[0],
         delivery_date: invoice?.delivery_date || invoice?.issue_date || new Date().toISOString().split('T')[0],
         due_date: invoice?.due_date || new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
@@ -151,6 +157,11 @@ export default function InvoiceModal({ isOpen, onClose, invoice = null }) {
     
     if (!formData.client_id) {
       setError(t('invoices.noClient'));
+      return;
+    }
+
+    if (isManualNumbering && !isEditing && !formData.invoice_number?.trim()) {
+      setError(t('invoices.invoiceNumberRequired'));
       return;
     }
 
@@ -284,6 +295,28 @@ export default function InvoiceModal({ isOpen, onClose, invoice = null }) {
                     )}
                   </select>
                 </div>
+
+                {/* Invoice Number (Manual Mode Only) */}
+                {isManualNumbering && !isEditing && (
+                  <div className="md:col-span-2">
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                      {t('invoice.number')} *
+                    </label>
+                    <input
+                      type="text"
+                      name="invoice_number"
+                      value={formData.invoice_number}
+                      onChange={handleChange}
+                      data-cy="invoice-number-input"
+                      required
+                      placeholder={t('invoices.invoiceNumberPlaceholder')}
+                      className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    />
+                    <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
+                      {t('invoices.manualNumberingHint')}
+                    </p>
+                  </div>
+                )}
 
                 {/* Issue Date */}
                 <div>
