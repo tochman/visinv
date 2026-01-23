@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'prop-types';
+import { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Payment } from '../../services/resources';
 
