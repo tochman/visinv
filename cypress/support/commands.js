@@ -13,7 +13,7 @@ const users = {
     user_metadata: { full_name: 'Regular User' },
     profile: { id: 'test-regular-user-id', email: 'user@test.com', is_admin: false, plan_type: 'free', full_name: 'Regular User' }
   },
-  premium_user: {
+  premiumUser: {
     id: 'test-premium-user-id',
     email: 'premium@test.com',
     user_metadata: { full_name: 'Premium User' },
@@ -25,7 +25,7 @@ const users = {
 Cypress.Commands.add('login', (userType = 'user', options = {}) => {
   const userData = users[userType]
   if (userData === undefined) {
-    throw new Error(`Unknown user type: ${userType}. Use: admin, user, premium_user, or visitor`)
+    throw new Error(`Unknown user type: ${userType}. Use: admin, user, premiumUser, or visitor`)
   }
 
   if (!userData) {
@@ -72,6 +72,21 @@ Cypress.Commands.add('login', (userType = 'user', options = {}) => {
     })
   }).as('getProfile')
 
+  // Mock subscriptions for premium access
+  const isPremium = userData.profile.plan_type === 'premium' || userData.profile.is_admin;
+  cy.intercept('GET', '**/rest/v1/subscriptions*', {
+    statusCode: 200,
+    body: isPremium ? {
+      id: 'test-subscription-id',
+      user_id: userData.id,
+      status: 'active',
+      plan_type: 'premium',
+      stripe_subscription_id: 'sub_test',
+      created_at: new Date().toISOString(),
+      updated_at: new Date().toISOString()
+    } : null
+  }).as('getSubscription')
+
   // Mock organization data - can be overridden by passing customOrganization in options
   if (!options.skipOrgMock) {
     const defaultOrganization = {
@@ -114,8 +129,16 @@ Cypress.Commands.add('login', (userType = 'user', options = {}) => {
     }
   })
 
-  // Wait for the app to load - no Redux store needed
+  // Wait for the app to load
   cy.get('[data-cy="main-layout"], [data-cy="dashboard"], nav', { timeout: 10000 }).should('exist')
+
+  // Set premium status in Redux store for premium users
+  if (isPremium) {
+    cy.window().its('store').invoke('dispatch', {
+      type: 'subscriptions/setSubscription',
+      payload: { status: 'active', plan_type: 'premium' }
+    })
+  }
 })
 
 Cypress.Commands.add('logout', () => {

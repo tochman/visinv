@@ -233,8 +233,21 @@ These additions position VisInv as a comprehensive solution for:
   - i18n: Full English/Swedish translations for currency names
   - Tests: 5 Cypress E2E tests for currency selection and display
 
-**US-025: Recurring Invoices**
+**US-025: Recurring Invoices** ✅
 - As a **premium user**, in order to **automate subscription billing**, I would like to **set up recurring invoices with custom intervals**.
+- **Status:** Implemented
+  - Database: `recurring_invoices` table with frequency, start/end dates, max invoices, rows_template (JSONB)
+  - Database: Added `recurring_invoice_id` column to invoices table for tracking generated invoices
+  - Frequencies: Weekly, Bi-weekly, Monthly, Quarterly, Yearly
+  - Statuses: Active, Paused, Completed, Cancelled
+  - Backend: `RecurringInvoice` resource with CRUD, pause/resume, generateInvoice methods
+  - Redux: `recurringInvoicesSlice` with full state management
+  - UI: RecurringInvoiceModal for create/edit with line items
+  - UI: RecurringInvoices page with list, search, filter, actions
+  - Navigation: Added to sidebar (premium feature)
+  - Actions: Generate Now, Pause, Resume, Edit, Delete
+  - i18n: Full English/Swedish translations
+  - Tests: 12 Cypress E2E test scenarios
 
 **US-063: Credit Invoices** ✅
 - As a **user that issues an invoice**, in order to **keep my books in good order**, I would like to **be able to issue CREDIT invoices (either partial or whole) for previously issued invoices**.

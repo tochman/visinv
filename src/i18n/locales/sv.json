@@ -6,6 +6,7 @@
   "nav": {
     "dashboard": "Översikt",
     "invoices": "Fakturor",
+    "recurringInvoices": "Återkommande fakturor",
     "clients": "Kunder",
     "products": "Produkter",
     "templates": "Mallar",
@@ -380,7 +381,11 @@
     "remove": "Ta bort",
     "confirmDelete": "Är du säker på att du vill ta bort detta?",
     "days": "dagar",
-    "preview": "Förhandsgranska"
+    "preview": "Förhandsgranska",
+    "optional": "valfritt",
+    "allStatuses": "Alla statusar",
+    "client": "Kund",
+    "status": "Status"
   },
   "validation": {
     "required": "{{field}} är obligatoriskt"
@@ -415,6 +420,53 @@
       "oct": "Okt",
       "nov": "Nov",
       "dec": "Dec"
+    }
+  },
+  "recurringInvoices": {
+    "title": "Återkommande fakturor",
+    "description": "Ställ in automatiska fakturascheman för prenumerationsfakturering",
+    "create": "Skapa schema",
+    "edit": "Redigera schema",
+    "search": "Sök scheman...",
+    "searchPlaceholder": "Sök på namn eller kund...",
+    "empty": "Inga återkommande scheman ännu",
+    "noSchedules": "Inga återkommande scheman",
+    "noSchedulesDescription": "Skapa ditt första återkommande fakturaschema för att automatisera fakturering.",
+    "noMatchingSchedules": "Inga matchande scheman",
+    "createFirst": "Skapa ditt första schema",
+    "deleteConfirm": "Ta bort återkommande schema?",
+    "confirmDelete": "Ta bort detta schema?",
+    "confirmDeleteDescription": "Detta kommer permanent ta bort detta återkommande fakturaschema. Genererade fakturor påverkas inte.",
+    "scheduleName": "Schemanamn",
+    "scheduleNamePlaceholder": "t.ex. Månadsvis hostingavgift",
+    "nameRequired": "Schemanamn är obligatoriskt",
+    "scheduleDetails": "Schemadetaljer",
+    "frequency": "Frekvens",
+    "startDate": "Startdatum",
+    "endDate": "Slutdatum",
+    "nextInvoice": "Nästa faktura",
+    "lastInvoice": "Senaste faktura",
+    "maxInvoices": "Max antal fakturor",
+    "unlimited": "Obegränsat",
+    "amount": "Belopp",
+    "invoicesGenerated": "fakturor genererade",
+    "generateNow": "Generera faktura nu",
+    "invoiceGenerated": "Faktura genererades framgångsrikt!",
+    "pause": "Pausa schema",
+    "resume": "Återuppta schema",
+    "cancel": "Avbryt schema",
+    "frequencies": {
+      "weekly": "Veckovis",
+      "biweekly": "Varannan vecka",
+      "monthly": "Månadsvis",
+      "quarterly": "Kvartalsvis",
+      "yearly": "Årligen"
+    },
+    "statuses": {
+      "active": "Aktiv",
+      "paused": "Pausad",
+      "completed": "Slutförd",
+      "cancelled": "Avbruten"
     }
   }
 }

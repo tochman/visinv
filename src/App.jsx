@@ -86,6 +86,7 @@ function App() {
             <Route path="/" element={<Dashboard />} />
             <Route path="/invoices" element={<Invoices />} />
             <Route path="/invoices/:id" element={<InvoiceDetail />} />
+            <Route path="/recurring-invoices" element={<RecurringInvoices />} />
             <Route path="/clients" element={<Clients />} />
             <Route path="/products" element={<Products />} />
             <Route path="/templates" element={<Templates />} />

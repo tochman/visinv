@@ -9,7 +9,7 @@ import { appConfig } from '../config/constants';
  */
 export function usePremiumAccess() {
   const { isAdmin, isAuthenticated } = useSelector((state) => state.auth);
-  const { isPremium, subscription, invoiceCount } = useSelector((state) => state.subscriptions);
+  const { isPremium, subscription, invoiceCount, loading } = useSelector((state) => state.subscriptions);
 
   // Admins have full premium access
   const hasPremiumAccess = isAdmin || isPremium;
@@ -27,6 +27,7 @@ export function usePremiumAccess() {
     invoiceCount,
     subscription,
     freeInvoiceLimit: appConfig.freeInvoiceLimit,
+    isLoading: loading,
   };
 }
 

@@ -70,6 +70,7 @@ export default function Sidebar() {
             <Link
               key={item.path}
               to={disabled ? '#' : item.path}
+              data-cy={`sidebar-nav-${item.path.replace('/', '') || 'dashboard'}`}
               className={`flex items-center px-4 py-3 rounded-sm transition-colors ${
                 isActive(item.path)
                   ? 'bg-blue-600 text-white'

@@ -7,6 +7,7 @@ import templatesReducer from '../features/templates/templatesSlice';
 import subscriptionsReducer from '../features/subscriptions/subscriptionsSlice';
 import teamsReducer from '../features/teams/teamsSlice';
 import invoiceTemplatesReducer from '../features/invoiceTemplates/invoiceTemplatesSlice';
+import recurringInvoicesReducer from '../features/recurringInvoices/recurringInvoicesSlice';
 
 export const store = configureStore({
   reducer: {
@@ -18,6 +19,7 @@ export const store = configureStore({
     subscriptions: subscriptionsReducer,
     teams: teamsReducer,
     invoiceTemplates: invoiceTemplatesReducer,
+    recurringInvoices: recurringInvoicesReducer,
   },
   middleware: (getDefaultMiddleware) =>
     getDefaultMiddleware({

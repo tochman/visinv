@@ -6,6 +6,7 @@
   "nav": {
     "dashboard": "Dashboard",
     "invoices": "Invoices",
+    "recurringInvoices": "Recurring Invoices",
     "clients": "Clients",
     "products": "Products",
     "templates": "Templates",
@@ -392,7 +393,11 @@
     "remove": "Remove",
     "confirmDelete": "Are you sure you want to delete this?",
     "days": "days",
-    "preview": "Preview"
+    "preview": "Preview",
+    "optional": "optional",
+    "allStatuses": "All Statuses",
+    "client": "Client",
+    "status": "Status"
   },
   "validation": {
     "required": "{{field}} is required"
@@ -427,6 +432,53 @@
       "oct": "Oct",
       "nov": "Nov",
       "dec": "Dec"
+    }
+  },
+  "recurringInvoices": {
+    "title": "Recurring Invoices",
+    "description": "Set up automatic invoice schedules for subscription billing",
+    "create": "Create Schedule",
+    "edit": "Edit Schedule",
+    "search": "Search schedules...",
+    "searchPlaceholder": "Search by name or client...",
+    "empty": "No recurring schedules yet",
+    "noSchedules": "No Recurring Schedules",
+    "noSchedulesDescription": "Create your first recurring invoice schedule to automate billing.",
+    "noMatchingSchedules": "No Matching Schedules",
+    "createFirst": "Create Your First Schedule",
+    "deleteConfirm": "Delete Recurring Schedule?",
+    "confirmDelete": "Delete this schedule?",
+    "confirmDeleteDescription": "This will permanently delete this recurring invoice schedule. Generated invoices will not be affected.",
+    "scheduleName": "Schedule Name",
+    "scheduleNamePlaceholder": "e.g., Monthly Hosting Fee",
+    "nameRequired": "Schedule name is required",
+    "scheduleDetails": "Schedule Details",
+    "frequency": "Frequency",
+    "startDate": "Start Date",
+    "endDate": "End Date",
+    "nextInvoice": "Next Invoice",
+    "lastInvoice": "Last Invoice",
+    "maxInvoices": "Max Invoices",
+    "unlimited": "Unlimited",
+    "amount": "Amount",
+    "invoicesGenerated": "invoices generated",
+    "generateNow": "Generate Invoice Now",
+    "invoiceGenerated": "Invoice generated successfully!",
+    "pause": "Pause Schedule",
+    "resume": "Resume Schedule",
+    "cancel": "Cancel Schedule",
+    "frequencies": {
+      "weekly": "Weekly",
+      "biweekly": "Every 2 Weeks",
+      "monthly": "Monthly",
+      "quarterly": "Quarterly",
+      "yearly": "Yearly"
+    },
+    "statuses": {
+      "active": "Active",
+      "paused": "Paused",
+      "completed": "Completed",
+      "cancelled": "Cancelled"
     }
   }
 }
