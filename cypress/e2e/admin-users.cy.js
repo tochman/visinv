@@ -45,10 +45,10 @@ describe('Admin Users Management', () => {
 
       // Table rows
       users.forEach(u => {
-        cy.getByCy('user-row-${u.id}').should('exist')
-        cy.getByCy('user-email-${u.id}').should('contain', u.email)
-        cy.getByCy('user-name-${u.id}').should('contain', u.full_name)
-        cy.getByCy('user-plan-${u.id}').should('contain', u.plan_type)
+        cy.getByCy(`user-row-${u.id}`).should('exist')
+        cy.getByCy(`user-email-${u.id}`).should('contain', u.email)
+        cy.getByCy(`user-name-${u.id}`).should('contain', u.full_name)
+        cy.getByCy(`user-plan-${u.id}`).should('contain', u.plan_type)
       })
 
       // Search by name

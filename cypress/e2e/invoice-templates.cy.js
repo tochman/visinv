@@ -157,7 +157,7 @@ describe('Invoice Template Management', () => {
 
   describe('Editing Templates', () => {
     it.skip('is expected to open template in edit mode', () => {
-      cy.getByCy('edit-template-${userTemplate.id}').click()
+      cy.getByCy(`edit-template-${userTemplate.id}`).click()
       
       cy.getByCy('template-modal').should('be.visible')
       cy.getByCy('template-modal-title').should('contain', 'Edit')
@@ -166,7 +166,7 @@ describe('Invoice Template Management', () => {
     })
 
     it.skip('is expected to update template data', () => {
-      cy.getByCy('edit-template-${userTemplate.id}').click()
+      cy.getByCy(`edit-template-${userTemplate.id}`).click()
       
       cy.getByCy('template-name-input').clear().type('Updated Template Name')
       cy.getByCy('template-content-input').clear().type('<html><body>Updated</body></html>')
@@ -194,7 +194,7 @@ describe('Invoice Template Management', () => {
         })
       }).as('cloneTemplate')
 
-      cy.getByCy('clone-template-${systemTemplates[0].id}').click()
+      cy.getByCy(`clone-template-${systemTemplates[0].id}`).click()
       
       // Cypress can't interact with native prompts directly, but we can stub it
       cy.window().then((win) => {
@@ -205,21 +205,21 @@ describe('Invoice Template Management', () => {
 
   describe('Deleting Templates', () => {
     it('is expected to open delete confirmation modal', () => {
-      cy.getByCy('delete-template-${userTemplate.id}').click()
+      cy.getByCy(`delete-template-${userTemplate.id}`).click()
       
       cy.contains('Delete Template?').should('be.visible')
       cy.contains('This action cannot be undone').should('be.visible')
     })
 
     it('is expected to cancel deletion', () => {
-      cy.getByCy('delete-template-${userTemplate.id}').click()
+      cy.getByCy(`delete-template-${userTemplate.id}`).click()
       
       cy.contains('button', 'Cancel').click()
       cy.contains('Delete Template?').should('not.exist')
     })
 
     it('is expected to delete a template', () => {
-      cy.getByCy('delete-template-${userTemplate.id}').click()
+      cy.getByCy(`delete-template-${userTemplate.id}`).click()
       
       cy.getByCy('confirm-delete-template').click()
       
