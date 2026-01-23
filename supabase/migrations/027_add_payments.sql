@@ -50,7 +50,7 @@ CREATE POLICY "Users can view their own payments"
     organization_id IN (
       SELECT organization_id 
       FROM organization_members 
-      WHERE user_id = auth.uid()
+      WHERE organization_members.user_id = auth.uid()
     )
   );
 
@@ -63,7 +63,7 @@ CREATE POLICY "Users can create payments for their invoices"
     organization_id IN (
       SELECT organization_id 
       FROM organization_members 
-      WHERE user_id = auth.uid()
+      WHERE organization_members.user_id = auth.uid()
     )
   );
 
@@ -76,7 +76,7 @@ CREATE POLICY "Users can update their own payments"
     organization_id IN (
       SELECT organization_id 
       FROM organization_members 
-      WHERE user_id = auth.uid()
+      WHERE organization_members.user_id = auth.uid()
     )
   );
 
@@ -89,6 +89,6 @@ CREATE POLICY "Users can delete their own payments"
     organization_id IN (
       SELECT organization_id 
       FROM organization_members 
-      WHERE user_id = auth.uid()
+      WHERE organization_members.user_id = auth.uid()
     )
   );
