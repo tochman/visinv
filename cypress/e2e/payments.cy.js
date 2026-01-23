@@ -18,17 +18,25 @@ describe('Payment Recording (US-020)', () => {
     client: mockClient,
     issue_date: '2026-01-15',
     due_date: '2026-02-15',
-    status: 'sent',
+    status: 'sent',  // Must be sent, not paid
     currency: 'SEK',
     total_amount: '1000.00',
     subtotal: '800.00',
-    vat_amount: '200.00'
+    vat_amount: '200.00',
+    invoice_rows: [],  // Add empty invoice_rows
+    invoice_template: null  // Add empty template
   };
 
   let payments = [];
 
   beforeEach(() => {
     payments = [];
+
+    // Log all Supabase requests to see what's being called
+    cy.intercept('**/rest/v1/**', (req) => {
+      cy.log(`API Call: ${req.method} ${req.url}`);
+      req.continue();
+    });
 
     // Mock clients
     cy.intercept('GET', '**/rest/v1/clients*', {
@@ -42,10 +50,13 @@ describe('Payment Recording (US-020)', () => {
       body: [mockInvoice]
     }).as('getInvoices');
 
-    // Mock single invoice fetch
+    // Mock single invoice fetch - Supabase .single() returns object directly, not array
     cy.intercept('GET', `**/rest/v1/invoices*id=eq.${mockInvoice.id}*`, {
       statusCode: 200,
-      body: [mockInvoice]
+      body: mockInvoice, // Return object directly, not array
+      headers: {
+        'content-type': 'application/json'
+      }
     }).as('getInvoice');
 
     // Mock payments list
@@ -83,10 +94,22 @@ describe('Payment Recording (US-020)', () => {
   });
 
   describe('US-020-A: Single Payment Recording', () => {
-    it('should display Record Payment button on invoice detail page', () => {
+    it.only('should display Record Payment button on invoice detail page', () => {
       cy.visit(`/invoices/${mockInvoice.id}`);
-      cy.wait('@getInvoice');
-      cy.wait('@getPayments');
+      
+      // Wait for intercepts to be called
+      cy.wait('@getInvoice', { timeout: 10000 });
+      cy.wait('@getPayments', { timeout: 10000 });
+      
+      // Debug what we see
+      cy.get('body').invoke('text').then(text => {
+        cy.log('Page text:', text.substring(0, 200));
+      });
+      
+      cy.screenshot('after-api-calls');
+      
+      // Check if invoice number is displayed (means page loaded)
+      cy.contains(mockInvoice.invoice_number).should('be.visible');
       
       cy.get('[data-cy=record-payment-btn]').should('be.visible');
     });
@@ -255,24 +278,9 @@ describe('Payment Recording (US-020)', () => {
   });
 
   describe('US-020-D: Validation', () => {
-    it.only('should show record payment button', () => {
+    it('should prevent payment exceeding remaining balance', () => {
       cy.visit(`/invoices/${mockInvoice.id}`);
       cy.wait(2000);
-      
-      // Check if button exists
-      cy.get('body').then($body => {
-        cy.screenshot('checking-for-button');
-        if ($body.find('[data-cy=record-payment-btn]').length > 0) {
-          cy.log('Button found!');
-        } else {
-          cy.log('Button NOT found');
-        }
-      });
-    });
-
-    it('should load invoice detail page', () => {
-      cy.visit(`/invoices/${mockInvoice.id}`);
-      cy.wait('@getInvoice');
       
       cy.get('[data-cy=record-payment-btn]').click();
       
