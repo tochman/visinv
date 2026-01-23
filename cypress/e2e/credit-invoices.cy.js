@@ -34,66 +34,63 @@ describe('Credit Invoices (US-063)', () => {
     cy.visit('/dashboard')
   });
 
-  it('should show invoice type selector in new invoice form', () => {
+  it('is expected to show invoice type selector in new invoice form', () => {
+    // Arrange
     cy.get('[data-cy="nav-invoices"]').click();
     cy.url().should('include', '/invoices');
     
+    // Act
     cy.get('[data-cy="new-invoice-button"]').click();
     
-    // Verify invoice type selector is visible
+    // Assert
     cy.get('[data-cy="invoice-type-select"]').should('be.visible');
-    cy.get('[data-cy="invoice-type-select"]').should('have.value', 'DEBET'); // Default
+    cy.get('[data-cy="invoice-type-select"]').should('have.value', 'DEBET');
   });
 
-  it('should show original invoice selector when CREDIT type is selected', () => {
+  it('is expected to show original invoice selector when CREDIT type is selected', () => {
+    // Arrange
     cy.get('[data-cy="nav-invoices"]').click();
     cy.get('[data-cy="new-invoice-button"]').click();
     
-    // Select CREDIT type
+    // Act
     cy.get('[data-cy="invoice-type-select"]').select('CREDIT');
     
-    // Verify original invoice selector appears
-    cy.get('[data-cy="credited-invoice-select"]').should('not.exist'); // Client not selected yet
+    // Assert
+    cy.get('[data-cy="credited-invoice-select"]').should('not.exist');
     
-    // Select client first
+    // Act - Select client
     cy.get('[data-cy="client-select"]').select(1);
     
-    // Now credited invoice selector should show options
+    // Assert
     cy.get('[data-cy="credited-invoice-select"]').should('be.visible');
   });
 
-  it('should create a standard DEBET invoice', () => {
+  it('is expected to create a standard DEBET invoice', () => {
+    // Arrange
     cy.get('[data-cy="nav-invoices"]').click();
     cy.get('[data-cy="new-invoice-button"]').click();
-    
-    // Invoice type defaults to DEBET
     cy.get('[data-cy="invoice-type-select"]').should('have.value', 'DEBET');
     
-    // Fill form
+    // Act
     cy.get('[data-cy="client-select"]').select(1);
     cy.get('[data-cy="issue-date-input"]').type('2024-01-15');
     cy.get('[data-cy="delivery-date-input"]').clear().type('2024-01-15');
     cy.get('[data-cy="due-date-input"]').clear().type('2024-02-15');
-    
-    // Add line item
     cy.get('[data-cy="add-row-button"]').click();
     cy.get('[data-cy="row-description-0"]').type('Standard Service');
     cy.get('[data-cy="row-quantity-0"]').clear().type('1');
     cy.get('[data-cy="row-unit-price-0"]').clear().type('1000');
-    
-    // Save
     cy.get('[data-cy="save-invoice-button"]').click();
     
-    // Verify invoice was created
+    // Assert
     cy.wait('@createInvoice')
     cy.contains('Standard Service', { timeout: 5000 }).should('be.visible');
   });
 
-  it('should create a CREDIT invoice linked to original invoice', () => {
-    // First, create a DEBET invoice to credit
+  it('is expected to create a CREDIT invoice linked to original invoice', () => {
+    // Arrange - Create a DEBET invoice to credit
     cy.get('[data-cy="nav-invoices"]').click();
     cy.get('[data-cy="new-invoice-button"]').click();
-    
     cy.get('[data-cy="client-select"]').select(1);
     cy.get('[data-cy="issue-date-input"]').type('2024-01-10');
     cy.get('[data-cy="delivery-date-input"]').clear().type('2024-01-10');
@@ -105,44 +102,30 @@ describe('Credit Invoices (US-063)', () => {
     cy.get('[data-cy="save-invoice-button"]').click();
     cy.wait('@createInvoice')
     
-    // Now create credit invoice
+    // Act - Create credit invoice
     cy.get('[data-cy="new-invoice-button"]').click();
-    
-    // Select CREDIT type
     cy.get('[data-cy="invoice-type-select"]').select('CREDIT');
-    
-    // Select client (should match original)
     cy.get('[data-cy="client-select"]').select(1);
-    
-    // Select original invoice to credit
     cy.get('[data-cy="credited-invoice-select"]').should('be.visible');
     cy.get('[data-cy="credited-invoice-select"]').select(1);
-    
-    // Fill dates
     cy.get('[data-cy="issue-date-input"]').type('2024-01-20');
     cy.get('[data-cy="delivery-date-input"]').clear().type('2024-01-20');
     cy.get('[data-cy="due-date-input"]').clear().type('2024-02-20');
-    
-    // Add credit line (negative quantity)
     cy.get('[data-cy="add-row-button"]').click();
     cy.get('[data-cy="row-description-0"]').type('Credit for service');
-    cy.get('[data-cy="row-quantity-0"]').clear().type('-2'); // Negative for credit
+    cy.get('[data-cy="row-quantity-0"]').clear().type('-2');
     cy.get('[data-cy="row-unit-price-0"]').clear().type('500');
-    
-    // Save
     cy.get('[data-cy="save-invoice-button"]').click();
-    cy.wait('@createInvoice')
     
-    // Verify credit invoice was created
+    // Assert
+    cy.wait('@createInvoice')
     cy.contains('Credit for service', { timeout: 5000 }).should('be.visible');
   });
 
-  it('should display credit badge for CREDIT invoices in list', () => {
-    // Create a credit invoice first
+  it('is expected to display credit badge for CREDIT invoices in list', () => {
+    // Arrange - Create DEBET invoice
     cy.get('[data-cy="nav-invoices"]').click();
     cy.get('[data-cy="new-invoice-button"]').click();
-    
-    // Create DEBET invoice
     cy.get('[data-cy="client-select"]').select(1);
     cy.get('[data-cy="issue-date-input"]').type('2024-01-05');
     cy.get('[data-cy="delivery-date-input"]').clear().type('2024-01-05');
@@ -154,7 +137,7 @@ describe('Credit Invoices (US-063)', () => {
     cy.get('[data-cy="save-invoice-button"]').click();
     cy.wait('@createInvoice')
     
-    // Create CREDIT invoice
+    // Act - Create CREDIT invoice
     cy.get('[data-cy="new-invoice-button"]').click();
     cy.get('[data-cy="invoice-type-select"]').select('CREDIT');
     cy.get('[data-cy="client-select"]').select(1);
@@ -169,53 +152,48 @@ describe('Credit Invoices (US-063)', () => {
     cy.get('[data-cy="save-invoice-button"]').click();
     cy.wait('@createInvoice')
     
-    // Verify credit badge exists in invoice list
-    // The credit invoice should have a credit note badge
+    // Assert
     cy.get('[data-cy^="invoice-type-"]').should('exist');
   });
 
-  it('should require client selection before showing credited invoice options', () => {
+  it('is expected to require client selection before showing credited invoice options', () => {
+    // Arrange
     cy.get('[data-cy="nav-invoices"]').click();
     cy.get('[data-cy="new-invoice-button"]').click();
     
-    // Select CREDIT type without selecting client
+    // Act
     cy.get('[data-cy="invoice-type-select"]').select('CREDIT');
     
-    // Credited invoice dropdown should not show options (no client selected)
+    // Assert
     cy.get('[data-cy="credited-invoice-select"]').should('not.exist');
     
-    // Select client
+    // Act - Select client
     cy.get('[data-cy="client-select"]').select(1);
     
-    // Now credited invoice selector should appear
+    // Assert
     cy.get('[data-cy="credited-invoice-select"]').should('be.visible');
   });
 
-  it('should handle partial credit (different line items)', () => {
-    // Create original invoice with multiple line items
+  it('is expected to handle partial credit (different line items)', () => {
+    // Arrange - Create original invoice with multiple line items
     cy.get('[data-cy="nav-invoices"]').click();
     cy.get('[data-cy="new-invoice-button"]').click();
-    
     cy.get('[data-cy="client-select"]').select(1);
     cy.get('[data-cy="issue-date-input"]').type('2024-01-01');
     cy.get('[data-cy="delivery-date-input"]').clear().type('2024-01-01');
     cy.get('[data-cy="due-date-input"]').clear().type('2024-02-01');
-    
-    // Add two line items
     cy.get('[data-cy="add-row-button"]').click();
     cy.get('[data-cy="row-description-0"]').type('Item 1');
     cy.get('[data-cy="row-quantity-0"]').clear().type('2');
     cy.get('[data-cy="row-unit-price-0"]').clear().type('100');
-    
     cy.get('[data-cy="add-row-button"]').click();
     cy.get('[data-cy="row-description-1"]').type('Item 2');
     cy.get('[data-cy="row-quantity-1"]').clear().type('1');
     cy.get('[data-cy="row-unit-price-1"]').clear().type('200');
-    
     cy.get('[data-cy="save-invoice-button"]').click();
     cy.wait('@createInvoice')
     
-    // Create partial credit (only one item)
+    // Act - Create partial credit (only one item)
     cy.get('[data-cy="new-invoice-button"]').click();
     cy.get('[data-cy="invoice-type-select"]').select('CREDIT');
     cy.get('[data-cy="client-select"]').select(1);
@@ -223,17 +201,14 @@ describe('Credit Invoices (US-063)', () => {
     cy.get('[data-cy="issue-date-input"]').type('2024-01-02');
     cy.get('[data-cy="delivery-date-input"]').clear().type('2024-01-02');
     cy.get('[data-cy="due-date-input"]').clear().type('2024-02-02');
-    
-    // Credit only item 1 (partial quantity)
     cy.get('[data-cy="add-row-button"]').click();
     cy.get('[data-cy="row-description-0"]').type('Partial credit for Item 1');
-    cy.get('[data-cy="row-quantity-0"]').clear().type('-1'); // Only credit 1 of 2
+    cy.get('[data-cy="row-quantity-0"]').clear().type('-1');
     cy.get('[data-cy="row-unit-price-0"]').clear().type('100');
-    
     cy.get('[data-cy="save-invoice-button"]').click();
-    cy.wait('@createInvoice')
     
-    // Verify partial credit exists
+    // Assert
+    cy.wait('@createInvoice')
     cy.contains('Partial credit for Item 1', { timeout: 5000 }).should('be.visible');
   });
 });
