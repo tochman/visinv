@@ -1,6 +1,9 @@
 describe('Manual Invoice Numbering (US-064)', () => {
   beforeEach(() => {
-    // Mock required API endpoints
+    // Login first to establish session
+    cy.login('user')
+    
+    // Then set up test-specific intercepts
     cy.intercept('GET', '**/rest/v1/clients*', {
       statusCode: 200,
       body: [
@@ -31,8 +34,6 @@ describe('Manual Invoice Numbering (US-064)', () => {
       })
     }).as('updateOrganization')
 
-    // Use mocked authentication instead of real credentials
-    cy.login('user')
     cy.visit('/dashboard')
   });
 

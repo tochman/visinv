@@ -3,7 +3,10 @@
 describe('Organization Management', () => {
   describe('Organization Setup Wizard', () => {
     beforeEach(() => {
-      // Mock empty organization_members to trigger wizard
+      // Login with no organization first
+      cy.login('admin', { skipOrgMock: true })
+      
+      // Then set up test-specific intercepts
       cy.intercept('GET', '**/rest/v1/organization_members?*', {
         statusCode: 200,
         body: []
@@ -31,9 +34,6 @@ describe('Organization Management', () => {
           }]
         })
       }).as('createOrgMember')
-
-      // Login with no organization
-      cy.login('admin', { skipOrgMock: true })
       
       // Visit dashboard where wizard should appear
       cy.visit('/dashboard')

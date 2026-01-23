@@ -1,6 +1,9 @@
 describe('Credit Invoices (US-063)', () => {
   beforeEach(() => {
-    // Mock required API endpoints
+    // Login first to establish session
+    cy.login('user')
+    
+    // Then set up test-specific intercepts
     cy.intercept('GET', '**/rest/v1/clients*', {
       statusCode: 200,
       body: [
@@ -29,8 +32,6 @@ describe('Credit Invoices (US-063)', () => {
       body: []
     }).as('createInvoiceRows')
 
-    // Use mocked authentication instead of real credentials
-    cy.login('user')
     cy.visit('/dashboard')
   });
 
