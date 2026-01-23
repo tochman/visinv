@@ -2,8 +2,11 @@
 -- Enables tracking of payments received against invoices
 -- Supports partial payments and payment history
 
+-- Drop existing table if it exists (in case of failed previous migration)
+DROP TABLE IF EXISTS payments CASCADE;
+
 -- Create payments table
-CREATE TABLE IF NOT EXISTS payments (
+CREATE TABLE payments (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   invoice_id UUID NOT NULL REFERENCES invoices(id) ON DELETE CASCADE,
   user_id UUID NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
@@ -45,9 +48,9 @@ ALTER TABLE payments ENABLE ROW LEVEL SECURITY;
 CREATE POLICY "Users can view their own payments"
   ON payments FOR SELECT
   USING (
-    user_id = auth.uid()
+    payments.user_id = auth.uid()
     OR
-    organization_id IN (
+    payments.organization_id IN (
       SELECT organization_id 
       FROM organization_members 
       WHERE organization_members.user_id = auth.uid()
@@ -58,9 +61,9 @@ CREATE POLICY "Users can view their own payments"
 CREATE POLICY "Users can create payments for their invoices"
   ON payments FOR INSERT
   WITH CHECK (
-    user_id = auth.uid()
+    payments.user_id = auth.uid()
     AND
-    organization_id IN (
+    payments.organization_id IN (
       SELECT organization_id 
       FROM organization_members 
       WHERE organization_members.user_id = auth.uid()
@@ -71,9 +74,9 @@ CREATE POLICY "Users can create payments for their invoices"
 CREATE POLICY "Users can update their own payments"
   ON payments FOR UPDATE
   USING (
-    user_id = auth.uid()
+    payments.user_id = auth.uid()
     OR
-    organization_id IN (
+    payments.organization_id IN (
       SELECT organization_id 
       FROM organization_members 
       WHERE organization_members.user_id = auth.uid()
@@ -84,9 +87,9 @@ CREATE POLICY "Users can update their own payments"
 CREATE POLICY "Users can delete their own payments"
   ON payments FOR DELETE
   USING (
-    user_id = auth.uid()
+    payments.user_id = auth.uid()
     OR
-    organization_id IN (
+    payments.organization_id IN (
       SELECT organization_id 
       FROM organization_members 
       WHERE organization_members.user_id = auth.uid()
