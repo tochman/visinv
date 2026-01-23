@@ -241,6 +241,11 @@
     "bankBic": "BIC/SWIFT",
     "fSkattApproved": "F-skatt Approved",
     "invoiceNumberPrefix": "Invoice Number Prefix",
+    "invoiceNumberingMode": "Invoice Numbering Mode",
+    "numberingModes": {
+      "automatic": "Automatic (System Generated)",
+      "manual": "Manual (User Entered)"
+    },
     "nextInvoiceNumber": "Next Invoice Number",
     "defaultPaymentTerms": "Default Payment Terms (days)",
     "defaultCurrency": "Default Currency",

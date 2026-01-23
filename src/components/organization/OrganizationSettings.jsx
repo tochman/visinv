@@ -429,6 +429,26 @@ export default function OrganizationSettings() {
 
               <div>
                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                  {t('organization.invoiceNumberingMode')}
+                </label>
+                {isEditing ? (
+                  <select
+                    {...register('invoice_numbering_mode')}
+                    className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white"
+                    data-cy="invoice-numbering-mode-select"
+                  >
+                    <option value="automatic">{t('organization.numberingModes.automatic')}</option>
+                    <option value="manual">{t('organization.numberingModes.manual')}</option>
+                  </select>
+                ) : (
+                  <div className="text-gray-900 dark:text-white py-2">
+                    {t(`organization.numberingModes.${currentOrganization.invoice_numbering_mode || 'automatic'}`)}
+                  </div>
+                )}
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                   {t('organization.defaultPaymentTerms')}
                 </label>
                 {isEditing ? (

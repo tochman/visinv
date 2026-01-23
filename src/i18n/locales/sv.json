@@ -229,6 +229,11 @@
     "bankBic": "BIC/SWIFT",
     "fSkattApproved": "Godkänd för F-skatt",
     "invoiceNumberPrefix": "Fakturanummerprefix",
+    "invoiceNumberingMode": "Fakturanumreringssystem",
+    "numberingModes": {
+      "automatic": "Automatisk (Systemgenererad)",
+      "manual": "Manuell (Användarangiven)"
+    },
     "nextInvoiceNumber": "Nästa fakturanummer",
     "defaultPaymentTerms": "Standard betalningsvillkor (dagar)",
     "defaultCurrency": "Standardvaluta",
