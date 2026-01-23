@@ -78,22 +78,22 @@ describe('Organization Member Invitations', () => {
       setupMemberIntercepts()
       
       cy.visit('/settings')
-      cy.get('[data-cy="tab-members"]', { timeout: 5000 }).should('be.visible')
+      cy.getByCy('tab-members', { timeout: 5000 }).should('be.visible')
     })
 
     it('is expected to display tab navigation', () => {
-      cy.get('[data-cy="tab-settings"]').should('be.visible')
-      cy.get('[data-cy="tab-members"]').should('be.visible')
+      cy.getByCy('tab-settings').should('be.visible')
+      cy.getByCy('tab-members').should('be.visible')
     })
 
     it('is expected to switch to members tab', () => {
-      cy.get('[data-cy="tab-members"]').click()
+      cy.getByCy('tab-members').click()
       cy.wait('@getMembers')
-      cy.get('[data-cy="member-row"]').should('exist')
+      cy.getByCy('member-row').should('exist')
     })
 
     it('is expected to display members list with names and roles', () => {
-      cy.get('[data-cy="tab-members"]').click()
+      cy.getByCy('tab-members').click()
       cy.wait('@getMembers')
       
       cy.contains('Anna Ägare').should('be.visible')
@@ -101,10 +101,10 @@ describe('Organization Member Invitations', () => {
     })
 
     it('is expected to show invite button for owners', () => {
-      cy.get('[data-cy="tab-members"]').click()
+      cy.getByCy('tab-members').click()
       cy.wait('@getMembers')
       
-      cy.get('[data-cy="invite-member-button"]').should('be.visible')
+      cy.getByCy('invite-member-button').should('be.visible')
     })
   })
 
@@ -117,39 +117,39 @@ describe('Organization Member Invitations', () => {
       setupMemberIntercepts()
       
       cy.visit('/settings')
-      cy.get('[data-cy="tab-members"]').click()
+      cy.getByCy('tab-members').click()
       cy.wait('@getMembers')
     })
 
     it('is expected to open invite modal when clicking invite button', () => {
-      cy.get('[data-cy="invite-member-button"]').click()
+      cy.getByCy('invite-member-button').click()
       
-      cy.get('[data-cy="invite-email-input"]').should('exist')
-      cy.get('[data-cy="invite-role-select"]').should('exist')
-      cy.get('[data-cy="send-invitation-button"]').should('exist')
+      cy.getByCy('invite-email-input').should('exist')
+      cy.getByCy('invite-role-select').should('exist')
+      cy.getByCy('send-invitation-button').should('exist')
     })
 
     it('is expected to have associate as default role', () => {
-      cy.get('[data-cy="invite-member-button"]').click()
+      cy.getByCy('invite-member-button').click()
       
-      cy.get('[data-cy="invite-role-select"]').should('have.value', 'associate')
+      cy.getByCy('invite-role-select').should('have.value', 'associate')
     })
 
     it('is expected to allow selecting owner role', () => {
-      cy.get('[data-cy="invite-member-button"]').click()
+      cy.getByCy('invite-member-button').click()
       
-      cy.get('[data-cy="invite-role-select"]').select('owner', { force: true })
-      cy.get('[data-cy="invite-role-select"]').should('have.value', 'owner')
+      cy.getByCy('invite-role-select').select('owner', { force: true })
+      cy.getByCy('invite-role-select').should('have.value', 'owner')
     })
 
     it('is expected to close modal when clicking cancel', () => {
-      cy.get('[data-cy="invite-member-button"]').click()
-      cy.get('[data-cy="invite-email-input"]').should('exist')
+      cy.getByCy('invite-member-button').click()
+      cy.getByCy('invite-email-input').should('exist')
       
       // Click outside or cancel (the overlay)
       cy.get('.fixed.inset-0.transition-opacity').click({ force: true })
       
-      cy.get('[data-cy="invite-email-input"]').should('not.exist')
+      cy.getByCy('invite-email-input').should('not.exist')
     })
   })
 
@@ -177,14 +177,14 @@ describe('Organization Member Invitations', () => {
       }).as('createInvitation')
       
       cy.visit('/settings')
-      cy.get('[data-cy="tab-members"]').click()
+      cy.getByCy('tab-members').click()
       cy.wait('@getMembers')
     })
 
     it('is expected to send invitation with associate role', () => {
-      cy.get('[data-cy="invite-member-button"]').click()
-      cy.get('[data-cy="invite-email-input"]').type('newuser@example.com', { force: true })
-      cy.get('[data-cy="send-invitation-button"]').click({ force: true })
+      cy.getByCy('invite-member-button').click()
+      cy.getByCy('invite-email-input').type('newuser@example.com', { force: true })
+      cy.getByCy('send-invitation-button').click({ force: true })
 
       cy.wait('@createInvitation').then((interception) => {
         expect(interception.request.body[0]).to.have.property('email', 'newuser@example.com')
@@ -193,10 +193,10 @@ describe('Organization Member Invitations', () => {
     })
 
     it('is expected to send invitation with owner role', () => {
-      cy.get('[data-cy="invite-member-button"]').click()
-      cy.get('[data-cy="invite-email-input"]').type('admin@example.com')
-      cy.get('[data-cy="invite-role-select"]').select('owner')
-      cy.get('[data-cy="send-invitation-button"]').click()
+      cy.getByCy('invite-member-button').click()
+      cy.getByCy('invite-email-input').type('admin@example.com')
+      cy.getByCy('invite-role-select').select('owner')
+      cy.getByCy('send-invitation-button').click()
 
       cy.wait('@createInvitation').then((interception) => {
         expect(interception.request.body[0]).to.have.property('email', 'admin@example.com')
@@ -205,21 +205,21 @@ describe('Organization Member Invitations', () => {
     })
 
     it('is expected to show success message after sending', () => {
-      cy.get('[data-cy="invite-member-button"]').click()
-      cy.get('[data-cy="invite-email-input"]').type('newuser@example.com')
-      cy.get('[data-cy="send-invitation-button"]').click()
+      cy.getByCy('invite-member-button').click()
+      cy.getByCy('invite-email-input').type('newuser@example.com')
+      cy.getByCy('send-invitation-button').click()
 
       cy.wait('@createInvitation')
-      cy.get('[data-cy="success-message"]').should('be.visible')
+      cy.getByCy('success-message').should('be.visible')
     })
 
     it('is expected to close modal after sending', () => {
-      cy.get('[data-cy="invite-member-button"]').click()
-      cy.get('[data-cy="invite-email-input"]').type('newuser@example.com')
-      cy.get('[data-cy="send-invitation-button"]').click()
+      cy.getByCy('invite-member-button').click()
+      cy.getByCy('invite-email-input').type('newuser@example.com')
+      cy.getByCy('send-invitation-button').click()
 
       cy.wait('@createInvitation')
-      cy.get('[data-cy="invite-email-input"]').should('not.exist')
+      cy.getByCy('invite-email-input').should('not.exist')
     })
   })
 
@@ -242,17 +242,17 @@ describe('Organization Member Invitations', () => {
       setupMemberIntercepts(mockMembers, [mockPendingInvitation])
       
       cy.visit('/settings')
-      cy.get('[data-cy="tab-members"]').click()
+      cy.getByCy('tab-members').click()
       cy.wait(['@getMembers', '@getInvitations'])
     })
 
     it('is expected to display pending invitations section', () => {
-      cy.get('[data-cy="invitation-row"]').should('be.visible')
+      cy.getByCy('invitation-row').should('be.visible')
       cy.contains('pending@example.com').should('be.visible')
     })
 
     it('is expected to show cancel button for pending invitations', () => {
-      cy.get('[data-cy="cancel-invitation-button"]').should('be.visible')
+      cy.getByCy('cancel-invitation-button').should('be.visible')
     })
 
     it('is expected to cancel invitation when clicking cancel', () => {
@@ -261,7 +261,7 @@ describe('Organization Member Invitations', () => {
         body: null
       }).as('deleteInvitation')
 
-      cy.get('[data-cy="cancel-invitation-button"]').click()
+      cy.getByCy('cancel-invitation-button').click()
       
       cy.wait('@deleteInvitation')
     })
@@ -277,20 +277,20 @@ describe('Organization Member Invitations', () => {
       setupMemberIntercepts()
       
       cy.visit('/settings')
-      cy.get('[data-cy="tab-members"]').click()
+      cy.getByCy('tab-members').click()
       cy.wait('@getMembers')
     })
 
     it('is expected to NOT show invite button for associates', () => {
-      cy.get('[data-cy="invite-member-button"]').should('not.exist')
+      cy.getByCy('invite-member-button').should('not.exist')
     })
 
     it('is expected to NOT show role dropdown for associates', () => {
-      cy.get('[data-cy="role-select"]').should('not.exist')
+      cy.getByCy('role-select').should('not.exist')
     })
 
     it('is expected to NOT show remove button for associates', () => {
-      cy.get('[data-cy="remove-member-button"]').should('not.exist')
+      cy.getByCy('remove-member-button').should('not.exist')
     })
   })
 
@@ -377,7 +377,7 @@ describe('Organization Member Invitations', () => {
 
       it('is expected to display the invited role badge', () => {
         cy.wait('@getInvitation')
-        cy.get('[data-cy="invitation-role"]').should('be.visible')
+        cy.getByCy('invitation-role').should('be.visible')
       })
     })
 
@@ -405,7 +405,7 @@ describe('Organization Member Invitations', () => {
 
       it('is expected to display owner role badge with purple styling', () => {
         cy.wait('@getInvitation')
-        cy.get('[data-cy="invitation-role"]')
+        cy.getByCy('invitation-role')
           .should('be.visible')
           .and('have.class', 'bg-purple-100')
       })
@@ -438,12 +438,12 @@ describe('Organization Member Invitations', () => {
 
       it('is expected to show accept button for authenticated user', () => {
         cy.wait('@getInvitation')
-        cy.get('[data-cy="accept-invitation-button"]').should('be.visible')
+        cy.getByCy('accept-invitation-button').should('be.visible')
       })
 
       it('is expected to NOT show email mismatch warning', () => {
         cy.wait('@getInvitation')
-        cy.get('[data-cy="email-mismatch-warning"]').should('not.exist')
+        cy.getByCy('email-mismatch-warning').should('not.exist')
       })
     })
 
@@ -464,13 +464,13 @@ describe('Organization Member Invitations', () => {
 
       it('is expected to show email mismatch warning', () => {
         cy.wait('@getInvitation')
-        cy.get('[data-cy="email-mismatch-warning"]').should('be.visible')
+        cy.getByCy('email-mismatch-warning').should('be.visible')
         cy.contains(invitedEmail).should('be.visible')
       })
 
       it('is expected to disable accept button when emails do not match', () => {
         cy.wait('@getInvitation')
-        cy.get('[data-cy="accept-invitation-button"]').should('be.disabled')
+        cy.getByCy('accept-invitation-button').should('be.disabled')
       })
     })
 
@@ -530,16 +530,16 @@ describe('Organization Member Invitations', () => {
 
       it('is expected to show success state after accepting invitation', () => {
         cy.wait('@getInvitation')
-        cy.get('[data-cy="accept-invitation-button"]').click()
+        cy.getByCy('accept-invitation-button').click()
 
         cy.wait('@addMember')
-        cy.get('[data-cy="invitation-accepted"]').should('be.visible')
+        cy.getByCy('invitation-accepted').should('be.visible')
         cy.contains('Welcome').should('be.visible')
       })
 
       it('is expected to delete invitation after successful acceptance', () => {
         cy.wait('@getInvitation')
-        cy.get('[data-cy="accept-invitation-button"]').click()
+        cy.getByCy('accept-invitation-button').click()
 
         cy.wait('@addMember')
         cy.wait('@deleteInvitation')
@@ -565,8 +565,8 @@ describe('Organization Member Invitations', () => {
           })
         }).as('addMemberDelayed')
 
-        cy.get('[data-cy="accept-invitation-button"]').click()
-        cy.get('[data-cy="accept-invitation-button"]').should('be.disabled')
+        cy.getByCy('accept-invitation-button').click()
+        cy.getByCy('accept-invitation-button').should('be.disabled')
       })
     })
 
@@ -607,18 +607,18 @@ describe('Organization Member Invitations', () => {
 
       it('is expected to display error message when acceptance fails', () => {
         cy.wait('@getInvitation')
-        cy.get('[data-cy="accept-invitation-button"]').click()
+        cy.getByCy('accept-invitation-button').click()
 
         cy.wait('@addMemberError')
-        cy.get('[data-cy="error-message"]').should('be.visible')
+        cy.getByCy('error-message').should('be.visible')
       })
 
       it('is expected to re-enable accept button after error', () => {
         cy.wait('@getInvitation')
-        cy.get('[data-cy="accept-invitation-button"]').click()
+        cy.getByCy('accept-invitation-button').click()
 
         cy.wait('@addMemberError')
-        cy.get('[data-cy="accept-invitation-button"]').should('not.be.disabled')
+        cy.getByCy('accept-invitation-button').should('not.be.disabled')
       })
     })
 
@@ -647,7 +647,7 @@ describe('Organization Member Invitations', () => {
         })
         cy.wait('@getInvalidInvitation')
 
-        cy.get('[data-cy="invitation-error"]').should('be.visible')
+        cy.getByCy('invitation-error').should('be.visible')
       })
 
       it('is expected to show error for expired invitation', () => {
@@ -670,7 +670,7 @@ describe('Organization Member Invitations', () => {
         })
         cy.wait('@getExpiredInvitation')
 
-        cy.get('[data-cy="invitation-error"]').should('be.visible')
+        cy.getByCy('invitation-error').should('be.visible')
       })
 
       it('is expected to show back link on error page', () => {
@@ -686,7 +686,7 @@ describe('Organization Member Invitations', () => {
         })
         cy.wait('@getInvalidInvitation')
 
-        cy.get('[data-cy="invitation-error"]').find('a[href="/"]').should('be.visible')
+        cy.getByCy('invitation-error').find('a[href="/"]').should('be.visible')
       })
     })
 
@@ -703,7 +703,7 @@ describe('Organization Member Invitations', () => {
         }).as('getInvitationDelayed')
 
         cy.visit(`/invite/${validToken}`)
-        cy.get('[data-cy="loading-indicator"]').should('be.visible')
+        cy.getByCy('loading-indicator').should('be.visible')
       })
     })
   })

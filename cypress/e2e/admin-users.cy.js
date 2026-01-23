@@ -41,27 +41,27 @@ describe('Admin Users Management', () => {
       setupAdminIntercepts()
       cy.visit('/admin/users')
       cy.wait('@getUsers')
-      cy.get('[data-cy="admin-users-page"]').should('be.visible')
+      cy.getByCy('admin-users-page').should('be.visible')
 
       // Table rows
       users.forEach(u => {
-        cy.get(`[data-cy="user-row-${u.id}"]`).should('exist')
-        cy.get(`[data-cy="user-email-${u.id}"]`).should('contain', u.email)
-        cy.get(`[data-cy="user-name-${u.id}"]`).should('contain', u.full_name)
-        cy.get(`[data-cy="user-plan-${u.id}"]`).should('contain', u.plan_type)
+        cy.getByCy(`user-row-${u.id}`).should('exist')
+        cy.getByCy(`user-email-${u.id}`).should('contain', u.email)
+        cy.getByCy(`user-name-${u.id}`).should('contain', u.full_name)
+        cy.getByCy(`user-plan-${u.id}`).should('contain', u.plan_type)
       })
 
       // Search by name
-      cy.get('[data-cy="search-users"]').type('Bob')
-      cy.get('[data-cy="user-row-u-2"]').should('exist')
-      cy.get('[data-cy="user-row-u-1"]').should('not.exist')
-      cy.get('[data-cy="user-row-u-3"]').should('not.exist')
+      cy.getByCy('search-users').type('Bob')
+      cy.getByCy('user-row-u-2').should('exist')
+      cy.getByCy('user-row-u-1').should('not.exist')
+      cy.getByCy('user-row-u-3').should('not.exist')
 
       // Clear and search by email
-      cy.get('[data-cy="search-users"]').clear().type('charlie@')
-      cy.get('[data-cy="user-row-u-3"]').should('exist')
-      cy.get('[data-cy="user-row-u-1"]').should('not.exist')
-      cy.get('[data-cy="user-row-u-2"]').should('not.exist')
+      cy.getByCy('search-users').clear().type('charlie@')
+      cy.getByCy('user-row-u-3').should('exist')
+      cy.getByCy('user-row-u-1').should('not.exist')
+      cy.getByCy('user-row-u-2').should('not.exist')
     })
   })
 
@@ -70,16 +70,16 @@ describe('Admin Users Management', () => {
       setupAdminIntercepts()
       cy.visit('/admin/users')
       cy.wait('@getUsers')
-      cy.get('[data-cy="admin-users-page"]').should('be.visible')
+      cy.getByCy('admin-users-page').should('be.visible')
 
       // Open edit modal for Alice
-      cy.get('[data-cy="edit-user-u-1"]').click()
-      cy.get('[data-cy="edit-user-modal"]').should('be.visible')
+      cy.getByCy('edit-user-u-1').click()
+      cy.getByCy('edit-user-modal').should('be.visible')
 
       // Update fields
-      cy.get('[data-cy="edit-full-name"]').clear().type('Alice A.')
-      cy.get('[data-cy="edit-email"]').clear().type('alice+new@example.com')
-      cy.get('[data-cy="edit-plan"]').select('premium')
+      cy.getByCy('edit-full-name').clear().type('Alice A.')
+      cy.getByCy('edit-email').clear().type('alice+new@example.com')
+      cy.getByCy('edit-plan').select('premium')
 
       // Mock profile update request
       cy.intercept('PATCH', '**/rest/v1/profiles*', (req) => {
@@ -114,14 +114,14 @@ describe('Admin Users Management', () => {
         })
       }).as('getUpdatedSubscription')
 
-      cy.get('[data-cy="save-edit"]').click()
+      cy.getByCy('save-edit').click()
       cy.wait('@updateProfile')
       cy.wait('@updateSubscription')
       cy.wait('@getUpdatedUser')
       cy.wait('@getUpdatedSubscription')
 
       // Verify row updated
-      cy.get('[data-cy="user-row-u-1"]').within(() => {
+      cy.getByCy('user-row-u-1').within(() => {
         cy.get('[data-cy^="user-email-"]').should('contain', 'alice+new@example.com')
         cy.get('[data-cy^="user-name-"]').should('contain', 'Alice A.')
         cy.get('[data-cy^="user-plan-"]').should('contain', 'premium')

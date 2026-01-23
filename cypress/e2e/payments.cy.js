@@ -135,7 +135,7 @@ describe('Payment Recording (US-020)', () => {
       cy.contains(mockInvoice.invoice_number).should('be.visible');
       
       // Check Record Payment button is visible for unpaid invoice
-      cy.get('[data-cy=record-payment-btn]').should('be.visible');
+      cy.getByCy('record-payment-btn').should('be.visible');
     });
 
     it('is expected to open payment modal when Record Payment is clicked', () => {
@@ -143,8 +143,8 @@ describe('Payment Recording (US-020)', () => {
       cy.visit(`/invoices/${mockInvoice.id}`);
       cy.wait('@getInvoices');
       
-      cy.get('[data-cy=record-payment-btn]').click();
-      cy.get('[data-cy=payment-modal]').should('be.visible');
+      cy.getByCy('record-payment-btn').click();
+      cy.getByCy('payment-modal').should('be.visible');
     });
 
     it('is expected to pre-fill payment amount with remaining balance', () => {
@@ -152,8 +152,8 @@ describe('Payment Recording (US-020)', () => {
       cy.visit(`/invoices/${mockInvoice.id}`);
       cy.wait('@getInvoices');
       
-      cy.get('[data-cy=record-payment-btn]').click();
-      cy.get('[data-cy=payment-amount]').should('have.value', '1000.00');
+      cy.getByCy('record-payment-btn').click();
+      cy.getByCy('payment-amount').should('have.value', '1000.00');
     });
 
     it('is expected to record a full payment successfully', () => {
@@ -161,21 +161,21 @@ describe('Payment Recording (US-020)', () => {
       cy.visit(`/invoices/${mockInvoice.id}`);
       cy.wait('@getInvoices');
       
-      cy.get('[data-cy=record-payment-btn]').click();
+      cy.getByCy('record-payment-btn').click();
       
-      cy.get('[data-cy=payment-method]').select('swish');
-      cy.get('[data-cy=payment-reference]').type('SWISH-12345');
-      cy.get('[data-cy=payment-notes]').type('Full payment via Swish');
+      cy.getByCy('payment-method').select('swish');
+      cy.getByCy('payment-reference').type('SWISH-12345');
+      cy.getByCy('payment-notes').type('Full payment via Swish');
       
-      cy.get('[data-cy=save-payment]').click();
+      cy.getByCy('save-payment').click();
       cy.wait('@createPayment');
       
       // Modal should close
-      cy.get('[data-cy=payment-modal]').should('not.exist');
+      cy.getByCy('payment-modal').should('not.exist');
       
       // Should show payment history
-      cy.get('[data-cy=payment-history-table]').should('be.visible');
-      cy.get('[data-cy=payment-row]').should('have.length', 1);
+      cy.getByCy('payment-history-table').should('be.visible');
+      cy.getByCy('payment-row').should('have.length', 1);
     });
   });
 
@@ -213,17 +213,17 @@ describe('Payment Recording (US-020)', () => {
       cy.visit('/invoices/partial-invoice-001');
       cy.wait('@getInvoices');
       
-      cy.get('[data-cy=record-payment-btn]').click();
+      cy.getByCy('record-payment-btn').click();
       
-      cy.get('[data-cy=payment-amount]').clear().type('2000.00');
-      cy.get('[data-cy=payment-method]').select('bank_transfer');
-      cy.get('[data-cy=payment-reference]').type('BANK-001');
+      cy.getByCy('payment-amount').clear().type('2000.00');
+      cy.getByCy('payment-method').select('bank_transfer');
+      cy.getByCy('payment-reference').type('BANK-001');
       
-      cy.get('[data-cy=save-payment]').click();
+      cy.getByCy('save-payment').click();
       cy.wait('@createPayment');
       
       // Should show remaining balance after partial payment
-      cy.get('[data-cy=remaining-balance]').should('contain', '3000');
+      cy.getByCy('remaining-balance').should('contain', '3000');
     });
 
     it('is expected to show multiple payments in history', () => {
@@ -252,8 +252,8 @@ describe('Payment Recording (US-020)', () => {
       cy.visit(`/invoices/${mockInvoice.id}`);
       cy.wait('@getInvoices');
       
-      cy.get('[data-cy=payment-history-table]').should('be.visible');
-      cy.get('[data-cy=payment-row]').should('have.length', 2);
+      cy.getByCy('payment-history-table').should('be.visible');
+      cy.getByCy('payment-row').should('have.length', 2);
     });
   });
 
@@ -297,8 +297,8 @@ describe('Payment Recording (US-020)', () => {
       cy.wait('@getInvoices');
       cy.wait('@getPayments');
       
-      cy.get('[data-cy=payment-history-table]').should('be.visible');
-      cy.get('[data-cy=payment-row]').should('have.length', 3);
+      cy.getByCy('payment-history-table').should('be.visible');
+      cy.getByCy('payment-row').should('have.length', 3);
     });
 
     it('is expected to show remaining balance when partially paid', () => {
@@ -319,7 +319,7 @@ describe('Payment Recording (US-020)', () => {
       cy.wait('@getInvoices');
       
       // Total is 1000, paid 700, remaining should be 300
-      cy.get('[data-cy=remaining-balance]').should('contain', '300');
+      cy.getByCy('remaining-balance').should('contain', '300');
     });
   });
 
@@ -329,17 +329,17 @@ describe('Payment Recording (US-020)', () => {
       cy.visit(`/invoices/${mockInvoice.id}`);
       cy.wait('@getInvoices');
       
-      cy.get('[data-cy=record-payment-btn]').click();
+      cy.getByCy('record-payment-btn').click();
       
-      cy.get('[data-cy=payment-amount]').clear().type('1500.00');
-      cy.get('[data-cy=payment-method]').select('swish');
-      cy.get('[data-cy=save-payment]').click();
+      cy.getByCy('payment-amount').clear().type('1500.00');
+      cy.getByCy('payment-method').select('swish');
+      cy.getByCy('save-payment').click();
       
       // Should show error (overpayment validation)
-      cy.get('[data-cy=payment-error]').should('be.visible');
+      cy.getByCy('payment-error').should('be.visible');
       
       // Modal should stay open
-      cy.get('[data-cy=payment-modal]').should('be.visible');
+      cy.getByCy('payment-modal').should('be.visible');
     });
 
     it('is expected to require payment method selection', () => {
@@ -347,13 +347,13 @@ describe('Payment Recording (US-020)', () => {
       cy.visit(`/invoices/${mockInvoice.id}`);
       cy.wait('@getInvoices');
       
-      cy.get('[data-cy=record-payment-btn]').click();
+      cy.getByCy('record-payment-btn').click();
       
       // Try to save without selecting payment method
-      cy.get('[data-cy=save-payment]').click();
+      cy.getByCy('save-payment').click();
       
       // Should show validation error or stay in modal
-      cy.get('[data-cy=payment-modal]').should('be.visible');
+      cy.getByCy('payment-modal').should('be.visible');
     });
 
     it('is expected to cancel payment recording', () => {
@@ -361,10 +361,10 @@ describe('Payment Recording (US-020)', () => {
       cy.visit(`/invoices/${mockInvoice.id}`);
       cy.wait('@getInvoices');
       
-      cy.get('[data-cy=record-payment-btn]').click();
-      cy.get('[data-cy=cancel-payment]').click();
+      cy.getByCy('record-payment-btn').click();
+      cy.getByCy('cancel-payment').click();
       
-      cy.get('[data-cy=payment-modal]').should('not.exist');
+      cy.getByCy('payment-modal').should('not.exist');
     });
 
     it('is expected to not show Record Payment for paid invoices', () => {
@@ -388,7 +388,7 @@ describe('Payment Recording (US-020)', () => {
       cy.wait('@getInvoices');
       
       // Record Payment button should not exist for paid invoices
-      cy.get('[data-cy=record-payment-btn]').should('not.exist');
+      cy.getByCy('record-payment-btn').should('not.exist');
     });
   });
 });
