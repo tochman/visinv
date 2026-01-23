@@ -43,3 +43,4 @@ Thumbs.db
 # Code coverage
 coverage/
 .nyc_output/
+cypress/screenshots/

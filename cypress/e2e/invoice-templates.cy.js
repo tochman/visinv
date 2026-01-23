@@ -23,6 +23,10 @@ describe('Invoice Template Management', () => {
       updated_at: new Date().toISOString()
     }
 
+    // Login first to establish session
+    cy.login('admin')
+
+    // Then set up test-specific intercepts
     // Mock templates endpoint - return system templates + user template
     cy.intercept('GET', '**/rest/v1/invoice_templates*', {
       statusCode: 200,
@@ -58,7 +62,6 @@ describe('Invoice Template Management', () => {
       statusCode: 204
     }).as('deleteTemplate')
 
-    cy.login('admin')
     cy.visit('/templates')
     cy.wait('@getTemplates')
   })

@@ -64,6 +64,10 @@ describe('Overdue Invoice Alerts (US-026-A)', () => {
   beforeEach(() => {
     invoices = [overdueInvoice, veryOverdueInvoice, notDueInvoice];
 
+    // Login first to establish session
+    cy.login('admin');
+
+    // Then set up test-specific intercepts
     // Mock clients
     cy.intercept('GET', '**/rest/v1/clients*', {
       statusCode: 200,
@@ -97,8 +101,6 @@ describe('Overdue Invoice Alerts (US-026-A)', () => {
       statusCode: 200,
       body: []
     }).as('getPayments');
-
-    cy.login('admin');
   });
 
   describe('Visual Overdue Indicators', () => {

@@ -25,7 +25,8 @@ describe('Admin Dashboard', () => {
   }
 
   beforeEach(() => {
-    // Mock organization data to prevent wizard from showing
+    // Login first based on test context (done in each test)
+    // Set up intercepts after login
     cy.intercept('GET', '**/rest/v1/organizations*', {
       statusCode: 200,
       body: [mockOrganization]

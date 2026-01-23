@@ -2,6 +2,10 @@
 
 describe('Product Catalog', () => {
   beforeEach(() => {
+    // Login first to establish session
+    cy.login('admin')
+    
+    // Then set up test-specific intercepts
     cy.intercept('GET', '**/rest/v1/products*', {
       statusCode: 200,
       body: []
@@ -20,7 +24,6 @@ describe('Product Catalog', () => {
       })
     }).as('createProduct')
 
-    cy.login('admin')
     cy.visit('/products')
     cy.wait('@getProducts')
   })

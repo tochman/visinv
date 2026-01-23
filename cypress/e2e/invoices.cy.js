@@ -16,7 +16,10 @@ describe('Invoice Management', () => {
   }
 
   beforeEach(() => {
-    // Mock clients endpoint
+    // Login first to establish session
+    cy.login('admin')
+    
+    // Then set up test-specific intercepts
     cy.intercept('GET', '**/rest/v1/clients*', {
       statusCode: 200,
       body: [mockClient]
@@ -55,7 +58,6 @@ describe('Invoice Management', () => {
       body: []
     }).as('createInvoiceRows')
 
-    cy.login('admin')
     cy.visit('/invoices')
     cy.wait('@getInvoices')
     cy.wait('@getTemplates')

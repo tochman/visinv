@@ -2,6 +2,10 @@
 
 describe('Client Management', () => {
   beforeEach(() => {
+    // Login first to establish session
+    cy.login('admin')
+    
+    // Then set up test-specific intercepts
     cy.intercept('GET', '**/rest/v1/clients*', {
       statusCode: 200,
       body: []
@@ -14,7 +18,6 @@ describe('Client Management', () => {
       })
     }).as('createClient')
 
-    cy.login('admin')
     cy.visit('/clients')
     cy.wait('@getClients')
   })
