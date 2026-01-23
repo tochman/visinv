@@ -261,7 +261,7 @@ These additions position VisInv as a comprehensive solution for:
 **US-026: Email Notifications**
 - As a **user**, in order to **stay informed about invoice activity**, I would like to **receive email notifications when invoices are viewed or paid**.
 
-**US-026-A: Overdue Invoice Alerts**
+**US-026-A: Overdue Invoice Alerts** ✅
 - As a **user**, in order to **stay on top of unpaid invoices**, I would like to **receive alerts when my invoices become overdue**.
 - **Alert types:**
   - Dashboard notification badge showing overdue count
@@ -273,6 +273,15 @@ These additions position VisInv as a comprehensive solution for:
   - Group overdue invoices by age (1-7 days, 8-30 days, 30+ days)
   - Quick action to send reminder to client from alert
   - Mark invoice as "reminder sent" to track follow-ups
+- **Status:** Implemented
+  - Database: Added reminder_sent_at, reminder_count columns to invoices table
+  - Backend: Invoice.markReminderSent(), getOverdueByAge() methods for tracking and grouping
+  - UI: Red highlighted rows for overdue invoices, days overdue indicator below invoice number
+  - Visual: Purple "Reminder Sent" badge showing count when reminders have been sent
+  - Actions: "Send Reminder" button (bell icon) appears for overdue invoices
+  - Grouping: getOverdueByAge() method groups by recent (1-7d), moderate (8-30d), old (30+d)
+  - i18n: Full English/Swedish translations for reminder terminology
+  - TODO: Email sending integration (currently marks reminder as sent only)
 
 **US-027: Overdue Reminders**
 - As a **premium user**, in order to **improve payment collection**, I would like to **automatically send email reminders for overdue invoices**.
