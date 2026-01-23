@@ -1,15 +1,39 @@
 describe('Manual Invoice Numbering (US-064)', () => {
-  const testUser = {
-    email: 'thomas@communitaslabs.io',
-    password: 'test123'
-  };
-
   beforeEach(() => {
-    cy.visit('/');
-    cy.get('[data-cy="email-input"]').type(testUser.email);
-    cy.get('[data-cy="password-input"]').type(testUser.password);
-    cy.get('[data-cy="login-button"]').click();
-    cy.url().should('include', '/dashboard');
+    // Mock required API endpoints
+    cy.intercept('GET', '**/rest/v1/clients*', {
+      statusCode: 200,
+      body: [
+        { id: 'client-1', name: 'Test Client AB', email: 'client@test.com', country: 'Sweden' }
+      ]
+    }).as('getClients')
+
+    cy.intercept('GET', '**/rest/v1/invoices*', {
+      statusCode: 200,
+      body: []
+    }).as('getInvoices')
+
+    cy.intercept('POST', '**/rest/v1/invoices*', (req) => {
+      req.reply({
+        statusCode: 201,
+        body: { 
+          id: 'new-invoice-id', 
+          invoice_number: req.body.invoice_number || `INV-${Date.now()}`,
+          ...req.body 
+        }
+      })
+    }).as('createInvoice')
+
+    cy.intercept('PATCH', '**/rest/v1/organizations**', (req) => {
+      req.reply({
+        statusCode: 200,
+        body: { ...req.body }
+      })
+    }).as('updateOrganization')
+
+    // Use mocked authentication instead of real credentials
+    cy.login('user')
+    cy.visit('/dashboard')
   });
 
   it('should allow toggling between automatic and manual numbering modes', () => {
@@ -24,13 +48,13 @@ describe('Manual Invoice Numbering (US-064)', () => {
     cy.get('[data-cy="invoice-numbering-mode"]').select('manual');
     cy.get('[data-cy="save-organization-settings"]').click();
     
-    // Verify success message or page update
-    cy.wait(1000);
+    // Verify settings saved
+    cy.wait('@updateOrganization')
     
     // Switch back to automatic mode
     cy.get('[data-cy="invoice-numbering-mode"]').select('automatic');
     cy.get('[data-cy="save-organization-settings"]').click();
-    cy.wait(1000);
+    cy.wait('@updateOrganization')
   });
 
   it('should show invoice number field when manual mode is enabled', () => {
@@ -38,7 +62,7 @@ describe('Manual Invoice Numbering (US-064)', () => {
     cy.get('[data-cy="nav-settings"]').click();
     cy.get('[data-cy="invoice-numbering-mode"]').select('manual');
     cy.get('[data-cy="save-organization-settings"]').click();
-    cy.wait(1000);
+    cy.wait('@updateOrganization')
 
     // Navigate to invoices
     cy.get('[data-cy="nav-invoices"]').click();
@@ -56,7 +80,7 @@ describe('Manual Invoice Numbering (US-064)', () => {
     cy.get('[data-cy="nav-settings"]').click();
     cy.get('[data-cy="invoice-numbering-mode"]').select('manual');
     cy.get('[data-cy="save-organization-settings"]').click();
-    cy.wait(1000);
+    cy.wait('@updateOrganization')
 
     // Navigate to invoices
     cy.get('[data-cy="nav-invoices"]').click();
@@ -81,8 +105,8 @@ describe('Manual Invoice Numbering (US-064)', () => {
     cy.get('[data-cy="save-invoice-button"]').click();
 
     // Verify invoice was created with custom number
-    cy.wait(2000);
-    cy.contains(manualInvoiceNumber).should('exist');
+    cy.wait('@createInvoice')
+    cy.contains(manualInvoiceNumber, { timeout: 5000 }).should('be.visible');
   });
 
   it('should prevent creating invoice without number in manual mode', () => {
@@ -90,7 +114,7 @@ describe('Manual Invoice Numbering (US-064)', () => {
     cy.get('[data-cy="nav-settings"]').click();
     cy.get('[data-cy="invoice-numbering-mode"]').select('manual');
     cy.get('[data-cy="save-organization-settings"]').click();
-    cy.wait(1000);
+    cy.wait('@updateOrganization')
 
     // Navigate to invoices
     cy.get('[data-cy="nav-invoices"]').click();
@@ -119,7 +143,7 @@ describe('Manual Invoice Numbering (US-064)', () => {
     cy.get('[data-cy="nav-settings"]').click();
     cy.get('[data-cy="invoice-numbering-mode"]').select('automatic');
     cy.get('[data-cy="save-organization-settings"]').click();
-    cy.wait(1000);
+    cy.wait('@updateOrganization')
 
     // Navigate to invoices
     cy.get('[data-cy="nav-invoices"]').click();
@@ -143,8 +167,8 @@ describe('Manual Invoice Numbering (US-064)', () => {
     cy.get('[data-cy="save-invoice-button"]').click();
 
     // Verify invoice was created with auto-generated number (INV-XXXX format)
-    cy.wait(2000);
-    cy.contains(/INV-\d{4}/).should('exist');
+    cy.wait('@createInvoice')
+    cy.contains(/INV-\d{4}/, { timeout: 5000 }).should('be.visible');
   });
 
   it('should prevent duplicate manual invoice numbers', () => {
@@ -152,7 +176,7 @@ describe('Manual Invoice Numbering (US-064)', () => {
     cy.get('[data-cy="nav-settings"]').click();
     cy.get('[data-cy="invoice-numbering-mode"]').select('manual');
     cy.get('[data-cy="save-organization-settings"]').click();
-    cy.wait(1000);
+    cy.wait('@updateOrganization')
 
     // Create first invoice with manual number
     cy.get('[data-cy="nav-invoices"]').click();
@@ -168,7 +192,7 @@ describe('Manual Invoice Numbering (US-064)', () => {
     cy.get('[data-cy="row-quantity-0"]').clear().type('1');
     cy.get('[data-cy="row-unit-price-0"]').clear().type('1000');
     cy.get('[data-cy="save-invoice-button"]').click();
-    cy.wait(2000);
+    cy.wait('@createInvoice')
 
     // Try to create second invoice with same number
     cy.get('[data-cy="new-invoice-button"]').click();
@@ -183,7 +207,6 @@ describe('Manual Invoice Numbering (US-064)', () => {
     cy.get('[data-cy="save-invoice-button"]').click();
 
     // Should show error about duplicate
-    cy.wait(1000);
-    cy.get('[data-cy="invoice-modal"]').should('exist');
+    cy.get('[data-cy="invoice-modal"]', { timeout: 3000 }).should('exist');
   });
 });

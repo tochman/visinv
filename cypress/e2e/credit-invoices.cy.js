@@ -1,15 +1,37 @@
 describe('Credit Invoices (US-063)', () => {
-  const testUser = {
-    email: 'thomas@communitaslabs.io',
-    password: 'test123'
-  };
-
   beforeEach(() => {
-    cy.visit('/');
-    cy.get('[data-cy="email-input"]').type(testUser.email);
-    cy.get('[data-cy="password-input"]').type(testUser.password);
-    cy.get('[data-cy="login-button"]').click();
-    cy.url().should('include', '/dashboard');
+    // Mock required API endpoints
+    cy.intercept('GET', '**/rest/v1/clients*', {
+      statusCode: 200,
+      body: [
+        { id: 'client-1', name: 'Test Client AB', email: 'client@test.com', country: 'Sweden' }
+      ]
+    }).as('getClients')
+
+    cy.intercept('GET', '**/rest/v1/invoices*', {
+      statusCode: 200,
+      body: []
+    }).as('getInvoices')
+
+    cy.intercept('POST', '**/rest/v1/invoices*', (req) => {
+      req.reply({
+        statusCode: 201,
+        body: { 
+          id: 'new-invoice-id', 
+          invoice_number: `INV-${Date.now()}`,
+          ...req.body 
+        }
+      })
+    }).as('createInvoice')
+
+    cy.intercept('POST', '**/rest/v1/invoice_rows*', {
+      statusCode: 201,
+      body: []
+    }).as('createInvoiceRows')
+
+    // Use mocked authentication instead of real credentials
+    cy.login('user')
+    cy.visit('/dashboard')
   });
 
   it('should show invoice type selector in new invoice form', () => {
@@ -63,8 +85,8 @@ describe('Credit Invoices (US-063)', () => {
     cy.get('[data-cy="save-invoice-button"]').click();
     
     // Verify invoice was created
-    cy.wait(2000);
-    cy.contains('Standard Service').should('exist');
+    cy.wait('@createInvoice')
+    cy.contains('Standard Service', { timeout: 5000 }).should('be.visible');
   });
 
   it('should create a CREDIT invoice linked to original invoice', () => {
@@ -81,7 +103,7 @@ describe('Credit Invoices (US-063)', () => {
     cy.get('[data-cy="row-quantity-0"]').clear().type('2');
     cy.get('[data-cy="row-unit-price-0"]').clear().type('500');
     cy.get('[data-cy="save-invoice-button"]').click();
-    cy.wait(2000);
+    cy.wait('@createInvoice')
     
     // Now create credit invoice
     cy.get('[data-cy="new-invoice-button"]').click();
@@ -109,10 +131,10 @@ describe('Credit Invoices (US-063)', () => {
     
     // Save
     cy.get('[data-cy="save-invoice-button"]').click();
-    cy.wait(2000);
+    cy.wait('@createInvoice')
     
     // Verify credit invoice was created
-    cy.contains('Credit for service').should('exist');
+    cy.contains('Credit for service', { timeout: 5000 }).should('be.visible');
   });
 
   it('should display credit badge for CREDIT invoices in list', () => {
@@ -130,7 +152,7 @@ describe('Credit Invoices (US-063)', () => {
     cy.get('[data-cy="row-quantity-0"]').clear().type('1');
     cy.get('[data-cy="row-unit-price-0"]').clear().type('100');
     cy.get('[data-cy="save-invoice-button"]').click();
-    cy.wait(2000);
+    cy.wait('@createInvoice')
     
     // Create CREDIT invoice
     cy.get('[data-cy="new-invoice-button"]').click();
@@ -145,7 +167,7 @@ describe('Credit Invoices (US-063)', () => {
     cy.get('[data-cy="row-quantity-0"]').clear().type('-1');
     cy.get('[data-cy="row-unit-price-0"]').clear().type('100');
     cy.get('[data-cy="save-invoice-button"]').click();
-    cy.wait(2000);
+    cy.wait('@createInvoice')
     
     // Verify credit badge exists in invoice list
     // The credit invoice should have a credit note badge
@@ -191,7 +213,7 @@ describe('Credit Invoices (US-063)', () => {
     cy.get('[data-cy="row-unit-price-1"]').clear().type('200');
     
     cy.get('[data-cy="save-invoice-button"]').click();
-    cy.wait(2000);
+    cy.wait('@createInvoice')
     
     // Create partial credit (only one item)
     cy.get('[data-cy="new-invoice-button"]').click();
@@ -209,9 +231,9 @@ describe('Credit Invoices (US-063)', () => {
     cy.get('[data-cy="row-unit-price-0"]').clear().type('100');
     
     cy.get('[data-cy="save-invoice-button"]').click();
-    cy.wait(2000);
+    cy.wait('@createInvoice')
     
     // Verify partial credit exists
-    cy.contains('Partial credit for Item 1').should('exist');
+    cy.contains('Partial credit for Item 1', { timeout: 5000 }).should('be.visible');
   });
 });

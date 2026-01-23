@@ -78,7 +78,7 @@ describe('Organization Member Invitations', () => {
       setupMemberIntercepts()
       
       cy.visit('/settings')
-      cy.wait(500)
+      cy.get('[data-cy="tab-members"]', { timeout: 5000 }).should('be.visible')
     })
 
     it('is expected to display tab navigation', () => {

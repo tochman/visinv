@@ -38,8 +38,8 @@ describe('Organization Management', () => {
       // Visit dashboard where wizard should appear
       cy.visit('/dashboard')
       
-      // Wait for page to load
-      cy.wait(1000)
+      // Wait for wizard to appear
+      cy.get('[data-cy="organization-wizard"]', { timeout: 5000 }).should('exist')
     })
 
     it('is expected to show setup wizard for new users without organization', () => {
@@ -161,11 +161,8 @@ describe('Organization Management', () => {
         // Click edit button
         cy.get('[data-cy="edit-organization"]').click()
         
-        // Wait for form to initialize
-        cy.wait(500)
-        
-        // Verify the name field is populated
-        cy.get('[data-cy="org-name"]').should('be.visible').should('have.value', 'Acme AB')
+        // Wait for form to initialize with data
+        cy.get('[data-cy="org-name"]', { timeout: 3000 }).should('be.visible').should('have.value', 'Acme AB')
         
         // Change the name
         cy.get('[data-cy="org-name"]').clear().type('Acme Sweden AB')
