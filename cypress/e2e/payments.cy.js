@@ -1,3 +1,5 @@
+/// <reference types="cypress" />
+
 /**
  * Cypress E2E Tests: Payment Recording (US-020)
  * Tests payment recording functionality including full payments,
@@ -123,7 +125,7 @@ describe('Payment Recording (US-020)', () => {
   };
 
   describe('US-020-A: Single Payment Recording', () => {
-    it('should display Record Payment button on invoice detail page', () => {
+    it('is expected to display Record Payment button on invoice detail page', () => {
       setupInvoiceIntercepts();
       
       cy.visit(`/invoices/${mockInvoice.id}`);
@@ -136,7 +138,7 @@ describe('Payment Recording (US-020)', () => {
       cy.get('[data-cy=record-payment-btn]').should('be.visible');
     });
 
-    it('should open payment modal when Record Payment is clicked', () => {
+    it('is expected to open payment modal when Record Payment is clicked', () => {
       setupInvoiceIntercepts();
       cy.visit(`/invoices/${mockInvoice.id}`);
       cy.wait('@getInvoices');
@@ -145,7 +147,7 @@ describe('Payment Recording (US-020)', () => {
       cy.get('[data-cy=payment-modal]').should('be.visible');
     });
 
-    it('should pre-fill payment amount with remaining balance', () => {
+    it('is expected to pre-fill payment amount with remaining balance', () => {
       setupInvoiceIntercepts();
       cy.visit(`/invoices/${mockInvoice.id}`);
       cy.wait('@getInvoices');
@@ -154,7 +156,7 @@ describe('Payment Recording (US-020)', () => {
       cy.get('[data-cy=payment-amount]').should('have.value', '1000.00');
     });
 
-    it('should record a full payment successfully', () => {
+    it('is expected to record a full payment successfully', () => {
       setupInvoiceIntercepts();
       cy.visit(`/invoices/${mockInvoice.id}`);
       cy.wait('@getInvoices');
@@ -178,7 +180,7 @@ describe('Payment Recording (US-020)', () => {
   });
 
   describe('US-020-B: Partial Payment Support', () => {
-    it('should record first partial payment', () => {
+    it('is expected to record first partial payment', () => {
       // Use a modified invoice with higher total for partial payment tests
       const partialInvoice = {
         ...mockInvoice,
@@ -224,7 +226,7 @@ describe('Payment Recording (US-020)', () => {
       cy.get('[data-cy=remaining-balance]').should('contain', '3000');
     });
 
-    it('should show multiple payments in history', () => {
+    it('is expected to show multiple payments in history', () => {
       payments = [
         {
           id: 'payment-1',
@@ -256,7 +258,7 @@ describe('Payment Recording (US-020)', () => {
   });
 
   describe('US-020-C: Payment History', () => {
-    it('should display all payments in payment history table', () => {
+    it('is expected to display all payments in payment history table', () => {
       payments = [
         {
           id: 'payment-1',
@@ -299,7 +301,7 @@ describe('Payment Recording (US-020)', () => {
       cy.get('[data-cy=payment-row]').should('have.length', 3);
     });
 
-    it('should show remaining balance when partially paid', () => {
+    it('is expected to show remaining balance when partially paid', () => {
       payments = [
         {
           id: 'payment-1',
@@ -322,7 +324,7 @@ describe('Payment Recording (US-020)', () => {
   });
 
   describe('US-020-D: Validation', () => {
-    it('should prevent payment exceeding remaining balance', () => {
+    it('is expected to prevent payment exceeding remaining balance', () => {
       setupInvoiceIntercepts();
       cy.visit(`/invoices/${mockInvoice.id}`);
       cy.wait('@getInvoices');
@@ -340,7 +342,7 @@ describe('Payment Recording (US-020)', () => {
       cy.get('[data-cy=payment-modal]').should('be.visible');
     });
 
-    it('should require payment method selection', () => {
+    it('is expected to require payment method selection', () => {
       setupInvoiceIntercepts();
       cy.visit(`/invoices/${mockInvoice.id}`);
       cy.wait('@getInvoices');
@@ -354,7 +356,7 @@ describe('Payment Recording (US-020)', () => {
       cy.get('[data-cy=payment-modal]').should('be.visible');
     });
 
-    it('should cancel payment recording', () => {
+    it('is expected to cancel payment recording', () => {
       setupInvoiceIntercepts();
       cy.visit(`/invoices/${mockInvoice.id}`);
       cy.wait('@getInvoices');
@@ -365,7 +367,7 @@ describe('Payment Recording (US-020)', () => {
       cy.get('[data-cy=payment-modal]').should('not.exist');
     });
 
-    it('should not show Record Payment for paid invoices', () => {
+    it('is expected to not show Record Payment for paid invoices', () => {
       const paidInvoice = {
         ...mockInvoice,
         id: 'paid-invoice-001',
