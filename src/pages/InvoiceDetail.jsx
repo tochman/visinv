@@ -26,7 +26,7 @@ export default function InvoiceDetail() {
     
     try {
       // Load invoice
-      const { data: invoiceData, error: invoiceError } = await Invoice.findById(id);
+      const { data: invoiceData, error: invoiceError } = await Invoice.show(id);
       if (invoiceError) throw new Error(invoiceError.message);
       
       if (!invoiceData) {
