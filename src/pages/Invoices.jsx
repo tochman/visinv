@@ -138,6 +138,12 @@ export default function Invoices() {
     return colors[status] || colors.draft;
   };
 
+  const getTypeColor = (type) => {
+    return type === 'CREDIT'
+      ? 'bg-orange-100 text-orange-800 dark:bg-orange-900/30 dark:text-orange-300'
+      : 'bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300';
+  };
+
   const formatDate = (dateString) => {
     if (!dateString) return '-';
     return new Date(dateString).toLocaleDateString('sv-SE');
@@ -306,9 +312,16 @@ export default function Invoices() {
                       {formatDate(invoice.due_date)}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
-                      <span className={`px-2 py-1 text-xs font-medium rounded-full ${getStatusColor(invoice.status)}`} data-cy={`invoice-status-${invoice.id}`}>
-                        {t(`invoice.statuses.${invoice.status}`)}
-                      </span>
+                      <div className="flex gap-1 flex-wrap">
+                        <span className={`px-2 py-1 text-xs font-medium rounded-full ${getStatusColor(invoice.status)}`} data-cy={`invoice-status-${invoice.id}`}>
+                          {t(`invoice.statuses.${invoice.status}`)}
+                        </span>
+                        {invoice.invoice_type === 'CREDIT' && (
+                          <span className={`px-2 py-1 text-xs font-medium rounded-full ${getTypeColor('CREDIT')}`} data-cy={`invoice-type-${invoice.id}`}>
+                            {t('invoices.creditNote')}
+                          </span>
+                        )}
+                      </div>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
                       <select

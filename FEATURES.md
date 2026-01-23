@@ -185,7 +185,7 @@
 **US-025: Recurring Invoices**
 - As a **premium user**, in order to **automate subscription billing**, I would like to **set up recurring invoices with custom intervals**.
 
-**US-063: Credit Invoices**
+**US-063: Credit Invoices** ✅
 - As a **user that issues an invoice**, in order to **keep my books in good order**, I would like to **be able to issue CREDIT invoices (either partial or whole) for previously issued invoices**.
 - **Invoice types:** DEBET (standard invoice), CREDIT (corrects/reverses a previous invoice)
 - **Features:**
@@ -196,6 +196,13 @@
   - Automatically mark original invoice status when fully credited
   - Include reference to original invoice number on credit invoice
 - **Compliance:** Required for proper Swedish accounting (Bokföringslagen)
+- **Status:** Implemented
+  - Database: Added invoice_type (DEBET/CREDIT) and credited_invoice_id columns with FK constraint
+  - Backend: Invoice resource with createCredit(), getCredits(), getCreditedAmount() methods
+  - UI: Invoice type selector in InvoiceModal, credited invoice dropdown for CREDIT type
+  - Display: Credit note badge in invoice list, visual distinction for credit invoices
+  - i18n: Full English/Swedish translations for credit terminology
+  - Tests: Cypress test suite with 7 scenarios (type selector, original invoice selection, DEBET creation, CREDIT creation, badge display, client requirement, partial credit)
 
 **US-050: Product VAT Rates** ✅
 - As a **user**, in order to **comply with tax regulations**, I would like to **set VAT percentage on each product (0%, 6%, 12%, or 25%)**.
