@@ -248,6 +248,51 @@ These additions position VisInv as a comprehensive solution for:
   - Tests: Comprehensive Cypress test suite (multi-currency.cy.js)
   - Documentation: docs/MULTI_CURRENCY.md
 
+**US-024-A: Multi-Currency Product Pricing**
+- As a **user**, in order to **issue invoices in various currencies**, I would like to **set prices in multiple currencies for each product in my catalog**.
+- **Features:**
+  - Each product can have multiple price entries (one per currency)
+  - Default price in organization's primary currency
+  - Optional prices in additional currencies (SEK, EUR, USD, GBP, NOK, DKK)
+  - Product modal shows currency-specific price fields
+  - Price list view displays all defined prices for a product
+  - Validation: At least one price must be defined
+- **Database:** 
+  - New `product_prices` table with columns: id, product_id, currency, price, created_at, updated_at
+  - Remove single `unit_price` from `products` table (breaking change)
+  - Foreign key constraint to products table with CASCADE delete
+  - Unique constraint on (product_id, currency) to prevent duplicates
+- **UI:**
+  - Product creation/edit modal with dynamic currency price inputs
+  - Show all currencies with input fields (or add/remove currency price rows)
+  - Display currency-specific prices in product list
+  - Visual indicator for which currencies have prices defined
+- **Use Cases:** 
+  - Consultants working with international clients
+  - SaaS companies with global pricing
+  - Product businesses selling in multiple markets
+- **Status:** Not Started
+
+**US-024-B: Currency-Aware Product Selection**
+- As a **user creating an invoice**, in order to **ensure accurate pricing**, I would like to **automatically use the product price that matches my invoice currency**.
+- **Features:**
+  - When adding product to invoice, system selects price matching invoice currency
+  - If no price exists for invoice currency, show warning and require manual price entry
+  - Display which currency price is being used in the product selector/line item
+  - Fallback behavior: Allow manual price override if currency mismatch
+  - Visual indicator when using non-matching currency (warning icon)
+- **Behavior:**
+  - Invoice currency SEK + Product with SEK price → Auto-fill SEK price
+  - Invoice currency EUR + Product with only SEK price → Warning: "No EUR price defined, please enter manually"
+  - Invoice currency USD + Product with both SEK and USD prices → Auto-fill USD price
+- **UI:**
+  - Product selector shows available currencies for each product
+  - Line item auto-populates with matching currency price
+  - Warning message when currency mismatch occurs
+  - Manual price entry remains editable as override
+- **Prerequisites:** US-024-A (Multi-Currency Product Pricing)
+- **Status:** Not Started
+
 **US-025: Recurring Invoices**
 - As a **premium user**, in order to **automate subscription billing**, I would like to **set up recurring invoices with custom intervals**.
 
