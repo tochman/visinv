@@ -284,6 +284,8 @@ Cypress.Commands.add('setupCommonIntercepts', (options = {}) => {
   }
   
   if (config.defaultOrganization !== null) {
+    // Note: This endpoint uses .single() in Supabase which returns nested data structure
+    // The response body is wrapped in { organizations: ... } to match the expected format
     cy.intercept('GET', '**/rest/v1/organization_members*is_default=eq.true*', {
       statusCode: 200,
       body: { organizations: config.defaultOrganization }
