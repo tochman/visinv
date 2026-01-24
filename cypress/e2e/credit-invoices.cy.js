@@ -3,18 +3,13 @@ describe('Credit Invoices (US-063)', () => {
     // Login first to establish session
     cy.login('user')
     
-    // Then set up test-specific intercepts
-    cy.intercept('GET', '**/rest/v1/clients*', {
-      statusCode: 200,
-      body: [
+    // Set up common intercepts with test data
+    cy.setupCommonIntercepts({
+      clients: [
         { id: 'client-1', name: 'Test Client AB', email: 'client@test.com', country: 'Sweden' }
-      ]
-    }).as('getClients')
-
-    cy.intercept('GET', '**/rest/v1/invoices*', {
-      statusCode: 200,
-      body: []
-    }).as('getInvoices')
+      ],
+      invoices: []
+    })
 
     cy.intercept('POST', '**/rest/v1/invoices*', (req) => {
       req.reply({
