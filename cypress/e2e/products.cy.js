@@ -5,12 +5,10 @@ describe('Product Catalog', () => {
     // Login first to establish session
     cy.login('admin')
     
-    // Then set up test-specific intercepts
-    cy.intercept('GET', '**/rest/v1/products*', {
-      statusCode: 200,
-      body: []
-    }).as('getProducts')
+    // Set up common intercepts with defaults
+    cy.setupCommonIntercepts()
 
+    // Then set up test-specific intercepts
     cy.intercept('POST', '**/rest/v1/products*', (req) => {
       req.reply({
         statusCode: 201,
@@ -125,13 +123,12 @@ describe('Product Catalog', () => {
         }
       ]
 
-      cy.intercept('GET', '**/rest/v1/products*', {
-        statusCode: 200,
-        body: mockProducts
-      }).as('getProductsList')
+      cy.setupCommonIntercepts({
+        products: mockProducts
+      })
 
       cy.visit('/products')
-      cy.wait('@getProductsList')
+      cy.wait('@getProducts')
     })
 
     it('is expected to display list of products', () => {
@@ -172,10 +169,9 @@ describe('Product Catalog', () => {
         is_active: true
       }
 
-      cy.intercept('GET', '**/rest/v1/products*', {
-        statusCode: 200,
-        body: [mockProduct]
-      }).as('getProducts')
+      cy.setupCommonIntercepts({
+        products: [mockProduct]
+      })
 
       cy.intercept('PATCH', '**/rest/v1/products*', (req) => {
         req.reply({
@@ -280,20 +276,11 @@ describe('Product Catalog', () => {
         }
       ]
 
-      cy.intercept('GET', '**/rest/v1/products*', {
-        statusCode: 200,
-        body: mockProducts
-      }).as('getProducts')
-
-      cy.intercept('GET', '**/rest/v1/clients*', {
-        statusCode: 200,
-        body: mockClients
-      }).as('getClients')
-
-      cy.intercept('GET', '**/rest/v1/invoices*', {
-        statusCode: 200,
-        body: []
-      }).as('getInvoices')
+      cy.setupCommonIntercepts({
+        products: mockProducts,
+        clients: mockClients,
+        invoices: []
+      })
 
       cy.intercept('POST', '**/rest/v1/invoices*', {
         statusCode: 201,

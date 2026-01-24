@@ -67,14 +67,13 @@ describe('Overdue Invoice Alerts (US-026-A)', () => {
     // Login first to establish session
     cy.login('admin');
 
-    // Then set up test-specific intercepts
-    // Mock clients
-    cy.intercept('GET', '**/rest/v1/clients*', {
-      statusCode: 200,
-      body: [mockClient]
-    }).as('getClients');
+    // Set up common intercepts with invoice data
+    cy.setupCommonIntercepts({
+      clients: [mockClient],
+      invoices: null  // Use custom intercept below for dynamic response
+    });
 
-    // Mock invoices list
+    // Use custom intercept for dynamic invoice list
     cy.intercept('GET', '**/rest/v1/invoices*', (req) => {
       req.reply({
         statusCode: 200,

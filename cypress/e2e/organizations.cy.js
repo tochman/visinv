@@ -6,11 +6,14 @@ describe('Organization Management', () => {
       // Login with no organization first
       cy.login('admin', { skipOrgMock: true })
       
-      // Then set up test-specific intercepts
-      cy.intercept('GET', '**/rest/v1/organization_members?*', {
-        statusCode: 200,
-        body: []
-      }).as('getOrgMembers')
+      // Set up common intercepts for organization members
+      cy.setupCommonIntercepts({
+        organizationMembers: [],
+        invoices: null,  // Skip invoices intercept
+        clients: null,   // Skip clients intercept
+        products: null,  // Skip products intercept
+        templates: null  // Skip templates intercept
+      })
 
       cy.intercept('POST', '**/rest/v1/organizations*', (req) => {
         req.reply({

@@ -4,16 +4,18 @@ describe('Multi-Currency Support', () => {
   });
 
   it('should display all 6 supported currencies in the currency dropdown', () => {
-    // Mock the necessary endpoints
-    cy.intercept('GET', '**/rest/v1/invoices*', []).as('getInvoices');
-    cy.intercept('GET', '**/rest/v1/clients*', []).as('getClients');
-    cy.intercept('GET', '**/rest/v1/invoice_templates*', []).as('getTemplates');
-    cy.intercept('GET', '**/rest/v1/products*', []).as('getProducts');
-    cy.intercept('GET', '**/rest/v1/organizations*', [{ 
-      id: 'org-1', 
-      name: 'Test Org',
-      invoice_numbering_mode: 'automatic'
-    }]).as('getOrganizations');
+    // Set up common intercepts
+    cy.setupCommonIntercepts({
+      invoices: [],
+      clients: [],
+      templates: [],
+      products: [],
+      organizations: [{ 
+        id: 'org-1', 
+        name: 'Test Org',
+        invoice_numbering_mode: 'automatic'
+      }]
+    });
 
     cy.visit('/invoices');
     cy.wait('@getInvoices');
@@ -35,15 +37,17 @@ describe('Multi-Currency Support', () => {
   });
 
   it('should display currency symbols in dropdown options', () => {
-    cy.intercept('GET', '**/rest/v1/invoices*', []).as('getInvoices');
-    cy.intercept('GET', '**/rest/v1/clients*', []).as('getClients');
-    cy.intercept('GET', '**/rest/v1/invoice_templates*', []).as('getTemplates');
-    cy.intercept('GET', '**/rest/v1/products*', []).as('getProducts');
-    cy.intercept('GET', '**/rest/v1/organizations*', [{ 
-      id: 'org-1', 
-      name: 'Test Org',
-      invoice_numbering_mode: 'automatic'
-    }]).as('getOrganizations');
+    cy.setupCommonIntercepts({
+      invoices: [],
+      clients: [],
+      templates: [],
+      products: [],
+      organizations: [{ 
+        id: 'org-1', 
+        name: 'Test Org',
+        invoice_numbering_mode: 'automatic'
+      }]
+    });
 
     cy.visit('/invoices');
     cy.wait('@getInvoices');
@@ -78,15 +82,17 @@ describe('Multi-Currency Support', () => {
       name: 'Modern'
     };
 
-    cy.intercept('GET', '**/rest/v1/invoices*', []).as('getInvoices');
-    cy.intercept('GET', '**/rest/v1/clients*', [mockClient]).as('getClients');
-    cy.intercept('GET', '**/rest/v1/invoice_templates*', [mockTemplate]).as('getTemplates');
-    cy.intercept('GET', '**/rest/v1/products*', []).as('getProducts');
-    cy.intercept('GET', '**/rest/v1/organizations*', [{ 
-      id: 'org-1', 
-      name: 'Test Org',
-      invoice_numbering_mode: 'automatic'
-    }]).as('getOrganizations');
+    cy.setupCommonIntercepts({
+      invoices: [],
+      clients: [mockClient],
+      templates: [mockTemplate],
+      products: [],
+      organizations: [{ 
+        id: 'org-1', 
+        name: 'Test Org',
+        invoice_numbering_mode: 'automatic'
+      }]
+    });
 
     // Mock invoice creation to capture the request
     cy.intercept('POST', '**/rest/v1/invoices*', (req) => {
@@ -135,14 +141,16 @@ describe('Multi-Currency Support', () => {
         const expectedCurrencies = ['SEK', 'EUR', 'USD', 'GBP', 'NOK', 'DKK'];
         
         // The currency dropdown having all options proves the config is loaded
-        cy.intercept('GET', '**/rest/v1/invoices*', []);
-        cy.intercept('GET', '**/rest/v1/clients*', []);
-        cy.intercept('GET', '**/rest/v1/invoice_templates*', []);
-        cy.intercept('GET', '**/rest/v1/products*', []);
-        cy.intercept('GET', '**/rest/v1/organizations*', [{
-          id: 'org-1',
-          name: 'Test Org'
-        }]);
+        cy.setupCommonIntercepts({
+          invoices: [],
+          clients: [],
+          templates: [],
+          products: [],
+          organizations: [{
+            id: 'org-1',
+            name: 'Test Org'
+          }]
+        });
         
         cy.get('[data-cy="create-invoice-button"]').click();
         cy.get('[data-cy="currency-select"]').find('option').should('have.length', 6);
@@ -151,14 +159,16 @@ describe('Multi-Currency Support', () => {
   });
 
   it('should allow selecting different currencies without errors', () => {
-    cy.intercept('GET', '**/rest/v1/invoices*', []);
-    cy.intercept('GET', '**/rest/v1/clients*', []);
-    cy.intercept('GET', '**/rest/v1/invoice_templates*', []);
-    cy.intercept('GET', '**/rest/v1/products*', []);
-    cy.intercept('GET', '**/rest/v1/organizations*', [{
-      id: 'org-1',
-      name: 'Test Org'
-    }]);
+    cy.setupCommonIntercepts({
+      invoices: [],
+      clients: [],
+      templates: [],
+      products: [],
+      organizations: [{
+        id: 'org-1',
+        name: 'Test Org'
+      }]
+    });
 
     cy.visit('/invoices');
     cy.get('[data-cy="create-invoice-button"]').click();

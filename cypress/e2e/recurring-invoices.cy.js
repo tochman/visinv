@@ -43,37 +43,14 @@ describe("Recurring Invoices", () => {
       next_invoice_number: 1
     };
     
-    // This intercept handles the Organization.getDefault() call which uses .single()
-    cy.intercept("GET", "**/rest/v1/organization_members*is_default=eq.true*", {
-      statusCode: 200,
-      body: {
-        organizations: mockOrganization
-      }
-    }).as("getDefaultOrganization");
-    
-    // Mock invoices endpoint
-    cy.intercept("GET", "**/rest/v1/invoices*", {
-      statusCode: 200,
-      body: [],
-    }).as("getInvoices");
-    
-    // Mock clients endpoint
-    cy.intercept("GET", "**/rest/v1/clients*", {
-      statusCode: 200,
-      body: [mockClient],
-    }).as("getClients");
-
-    // Mock templates endpoint
-    cy.intercept("GET", "**/rest/v1/invoice_templates*", {
-      statusCode: 200,
-      body: [mockTemplate],
-    }).as("getTemplates");
-    
-    // Mock products endpoint
-    cy.intercept("GET", "**/rest/v1/products*", {
-      statusCode: 200,
-      body: [],
-    }).as("getProducts");
+    // Set up common intercepts
+    cy.setupCommonIntercepts({
+      invoices: [],
+      clients: [mockClient],
+      templates: [mockTemplate],
+      products: [],
+      defaultOrganization: mockOrganization
+    });
     
     // Mock create invoice
     cy.intercept("POST", "**/rest/v1/invoices*", (req) => {

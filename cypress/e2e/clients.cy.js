@@ -5,12 +5,10 @@ describe('Client Management', () => {
     // Login first to establish session
     cy.login('admin')
     
-    // Then set up test-specific intercepts
-    cy.intercept('GET', '**/rest/v1/clients*', {
-      statusCode: 200,
-      body: []
-    }).as('getClients')
+    // Set up common intercepts with defaults
+    cy.setupCommonIntercepts()
 
+    // Then set up test-specific intercepts
     cy.intercept('POST', '**/rest/v1/clients*', (req) => {
       req.reply({
         statusCode: 201,
@@ -105,8 +103,9 @@ describe('Client Management', () => {
     it('is expected to search and filter clients', () => {
       const uniqueName = `Searchable Client ${Date.now()}`
       cy.getByCy('create-client-button').click()
-      cy.getByCy('client-name-input').type(uniqueName)
-      cy.getByCy('save-client-button').click()
+      cy.getByCy('client-modal').should('be.visible')
+      cy.getByCy('client-name-input').should('be.visible').type(uniqueName)
+      cy.getByCy('save-client-button').should('be.visible').click()
       cy.wait('@createClient')
       cy.getByCy('client-modal').should('not.exist')
     })
@@ -233,10 +232,10 @@ describe('Client Management', () => {
     }
 
     beforeEach(() => {
-      cy.intercept('GET', '**/rest/v1/clients*', {
-        statusCode: 200,
-        body: [existingClient]
-      }).as('getClientsWithData')
+      // Override clients intercept with existing client data
+      cy.setupCommonIntercepts({
+        clients: [existingClient]
+      })
 
       cy.intercept('PATCH', '**/rest/v1/clients*', (req) => {
         req.reply({
@@ -246,7 +245,7 @@ describe('Client Management', () => {
       }).as('updateClient')
 
       cy.visit('/clients')
-      cy.wait('@getClientsWithData')
+      cy.wait('@getClients')
     })
 
     it('is expected to open edit modal with prefilled values', () => {

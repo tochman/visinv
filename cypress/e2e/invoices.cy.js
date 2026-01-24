@@ -42,36 +42,14 @@ describe("Invoice Management", () => {
       next_invoice_number: 1,
     };
 
-    cy.intercept("GET", "**/rest/v1/organization_members*is_default=eq.true*", {
-      statusCode: 200,
-      body: {
-        organizations: mockOrganization,
-      },
-    }).as("getDefaultOrganization");
-
-    // Then set up test-specific intercepts
-    cy.intercept("GET", "**/rest/v1/clients*", {
-      statusCode: 200,
-      body: [mockClient],
-    }).as("getClients");
-
-    // Mock templates endpoint
-    cy.intercept("GET", "**/rest/v1/invoice_templates*", {
-      statusCode: 200,
-      body: [mockTemplate],
-    }).as("getTemplates");
-
-    // Mock products endpoint
-    cy.intercept("GET", "**/rest/v1/products*", {
-      statusCode: 200,
-      body: [],
-    }).as("getProducts");
-
-    // Mock invoices endpoint
-    cy.intercept("GET", "**/rest/v1/invoices*", {
-      statusCode: 200,
-      body: [],
-    }).as("getInvoices");
+    // Set up common intercepts
+    cy.setupCommonIntercepts({
+      clients: [mockClient],
+      templates: [mockTemplate],
+      products: [],
+      invoices: [],
+      defaultOrganization: mockOrganization
+    });
 
     // Mock create invoice
     cy.intercept("POST", "**/rest/v1/invoices*", (req) => {
@@ -313,13 +291,15 @@ describe("Invoice Management", () => {
     ];
 
     beforeEach(() => {
-      cy.intercept("GET", "**/rest/v1/invoices*", {
-        statusCode: 200,
-        body: mockInvoices,
-      }).as("getInvoicesWithData");
+      cy.setupCommonIntercepts({
+        invoices: mockInvoices,
+        clients: [mockClient],
+        templates: [mockTemplate],
+        products: []
+      });
 
       cy.visit("/invoices");
-      cy.wait("@getInvoicesWithData");
+      cy.wait("@getInvoices");
     });
 
     it("is expected to display invoice list", () => {
@@ -453,13 +433,15 @@ describe("Invoice Management", () => {
     };
 
     beforeEach(() => {
-      cy.intercept("GET", "**/rest/v1/invoices*", {
-        statusCode: 200,
-        body: [existingInvoice],
-      }).as("getInvoicesForEdit");
+      cy.setupCommonIntercepts({
+        invoices: [existingInvoice],
+        clients: [mockClient],
+        templates: [mockTemplate],
+        products: []
+      });
 
       cy.visit("/invoices");
-      cy.wait("@getInvoicesForEdit");
+      cy.wait("@getInvoices");
     });
 
     it("is expected to open invoice in edit mode", () => {
@@ -529,13 +511,15 @@ describe("Invoice Management", () => {
     };
 
     beforeEach(() => {
-      cy.intercept("GET", "**/rest/v1/invoices*", {
-        statusCode: 200,
-        body: [invoiceWithFullData],
-      }).as("getInvoicesWithData");
+      cy.setupCommonIntercepts({
+        invoices: [invoiceWithFullData],
+        clients: [mockClient],
+        templates: [mockTemplate],
+        products: []
+      });
 
       cy.visit("/invoices");
-      cy.wait("@getInvoicesWithData");
+      cy.wait("@getInvoices");
       cy.wait("@getTemplates");
     });
 
@@ -557,14 +541,16 @@ describe("Invoice Management", () => {
     });
 
     it("is expected to show error when no templates available", () => {
-      cy.intercept("GET", "**/rest/v1/invoice_templates*", {
-        statusCode: 200,
-        body: [],
-      }).as("getNoTemplates");
+      cy.setupCommonIntercepts({
+        invoices: [invoiceWithFullData],
+        clients: [mockClient],
+        templates: [],
+        products: []
+      });
 
       cy.visit("/invoices");
-      cy.wait("@getInvoicesWithData");
-      cy.wait("@getNoTemplates");
+      cy.wait("@getInvoices");
+      cy.wait("@getTemplates");
 
       cy.getByCy("download-pdf-button-inv-pdf").click();
       // Alert handling is automatic in Cypress
@@ -573,9 +559,11 @@ describe("Invoice Management", () => {
 
   describe("VAT Grouping", () => {
     beforeEach(() => {
-      cy.intercept("GET", "**/rest/v1/products*", {
-        statusCode: 200,
-        body: [
+      cy.setupCommonIntercepts({
+        invoices: [],
+        clients: [mockClient],
+        templates: [mockTemplate],
+        products: [
           {
             id: "prod-1",
             name: "Standard Item",
@@ -597,8 +585,8 @@ describe("Invoice Management", () => {
             tax_rate: 6,
             unit: "st",
           },
-        ],
-      }).as("getProducts");
+        ]
+      });
     });
 
     it("is expected to display separate VAT groups for different tax rates", () => {
@@ -789,10 +777,12 @@ describe("Invoice Management", () => {
     ];
 
     beforeEach(() => {
-      cy.intercept("GET", "**/rest/v1/products*", {
-        statusCode: 200,
-        body: mockProducts,
-      }).as("getProducts");
+      cy.setupCommonIntercepts({
+        invoices: [],
+        clients: [mockClient],
+        templates: [mockTemplate],
+        products: mockProducts
+      });
     });
 
     it("is expected to show product selector when creating invoice", () => {
