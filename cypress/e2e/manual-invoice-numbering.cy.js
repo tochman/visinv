@@ -89,7 +89,7 @@ describe('Manual Invoice Numbering (US-064)', () => {
     cy.getByCy('row-description-0').should('be.visible').type('Test Service');
     cy.getByCy('row-quantity-0').clear().type('1');
     cy.getByCy('row-unit-price-0').clear().type('1000');
-    cy.getByCy('save-invoice-button').should('be.visible').scrollIntoView().click();
+    cy.getByCy('save-invoice-button').scrollIntoView().should('be.visible').click();
 
     // Assert
     cy.wait('@createInvoice')
@@ -114,7 +114,7 @@ describe('Manual Invoice Numbering (US-064)', () => {
     cy.getByCy('row-description-0').should('be.visible').type('Test Service');
     cy.getByCy('row-quantity-0').clear().type('1');
     cy.getByCy('row-unit-price-0').clear().type('1000');
-    cy.getByCy('save-invoice-button').should('be.visible').scrollIntoView().click();
+    cy.getByCy('save-invoice-button').scrollIntoView().should('be.visible').click();
 
     // Assert
     cy.getByCy('invoice-modal').should('exist');
@@ -139,7 +139,7 @@ describe('Manual Invoice Numbering (US-064)', () => {
     cy.getByCy('row-description-0').should('be.visible').type('Test Service');
     cy.getByCy('row-quantity-0').clear().type('1');
     cy.getByCy('row-unit-price-0').clear().type('1000');
-    cy.getByCy('save-invoice-button').should('be.visible').scrollIntoView().click();
+    cy.getByCy('save-invoice-button').scrollIntoView().should('be.visible').click();
 
     // Assert
     cy.wait('@createInvoice')
@@ -164,7 +164,7 @@ describe('Manual Invoice Numbering (US-064)', () => {
     cy.getByCy('row-description-0').should('be.visible').type('Test Service');
     cy.getByCy('row-quantity-0').clear().type('1');
     cy.getByCy('row-unit-price-0').clear().type('1000');
-    cy.getByCy('save-invoice-button').should('be.visible').scrollIntoView().click();
+    cy.getByCy('save-invoice-button').scrollIntoView().should('be.visible').click();
     cy.wait('@createInvoice')
 
     // Act - Try to create second invoice with same number
@@ -177,7 +177,7 @@ describe('Manual Invoice Numbering (US-064)', () => {
     cy.getByCy('row-description-0').should('be.visible').type('Another Service');
     cy.getByCy('row-quantity-0').clear().type('1');
     cy.getByCy('row-unit-price-0').clear().type('500');
-    cy.getByCy('save-invoice-button').should('be.visible').scrollIntoView().click();
+    cy.getByCy('save-invoice-button').scrollIntoView().should('be.visible').click();
 
     // Assert
     cy.getByCy('invoice-modal', { timeout: 3000 }).should('exist');
