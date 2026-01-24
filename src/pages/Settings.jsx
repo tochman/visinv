@@ -34,10 +34,10 @@ export default function Settings() {
 
   return (
     <div>
-      <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-6">{t('nav.settings')}</h1>
+      <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-6 animate-fade-in-up">{t('nav.settings')}</h1>
 
       {/* Tab Navigation */}
-      <div className="border-b border-gray-200 dark:border-gray-700 mb-6">
+      <div className="border-b border-gray-200 dark:border-gray-700 mb-6 animate-fade-in-up animate-delay-100">
         <nav className="-mb-px flex space-x-8" aria-label="Tabs">
           <button
             onClick={() => setActiveTab(TABS.SETTINGS)}
@@ -65,8 +65,10 @@ export default function Settings() {
       </div>
 
       {/* Tab Content */}
-      {activeTab === TABS.SETTINGS && <OrganizationSettings />}
-      {activeTab === TABS.MEMBERS && <OrganizationMembers />}
+      <div className="animate-fade-in-up animate-delay-200">
+        {activeTab === TABS.SETTINGS && <OrganizationSettings />}
+        {activeTab === TABS.MEMBERS && <OrganizationMembers />}
+      </div>
     </div>
   );
 }

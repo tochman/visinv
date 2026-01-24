@@ -51,7 +51,7 @@ export default function Clients() {
     <div>
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-6">
-        <h1 data-cy="clients-page-title" className="text-3xl font-bold text-gray-900 dark:text-white mb-4 sm:mb-0">
+        <h1 data-cy="clients-page-title" className="text-3xl font-bold text-gray-900 dark:text-white mb-4 sm:mb-0 animate-fade-in-up">
           {t('nav.clients')}
         </h1>
         <button
@@ -67,7 +67,7 @@ export default function Clients() {
       </div>
 
       {/* Search */}
-      <div className="mb-6">
+      <div className="mb-6 animate-fade-in-up animate-delay-100">
         <div className="relative">
           <svg
             className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400"

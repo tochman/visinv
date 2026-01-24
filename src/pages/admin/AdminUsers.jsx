@@ -50,11 +50,11 @@ export default function AdminUsers() {
 
   return (
     <div data-cy="admin-users-page" className="p-6 space-y-6">
-      <div className="flex items-center justify-between">
+      <div className="flex items-center justify-between animate-fade-in-up">
         <h1 className="text-2xl font-semibold text-gray-900 dark:text-white">{t('adminUsers.title') || 'Users'}</h1>
       </div>
 
-      <div className="flex mb-4">
+      <div className="flex mb-4 animate-fade-in-up animate-delay-100">
         <input
           data-cy="search-users"
           className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500"

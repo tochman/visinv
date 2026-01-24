@@ -188,7 +188,7 @@ export default function Invoices() {
     <div>
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-6">
-        <h1 data-cy="invoices-page-title" className="text-3xl font-bold text-gray-900 dark:text-white mb-4 sm:mb-0">
+        <h1 data-cy="invoices-page-title" className="text-3xl font-bold text-gray-900 dark:text-white mb-4 sm:mb-0 animate-fade-in-up">
           {t('nav.invoices')}
         </h1>
         <button
@@ -204,7 +204,7 @@ export default function Invoices() {
       </div>
 
       {/* Search and Filter */}
-      <div className="mb-6 grid grid-cols-1 md:grid-cols-2 gap-4">
+      <div className="mb-6 grid grid-cols-1 md:grid-cols-2 gap-4 animate-fade-in-up animate-delay-100">
         {/* Search */}
         <div className="relative">
           <svg
