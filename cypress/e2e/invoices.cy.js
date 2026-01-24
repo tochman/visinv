@@ -895,4 +895,197 @@ describe('Invoice Management', () => {
       cy.getByCy('total-display').should('contain', '1000.00')
     })
   })
+
+  describe('US-025: Recurring Invoices', () => {
+    beforeEach(() => {
+      // Login as premium user to access recurring feature
+      cy.login('premiumUser')
+
+      // Set up intercepts
+      cy.intercept('GET', '**/rest/v1/clients*', {
+        statusCode: 200,
+        body: [mockClient]
+      }).as('getClients')
+
+      cy.intercept('GET', '**/rest/v1/invoice_templates*', {
+        statusCode: 200,
+        body: [mockTemplate]
+      }).as('getTemplates')
+
+      cy.intercept('GET', '**/rest/v1/invoices*', {
+        statusCode: 200,
+        body: []
+      }).as('getInvoices')
+
+      cy.intercept('POST', '**/rest/v1/invoices*', (req) => {
+        const invoice = {
+          id: 'new-invoice-id',
+          invoice_number: 'INV-0001',
+          ...req.body,
+          client: mockClient,
+          status: 'draft'
+        }
+        req.reply({
+          statusCode: 201,
+          body: invoice
+        })
+      }).as('createInvoice')
+
+      cy.intercept('POST', '**/rest/v1/invoice_rows*', {
+        statusCode: 201,
+        body: []
+      }).as('createInvoiceRows')
+
+      cy.intercept('POST', '**/rest/v1/recurring_invoices*', (req) => {
+        req.reply({
+          statusCode: 201,
+          body: { id: 'recurring-123', ...req.body }
+        })
+      }).as('createRecurringSchedule')
+    })
+
+    it('should show recurring invoice toggle for premium users', () => {
+      cy.visit('/invoices')
+      cy.getByCy('new-invoice-btn').click()
+      
+      // Wait for form to load
+      cy.getByCy('invoice-form').should('be.visible')
+      
+      // Recurring toggle should be visible
+      cy.getByCy('recurring-toggle').should('exist')
+    })
+
+    it('should show recurring options when toggle is enabled', () => {
+      cy.visit('/invoices')
+      cy.getByCy('new-invoice-btn').click()
+      cy.getByCy('invoice-form').should('be.visible')
+      
+      // Enable recurring toggle
+      cy.getByCy('recurring-toggle').click()
+      
+      // Recurring options should appear
+      cy.getByCy('recurring-frequency-select').should('be.visible')
+      cy.getByCy('recurring-end-date-input').should('be.visible')
+      cy.getByCy('recurring-max-invoices-input').should('be.visible')
+    })
+
+    it('should hide recurring options when toggle is disabled', () => {
+      cy.visit('/invoices')
+      cy.getByCy('new-invoice-btn').click()
+      cy.getByCy('invoice-form').should('be.visible')
+      
+      // Enable then disable
+      cy.getByCy('recurring-toggle').click()
+      cy.getByCy('recurring-frequency-select').should('be.visible')
+      
+      cy.getByCy('recurring-toggle').click()
+      cy.getByCy('recurring-frequency-select').should('not.exist')
+    })
+
+    it('should create recurring invoice with monthly frequency', () => {
+      cy.visit('/invoices')
+      cy.getByCy('new-invoice-btn').click()
+      cy.getByCy('invoice-form').should('be.visible')
+      
+      // Fill in required fields
+      cy.getByCy('client-select').select(mockClient.id)
+      cy.getByCy('description-input-0').type('Monthly Service Fee')
+      cy.getByCy('quantity-input-0').clear().type('1')
+      cy.getByCy('unit-price-input-0').clear().type('500')
+      
+      // Enable recurring
+      cy.getByCy('recurring-toggle').click()
+      cy.getByCy('recurring-frequency-select').select('monthly')
+      
+      // Save
+      cy.getByCy('submit-invoice-btn').click()
+      
+      // Should create invoice
+      cy.wait('@createInvoice')
+    })
+
+    it('should set end date for recurring invoice', () => {
+      cy.visit('/invoices')
+      cy.getByCy('new-invoice-btn').click()
+      cy.getByCy('invoice-form').should('be.visible')
+      
+      // Fill in required fields
+      cy.getByCy('client-select').select(mockClient.id)
+      cy.getByCy('description-input-0').type('Quarterly Report')
+      cy.getByCy('quantity-input-0').clear().type('1')
+      cy.getByCy('unit-price-input-0').clear().type('1000')
+      
+      // Enable recurring with end date
+      cy.getByCy('recurring-toggle').click()
+      cy.getByCy('recurring-frequency-select').select('quarterly')
+      
+      // Set end date to 1 year from now
+      const endDate = new Date()
+      endDate.setFullYear(endDate.getFullYear() + 1)
+      cy.getByCy('recurring-end-date-input').type(endDate.toISOString().split('T')[0])
+      
+      cy.getByCy('submit-invoice-btn').click()
+      cy.wait('@createInvoice')
+    })
+
+    it('should set max invoices for recurring invoice', () => {
+      cy.visit('/invoices')
+      cy.getByCy('new-invoice-btn').click()
+      cy.getByCy('invoice-form').should('be.visible')
+      
+      // Fill in required fields
+      cy.getByCy('client-select').select(mockClient.id)
+      cy.getByCy('description-input-0').type('Weekly Maintenance')
+      cy.getByCy('quantity-input-0').clear().type('2')
+      cy.getByCy('unit-price-input-0').clear().type('250')
+      
+      // Enable recurring with max invoices
+      cy.getByCy('recurring-toggle').click()
+      cy.getByCy('recurring-frequency-select').select('weekly')
+      cy.getByCy('recurring-max-invoices-input').type('12')
+      
+      cy.getByCy('submit-invoice-btn').click()
+      cy.wait('@createInvoice')
+    })
+
+    it('should have all frequency options available', () => {
+      cy.visit('/invoices')
+      cy.getByCy('new-invoice-btn').click()
+      cy.getByCy('invoice-form').should('be.visible')
+      
+      cy.getByCy('recurring-toggle').click()
+      
+      // Check all frequency options exist
+      cy.getByCy('recurring-frequency-select').should('contain', 'Weekly')
+      cy.getByCy('recurring-frequency-select').should('contain', 'Every 2 Weeks')
+      cy.getByCy('recurring-frequency-select').should('contain', 'Monthly')
+      cy.getByCy('recurring-frequency-select').should('contain', 'Quarterly')
+      cy.getByCy('recurring-frequency-select').should('contain', 'Yearly')
+    })
+
+    it('should show recurring indicator for invoices generated from schedule', () => {
+      const recurringInvoice = {
+        id: 'invoice-from-recurring',
+        invoice_number: 'INV-R001',
+        client: mockClient,
+        client_id: mockClient.id,
+        status: 'draft',
+        issue_date: new Date().toISOString().split('T')[0],
+        due_date: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
+        total: 500,
+        recurring_invoice_id: 'recurring-schedule-123'
+      }
+
+      cy.intercept('GET', '**/rest/v1/invoices*', {
+        statusCode: 200,
+        body: [recurringInvoice]
+      }).as('getInvoicesWithRecurring')
+
+      cy.visit('/invoices')
+      cy.wait('@getInvoicesWithRecurring')
+      
+      // Should show recurring indicator
+      cy.getByCy('recurring-indicator-invoice-from-recurring').should('exist')
+    })
+  })
 })

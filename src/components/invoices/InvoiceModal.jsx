@@ -1,17 +1,22 @@
 import { useState, useEffect, useRef } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { useTranslation } from 'react-i18next';
+import { CubeIcon, ChevronDownIcon } from '@heroicons/react/24/outline';
 import { useOrganization } from '../../contexts/OrganizationContext';
 import { createInvoice, updateInvoice } from '../../features/invoices/invoicesSlice';
 import { fetchClients } from '../../features/clients/clientsSlice';
 import { fetchProducts } from '../../features/products/productsSlice';
 import { fetchTemplates } from '../../features/invoiceTemplates/invoiceTemplatesSlice';
 import { getCurrencyCodes, getCurrency } from '../../config/currencies';
+import { usePremiumAccess } from '../../hooks/usePremiumAccess';
+import { useToast } from '../../context/ToastContext';
 
 export default function InvoiceModal({ isOpen, onClose, invoice = null }) {
   const { t } = useTranslation();
   const dispatch = useDispatch();
+  const toast = useToast();
   const isEditing = !!invoice;
+  const { hasPremiumAccess } = usePremiumAccess();
   
   const clients = useSelector(state => state.clients.items);
   const products = useSelector(state => state.products.items);
@@ -36,6 +41,11 @@ export default function InvoiceModal({ isOpen, onClose, invoice = null }) {
     notes: invoice?.notes || '',
     terms: invoice?.terms || '',
     reference: invoice?.reference || '',
+    // Recurring settings (Premium feature)
+    is_recurring: invoice?.is_recurring || false,
+    recurring_frequency: invoice?.recurring_frequency || 'monthly',
+    recurring_end_date: invoice?.recurring_end_date || '',
+    recurring_max_count: invoice?.recurring_max_count || '',
   });
 
   const [rows, setRows] = useState(invoice?.invoice_rows || [
@@ -44,6 +54,7 @@ export default function InvoiceModal({ isOpen, onClose, invoice = null }) {
 
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
+  const [openProductMenu, setOpenProductMenu] = useState(null);
 
   // Reset form when modal opens or when switching between invoices
   useEffect(() => {
@@ -63,6 +74,11 @@ export default function InvoiceModal({ isOpen, onClose, invoice = null }) {
         notes: invoice?.notes || '',
         terms: invoice?.terms || '',
         reference: invoice?.reference || '',
+        // Recurring settings (Premium feature)
+        is_recurring: invoice?.is_recurring || false,
+        recurring_frequency: invoice?.recurring_frequency || 'monthly',
+        recurring_end_date: invoice?.recurring_end_date || '',
+        recurring_max_count: invoice?.recurring_max_count || '',
       });
       
       setRows(invoice?.invoice_rows || [
@@ -182,9 +198,14 @@ export default function InvoiceModal({ isOpen, onClose, invoice = null }) {
     try {
       const invoiceData = {
         ...formData,
+        // Convert empty strings to null for optional UUID fields
+        invoice_template_id: formData.invoice_template_id || null,
+        credited_invoice_id: formData.credited_invoice_id || null,
         tax_rate: parseFloat(formData.tax_rate),
         rows: rows.filter(r => r.description.trim()).map(row => ({
           ...row,
+          // Convert empty product_id to null for UUID field
+          product_id: row.product_id || null,
           quantity: parseFloat(row.quantity),
           unit_price: parseFloat(row.unit_price),
           tax_rate: parseFloat(row.tax_rate || formData.tax_rate),
@@ -193,12 +214,17 @@ export default function InvoiceModal({ isOpen, onClose, invoice = null }) {
 
       if (isEditing) {
         await dispatch(updateInvoice({ id: invoice.id, updates: invoiceData })).unwrap();
+        toast.success(t('invoices.invoiceUpdatedSuccessfully') || 'Invoice updated successfully');
       } else {
         await dispatch(createInvoice(invoiceData)).unwrap();
+        toast.success(t('invoices.invoiceCreatedSuccessfully') || 'Invoice created successfully');
       }
       onClose();
     } catch (err) {
-      setError(err);
+      // Handle both Error objects and string errors
+      const errorMessage = err?.message || err?.toString() || 'An error occurred';
+      setError(errorMessage);
+      toast.error(errorMessage);
     } finally {
       setLoading(false);
     }
@@ -480,6 +506,131 @@ export default function InvoiceModal({ isOpen, onClose, invoice = null }) {
               </div>
             </div>
 
+            {/* Recurring Invoice Settings (Premium Feature) */}
+            {formData.invoice_type === 'DEBET' && (
+              <div className="border border-gray-200 dark:border-gray-700 rounded-sm p-4" data-cy="recurring-section">
+                <div className="flex items-center justify-between mb-4">
+                  <div className="flex items-center gap-3">
+                    <label className="relative inline-flex items-center cursor-pointer">
+                      <input
+                        type="checkbox"
+                        checked={formData.is_recurring}
+                        onChange={(e) => {
+                          if (!hasPremiumAccess && e.target.checked) {
+                            // Show upgrade prompt for non-premium users
+                            return;
+                          }
+                          setFormData({ ...formData, is_recurring: e.target.checked });
+                        }}
+                        disabled={!hasPremiumAccess}
+                        data-cy="recurring-toggle"
+                        className="sr-only peer"
+                      />
+                      <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-2 peer-focus:ring-blue-500 rounded-full peer dark:bg-gray-700 peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-gray-600 peer-checked:bg-blue-600 peer-disabled:opacity-50 peer-disabled:cursor-not-allowed"></div>
+                    </label>
+                    <div>
+                      <h3 className="text-base font-semibold text-gray-900 dark:text-white flex items-center gap-2">
+                        {t('invoices.makeRecurring')}
+                        {!hasPremiumAccess && (
+                          <span className="text-xs bg-yellow-400 dark:bg-yellow-500 text-gray-900 px-2 py-0.5 rounded">
+                            PRO
+                          </span>
+                        )}
+                      </h3>
+                      <p className="text-sm text-gray-500 dark:text-gray-400">
+                        {t('invoices.recurringDescription')}
+                      </p>
+                    </div>
+                  </div>
+                </div>
+
+                {formData.is_recurring && hasPremiumAccess && (
+                  <div>
+                    {/* Show recurring status info when editing */}
+                    {isEditing && invoice?.recurring_next_date && (
+                      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-4 pt-4 border-t border-gray-200 dark:border-gray-700 bg-blue-50 dark:bg-blue-900/20 p-4 rounded">
+                        <div>
+                          <span className="text-sm font-medium text-gray-600 dark:text-gray-400">{t('invoices.recurringFrequency')}</span>
+                          <p className="text-base font-semibold text-gray-900 dark:text-white capitalize">
+                            {formData.recurring_frequency}
+                          </p>
+                        </div>
+                        <div>
+                          <span className="text-sm font-medium text-gray-600 dark:text-gray-400">{t('invoices.recurringNextDate')}</span>
+                          <p className="text-base font-semibold text-gray-900 dark:text-white">
+                            {invoice.recurring_next_date}
+                          </p>
+                        </div>
+                        <div>
+                          <span className="text-sm font-medium text-gray-600 dark:text-gray-400">{t('invoices.recurringProgress')}</span>
+                          <p className="text-base font-semibold text-gray-900 dark:text-white">
+                            {invoice.recurring_current_count || 0} {invoice.recurring_max_count ? `of ${invoice.recurring_max_count}` : ''}
+                          </p>
+                        </div>
+                      </div>
+                    )}
+                    
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-4 pt-4 border-t border-gray-200 dark:border-gray-700">
+                    {/* Frequency */}
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                        {t('invoices.recurringFrequency')}
+                      </label>
+                      <select
+                        name="recurring_frequency"
+                        value={formData.recurring_frequency}
+                        onChange={handleChange}
+                        data-cy="recurring-frequency-select"
+                        className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      >
+                        <option value="weekly">{t('invoices.frequencyWeekly')}</option>
+                        <option value="biweekly">{t('invoices.frequencyBiweekly')}</option>
+                        <option value="monthly">{t('invoices.frequencyMonthly')}</option>
+                        <option value="quarterly">{t('invoices.frequencyQuarterly')}</option>
+                        <option value="yearly">{t('invoices.frequencyYearly')}</option>
+                      </select>
+                    </div>
+
+                    {/* End Date (optional) */}
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                        {t('invoices.recurringEndDate')}
+                        <span className="text-gray-400 font-normal ml-1">({t('common.optional')})</span>
+                      </label>
+                      <input
+                        type="date"
+                        name="recurring_end_date"
+                        value={formData.recurring_end_date}
+                        onChange={handleChange}
+                        data-cy="recurring-end-date-input"
+                        min={formData.issue_date}
+                        className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      />
+                    </div>
+
+                    {/* Max Invoices (optional) */}
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                        {t('invoices.recurringMaxInvoices')}
+                        <span className="text-gray-400 font-normal ml-1">({t('common.optional')})</span>
+                      </label>
+                      <input
+                        type="number"
+                        name="recurring_max_count"
+                        value={formData.recurring_max_count}
+                        onChange={handleChange}
+                        data-cy="recurring-max-invoices-input"
+                        min="1"
+                        placeholder={t('invoices.unlimited')}
+                        className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      />
+                    </div>
+                  </div>
+                  </div>
+                )}
+              </div>
+            )}
+
             {/* Line Items */}
             <div>
               <div className="flex justify-between items-center mb-4">
@@ -498,116 +649,149 @@ export default function InvoiceModal({ isOpen, onClose, invoice = null }) {
 
               <div className="space-y-3" data-cy="line-items-container">
                 {rows.map((row, index) => (
-                  <div key={index} data-cy={`line-item-${index}`} className="space-y-2">
-                    {/* Product Selector */}
-                    {products.length > 0 && (
-                      <div className="flex items-center gap-2">
+                  <div key={index} data-cy={`line-item-${index}`} className="relative">
+                    {/* Line Item Fields - All on one row */}
+                    <div className="grid grid-cols-12 gap-2 p-3 bg-gray-50 dark:bg-gray-700/50 rounded-sm items-center">
+                      {/* Product Selector Button */}
+                      {products.length > 0 && (
+                        <div className="col-span-1 relative">
+                          <button
+                            type="button"
+                            onClick={() => setOpenProductMenu(openProductMenu === index ? null : index)}
+                            data-cy={`product-select-btn-${index}`}
+                            className="p-1.5 text-gray-500 hover:text-blue-600 dark:text-gray-400 dark:hover:text-blue-400 border border-gray-300 dark:border-gray-600 rounded-sm hover:border-blue-400 dark:hover:border-blue-500 transition-colors bg-white dark:bg-gray-700"
+                            title={t('invoices.selectProduct')}
+                          >
+                            <CubeIcon className="w-5 h-5" />
+                          </button>
+                          
+                          {/* Product Dropdown Menu */}
+                          {openProductMenu === index && (
+                            <>
+                              <div 
+                                className="fixed inset-0 z-10" 
+                                onClick={() => setOpenProductMenu(null)}
+                              />
+                              <div 
+                                className="absolute left-0 top-full mt-1 z-20 w-64 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-600 rounded-sm shadow-lg max-h-60 overflow-y-auto"
+                                data-cy={`product-menu-${index}`}
+                              >
+                                <div className="p-2 border-b border-gray-200 dark:border-gray-600">
+                                  <span className="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">
+                                    {t('invoices.selectProduct')}
+                                  </span>
+                                </div>
+                                {products.map((product) => (
+                                  <button
+                                    key={product.id}
+                                    type="button"
+                                    onClick={() => {
+                                      handleProductSelect(index, product.id);
+                                      setOpenProductMenu(null);
+                                    }}
+                                    data-cy={`product-option-${product.id}`}
+                                    className={`w-full text-left px-3 py-2 text-sm hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors ${
+                                      row.product_id === product.id ? 'bg-blue-50 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300' : 'text-gray-700 dark:text-gray-300'
+                                    }`}
+                                  >
+                                    <div className="font-medium">{product.name}</div>
+                                    <div className="text-xs text-gray-500 dark:text-gray-400">
+                                      {product.unit_price} SEK / {product.unit}
+                                    </div>
+                                  </button>
+                                ))}
+                              </div>
+                            </>
+                          )}
+                        </div>
+                      )}
+
+                      {/* Description */}
+                      <div className={products.length > 0 ? "col-span-11 sm:col-span-3" : "col-span-12 sm:col-span-4"}>
+                        <input
+                          type="text"
+                          value={row.description}
+                          onChange={(e) => handleRowChange(index, 'description', e.target.value)}
+                          placeholder={t('invoices.description')}
+                          data-cy={`description-input-${index}`}
+                          className="w-full px-2 py-1 text-sm border border-gray-300 dark:border-gray-600 rounded-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:outline-none focus:ring-1 focus:ring-blue-500"
+                        />
+                      </div>
+
+                      {/* Quantity */}
+                      <div className="col-span-3 sm:col-span-1">
+                        <input
+                          type="number"
+                          value={row.quantity}
+                          onChange={(e) => handleRowChange(index, 'quantity', e.target.value)}
+                          placeholder={t('invoices.quantity')}
+                          data-cy={`quantity-input-${index}`}
+                          step="0.01"
+                          min="0"
+                          className="w-full px-2 py-1 text-sm border border-gray-300 dark:border-gray-600 rounded-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:outline-none focus:ring-1 focus:ring-blue-500"
+                        />
+                      </div>
+
+                      {/* Unit */}
+                      <div className="col-span-3 sm:col-span-1">
+                        <input
+                          type="text"
+                          value={row.unit}
+                          onChange={(e) => handleRowChange(index, 'unit', e.target.value)}
+                          placeholder={t('invoices.unit')}
+                          data-cy={`unit-input-${index}`}
+                          className="w-full px-2 py-1 text-sm border border-gray-300 dark:border-gray-600 rounded-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:outline-none focus:ring-1 focus:ring-blue-500"
+                        />
+                      </div>
+
+                      {/* Unit Price */}
+                      <div className="col-span-3 sm:col-span-2">
+                        <input
+                          type="number"
+                          value={row.unit_price}
+                          onChange={(e) => handleRowChange(index, 'unit_price', e.target.value)}
+                          placeholder={t('invoices.unitPrice')}
+                          data-cy={`unit-price-input-${index}`}
+                          step="0.01"
+                          min="0"
+                          className="w-full px-2 py-1 text-sm border border-gray-300 dark:border-gray-600 rounded-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:outline-none focus:ring-1 focus:ring-blue-500"
+                        />
+                      </div>
+
+                      {/* VAT Rate */}
+                      <div className="col-span-4 sm:col-span-1">
                         <select
-                          value={row.product_id || ''}
-                          onChange={(e) => handleProductSelect(index, e.target.value)}
-                          data-cy={`product-select-${index}`}
-                          className="flex-1 px-2 py-1 text-sm border border-gray-300 dark:border-gray-600 rounded-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:outline-none focus:ring-1 focus:ring-blue-500"
+                          value={row.tax_rate || formData.tax_rate}
+                          onChange={(e) => handleRowChange(index, 'tax_rate', e.target.value)}
+                          data-cy={`tax-rate-select-${index}`}
+                          className="w-full px-2 py-1 text-sm border border-gray-300 dark:border-gray-600 rounded-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:outline-none focus:ring-1 focus:ring-blue-500"
                         >
-                          <option value="">-- Select product or enter manually --</option>
-                          {products.map((product) => (
-                            <option key={product.id} value={product.id}>
-                              {product.name} ({product.unit_price} SEK/{product.unit})
-                            </option>
-                          ))}
+                          <option value="25">25%</option>
+                          <option value="12">12%</option>
+                          <option value="6">6%</option>
+                          <option value="0">0%</option>
                         </select>
                       </div>
-                    )}
-                    
-                    {/* Line Item Fields */}
-                    <div className="grid grid-cols-12 gap-2 p-3 bg-gray-50 dark:bg-gray-700/50 rounded-sm">
-                    {/* Description */}
-                    <div className="col-span-12 sm:col-span-3">
-                      <input
-                        type="text"
-                        value={row.description}
-                        onChange={(e) => handleRowChange(index, 'description', e.target.value)}
-                        placeholder={t('invoices.description')}
-                        data-cy={`description-input-${index}`}
-                        className="w-full px-2 py-1 text-sm border border-gray-300 dark:border-gray-600 rounded-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:outline-none focus:ring-1 focus:ring-blue-500"
-                      />
-                    </div>
 
-                    {/* Quantity */}
-                    <div className="col-span-3 sm:col-span-1">
-                      <input
-                        type="number"
-                        value={row.quantity}
-                        onChange={(e) => handleRowChange(index, 'quantity', e.target.value)}
-                        placeholder={t('invoices.quantity')}
-                        data-cy={`quantity-input-${index}`}
-                        step="0.01"
-                        min="0"
-                        className="w-full px-2 py-1 text-sm border border-gray-300 dark:border-gray-600 rounded-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:outline-none focus:ring-1 focus:ring-blue-500"
-                      />
-                    </div>
-
-                    {/* Unit */}
-                    <div className="col-span-3 sm:col-span-1">
-                      <input
-                        type="text"
-                        value={row.unit}
-                        onChange={(e) => handleRowChange(index, 'unit', e.target.value)}
-                        placeholder={t('invoices.unit')}
-                        data-cy={`unit-input-${index}`}
-                        className="w-full px-2 py-1 text-sm border border-gray-300 dark:border-gray-600 rounded-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:outline-none focus:ring-1 focus:ring-blue-500"
-                      />
-                    </div>
-
-                    {/* Unit Price */}
-                    <div className="col-span-3 sm:col-span-2">
-                      <input
-                        type="number"
-                        value={row.unit_price}
-                        onChange={(e) => handleRowChange(index, 'unit_price', e.target.value)}
-                        placeholder={t('invoices.unitPrice')}
-                        data-cy={`unit-price-input-${index}`}
-                        step="0.01"
-                        min="0"
-                        className="w-full px-2 py-1 text-sm border border-gray-300 dark:border-gray-600 rounded-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:outline-none focus:ring-1 focus:ring-blue-500"
-                      />
-                    </div>
-
-                    {/* VAT Rate */}
-                    <div className="col-span-4 sm:col-span-1">
-                      <select
-                        value={row.tax_rate || formData.tax_rate}
-                        onChange={(e) => handleRowChange(index, 'tax_rate', e.target.value)}
-                        data-cy={`tax-rate-select-${index}`}
-                        className="w-full px-2 py-1 text-sm border border-gray-300 dark:border-gray-600 rounded-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:outline-none focus:ring-1 focus:ring-blue-500"
-                      >
-                        <option value="25">25%</option>
-                        <option value="12">12%</option>
-                        <option value="6">6%</option>
-                        <option value="0">0%</option>
-                      </select>
-                    </div>
-
-                    {/* Amount */}
-                    <div className="col-span-8 sm:col-span-1 flex items-center">
-                      <span className="text-sm font-medium text-gray-700 dark:text-gray-300" data-cy={`amount-${index}`}>
-                        {(parseFloat(row.quantity || 0) * parseFloat(row.unit_price || 0)).toFixed(2)}
-                      </span>
-                    </div>
-
-                    {/* Remove Button */}
-                    <div className="col-span-4 sm:col-span-1 flex items-center">
-                      <button
-                        type="button"
-                        onClick={() => removeRow(index)}
-                        data-cy={`remove-line-item-${index}`}
-                        disabled={rows.length === 1}
-                        className="text-red-600 hover:text-red-800 dark:text-red-400 dark:hover:text-red-300 disabled:opacity-30 disabled:cursor-not-allowed"
-                      >
-                        <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                        </svg>
-                      </button>
-                    </div>
+                      {/* Amount */}
+                      <div className="col-span-5 sm:col-span-2 flex items-center justify-end gap-2">
+                        <span className="text-sm font-medium text-gray-700 dark:text-gray-300" data-cy={`amount-${index}`}>
+                          {(parseFloat(row.quantity || 0) * parseFloat(row.unit_price || 0)).toFixed(2)}
+                        </span>
+                        
+                        {/* Remove Button */}
+                        <button
+                          type="button"
+                          onClick={() => removeRow(index)}
+                          data-cy={`remove-line-item-${index}`}
+                          disabled={rows.length === 1}
+                          className="p-1 text-red-600 hover:text-red-800 dark:text-red-400 dark:hover:text-red-300 disabled:opacity-30 disabled:cursor-not-allowed"
+                        >
+                          <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                          </svg>
+                        </button>
+                      </div>
                     </div>
                   </div>
                 ))}

@@ -19,6 +19,32 @@ const users = {
     user_metadata: { full_name: 'Premium User' },
     profile: { id: 'test-premium-user-id', email: 'premium@test.com', is_admin: false, plan_type: 'premium', full_name: 'Premium User' }
   },
+  premiumUserWithOrganization: {
+    id: 'test-premium-org-user-id',
+    email: 'premium-org@test.com',
+    user_metadata: { full_name: 'Premium Org User' },
+    profile: { id: 'test-premium-org-user-id', email: 'premium-org@test.com', is_admin: false, plan_type: 'premium', full_name: 'Premium Org User' },
+    organization: {
+      id: 'test-premium-org-id',
+      name: 'Test Premium Organization AB',
+      org_number: '556677-8899',
+      organization_number: '556677-8899',
+      vat_number: 'SE556677889901',
+      address: 'Testgatan 123',
+      city: 'Stockholm',
+      postal_code: '11122',
+      country: 'Sweden',
+      email: 'billing@testorg.se',
+      phone: '+46701234567',
+      bank_name: 'Nordea',
+      bank_account: '1234-5678901234',
+      bank_bic: 'NDEASESS',
+      bank_iban: 'SE1234567890123456789012',
+      invoice_numbering_mode: 'auto',
+      invoice_prefix: 'INV-',
+      next_invoice_number: 1
+    }
+  },
   visitor: null
 }
 
@@ -104,7 +130,8 @@ Cypress.Commands.add('login', (userType = 'user', options = {}) => {
       updated_at: new Date().toISOString()
     }
 
-    const organizationToUse = options.customOrganization || defaultOrganization
+    // Use organization from user data if available (e.g., premiumUserWithOrganization)
+    const organizationToUse = options.customOrganization || userData.organization || defaultOrganization
     const roleToUse = options.customOrganization?.role || 'owner'
 
     cy.intercept('GET', '**/rest/v1/organization_members*', {

@@ -54,6 +54,10 @@ class InvoiceResource extends BaseResource {
    * Create a new invoice with line items
    * @param {Object} invoiceData - Invoice data
    * @param {Array} invoiceData.rows - Invoice line items
+   * @param {boolean} invoiceData.is_recurring - Whether to create a recurring schedule
+   * @param {string} invoiceData.recurring_frequency - Frequency (weekly, biweekly, monthly, quarterly, yearly)
+   * @param {string} invoiceData.recurring_end_date - Optional end date for recurrence
+   * @param {number} invoiceData.recurring_max_invoices - Optional max number of invoices
    * @returns {Promise<{data: Object|null, error: Error|null}>}
    */
   async create(invoiceData) {
@@ -68,7 +72,14 @@ class InvoiceResource extends BaseResource {
       return { data: null, error: orgError || new Error('No organization found') };
     }
 
-    const { rows, ...invoiceFields } = invoiceData;
+    const { 
+      rows, 
+      is_recurring, 
+      recurring_frequency, 
+      recurring_end_date, 
+      recurring_max_invoices,
+      ...invoiceFields 
+    } = invoiceData;
 
     // Handle invoice numbering based on organization settings
     const isManualMode = currentOrg.invoice_numbering_mode === 'manual';
@@ -118,6 +129,22 @@ class InvoiceResource extends BaseResource {
     // Calculate totals
     const calculatedFields = this.calculateTotals(rows || [], invoiceFields.tax_rate || 25);
 
+    // Create recurring schedule if this is a recurring invoice
+    if (is_recurring && recurring_frequency) {
+      // Set recurring fields directly on the invoice
+      invoiceFields.is_recurring = true;
+      invoiceFields.recurring_frequency = recurring_frequency;
+      invoiceFields.recurring_start_date = invoiceFields.issue_date || new Date().toISOString().split('T')[0];
+      invoiceFields.recurring_end_date = recurring_end_date || null;
+      invoiceFields.recurring_next_date = this.calculateNextRecurringDate(
+        invoiceFields.recurring_start_date,
+        recurring_frequency
+      );
+      invoiceFields.recurring_max_count = recurring_max_invoices ? parseInt(recurring_max_invoices, 10) : null;
+      invoiceFields.recurring_current_count = 0;
+      invoiceFields.recurring_status = 'active';
+    }
+
     // Create invoice
     const { data: invoice, error: invoiceError } = await this.supabase
       .from(this.tableName)
@@ -154,6 +181,33 @@ class InvoiceResource extends BaseResource {
 
     // Fetch complete invoice with relations
     return this.show(invoice.id);
+  }
+
+  /**
+   * Calculate next recurring date based on frequency
+   */
+  calculateNextRecurringDate(startDate, frequency) {
+    const date = new Date(startDate);
+    
+    switch (frequency) {
+      case 'weekly':
+        date.setDate(date.getDate() + 7);
+        break;
+      case 'biweekly':
+        date.setDate(date.getDate() + 14);
+        break;
+      case 'monthly':
+        date.setMonth(date.getMonth() + 1);
+        break;
+      case 'quarterly':
+        date.setMonth(date.getMonth() + 3);
+        break;
+      case 'yearly':
+        date.setFullYear(date.getFullYear() + 1);
+        break;
+    }
+    
+    return date.toISOString().split('T')[0];
   }
 
   /**

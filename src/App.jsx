@@ -3,6 +3,7 @@ import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-d
 import { useDispatch, useSelector } from 'react-redux';
 import { checkSession } from './features/auth/authSlice';
 import { OrganizationProvider } from './contexts/OrganizationContext';
+import { ToastProvider } from './context/ToastContext';
 
 // Layout
 import MainLayout from './components/layout/MainLayout';
@@ -70,8 +71,9 @@ function App() {
   }
 
   return (
-    <OrganizationProvider>
-      <Router>
+    <ToastProvider>
+      <OrganizationProvider>
+        <Router>
         <Routes>
           {/* Auth Routes */}
           <Route element={<AuthLayout />}>
@@ -86,7 +88,6 @@ function App() {
             <Route path="/" element={<Dashboard />} />
             <Route path="/invoices" element={<Invoices />} />
             <Route path="/invoices/:id" element={<InvoiceDetail />} />
-            <Route path="/recurring-invoices" element={<RecurringInvoices />} />
             <Route path="/clients" element={<Clients />} />
             <Route path="/products" element={<Products />} />
             <Route path="/templates" element={<Templates />} />
@@ -107,6 +108,7 @@ function App() {
         </Routes>
       </Router>
     </OrganizationProvider>
+    </ToastProvider>
   );
 }
 

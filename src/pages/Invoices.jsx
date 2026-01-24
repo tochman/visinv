@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { useTranslation } from 'react-i18next';
+import { ArrowPathIcon } from '@heroicons/react/24/outline';
 import { fetchInvoices, deleteInvoice, markInvoiceAsSent, markInvoiceAsPaid, updateInvoiceTemplate } from '../features/invoices/invoicesSlice';
 import { fetchTemplates } from '../features/invoiceTemplates/invoiceTemplatesSlice';
 import InvoiceModal from '../components/invoices/InvoiceModal';
@@ -222,9 +223,7 @@ export default function Invoices() {
             data-cy="search-invoices-input"
             className="w-full pl-10 pr-4 py-2 border border-gray-300 dark:border-gray-600 rounded-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
           />
-        </div>
-
-        {/* Status Filter */}
+        </div>        {/* Status Filter */}
         <div>
           <select
             value={statusFilter}
@@ -331,7 +330,36 @@ export default function Invoices() {
                   >
                     <td className="px-6 py-4 whitespace-nowrap">
                       <div className="text-sm font-medium text-gray-900 dark:text-white">
-                        {invoice.invoice_number}
+                        <span className="flex items-center gap-2">
+                          {invoice.invoice_number}
+                          {invoice.is_recurring && (
+                            <span 
+                              className="relative group inline-flex items-center px-1.5 py-0.5 text-xs font-medium rounded bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300"
+                              data-cy={`recurring-schedule-indicator-${invoice.id}`}
+                            >
+                              <ArrowPathIcon className="h-3.5 w-3.5" />
+                              <span 
+                                className="invisible group-hover:visible absolute left-1/2 -translate-x-1/2 bottom-full mb-1 px-2 py-1 text-xs font-medium text-white bg-gray-900 dark:bg-gray-700 rounded whitespace-nowrap z-10"
+                                data-cy={`recurring-tooltip-${invoice.id}`}
+                              >
+                                {t('invoices.recurringFrequency')}: {invoice.recurring_frequency ? t(`invoices.frequency${invoice.recurring_frequency.charAt(0).toUpperCase() + invoice.recurring_frequency.slice(1)}`) : ''}
+                              </span>
+                            </span>
+                          )}
+                          {invoice.recurring_parent_id && (
+                            <span 
+                              className="relative group inline-flex items-center px-1.5 py-0.5 text-xs font-medium rounded bg-purple-100 text-purple-800 dark:bg-purple-900/30 dark:text-purple-300"
+                              data-cy={`recurring-child-indicator-${invoice.id}`}
+                            >
+                              <ArrowPathIcon className="h-3.5 w-3.5" />
+                              <span 
+                                className="invisible group-hover:visible absolute left-1/2 -translate-x-1/2 bottom-full mb-1 px-2 py-1 text-xs font-medium text-white bg-gray-900 dark:bg-gray-700 rounded whitespace-nowrap z-10"
+                              >
+                                {t('invoices.recurringGenerated')}
+                              </span>
+                            </span>
+                          )}
+                        </span>
                         {isOverdue(invoice) && (
                           <div className="text-xs text-red-600 dark:text-red-400 mt-1" data-cy={`overdue-indicator-${invoice.id}`}>
                             {t('reminder.overdueBy')} {getDaysOverdue(invoice)} {getDaysOverdue(invoice) === 1 ? t('reminder.day') : t('reminder.days')}

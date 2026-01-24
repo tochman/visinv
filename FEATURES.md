@@ -235,19 +235,18 @@ These additions position VisInv as a comprehensive solution for:
 
 **US-025: Recurring Invoices** ✅
 - As a **premium user**, in order to **automate subscription billing**, I would like to **set up recurring invoices with custom intervals**.
-- **Status:** Implemented
-  - Database: `recurring_invoices` table with frequency, start/end dates, max invoices, rows_template (JSONB)
-  - Database: Added `recurring_invoice_id` column to invoices table for tracking generated invoices
+- **Status:** Implemented (Simplified architecture - recurring settings on invoices table)
+  - Database: Recurring fields added directly to `invoices` table (is_recurring, recurring_frequency, recurring_start_date, recurring_end_date, recurring_next_date, recurring_max_count, recurring_current_count, recurring_parent_id, recurring_status)
+  - Database: Invoice number uniqueness changed from global to per-organization (migration 031)
   - Frequencies: Weekly, Bi-weekly, Monthly, Quarterly, Yearly
   - Statuses: Active, Paused, Completed, Cancelled
-  - Backend: `RecurringInvoice` resource with CRUD, pause/resume, generateInvoice methods
-  - Redux: `recurringInvoicesSlice` with full state management
-  - UI: RecurringInvoiceModal for create/edit with line items
-  - UI: RecurringInvoices page with list, search, filter, actions
-  - Navigation: Added to sidebar (premium feature)
-  - Actions: Generate Now, Pause, Resume, Edit, Delete
-  - i18n: Full English/Swedish translations
-  - Tests: 12 Cypress E2E test scenarios
+  - Backend: Invoice resource with recurring logic in create() method, calculateNextRecurringDate() helper
+  - UI: Recurring toggle in InvoiceModal with frequency, end date, max count settings (premium feature)
+  - UI: Recurring indicator (ArrowPathIcon) with Tailwind tooltip on invoice list
+  - UI: Status display (frequency, next date, progress) shown when editing recurring invoices
+  - Premium gating: Toggle disabled for non-premium users with PRO badge
+  - i18n: Full English/Swedish translations for all recurring UI elements
+  - Tests: 15 comprehensive Cypress E2E test scenarios covering create, view, edit, delete, premium/non-premium access, all with "is expected to" format
 
 **US-063: Credit Invoices** ✅
 - As a **user that issues an invoice**, in order to **keep my books in good order**, I would like to **be able to issue CREDIT invoices (either partial or whole) for previously issued invoices**.
