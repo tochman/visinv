@@ -123,29 +123,30 @@ All features must have corresponding Cypress E2E tests in `cypress/e2e/`.
 
 **Best Practices:**
 - Use `data-cy` attributes for element selection
-- Mock API calls with `cy.intercept()`
+- Use `setupCommonIntercepts()` custom command for common API mocks (abstracts interceptors for readability)
+- Use other custom commands from `cypress/support/commands.js` (login, fillClientForm, getByCy, etc.)
 - Wait for API responses with `cy.wait('@aliasName')`
 - Test both happy path and error scenarios
-- Use custom commands from `cypress/support/commands.js`
+- **Always use "is expected to" format in test names**, not "should"
 
 **Test Organization:**
 ```javascript
 describe('Feature Name', () => {
   beforeEach(() => {
-    cy.intercept('GET', '**/rest/v1/table*', { body: [] }).as('getData')
+    cy.setupCommonIntercepts({ clients: [], products: [] })
     cy.login('admin')
     cy.visit('/page')
-    cy.wait('@getData')
+    cy.wait('@getClients')
   })
 
   describe('Happy Path - Success Scenarios', () => {
-    it('should successfully do something', () => {
+    it('is expected to create a new resource successfully', () => {
       // Test implementation
     })
   })
 
   describe('Sad Path - Error Scenarios', () => {
-    it('should handle errors gracefully', () => {
+    it('is expected to display error message when API fails', () => {
       // Test implementation
     })
   })
