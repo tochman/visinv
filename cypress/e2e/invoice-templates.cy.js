@@ -26,12 +26,13 @@ describe('Invoice Template Management', () => {
     // Login first to establish session
     cy.login('admin')
 
-    // Then set up test-specific intercepts
-    // Mock templates endpoint - return system templates + user template
-    cy.intercept('GET', '**/rest/v1/invoice_templates*', {
-      statusCode: 200,
-      body: [...systemTemplates, userTemplate]
-    }).as('getTemplates')
+    // Set up common intercepts with templates
+    cy.setupCommonIntercepts({
+      templates: [...systemTemplates, userTemplate],
+      invoices: null,  // Skip invoices intercept
+      clients: null,   // Skip clients intercept
+      products: null   // Skip products intercept
+    })
 
     // Mock create template
     cy.intercept('POST', '**/rest/v1/invoice_templates', (req) => {
@@ -233,10 +234,12 @@ describe('Invoice Template Management', () => {
 
   describe('Empty State', () => {
     it('is expected to show empty state when no templates exist', () => {
-      cy.intercept('GET', '**/rest/v1/invoice_templates*', {
-        statusCode: 200,
-        body: []
-      }).as('getEmptyTemplates')
+      cy.setupCommonIntercepts({
+        templates: [],
+        invoices: null,
+        clients: null,
+        products: null
+      })
       
       cy.visit('/templates')
       
@@ -246,10 +249,12 @@ describe('Invoice Template Management', () => {
     })
 
     it.skip('is expected to open modal from empty state button', () => {
-      cy.intercept('GET', '**/rest/v1/invoice_templates*', {
-        statusCode: 200,
-        body: []
-      }).as('getEmptyTemplates')
+      cy.setupCommonIntercepts({
+        templates: [],
+        invoices: null,
+        clients: null,
+        products: null
+      })
       
       cy.visit('/templates')
       

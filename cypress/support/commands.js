@@ -202,3 +202,91 @@ Cypress.Commands.add('fillClientForm', (clientData) => {
   if (clientData.contactPerson) cy.get('input[name="contact_person"]').clear().type(clientData.contactPerson)
   if (clientData.notes) cy.get('textarea[name="notes"]').clear().type(clientData.notes)
 })
+
+/**
+ * Setup common API intercepts used across multiple test files.
+ * This helps DRY out test code by centralizing common mock configurations.
+ * 
+ * @param {Object} options - Configuration options
+ * @param {Array|null} options.invoices - Mock data for invoices endpoint (null to skip intercept)
+ * @param {Array|null} options.clients - Mock data for clients endpoint (null to skip intercept)
+ * @param {Array|null} options.products - Mock data for products endpoint (null to skip intercept)
+ * @param {Array|null} options.templates - Mock data for invoice templates endpoint (null to skip intercept)
+ * @param {Array|null} options.organizations - Mock data for organizations endpoint (null to skip intercept)
+ * @param {Array|null} options.organizationMembers - Mock data for organization members endpoint (null to skip intercept)
+ * @param {Object|null} options.defaultOrganization - Mock data for default organization query (null to skip intercept)
+ * 
+ * @example
+ * // Use defaults (empty arrays)
+ * cy.setupCommonIntercepts()
+ * 
+ * @example
+ * // Override specific endpoints
+ * cy.setupCommonIntercepts({
+ *   clients: [{ id: '1', name: 'Test Client' }],
+ *   invoices: null // Skip invoices intercept
+ * })
+ */
+Cypress.Commands.add('setupCommonIntercepts', (options = {}) => {
+  const defaults = {
+    invoices: [],
+    clients: [],
+    products: [],
+    templates: [],
+    organizations: null,
+    organizationMembers: null,
+    defaultOrganization: null
+  }
+  
+  const config = { ...defaults, ...options }
+  
+  // Setup GET intercepts for common resources
+  if (config.invoices !== null) {
+    cy.intercept('GET', '**/rest/v1/invoices*', {
+      statusCode: 200,
+      body: config.invoices
+    }).as('getInvoices')
+  }
+  
+  if (config.clients !== null) {
+    cy.intercept('GET', '**/rest/v1/clients*', {
+      statusCode: 200,
+      body: config.clients
+    }).as('getClients')
+  }
+  
+  if (config.products !== null) {
+    cy.intercept('GET', '**/rest/v1/products*', {
+      statusCode: 200,
+      body: config.products
+    }).as('getProducts')
+  }
+  
+  if (config.templates !== null) {
+    cy.intercept('GET', '**/rest/v1/invoice_templates*', {
+      statusCode: 200,
+      body: config.templates
+    }).as('getTemplates')
+  }
+  
+  if (config.organizations !== null) {
+    cy.intercept('GET', '**/rest/v1/organizations*', {
+      statusCode: 200,
+      body: config.organizations
+    }).as('getOrganizations')
+  }
+  
+  if (config.organizationMembers !== null) {
+    cy.intercept('GET', '**/rest/v1/organization_members*', {
+      statusCode: 200,
+      body: config.organizationMembers
+    }).as('getOrganizationMembers')
+  }
+  
+  if (config.defaultOrganization !== null) {
+    cy.intercept('GET', '**/rest/v1/organization_members*is_default=eq.true*', {
+      statusCode: 200,
+      body: { organizations: config.defaultOrganization }
+    }).as('getDefaultOrganization')
+  }
+})
