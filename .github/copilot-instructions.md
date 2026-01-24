@@ -91,7 +91,7 @@ src/
 
 ### UI Guidelines
 
-- **NEVER use emojis in the UI** - The application maintains a professional appearance without emojis in user-facing components
+- **NEVER use emojis in the UI** - The application maintains a professional appearance without emojis in user-facing components (note: emojis are acceptable in documentation and internal files, but not in the application UI itself)
 - Use Tailwind utility classes for styling
 - Support dark mode with `dark:` classes
 - Add `data-cy` attributes to all testable elements
