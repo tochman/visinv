@@ -41,7 +41,7 @@ export default function Sidebar() {
   return (
     <div className="w-64 bg-white dark:bg-gray-800 shadow-lg dark:shadow-gray-900/20">
       <div className="p-6">
-        <img src="/visinv_logo.svg" alt="VisInv" className="h-10 w-auto dark:invert-0 invert" />
+        <img src="/svethna_logo.svg" alt="VisInv" className="h-10 w-auto dark:invert-0 invert" />
         {isAdmin && (
           <div className="mt-4 p-3 bg-purple-50 dark:bg-purple-900/30 rounded-sm text-sm flex items-center gap-2">
             <ShieldCheckIcon className="h-5 w-5 text-purple-600 dark:text-purple-400" />

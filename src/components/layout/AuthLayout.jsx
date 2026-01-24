@@ -12,7 +12,7 @@ export default function AuthLayout() {
       </div>
       <div className="w-full max-w-md">
         <div className="text-center mb-8">
-          <img src="/visinv_logo.svg" alt="VisInv" className="h-16 w-auto mx-auto mb-4 dark:invert-0 invert" />
+          <img src="/svethna_logo.svg" alt="VisInv" className="h-16 w-auto mx-auto mb-4 dark:invert-0 invert" />
           <p className="text-gray-600 dark:text-gray-400">{t('app.tagline')}</p>
         </div>
         <Outlet />

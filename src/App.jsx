@@ -61,7 +61,7 @@ function App() {
       <div className="flex items-center justify-center min-h-screen bg-gray-100 dark:bg-gray-900">
         <div className={animateOut ? 'animate-logo-to-corner' : ''}>
           <img 
-            src="/visinv_logo.svg" 
+            src="/svethna_logo.svg" 
             alt="VisInv" 
             className={`h-16 w-auto dark:invert-0 invert ${!animateOut ? 'animate-pulse' : ''}`}
           />
