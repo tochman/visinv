@@ -3,18 +3,13 @@ describe('Manual Invoice Numbering (US-064)', () => {
     // Login first to establish session
     cy.login('user')
     
-    // Then set up test-specific intercepts
-    cy.intercept('GET', '**/rest/v1/clients*', {
-      statusCode: 200,
-      body: [
+    // Set up common intercepts with test data
+    cy.setupCommonIntercepts({
+      clients: [
         { id: 'client-1', name: 'Test Client AB', email: 'client@test.com', country: 'Sweden' }
-      ]
-    }).as('getClients')
-
-    cy.intercept('GET', '**/rest/v1/invoices*', {
-      statusCode: 200,
-      body: []
-    }).as('getInvoices')
+      ],
+      invoices: []
+    })
 
     cy.intercept('POST', '**/rest/v1/invoices*', (req) => {
       req.reply({
@@ -83,17 +78,18 @@ describe('Manual Invoice Numbering (US-064)', () => {
 
     // Act
     cy.getByCy('nav-invoices').click();
+    cy.wait('@getInvoices')
     cy.getByCy('new-invoice-button').click();
     const manualInvoiceNumber = `MANUAL-${Date.now()}`;
-    cy.getByCy('invoice-number-input').type(manualInvoiceNumber);
+    cy.getByCy('invoice-number-input').should('be.visible').type(manualInvoiceNumber);
     cy.getByCy('invoice-client-select').select(1);
     cy.getByCy('invoice-issue-date').type('2024-01-15');
     cy.getByCy('invoice-due-date').type('2024-02-15');
     cy.getByCy('add-row-button').click();
-    cy.getByCy('row-description-0').type('Test Service');
+    cy.getByCy('row-description-0').should('be.visible').type('Test Service');
     cy.getByCy('row-quantity-0').clear().type('1');
     cy.getByCy('row-unit-price-0').clear().type('1000');
-    cy.getByCy('save-invoice-button').click();
+    cy.getByCy('save-invoice-button').should('be.visible').scrollIntoView().click();
 
     // Assert
     cy.wait('@createInvoice')
@@ -109,15 +105,16 @@ describe('Manual Invoice Numbering (US-064)', () => {
 
     // Act
     cy.getByCy('nav-invoices').click();
+    cy.wait('@getInvoices')
     cy.getByCy('new-invoice-button').click();
-    cy.getByCy('invoice-client-select').select(1);
+    cy.getByCy('invoice-client-select').should('be.visible').select(1);
     cy.getByCy('invoice-issue-date').type('2024-01-15');
     cy.getByCy('invoice-due-date').type('2024-02-15');
     cy.getByCy('add-row-button').click();
-    cy.getByCy('row-description-0').type('Test Service');
+    cy.getByCy('row-description-0').should('be.visible').type('Test Service');
     cy.getByCy('row-quantity-0').clear().type('1');
     cy.getByCy('row-unit-price-0').clear().type('1000');
-    cy.getByCy('save-invoice-button').click();
+    cy.getByCy('save-invoice-button').should('be.visible').scrollIntoView().click();
 
     // Assert
     cy.getByCy('invoice-modal').should('exist');
@@ -132,16 +129,17 @@ describe('Manual Invoice Numbering (US-064)', () => {
 
     // Act
     cy.getByCy('nav-invoices').click();
+    cy.wait('@getInvoices')
     cy.getByCy('new-invoice-button').click();
     cy.getByCy('invoice-number-input').should('not.exist');
-    cy.getByCy('invoice-client-select').select(1);
+    cy.getByCy('invoice-client-select').should('be.visible').select(1);
     cy.getByCy('invoice-issue-date').type('2024-01-15');
     cy.getByCy('invoice-due-date').type('2024-02-15');
     cy.getByCy('add-row-button').click();
-    cy.getByCy('row-description-0').type('Test Service');
+    cy.getByCy('row-description-0').should('be.visible').type('Test Service');
     cy.getByCy('row-quantity-0').clear().type('1');
     cy.getByCy('row-unit-price-0').clear().type('1000');
-    cy.getByCy('save-invoice-button').click();
+    cy.getByCy('save-invoice-button').should('be.visible').scrollIntoView().click();
 
     // Assert
     cy.wait('@createInvoice')
@@ -155,30 +153,31 @@ describe('Manual Invoice Numbering (US-064)', () => {
     cy.getByCy('save-organization-settings').click();
     cy.wait('@updateOrganization')
     cy.getByCy('nav-invoices').click();
+    cy.wait('@getInvoices')
     cy.getByCy('new-invoice-button').click();
     const duplicateNumber = `DUP-${Date.now()}`;
-    cy.getByCy('invoice-number-input').type(duplicateNumber);
+    cy.getByCy('invoice-number-input').should('be.visible').type(duplicateNumber);
     cy.getByCy('invoice-client-select').select(1);
     cy.getByCy('invoice-issue-date').type('2024-01-15');
     cy.getByCy('invoice-due-date').type('2024-02-15');
     cy.getByCy('add-row-button').click();
-    cy.getByCy('row-description-0').type('Test Service');
+    cy.getByCy('row-description-0').should('be.visible').type('Test Service');
     cy.getByCy('row-quantity-0').clear().type('1');
     cy.getByCy('row-unit-price-0').clear().type('1000');
-    cy.getByCy('save-invoice-button').click();
+    cy.getByCy('save-invoice-button').should('be.visible').scrollIntoView().click();
     cy.wait('@createInvoice')
 
     // Act - Try to create second invoice with same number
     cy.getByCy('new-invoice-button').click();
-    cy.getByCy('invoice-number-input').type(duplicateNumber);
+    cy.getByCy('invoice-number-input').should('be.visible').type(duplicateNumber);
     cy.getByCy('invoice-client-select').select(1);
     cy.getByCy('invoice-issue-date').type('2024-01-16');
     cy.getByCy('invoice-due-date').type('2024-02-16');
     cy.getByCy('add-row-button').click();
-    cy.getByCy('row-description-0').type('Another Service');
+    cy.getByCy('row-description-0').should('be.visible').type('Another Service');
     cy.getByCy('row-quantity-0').clear().type('1');
     cy.getByCy('row-unit-price-0').clear().type('500');
-    cy.getByCy('save-invoice-button').click();
+    cy.getByCy('save-invoice-button').should('be.visible').scrollIntoView().click();
 
     // Assert
     cy.getByCy('invoice-modal', { timeout: 3000 }).should('exist');

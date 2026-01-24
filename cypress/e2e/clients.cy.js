@@ -103,8 +103,9 @@ describe('Client Management', () => {
     it('is expected to search and filter clients', () => {
       const uniqueName = `Searchable Client ${Date.now()}`
       cy.getByCy('create-client-button').click()
-      cy.getByCy('client-name-input').type(uniqueName)
-      cy.getByCy('save-client-button').click()
+      cy.getByCy('client-modal').should('be.visible')
+      cy.getByCy('client-name-input').should('be.visible').type(uniqueName)
+      cy.getByCy('save-client-button').should('be.visible').click()
       cy.wait('@createClient')
       cy.getByCy('client-modal').should('not.exist')
     })
