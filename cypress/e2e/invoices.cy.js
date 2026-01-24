@@ -544,426 +544,135 @@ describe("Invoice Management", () => {
       }).as("updateOrganization");
 
     });
-    it("is expected to allow toggling between automatic and manual numbering modes", () => {
-      // Arrange
-      cy.getByCy("sidebar-nav-settings").click();
-      cy.url().should("include", "/settings");
-      cy.wait("@getOrganizations");
-      cy.getByCy("edit-organization").should("be.visible").click();
+    describe("Automatic Numbering Mode", () => {
+      it("is expected to allow toggling between automatic and manual numbering modes", () => {
+        // Arrange
+        cy.getByCy("sidebar-nav-settings").click();
+        cy.url().should("include", "/settings");
+        cy.wait("@getOrganizations");
+        cy.getByCy("edit-organization").should("be.visible").click();
 
-      // Wait for edit mode to stabilize
-      cy.wait(300);
+        // Wait for edit mode to stabilize
+        cy.wait(300);
 
-      // Fill in required municipality field first (it's at the top of the form)
-      cy.getByCy("org-municipality").scrollIntoView().clear().type("Stockholm");
+        // Fill in required municipality field first (it's at the top of the form)
+        cy.getByCy("org-municipality").scrollIntoView().clear().type("Stockholm");
 
-      // Scroll to invoice numbering mode select and wait for it to be stable
-      cy.getByCy("invoice-numbering-mode-select")
-        .scrollIntoView()
-        .should("be.visible")
-        .should("not.be.disabled");
+        // Scroll to invoice numbering mode select and wait for it to be stable
+        cy.getByCy("invoice-numbering-mode-select")
+          .scrollIntoView()
+          .should("be.visible")
+          .should("not.be.disabled");
 
-      // Act - Switch to manual mode
-      cy.getByCy("invoice-numbering-mode-select").select("manual");
-      cy.getByCy("save-organization").click();
+        // Act - Switch to manual mode
+        cy.getByCy("invoice-numbering-mode-select").select("manual");
+        cy.getByCy("save-organization").click();
 
-      // Assert
-      cy.wait("@updateOrganization");
+        // Assert
+        cy.wait("@updateOrganization");
 
-      // Act - Switch back to automatic mode
-      cy.getByCy("edit-organization").click();
-      cy.getByCy("invoice-numbering-mode-select")
-        .scrollIntoView()
-        .select("automatic");
-      cy.getByCy("save-organization").click();
+        // Act - Switch back to automatic mode
+        cy.getByCy("edit-organization").click();
+        cy.getByCy("invoice-numbering-mode-select")
+          .scrollIntoView()
+          .select("automatic");
+        cy.getByCy("save-organization").click();
 
-      // Assert
-      cy.wait("@updateOrganization");
-    });
-
-    it("is expected to show invoice number field when manual mode is enabled", () => {
-      // Arrange - Dispatch organization with manual mode to Redux
-      const manualOrganization = {
-        id: "test-org-id",
-        name: "Manual Organization AB",
-        org_number: "556677-8899",
-        organization_number: "556677-8899",
-        vat_number: "SE556677889901",
-        address: "Testgatan 123",
-        city: "Stockholm",
-        postal_code: "11122",
-        municipality: "Stockholm",
-        country: "Sweden",
-        email: "billing@testorg.se",
-        phone: "+46701234567",
-        bank_name: "Nordea",
-        bank_account: "1234-5678901234",
-        bank_bic: "NDEASESS",
-        bank_iban: "SE1234567890123456789012",
-        invoice_numbering_mode: "manual",
-        invoice_prefix: "INV-",
-        next_invoice_number: 1,
-      };
-
-      cy.window().its('store').invoke('dispatch', {
-        type: 'organizations/setCurrentOrganization',
-        payload: manualOrganization
+        // Assert
+        cy.wait("@updateOrganization");
       });
 
-      // Act - Open invoice modal
-      cy.wait("@getInvoices");
-      cy.wait("@getTemplates");
-      cy.getByCy("sidebar-nav-invoices").click();
-      cy.getByCy("create-invoice-button").should("be.visible").click();
-      cy.getByCy("invoice-modal").should("be.visible");
+      it("is expected to auto-generate invoice number in automatic mode", () => {
+        // Arrange - Ensure automatic mode
+        cy.getByCy("sidebar-nav-settings").click();
+        cy.url().should("include", "/settings");
+        cy.wait("@getOrganizations");
+        cy.getByCy("edit-organization").should("be.visible").click();
 
-      // Assert - Invoice number field should be visible in manual mode
-      cy.getByCy("invoice-number-input").should("be.visible");
-    });
+        // Wait for edit mode to stabilize
+        cy.wait(300);
 
-    it("is expected to create invoice with manual invoice number", () => {
-      // Arrange - Dispatch organization with manual mode to Redux
-      const manualOrganization = {
-        id: "test-org-id",
-        name: "Manual Organization AB",
-        org_number: "556677-8899",
-        organization_number: "556677-8899",
-        vat_number: "SE556677889901",
-        address: "Testgatan 123",
-        city: "Stockholm",
-        postal_code: "11122",
-        municipality: "Stockholm",
-        country: "Sweden",
-        email: "billing@testorg.se",
-        phone: "+46701234567",
-        bank_name: "Nordea",
-        bank_account: "1234-5678901234",
-        bank_bic: "NDEASESS",
-        bank_iban: "SE1234567890123456789012",
-        invoice_numbering_mode: "manual",
-        invoice_prefix: "INV-",
-        next_invoice_number: 1,
-      };
+        // Fill in required municipality field
+        cy.getByCy("org-municipality").scrollIntoView().clear().type("Stockholm");
 
-      // Now dispatch organization with manual mode
-      cy.window().its('store').invoke('dispatch', {
-        type: 'organizations/setCurrentOrganization',
-        payload: manualOrganization
-      });
+        // Scroll to invoice numbering mode select and switch to automatic
+        cy.getByCy("invoice-numbering-mode-select")
+          .scrollIntoView()
+          .should("be.visible")
+          .should("not.be.disabled")
+          .select("automatic");
+        cy.getByCy("save-organization").scrollIntoView().click();
+        cy.wait("@updateOrganization");
 
-      // Act 
-      cy.wait("@getInvoices");
-      cy.wait("@getTemplates");
-      cy.getByCy("sidebar-nav-invoices").click();
-
-
-      // Verify Redux state is updated
-      cy.window().its('store').invoke('getState').its('organizations.currentOrganization.invoice_numbering_mode').should('eq', 'manual');
-
-      // Define the invoice that will be created
-      const createdInvoice = {
-        id: "manual-invoice-id",
-        invoice_number: "MANUAL-1001",
-        client_id: "client-1",
-        client: { id: "client-1", name: "Test Client AB", email: "client@test.com" },
-        issue_date: new Date().toISOString().split('T')[0],
-        due_date: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
-        status: "draft",
-        currency: "SEK",
-        subtotal: "15000.00",
-        total_amount: "18750.00",
-        organization_id: "test-org-id"
-      };
-
-      // Mock duplicate check - returns null (no duplicate found)
-      cy.intercept({
-        method: 'GET',
-        url: '**/rest/v1/invoices*',
-        query: {
-          invoice_number: 'eq.MANUAL-1001'
-        }
-      }, {
-        statusCode: 200,
-        headers: { 'content-type': 'application/json' },
-        body: null
-      }).as("checkDuplicate");
-
-      // Mock create invoice - returns the created invoice
-      cy.intercept("POST", "**/rest/v1/invoices*", {
-        statusCode: 201,
-        body: createdInvoice
-      }).as("createManualInvoice");
-
-      // Mock GET invoices after creation - returns list with new invoice
-      cy.intercept("GET", "**/rest/v1/invoices?select=*%2Cclient%3Aclients*", {
-        statusCode: 200,
-        body: [createdInvoice]
-      }).as("getInvoicesAfterCreate");
-      
-      cy.getByCy("create-invoice-button").should("be.visible").click();
-      cy.getByCy("invoice-modal").should("be.visible");
-
-      // Wait for clients and products to load
-      cy.wait("@getClients");
-      cy.wait("@getProducts");
-
-      // Select client - wait for it to be visible first
-      cy.getByCy("client-select").should("be.visible").select("Test Client AB");
-      cy.getByCy("invoice-number-input").type("MANUAL-1001");
-      
-      // Add line item
-      cy.getByCy("description-input-0").type("Consulting Services");
-      cy.getByCy("quantity-input-0").clear().type("10");
-      cy.getByCy("unit-input-0").clear().type("hours");
-      cy.getByCy("unit-price-input-0").clear().type("1500");
-
-      // Verify calculated amount
-      cy.getByCy("amount-0").should("contain", "15000");
-
-      // Verify totals
-      cy.getByCy("subtotal-display").should("contain", "15000.00");
-      cy.getByCy("vat-25-display").should("contain", "3750.00"); // 25% of 15000
-      cy.getByCy("total-display").should("contain", "18750.00");
-
-      cy.getByCy("submit-button").scrollIntoView().click();
-
-      // Assert - Invoice created and modal closes
-      cy.wait("@createManualInvoice");
-      cy.getByCy("invoice-modal").should("not.exist");
-
-      // Verify invoice appears in the list with manual number
-      cy.getByCy("invoice-row-manual-invoice-id").should("exist");
-      cy.getByCy("invoice-row-manual-invoice-id").should("contain", "MANUAL-1001");
-    });
-
-    it("is expected to prevent creating invoice without number in manual mode", () => {
-      // Arrange - Dispatch organization with manual mode to Redux
-      const manualOrganization = {
-        id: "test-org-id",
-        name: "Manual Organization AB",
-        org_number: "556677-8899",
-        organization_number: "556677-8899",
-        vat_number: "SE556677889901",
-        address: "Testgatan 123",
-        city: "Stockholm",
-        postal_code: "11122",
-        municipality: "Stockholm",
-        country: "Sweden",
-        email: "billing@testorg.se",
-        phone: "+46701234567",
-        bank_name: "Nordea",
-        bank_account: "1234-5678901234",
-        bank_bic: "NDEASESS",
-        bank_iban: "SE1234567890123456789012",
-        invoice_numbering_mode: "manual",
-        invoice_prefix: "INV-",
-        next_invoice_number: 1,
-      };
-
-      cy.window().its('store').invoke('dispatch', {
-        type: 'organizations/setCurrentOrganization',
-        payload: manualOrganization
-      });
-
-      // Act - Open invoice modal
-      cy.wait("@getInvoices");
-      cy.wait("@getTemplates");
-      cy.getByCy("sidebar-nav-invoices").click();
-      cy.getByCy("create-invoice-button").should("be.visible").click();
-      cy.getByCy("invoice-modal").should("be.visible");
-
-      // Wait for clients and products to load
-      cy.wait("@getClients");
-      cy.wait("@getProducts");
-
-      // Fill form but leave invoice number empty
-      cy.getByCy("client-select").should("be.visible").select("Test Client AB");
-
-      // Dates should already be pre-filled
-      cy.getByCy("issue-date-input").should("not.have.value", "");
-      cy.getByCy("due-date-input").should("not.have.value", "");
-
-      // Add line item
-      cy.getByCy("description-input-0").type("Test Service");
-      cy.getByCy("quantity-input-0").clear().type("1");
-      cy.getByCy("unit-price-input-0").clear().type("1000");
-
-      cy.getByCy("submit-button").scrollIntoView().click();
-
-      // Assert - Modal should remain open because invoice number is required
-      cy.getByCy("invoice-modal").should("exist");
-      cy.getByCy("invoice-form-error")
-        .should("exist")
-        .and("contain", "Invoice number is required");
-    });
-
-    it("is expected to show error on blur when invoice number already exists", () => {
-      // Arrange - Dispatch organization with manual mode to Redux
-      const manualOrganization = {
-        id: "test-org-id",
-        name: "Manual Organization AB",
-        org_number: "556677-8899",
-        organization_number: "556677-8899",
-        vat_number: "SE556677889901",
-        address: "Testgatan 123",
-        city: "Stockholm",
-        postal_code: "11122",
-        municipality: "Stockholm",
-        country: "Sweden",
-        email: "billing@testorg.se",
-        phone: "+46701234567",
-        bank_name: "Nordea",
-        bank_account: "1234-5678901234",
-        bank_bic: "NDEASESS",
-        bank_iban: "SE1234567890123456789012",
-        invoice_numbering_mode: "manual",
-        invoice_prefix: "INV-",
-        next_invoice_number: 1,
-      };
-
-      cy.window().its('store').invoke('dispatch', {
-        type: 'organizations/setCurrentOrganization',
-        payload: manualOrganization
-      });
-
-      // Act - Open invoice modal
-      cy.wait("@getInvoices");
-      cy.wait("@getTemplates");
-      cy.getByCy("sidebar-nav-invoices").click();
-      cy.getByCy("create-invoice-button").should("be.visible").click();
-      cy.getByCy("invoice-modal").should("be.visible");
-
-      // Wait for clients and products to load
-      cy.wait("@getClients");
-      cy.wait("@getProducts");
-
-      // Mock duplicate check - returns existing invoice (duplicate found)
-      cy.intercept({
-        method: 'GET',
-        url: '**/rest/v1/invoices*',
-        query: {
-          invoice_number: 'eq.EXISTING-001'
-        }
-      }, {
-        statusCode: 200,
-        headers: { 'content-type': 'application/json' },
-        body: { id: "existing-invoice-id", invoice_number: "EXISTING-001", organization_id: "test-org-id" }
-      }).as("checkDuplicate");
-
-      // Type invoice number and blur to trigger validation
-      cy.getByCy("invoice-number-input")
-        .should("be.visible")
-        .type("EXISTING-001")
-        .blur();
-
-      // Assert - Error should appear immediately after blur
-      cy.getByCy("invoice-number-error")
-        .should("be.visible")
-        .and("contain", "already exists");
-
-      // Fill rest of form and try to submit anyway
-      cy.getByCy("client-select").select("Test Client AB");
-      cy.getByCy("description-input-0").type("Test Service");
-      cy.getByCy("quantity-input-0").clear().type("1");
-      cy.getByCy("unit-price-input-0").clear().type("1000");
-
-      cy.getByCy("submit-button").scrollIntoView().click();
-
-      // Assert - Modal should remain open because of duplicate error
-      cy.getByCy("invoice-modal").should("exist");
-    });
-
-    it("is expected to auto-generate invoice number in automatic mode", () => {
-      // Arrange - Ensure automatic mode
-      cy.getByCy("sidebar-nav-settings").click();
-      cy.url().should("include", "/settings");
-      cy.wait("@getOrganizations");
-      cy.getByCy("edit-organization").should("be.visible").click();
-
-      // Wait for edit mode to stabilize
-      cy.wait(300);
-
-      // Fill in required municipality field
-      cy.getByCy("org-municipality").scrollIntoView().clear().type("Stockholm");
-
-      // Scroll to invoice numbering mode select and switch to automatic
-      cy.getByCy("invoice-numbering-mode-select")
-        .scrollIntoView()
-        .should("be.visible")
-        .should("not.be.disabled")
-        .select("automatic");
-      cy.getByCy("save-organization").scrollIntoView().click();
-      cy.wait("@updateOrganization");
-
-      // Re-setup common intercepts with updated organization
-      cy.setupCommonIntercepts({
-        clients: [
-          {
-            id: "client-1",
-            name: "Test Client AB",
-            email: "client@test.com",
+        // Re-setup common intercepts with updated organization
+        cy.setupCommonIntercepts({
+          clients: [
+            {
+              id: "client-1",
+              name: "Test Client AB",
+              email: "client@test.com",
+              country: "Sweden",
+            },
+          ],
+          invoices: [],
+          defaultOrganization: {
+            id: "test-org-id",
+            name: "Test Organization AB",
+            org_number: "556677-8899",
+            organization_number: "556677-8899",
+            vat_number: "SE556677889901",
+            address: "Testgatan 123",
+            city: "Stockholm",
+            postal_code: "11122",
+            municipality: "Stockholm",
             country: "Sweden",
+            email: "billing@testorg.se",
+            phone: "+46701234567",
+            bank_name: "Nordea",
+            bank_account: "1234-5678901234",
+            bank_bic: "NDEASESS",
+            bank_iban: "SE1234567890123456789012",
+            invoice_numbering_mode: "automatic",
+            invoice_prefix: "INV-",
+            next_invoice_number: 1,
           },
-        ],
-        invoices: [],
-        defaultOrganization: {
-          id: "test-org-id",
-          name: "Test Organization AB",
-          org_number: "556677-8899",
-          organization_number: "556677-8899",
-          vat_number: "SE556677889901",
-          address: "Testgatan 123",
-          city: "Stockholm",
-          postal_code: "11122",
-          municipality: "Stockholm",
-          country: "Sweden",
-          email: "billing@testorg.se",
-          phone: "+46701234567",
-          bank_name: "Nordea",
-          bank_account: "1234-5678901234",
-          bank_bic: "NDEASESS",
-          bank_iban: "SE1234567890123456789012",
-          invoice_numbering_mode: "automatic",
-          invoice_prefix: "INV-",
-          next_invoice_number: 1,
-        },
+        });
+
+        // Act
+        cy.getByCy("sidebar-nav-invoices").click();
+        cy.url().should("include", "/invoices");
+        cy.wait("@getInvoices");
+        cy.getByCy("empty-state-create-button").click();
+        cy.getByCy("invoice-modal").should("be.visible");
+
+        // Wait for clients and products to load
+        cy.wait("@getClients");
+        cy.wait("@getProducts");
+
+        // Invoice number field should not exist in automatic mode
+        cy.getByCy("invoice-number-input").should("not.exist");
+
+        // Fill in invoice details
+        cy.getByCy("client-select").should("be.visible").select("Test Client AB");
+
+        // Dates are pre-filled
+        cy.getByCy("issue-date-input").should("not.have.value", "");
+        cy.getByCy("due-date-input").should("not.have.value", "");
+
+        // Add line item
+        cy.getByCy("description-input-0").type("Test Service");
+        cy.getByCy("quantity-input-0").clear().type("1");
+        cy.getByCy("unit-price-input-0").clear().type("1000");
+
+        cy.getByCy("submit-button").scrollIntoView().click();
+
+        // Assert
+        cy.wait("@createInvoice");
+        cy.getByCy("invoice-modal").should("not.exist");
       });
-
-      // Act
-      cy.getByCy("sidebar-nav-invoices").click();
-      cy.url().should("include", "/invoices");
-      cy.wait("@getInvoices");
-      cy.getByCy("empty-state-create-button").click();
-      cy.getByCy("invoice-modal").should("be.visible");
-
-      // Wait for clients and products to load
-      cy.wait("@getClients");
-      cy.wait("@getProducts");
-
-      // Invoice number field should not exist in automatic mode
-      cy.getByCy("invoice-number-input").should("not.exist");
-
-      // Fill in invoice details
-      cy.getByCy("client-select").should("be.visible").select("Test Client AB");
-
-      // Dates are pre-filled
-      cy.getByCy("issue-date-input").should("not.have.value", "");
-      cy.getByCy("due-date-input").should("not.have.value", "");
-
-      // Add line item
-      cy.getByCy("description-input-0").type("Test Service");
-      cy.getByCy("quantity-input-0").clear().type("1");
-      cy.getByCy("unit-price-input-0").clear().type("1000");
-
-      cy.getByCy("submit-button").scrollIntoView().click();
-
-      // Assert
-      cy.wait("@createInvoice");
-      cy.getByCy("invoice-modal").should("not.exist");
     });
 
-    it("is expected to prevent duplicate manual invoice numbers", () => {
-      // Arrange - Dispatch organization with manual mode to Redux
+    describe("Manual Numbering Mode", () => {
       const manualOrganization = {
         id: "test-org-id",
         name: "Manual Organization AB",
@@ -986,55 +695,194 @@ describe("Invoice Management", () => {
         next_invoice_number: 1,
       };
 
-      cy.window().its('store').invoke('dispatch', {
-        type: 'organizations/setCurrentOrganization',
-        payload: manualOrganization
+      beforeEach(() => {
+        // Dispatch organization with manual mode to Redux
+        cy.window().its('store').invoke('dispatch', {
+          type: 'organizations/setCurrentOrganization',
+          payload: manualOrganization
+        });
+
+        // Navigate to invoices page and open modal
+        cy.wait("@getInvoices");
+        cy.wait("@getTemplates");
+        cy.getByCy("sidebar-nav-invoices").click();
+        cy.getByCy("create-invoice-button").should("be.visible").click();
+        cy.getByCy("invoice-modal").should("be.visible");
+
+        // Wait for clients and products to load
+        cy.wait("@getClients");
+        cy.wait("@getProducts");
       });
 
-      // Act - Open invoice modal
-      cy.wait("@getInvoices");
-      cy.wait("@getTemplates");
-      cy.getByCy("sidebar-nav-invoices").click();
-      cy.getByCy("create-invoice-button").should("be.visible").click();
-      cy.getByCy("invoice-modal").should("be.visible");
+      it("is expected to show invoice number field when manual mode is enabled", () => {
+        // Assert - Invoice number field should be visible in manual mode
+        cy.getByCy("invoice-number-input").should("be.visible");
+      });
 
-      // Wait for clients and products to load
-      cy.wait("@getClients");
-      cy.wait("@getProducts");
+      it("is expected to create invoice with manual invoice number", () => {
+        // Define the invoice that will be created
+        const createdInvoice = {
+          id: "manual-invoice-id",
+          invoice_number: "MANUAL-1001",
+          client_id: "client-1",
+          client: { id: "client-1", name: "Test Client AB", email: "client@test.com" },
+          issue_date: new Date().toISOString().split('T')[0],
+          due_date: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
+          status: "draft",
+          currency: "SEK",
+          subtotal: "15000.00",
+          total_amount: "18750.00",
+          organization_id: "test-org-id"
+        };
 
-      // Mock duplicate check - returns existing invoice (duplicate found)
-      cy.intercept({
-        method: 'GET',
-        url: '**/rest/v1/invoices*',
-        query: {
-          invoice_number: 'eq.DUPLICATE-001'
-        }
-      }, {
-        statusCode: 200,
-        headers: { 'content-type': 'application/json' },
-        body: { id: "existing-invoice-id", invoice_number: "DUPLICATE-001", organization_id: "test-org-id" }
-      }).as("checkDuplicate");
+        // Mock duplicate check - returns null (no duplicate found)
+        cy.intercept({
+          method: 'GET',
+          url: '**/rest/v1/invoices*',
+          query: {
+            invoice_number: 'eq.MANUAL-1001'
+          }
+        }, {
+          statusCode: 200,
+          headers: { 'content-type': 'application/json' },
+          body: null
+        }).as("checkDuplicate");
 
-      // Type duplicate invoice number and blur to trigger validation
-      cy.getByCy("invoice-number-input")
-        .should("be.visible")
-        .type("DUPLICATE-001")
-        .blur();
+        // Mock create invoice - returns the created invoice
+        cy.intercept("POST", "**/rest/v1/invoices*", {
+          statusCode: 201,
+          body: createdInvoice
+        }).as("createManualInvoice");
 
-      // Assert - Error should appear immediately after blur
-      cy.getByCy("invoice-number-error")
-        .should("be.visible")
-        .and("contain", "already exists");
+        // Mock GET invoices after creation - returns list with new invoice
+        cy.intercept("GET", "**/rest/v1/invoices?select=*%2Cclient%3Aclients*", {
+          statusCode: 200,
+          body: [createdInvoice]
+        }).as("getInvoicesAfterCreate");
 
-      // Fill rest of form and try to submit anyway
-      cy.getByCy("client-select").select("Test Client AB");
-      cy.getByCy("description-input-0").type("Test Service");
-      cy.getByCy("quantity-input-0").clear().type("1");
-      cy.getByCy("unit-price-input-0").clear().type("1000");
-      cy.getByCy("submit-button").scrollIntoView().click();
+        // Select client - wait for it to be visible first
+        cy.getByCy("client-select").should("be.visible").select("Test Client AB");
+        cy.getByCy("invoice-number-input").type("MANUAL-1001");
+        
+        // Add line item
+        cy.getByCy("description-input-0").type("Consulting Services");
+        cy.getByCy("quantity-input-0").clear().type("10");
+        cy.getByCy("unit-input-0").clear().type("hours");
+        cy.getByCy("unit-price-input-0").clear().type("1500");
 
-      // Assert - Modal should remain open because of duplicate error
-      cy.getByCy("invoice-modal").should("exist");
+        // Verify calculated amount
+        cy.getByCy("amount-0").should("contain", "15000");
+
+        // Verify totals
+        cy.getByCy("subtotal-display").should("contain", "15000.00");
+        cy.getByCy("vat-25-display").should("contain", "3750.00"); // 25% of 15000
+        cy.getByCy("total-display").should("contain", "18750.00");
+
+        cy.getByCy("submit-button").scrollIntoView().click();
+
+        // Assert - Invoice created and modal closes
+        cy.wait("@createManualInvoice");
+        cy.getByCy("invoice-modal").should("not.exist");
+
+        // Verify invoice appears in the list with manual number
+        cy.getByCy("invoice-row-manual-invoice-id").should("exist");
+        cy.getByCy("invoice-row-manual-invoice-id").should("contain", "MANUAL-1001");
+      });
+
+      it("is expected to prevent creating invoice without number in manual mode", () => {
+        // Fill form but leave invoice number empty
+        cy.getByCy("client-select").should("be.visible").select("Test Client AB");
+
+        // Dates should already be pre-filled
+        cy.getByCy("issue-date-input").should("not.have.value", "");
+        cy.getByCy("due-date-input").should("not.have.value", "");
+
+        // Add line item
+        cy.getByCy("description-input-0").type("Test Service");
+        cy.getByCy("quantity-input-0").clear().type("1");
+        cy.getByCy("unit-price-input-0").clear().type("1000");
+
+        cy.getByCy("submit-button").scrollIntoView().click();
+
+        // Assert - Modal should remain open because invoice number is required
+        cy.getByCy("invoice-modal").should("exist");
+        cy.getByCy("invoice-form-error")
+          .should("exist")
+          .and("contain", "Invoice number is required");
+      });
+
+      it("is expected to show error on blur when invoice number already exists", () => {
+        // Mock duplicate check - returns existing invoice (duplicate found)
+        cy.intercept({
+          method: 'GET',
+          url: '**/rest/v1/invoices*',
+          query: {
+            invoice_number: 'eq.EXISTING-001'
+          }
+        }, {
+          statusCode: 200,
+          headers: { 'content-type': 'application/json' },
+          body: { id: "existing-invoice-id", invoice_number: "EXISTING-001", organization_id: "test-org-id" }
+        }).as("checkDuplicate");
+
+        // Type invoice number and blur to trigger validation
+        cy.getByCy("invoice-number-input")
+          .should("be.visible")
+          .type("EXISTING-001")
+          .blur();
+
+        // Assert - Error should appear immediately after blur
+        cy.getByCy("invoice-number-error")
+          .should("be.visible")
+          .and("contain", "already exists");
+
+        // Fill rest of form and try to submit anyway
+        cy.getByCy("client-select").select("Test Client AB");
+        cy.getByCy("description-input-0").type("Test Service");
+        cy.getByCy("quantity-input-0").clear().type("1");
+        cy.getByCy("unit-price-input-0").clear().type("1000");
+
+        cy.getByCy("submit-button").scrollIntoView().click();
+
+        // Assert - Modal should remain open because of duplicate error
+        cy.getByCy("invoice-modal").should("exist");
+      });
+
+      it("is expected to prevent duplicate manual invoice numbers", () => {
+        // Mock duplicate check - returns existing invoice (duplicate found)
+        cy.intercept({
+          method: 'GET',
+          url: '**/rest/v1/invoices*',
+          query: {
+            invoice_number: 'eq.DUPLICATE-001'
+          }
+        }, {
+          statusCode: 200,
+          headers: { 'content-type': 'application/json' },
+          body: { id: "existing-invoice-id", invoice_number: "DUPLICATE-001", organization_id: "test-org-id" }
+        }).as("checkDuplicate");
+
+        // Type duplicate invoice number and blur to trigger validation
+        cy.getByCy("invoice-number-input")
+          .should("be.visible")
+          .type("DUPLICATE-001")
+          .blur();
+
+        // Assert - Error should appear immediately after blur
+        cy.getByCy("invoice-number-error")
+          .should("be.visible")
+          .and("contain", "already exists");
+
+        // Fill rest of form and try to submit anyway
+        cy.getByCy("client-select").select("Test Client AB");
+        cy.getByCy("description-input-0").type("Test Service");
+        cy.getByCy("quantity-input-0").clear().type("1");
+        cy.getByCy("unit-price-input-0").clear().type("1000");
+        cy.getByCy("submit-button").scrollIntoView().click();
+
+        // Assert - Modal should remain open because of duplicate error
+        cy.getByCy("invoice-modal").should("exist");
+      });
     });
   });
 
