@@ -708,8 +708,8 @@ describe("Invoice Management", () => {
       // Set up common intercepts
       cy.setupCommonIntercepts({
         invoices: [],
-        clients: [mockClient],
-        templates: [mockTemplate],
+        clients: [mockRecurringClient],
+        templates: [mockRecurringTemplate],
         products: [],
         defaultOrganization: mockOrganization
       });
@@ -720,7 +720,7 @@ describe("Invoice Management", () => {
           id: "new-invoice-id",
           invoice_number: "INV-0001",
           ...req.body,
-          client: mockClient,
+          client: mockRecurringClient,
           status: "draft",
         };
         req.reply({
