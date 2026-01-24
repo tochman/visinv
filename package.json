@@ -13,7 +13,7 @@
     "cy:run": "cypress run",
     "cy:run:parallel": "run-p cy:group:*",
     "cy:group:core": "cypress run --spec 'cypress/e2e/{clients,products,organizations}.cy.js'",
-    "cy:group:invoices": "cypress run --spec 'cypress/e2e/{invoices,invoice-templates,manual-invoice-numbering}.cy.js'",
+    "cy:group:invoices": "cypress run --spec 'cypress/e2e/{invoices,invoice-templates}.cy.js'",
     "cy:group:features": "cypress run --spec 'cypress/e2e/{credit-invoices,payments,overdue-alerts}.cy.js'",
     "cy:group:admin": "cypress run --spec 'cypress/e2e/{admin-dashboard,admin-users,member-invitations}.cy.js'",
     "cy:group:compliance": "cypress run --spec 'cypress/e2e/swedish-compliance.cy.js'",

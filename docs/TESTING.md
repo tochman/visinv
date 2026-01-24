@@ -93,7 +93,7 @@ npm run cy:run -- --spec "cypress/e2e/{clients,invoices,products}.cy.js"
 cypress/
 ├── e2e/                          # Test files
 │   ├── clients.cy.js            # Client management tests
-│   ├── invoices.cy.js           # Invoice tests
+│   ├── invoices.cy.js           # Comprehensive invoice tests (CRUD, numbering, recurring, VAT, OCR, products)
 │   ├── products.cy.js           # Product catalog tests
 │   ├── organizations.cy.js      # Organization setup tests
 │   ├── swedish-compliance.cy.js # Legal compliance tests
@@ -101,8 +101,7 @@ cypress/
 │   ├── admin-users.cy.js        # User management
 │   ├── credit-invoices.cy.js    # Credit invoice tests
 │   ├── invoice-templates.cy.js  # Template tests
-│   ├── member-invitations.cy.js # Team collaboration
-│   └── manual-invoice-numbering.cy.js
+│   └── member-invitations.cy.js # Team collaboration
 ├── fixtures/                     # Test data
 │   ├── organizations.json
 │   ├── clients.json
