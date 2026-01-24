@@ -133,6 +133,9 @@
     "invoiceNumberRequired": "Fakturanummer krävs i manuellt läge",
     "invoiceNumberPlaceholder": "t.ex. FAKT-2024-001",
     "manualNumberingHint": "Ange ett unikt fakturanummer för denna faktura",
+    "errors": {
+      "duplicateInvoiceNumber": "Detta fakturanummer finns redan i din organisation"
+    },
     "invoiceType": "Fakturatyp",
     "invoiceTypeDebet": "DEBET (Vanlig faktura)",
     "invoiceTypeCredit": "KREDIT (Kreditfaktura)",

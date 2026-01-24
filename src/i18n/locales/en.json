@@ -144,6 +144,9 @@
     "invoiceNumberRequired": "Invoice number is required in manual mode",
     "invoiceNumberPlaceholder": "e.g., INV-2024-001",
     "manualNumberingHint": "Enter a unique invoice number for this invoice",
+    "errors": {
+      "duplicateInvoiceNumber": "This invoice number already exists in your organization"
+    },
     "invoiceType": "Invoice Type",
     "invoiceTypeDebet": "DEBET (Standard Invoice)",
     "invoiceTypeCredit": "CREDIT (Credit Invoice)",

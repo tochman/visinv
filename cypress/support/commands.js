@@ -146,6 +146,9 @@ Cypress.Commands.add('login', (userType = 'user', options = {}) => {
         organizations: organizationToUse
       }]
     }).as('getOrganizations')
+    
+    // Store organization to dispatch it after page load
+    cy.wrap(organizationToUse).as('organizationToDispatch')
   }
 
   cy.visit('/', {
@@ -158,6 +161,16 @@ Cypress.Commands.add('login', (userType = 'user', options = {}) => {
 
   // Wait for the app to load
   cy.get('[data-cy="main-layout"], [data-cy="dashboard"], nav', { timeout: 10000 }).should('exist')
+
+  // Dispatch organization to Redux store after app loads
+  if (!options.skipOrgMock) {
+    cy.get('@organizationToDispatch').then((org) => {
+      cy.window().its('store').invoke('dispatch', {
+        type: 'organizations/setCurrentOrganization',
+        payload: org
+      })
+    })
+  }
 
   // Set premium status in Redux store for premium users
   if (isPremium) {

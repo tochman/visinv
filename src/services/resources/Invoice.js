@@ -12,6 +12,31 @@ class InvoiceResource extends BaseResource {
   }
 
   /**
+   * Check if an invoice number already exists in the organization
+   * @param {string} invoiceNumber - The invoice number to check
+   * @param {string} organizationId - The organization ID
+   * @returns {Promise<{exists: boolean, error: Error|null}>}
+   */
+  async checkDuplicateNumber(invoiceNumber, organizationId) {
+    if (!invoiceNumber || !organizationId) {
+      return { exists: false, error: null };
+    }
+
+    const { data: existing, error } = await this.supabase
+      .from(this.tableName)
+      .select('id')
+      .eq('invoice_number', invoiceNumber)
+      .eq('organization_id', organizationId)
+      .maybeSingle();
+
+    if (error) {
+      return { exists: false, error };
+    }
+
+    return { exists: !!existing, error: null };
+  }
+
+  /**
    * Get all invoices for the current user
    * @param {Object} options - Query options
    * @returns {Promise<{data: Array|null, error: Error|null}>}
@@ -53,6 +78,7 @@ class InvoiceResource extends BaseResource {
   /**
    * Create a new invoice with line items
    * @param {Object} invoiceData - Invoice data
+   * @param {Object} invoiceData.organization - Organization data passed from Redux
    * @param {Array} invoiceData.rows - Invoice line items
    * @param {boolean} invoiceData.is_recurring - Whether to create a recurring schedule
    * @param {string} invoiceData.recurring_frequency - Frequency (weekly, biweekly, monthly, quarterly, yearly)
@@ -66,10 +92,11 @@ class InvoiceResource extends BaseResource {
       return { data: null, error: authError || new Error('Not authenticated') };
     }
 
-    // Get current organization to check numbering mode
-    const { data: currentOrg, error: orgError } = await Organization.getDefault();
-    if (orgError || !currentOrg) {
-      return { data: null, error: orgError || new Error('No organization found') };
+    // Use organization passed from Redux (via thunk) - following architecture pattern
+    // This avoids Resources calling other Resources directly
+    const { organization: currentOrg } = invoiceData;
+    if (!currentOrg) {
+      return { data: null, error: new Error('No organization found') };
     }
 
     const { 
@@ -78,6 +105,7 @@ class InvoiceResource extends BaseResource {
       recurring_frequency, 
       recurring_end_date, 
       recurring_max_invoices,
+      organization, // Extract to not include in invoiceFields
       ...invoiceFields 
     } = invoiceData;
 
@@ -94,12 +122,13 @@ class InvoiceResource extends BaseResource {
       }
 
       // Check for duplicate invoice numbers within the organization
+      // Use maybeSingle() to return null without error when no match found
       const { data: existing } = await this.supabase
         .from(this.tableName)
         .select('id')
         .eq('invoice_number', invoiceFields.invoice_number)
         .eq('organization_id', currentOrg.id)
-        .single();
+        .maybeSingle();
 
       if (existing) {
         return {

@@ -19,10 +19,42 @@ export const fetchInvoice = createAsyncThunk(
   }
 );
 
+export const checkInvoiceNumberExists = createAsyncThunk(
+  'invoices/checkInvoiceNumberExists',
+  async (invoiceNumber, { getState, rejectWithValue }) => {
+    const { organizations } = getState();
+    const currentOrganization = organizations?.currentOrganization;
+    
+    if (!currentOrganization) {
+      return rejectWithValue('No organization found');
+    }
+    
+    const { exists, error } = await Invoice.checkDuplicateNumber(
+      invoiceNumber,
+      currentOrganization.id
+    );
+    
+    if (error) return rejectWithValue(error.message);
+    return { invoiceNumber, exists };
+  }
+);
+
 export const createInvoice = createAsyncThunk(
   'invoices/createInvoice',
-  async (invoiceData, { rejectWithValue }) => {
-    const { data, error } = await Invoice.create(invoiceData);
+  async (invoiceData, { getState, rejectWithValue }) => {
+    // Get organization from Redux state - following architecture pattern
+    const { organizations } = getState();
+    const currentOrganization = organizations?.currentOrganization;
+    
+    if (!currentOrganization) {
+      return rejectWithValue('No organization found');
+    }
+    
+    // Pass organization data to Resource so it doesn't need to fetch it
+    const { data, error } = await Invoice.create({
+      ...invoiceData,
+      organization: currentOrganization
+    });
     if (error) return rejectWithValue(error.message);
     return data;
   }

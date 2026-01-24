@@ -2,8 +2,7 @@ import { useState, useEffect, useRef } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { useTranslation } from 'react-i18next';
 import { CubeIcon, ChevronDownIcon } from '@heroicons/react/24/outline';
-import { useOrganization } from '../../contexts/OrganizationContext';
-import { createInvoice, updateInvoice } from '../../features/invoices/invoicesSlice';
+import { createInvoice, updateInvoice, checkInvoiceNumberExists } from '../../features/invoices/invoicesSlice';
 import { fetchClients } from '../../features/clients/clientsSlice';
 import { fetchProducts } from '../../features/products/productsSlice';
 import { fetchTemplates } from '../../features/invoiceTemplates/invoiceTemplatesSlice';
@@ -22,9 +21,9 @@ export default function InvoiceModal({ isOpen, onClose, invoice = null }) {
   const products = useSelector(state => state.products.items);
   const templates = useSelector(state => state.invoiceTemplates.items);
   const invoices = useSelector(state => state.invoices.items);
+  const currentOrganization = useSelector(state => state.organizations?.currentOrganization);
   const prevInvoiceIdRef = useRef();
 
-  const { currentOrganization } = useOrganization();
   const isManualNumbering = currentOrganization?.invoice_numbering_mode === 'manual';
 
   const [formData, setFormData] = useState({
@@ -54,7 +53,26 @@ export default function InvoiceModal({ isOpen, onClose, invoice = null }) {
 
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
+  const [invoiceNumberError, setInvoiceNumberError] = useState(null);
   const [openProductMenu, setOpenProductMenu] = useState(null);
+
+  // Check for duplicate invoice number on blur
+  const handleInvoiceNumberBlur = async () => {
+    const invoiceNumber = formData.invoice_number?.trim();
+    if (!invoiceNumber || !isManualNumbering) {
+      setInvoiceNumberError(null);
+      return;
+    }
+
+    const result = await dispatch(checkInvoiceNumberExists(invoiceNumber));
+    if (checkInvoiceNumberExists.fulfilled.match(result)) {
+      if (result.payload.exists) {
+        setInvoiceNumberError(t('invoices.errors.duplicateInvoiceNumber'));
+      } else {
+        setInvoiceNumberError(null);
+      }
+    }
+  };
 
   // Reset form when modal opens or when switching between invoices
   useEffect(() => {
@@ -86,6 +104,7 @@ export default function InvoiceModal({ isOpen, onClose, invoice = null }) {
       ]);
       
       setError(null);
+      setInvoiceNumberError(null);
       prevInvoiceIdRef.current = currentInvoiceId;
     }
   }, [isOpen, invoice]);
@@ -184,6 +203,12 @@ export default function InvoiceModal({ isOpen, onClose, invoice = null }) {
 
     if (isManualNumbering && !isEditing && !formData.invoice_number?.trim()) {
       setError(t('invoices.invoiceNumberRequired'));
+      return;
+    }
+
+    // Prevent submission if there's a duplicate invoice number error
+    if (invoiceNumberError) {
+      setError(invoiceNumberError);
       return;
     }
 
@@ -387,15 +412,29 @@ export default function InvoiceModal({ isOpen, onClose, invoice = null }) {
                       type="text"
                       name="invoice_number"
                       value={formData.invoice_number}
-                      onChange={handleChange}
+                      onChange={(e) => {
+                        handleChange(e);
+                        setInvoiceNumberError(null); // Clear error while typing
+                      }}
+                      onBlur={handleInvoiceNumberBlur}
                       data-cy="invoice-number-input"
                       required
                       placeholder={t('invoices.invoiceNumberPlaceholder')}
-                      className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      className={`w-full px-3 py-2 border rounded-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500 ${
+                        invoiceNumberError 
+                          ? 'border-red-500 dark:border-red-500' 
+                          : 'border-gray-300 dark:border-gray-600'
+                      }`}
                     />
-                    <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
-                      {t('invoices.manualNumberingHint')}
-                    </p>
+                    {invoiceNumberError ? (
+                      <p className="mt-1 text-xs text-red-600 dark:text-red-400" data-cy="invoice-number-error">
+                        {invoiceNumberError}
+                      </p>
+                    ) : (
+                      <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
+                        {t('invoices.manualNumberingHint')}
+                      </p>
+                    )}
                   </div>
                 )}
 

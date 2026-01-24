@@ -3,6 +3,7 @@ import codeCoverage from '@cypress/code-coverage/task.js'
 
 export default defineConfig({
   e2e: {
+    experimentalPromptCommand: true,
     baseUrl: 'http://localhost:5173',
     viewportWidth: 1280,
     viewportHeight: 720,
