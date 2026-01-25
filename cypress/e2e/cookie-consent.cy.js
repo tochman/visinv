@@ -230,10 +230,11 @@ describe('Cookie Consent (US-119)', () => {
       // Accept cookies first to hide banner
       cy.getByCy('cookie-accept-btn').click();
       
-      // Login and setup
+      // Login and setup (cy.login already loads the app)
       cy.login('admin');
-      cy.visit('/settings');
-      cy.wait(500);
+      
+      // Navigate to settings using sidebar
+      cy.getByCy('sidebar-nav-settings').click();
     });
 
     it('is expected to display Privacy tab in settings', () => {
