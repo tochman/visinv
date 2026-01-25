@@ -220,16 +220,125 @@ These additions position VisInv as a comprehensive solution for:
 **US-020: Payment Recording** ✅
 - As a **user**, in order to **keep accurate financial records**, I would like to **record payments received against invoices**.
 - **Status:** Implemented
-  - **US-020-A: Single Payment Recording** - Record a single payment with amount, date, method, reference, and notes
-  - **US-020-B: Partial Payment Support** - Support multiple partial payments against one invoice, track remaining balance
-  - **US-020-C: Payment History** - View complete payment history for each invoice with dates, amounts, and methods
-  - **US-020-D: Automatic Status Updates** - Automatically mark invoice as 'paid' when fully paid, revert to 'sent' if payment deleted
+  - **US-020-A: Single Payment Recording** ✅ - Record a single payment with amount, date, method, reference, and notes
+  - **US-020-B: Partial Payment Support** ✅ - Support multiple partial payments against one invoice, track remaining balance
+  - **US-020-C: Payment History** ✅ - View complete payment history for each invoice with dates, amounts, and methods
+  - **US-020-D: Automatic Status Updates** ✅ - Automatically mark invoice as 'paid' when fully paid, revert to 'sent' if payment deleted
+  - **US-020-E: Payment Confirmation Dialog** - Show confirmation dialog when marking invoice as paid from list view
+  - **US-020-F: Payment Recording from Invoice Detail** - Record payment from within invoice detail/edit view
+  - **US-020-G: Enhanced Payment Method Selection** - Support Swedish payment methods with proper categorization
   - Database: payments table with invoice_id FK, amount, payment_date, payment_method, reference, notes
   - Backend: Payment resource with validation against remaining balance, Invoice methods for balance calculation
   - UI: PaymentModal for recording payments with real-time balance validation, InvoiceDetail with payment history
   - i18n: Full English/Swedish translations for payment terminology
   - Features: Prevent overpayment, calculate remaining balance, support 6 payment methods (bank_transfer, swish, card, cash, check, other)
   - Tests: 12 Cypress E2E tests covering recording, validation, history, partial payments
+
+**US-020-E: Payment Confirmation Dialog**
+- As a **user**, in order to **ensure payment data accuracy**, I would like to **confirm payment details before marking an invoice as paid from the list view**.
+- **User Flow:**
+  1. User clicks "Mark as Paid" button in invoice list
+  2. Dialog appears requesting payment details
+  3. User enters payment date (defaults to today)
+  4. User selects payment method from dropdown
+  5. User optionally adds reference/notes
+  6. User confirms or cancels
+  7. Payment is recorded and invoice status updated to 'paid'
+- **Acceptance Criteria:**
+  - ✅ Dialog appears when clicking "Mark as Paid" button in list view
+  - ✅ Payment date field defaults to current date, user can change
+  - ✅ Payment method dropdown includes all Swedish payment methods (see US-020-G)
+  - ✅ Payment amount defaults to full outstanding amount (read-only in quick dialog)
+  - ✅ Optional reference field for transaction/check number
+  - ✅ Cancel button closes dialog without changes
+  - ✅ Confirm button records payment and updates invoice status
+  - ✅ Success toast notification after recording payment
+  - ✅ Error handling for failed payment recording
+- **Technical Requirements:**
+  - Component: PaymentConfirmationDialog.jsx (new)
+  - Props: invoice (object), onConfirm (function), onCancel (function)
+  - Validation: Payment date cannot be in the future
+  - Integration: Update handleMarkAsPaid() in Invoices.jsx to show dialog
+  - Redux: Use existing createPayment thunk from payments slice
+- **i18n Keys:** payment.confirmDialog.title, payment.confirmDialog.confirm, payment.confirmDialog.cancel, payment.dateLabel, payment.methodLabel, payment.referenceLabel
+- **Tests:** 
+  - Dialog appears on button click
+  - Payment date defaults to today
+  - All payment methods available
+  - Cancel closes dialog without changes
+  - Confirm records payment and updates status
+  - Validation for future dates
+
+**US-020-F: Payment Recording from Invoice Detail View**
+- As a **user**, in order to **record payments in context**, I would like to **record payments while viewing or editing an invoice**.
+- **User Flow:**
+  1. User views invoice detail or opens invoice for editing
+  2. User sees "Record Payment" button in invoice header/actions
+  3. User clicks button, payment dialog appears
+  4. User enters payment details (amount, date, method, reference)
+  5. User confirms payment
+  6. Payment is recorded, invoice updates if fully paid
+  7. Payment appears in payment history section
+- **Acceptance Criteria:**
+  - ✅ "Record Payment" button visible in InvoiceDetail view for 'sent' or 'overdue' invoices
+  - ✅ "Record Payment" button visible in InvoiceModal (edit mode) for sent invoices
+  - ✅ Payment dialog supports partial payments (user can enter any amount ≤ remaining balance)
+  - ✅ Payment date field with date picker
+  - ✅ Payment method dropdown with all options
+  - ✅ Reference and notes fields
+  - ✅ Real-time validation of payment amount against remaining balance
+  - ✅ Success notification showing remaining balance if partial payment
+  - ✅ Payment history section refreshes to show new payment
+  - ✅ Invoice status auto-updates to 'paid' when fully paid
+- **Technical Requirements:**
+  - Reuse existing PaymentModal component
+  - Add "Record Payment" button to InvoiceDetail.jsx
+  - Add "Record Payment" button to InvoiceModal.jsx (shown when editing sent invoice)
+  - Hook into existing createPayment Redux thunk
+  - Refresh payment history after successful recording
+- **i18n Keys:** payment.recordPayment, payment.remainingBalance, payment.fullPayment, payment.partialPayment
+- **Tests:**
+  - Button appears in detail view for sent/overdue invoices
+  - Button does not appear for draft/paid/cancelled invoices
+  - Dialog opens with correct invoice context
+  - Partial payment reduces remaining balance
+  - Full payment marks invoice as paid
+  - Payment history updates immediately
+
+**US-020-G: Enhanced Payment Method Selection for Swedish Market**
+- As a **user**, in order to **accurately categorize payments**, I would like to **select from common Swedish payment methods**.
+- **Payment Methods (Swedish Context):**
+  1. **Bankgiro** (Bank Giro) - Most common for business payments in Sweden
+  2. **Plusgiro** (Postgiro) - Alternative giro system
+  3. **Banköverföring** (Bank Transfer/Wire) - Direct bank account transfer
+  4. **Swish** - Popular Swedish mobile payment system
+  5. **Kontant** (Cash) - Cash payment
+  6. **Kort** (Card) - Credit/debit card payment
+  7. **Autogiro** (Direct Debit) - Automatic bank withdrawal
+  8. **Övrigt** (Other) - Other payment methods
+- **Acceptance Criteria:**
+  - ✅ Payment method dropdown shows Swedish payment methods with Swedish names
+  - ✅ Methods stored in English keys in database (bankgiro, plusgiro, bank_transfer, swish, cash, card, autogiro, other)
+  - ✅ Display names translated via i18n (Swedish and English)
+  - ✅ Icon indicators for each payment method (optional enhancement)
+  - ✅ Method is required field when recording payment
+  - ✅ Historical payments display correct method name in current language
+- **Technical Requirements:**
+  - Update payment method constants in config/constants.js
+  - Database: payment_method column accepts new values (migration may be needed)
+  - Component: PaymentMethodSelect.jsx (reusable dropdown component)
+  - Existing payments with old methods (bank_transfer, check) remain valid
+  - Backward compatibility: Map old 'bank_transfer' to 'banköverföring' in display
+- **i18n Keys:** 
+  - payment.methods.bankgiro, payment.methods.plusgiro, payment.methods.bank_transfer
+  - payment.methods.swish, payment.methods.cash, payment.methods.card
+  - payment.methods.autogiro, payment.methods.other
+- **Tests:**
+  - All payment methods available in dropdown
+  - Swedish names display in Swedish locale
+  - English names display in English locale
+  - Payment method stored correctly in database
+  - Historical payments display with correct method name
 
 **US-021: Invoice Numbering System** ✅
 - As a **user**, in order to **maintain professional record-keeping**, I would like to **automatically generate sequential invoice numbers with custom formats**.
