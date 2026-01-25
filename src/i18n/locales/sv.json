@@ -524,5 +524,63 @@
       "completed": "Slutförd",
       "cancelled": "Avbruten"
     }
+  },
+  "cookieConsent": {
+    "banner": {
+      "title": "Vi värdesätter din integritet",
+      "description": "Vi använder cookies för att förbättra din surfupplevelse, analysera webbplatstrafik och personanpassa innehåll. Genom att klicka på 'Acceptera alla' samtycker du till vår användning av cookies.",
+      "acceptAll": "Acceptera alla",
+      "rejectNonEssential": "Avvisa icke-nödvändiga",
+      "customize": "Anpassa inställningar",
+      "learnMore": "Läs mer"
+    },
+    "settings": {
+      "title": "Cookie-inställningar",
+      "description": "Hantera dina cookie-inställningar. Du kan ändra dessa inställningar när som helst.",
+      "savePreferences": "Spara inställningar",
+      "acceptAll": "Acceptera alla",
+      "rejectAll": "Avvisa alla (förutom nödvändiga)"
+    },
+    "categories": {
+      "essential": {
+        "title": "Nödvändiga cookies",
+        "description": "Dessa cookies är nödvändiga för att webbplatsen ska fungera och kan inte inaktiveras. De möjliggör kärnfunktionalitet som autentisering, säkerhet och sessionshantering.",
+        "alwaysActive": "Alltid aktiv"
+      },
+      "analytics": {
+        "title": "Analyscookies",
+        "description": "Dessa cookies hjälper oss att förstå hur besökare interagerar med vår webbplats genom att samla in och rapportera information anonymt. Detta hjälper oss att förbättra användarupplevelsen.",
+        "enabled": "Aktiverad",
+        "disabled": "Inaktiverad"
+      },
+      "marketing": {
+        "title": "Marknadsföringscookies",
+        "description": "Dessa cookies används för att spåra besökare över olika webbplatser och visa relevanta annonser. De kan också användas för att mäta effektiviteten i reklamkampanjer.",
+        "enabled": "Aktiverad",
+        "disabled": "Inaktiverad"
+      },
+      "preferences": {
+        "title": "Preferenscookies",
+        "description": "Dessa cookies kommer ihåg dina preferenser såsom språk, region och visningsinställningar för att ge en mer personlig upplevelse.",
+        "enabled": "Aktiverad",
+        "disabled": "Inaktiverad"
+      }
+    },
+    "policy": {
+      "title": "Cookie-policy",
+      "lastUpdated": "Senast uppdaterad",
+      "whatAreCookies": "Vad är cookies?",
+      "whatAreCookiesText": "Cookies är små textfiler som placeras på din dator eller mobila enhet när du besöker en webbplats. De används brett för att få webbplatser att fungera mer effektivt och ge information till webbplatsägare.",
+      "howWeUseCookies": "Hur vi använder cookies",
+      "howWeUseCookiesText": "Vi använder cookies för att förbättra din upplevelse på vår webbplats, komma ihåg dina preferenser, förstå hur du använder våra tjänster och analysera webbplatsens prestanda.",
+      "cookieTypes": "Typer av cookies vi använder",
+      "manageCookies": "Hantera dina cookies",
+      "manageCookiesText": "Du kan hantera dina cookie-inställningar när som helst genom att besöka sidan för cookie-inställningar. Observera att inaktivering av vissa cookies kan påverka webbplatsens funktionalitet.",
+      "goToSettings": "Gå till cookie-inställningar"
+    },
+    "notifications": {
+      "preferencesSaved": "Dina cookie-inställningar har sparats",
+      "preferencesError": "Kunde inte spara cookie-inställningar. Försök igen."
+    }
   }
 }

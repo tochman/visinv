@@ -18,7 +18,7 @@ To transform VisInv into a **fully featured invoicing system** competitive with 
 - **Integrations & Ecosystem** (US-093 to US-097): Accounting software, CRM, API/webhooks, Zapier, email integration
 - **Inventory Management** (US-098 to US-100): Stock tracking, purchase orders, COGS for product-based businesses
 - **Mobile & Accessibility** (US-101 to US-103): Native mobile apps, PWA, WCAG compliance
-- **Security & Compliance** (US-104 to US-109): 2FA, SSO, audit trails, GDPR tools, encryption, backup/recovery
+- **Security & Compliance** (US-104 to US-109, US-119): 2FA, SSO, audit trails, GDPR tools, encryption, backup/recovery, cookie consent
 - **White Label & Multi-Tenancy** (US-110 to US-112): Enterprise branding, multi-tenant architecture, reseller program
 - **Support & Growth** (US-113 to US-118): In-app help, live chat, support tickets, referrals, email marketing, client feedback
 
@@ -1100,6 +1100,33 @@ These additions position VisInv as a comprehensive solution for:
   - Test recovery procedures
   - Download backups (for premium users)
 
+**US-119: Cookie Consent Management**
+- As a **user**, in order to **control what information I leave**, I would like to **accept and change the cookie settings**.
+- **GDPR/EU Compliance:** Full compliance with European data protection regulations (GDPR, ePrivacy Directive)
+- **Features:**
+  - **Cookie banner on first visit** with clear options (Accept All, Reject Non-Essential, Customize)
+  - **Cookie categories:**
+    - **Essential:** Required for authentication, session management, security (always enabled, no consent needed)
+    - **Analytics:** Usage statistics, performance monitoring (Google Analytics, Plausible)
+    - **Marketing:** Advertising cookies, remarketing (optional)
+    - **Preferences:** Language, theme, UI settings
+  - **Granular control:** Users can enable/disable each category individually
+  - **Persistent storage:** Cookie preferences saved to local storage or user profile
+  - **Re-consent mechanism:** Users can change preferences anytime in Settings > Privacy
+  - **Cookie policy page:** Detailed explanation of what cookies are used and why
+  - **Compliance features:**
+    - No non-essential cookies loaded before consent
+    - Clear information about data processing
+    - Easy withdrawal of consent
+    - Consent tracking and audit trail
+    - Default to privacy (no pre-checked boxes except essential)
+- **Technical Implementation:**
+  - Cookie consent library (e.g., CookieConsent.js, Cookiebot, OneTrust)
+  - Conditional loading of analytics/marketing scripts based on consent
+  - Consent state management in Redux
+  - i18n support for banner and settings (English/Swedish)
+- **Status:** Not Started
+
 ---
 
 ### White Label & Multi-Tenancy
@@ -1341,7 +1368,7 @@ These additions position VisInv as a comprehensive solution for:
 - US-079 (Bank reconciliation)
 - US-084, US-085, US-086 (Document management)
 - US-093, US-094, US-095, US-096, US-097 (Integrations & ecosystem)
-- US-104, US-105, US-106, US-107, US-108, US-109 (Enhanced security)
+- US-104, US-105, US-106, US-107, US-108, US-109, US-119 (Enhanced security & compliance)
 
 ### Phase 6 (Inventory & Product Businesses)
 - US-098, US-099, US-100 (Inventory & COGS tracking)
@@ -1411,7 +1438,7 @@ These additions position VisInv as a comprehensive solution for:
 - US-044 to US-048: Developer features
 - US-050 to US-064: Swedish compliance & advanced features
 
-**New Features for Full System (US-065 to US-118)**: Competitive feature set
+**New Features for Full System (US-065 to US-119)**: Competitive feature set
 - US-065 to US-067: Estimates & Quotes
 - US-068 to US-071: Time & Expense Tracking
 - US-072 to US-074: Client Portal
@@ -1422,7 +1449,7 @@ These additions position VisInv as a comprehensive solution for:
 - US-093 to US-097: Integrations
 - US-098 to US-100: Inventory Management
 - US-101 to US-103: Mobile & Accessibility
-- US-104 to US-109: Security Enhancements
+- US-104 to US-109, US-119: Security & Compliance
 - US-110 to US-112: White Label & Multi-tenancy
 - US-113 to US-118: Support & Growth
 
