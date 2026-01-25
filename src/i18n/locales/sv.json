@@ -193,6 +193,7 @@
     "payments": "Betalningar",
     "recordPayment": "Registrera betalning",
     "paymentHistory": "Betalningshistorik",
+    "paymentSummary": "Betalningssammanfattning",
     "amount": "Belopp",
     "paymentDate": "Betalningsdatum",
     "paymentMethod": "Betalningsmetod",
@@ -205,13 +206,21 @@
     "noPayments": "Inga betalningar registrerade",
     "deletePayment": "Ta bort betalning",
     "confirmDeletePayment": "Är du säker på att du vill ta bort denna betalning?",
+    "confirmDialog": {
+      "title": "Bekräfta betalning",
+      "confirm": "Registrera betalning",
+      "cancel": "Avbryt"
+    },
     "paymentMethods": {
-      "bank_transfer": "Bankgiro",
+      "bankgiro": "Bankgiro",
+      "plusgiro": "Plusgiro",
+      "bank_transfer": "Banköverföring",
       "swish": "Swish",
-      "card": "Kort",
       "cash": "Kontant",
-      "check": "Check",
-      "other": "Annat"
+      "card": "Kort",
+      "autogiro": "Autogiro",
+      "other": "Övrigt",
+      "undefined": "Ej angiven"
     },
     "errors": {
       "exceedsBalance": "Betalningsbeloppet överstiger återstående saldo",

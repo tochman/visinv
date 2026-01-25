@@ -5,10 +5,12 @@ import { ArrowPathIcon } from '@heroicons/react/24/outline';
 import { fetchInvoices, deleteInvoice, markInvoiceAsSent, markInvoiceAsPaid, updateInvoiceTemplate } from '../features/invoices/invoicesSlice';
 import { fetchTemplates } from '../features/invoiceTemplates/invoiceTemplatesSlice';
 import InvoiceModal from '../components/invoices/InvoiceModal';
+import PaymentConfirmationDialog from '../components/invoices/PaymentConfirmationDialog';
 import { generateInvoicePDF, buildInvoiceContext } from '../services/invoicePdfService';
 import { renderTemplate } from '../services/templateService';
 import { useOrganization } from '../contexts/OrganizationContext';
 import { formatCurrency } from '../config/currencies';
+import { Payment } from '../services/resources';
 
 export default function Invoices() {
   const { t } = useTranslation();
@@ -24,6 +26,8 @@ export default function Invoices() {
   const [statusFilter, setStatusFilter] = useState('all');
   const [deleteConfirm, setDeleteConfirm] = useState(null);
   const [generatingPDF, setGeneratingPDF] = useState(null);
+  const [showPaymentDialog, setShowPaymentDialog] = useState(false);
+  const [paymentDialogInvoice, setPaymentDialogInvoice] = useState(null);
 
   useEffect(() => {
     if (user) {
@@ -51,8 +55,36 @@ export default function Invoices() {
     await dispatch(markInvoiceAsSent(id));
   };
 
-  const handleMarkAsPaid = async (id) => {
-    await dispatch(markInvoiceAsPaid({ id }));
+  const handleMarkAsPaid = async (invoice) => {
+    setPaymentDialogInvoice(invoice);
+    setShowPaymentDialog(true);
+  };
+
+  const handleConfirmPayment = async (paymentData) => {
+    try {
+      // Create payment record
+      const { data, error } = await Payment.create({
+        invoice_id: paymentDialogInvoice.id,
+        ...paymentData,
+      });
+
+      if (error) {
+        alert(t('payment.errors.required'));
+        throw error;
+      }
+
+      // Mark invoice as paid
+      await dispatch(markInvoiceAsPaid({ id: paymentDialogInvoice.id }));
+      
+      // Refresh invoices to show updated status
+      dispatch(fetchInvoices());
+      
+      setShowPaymentDialog(false);
+      setPaymentDialogInvoice(null);
+    } catch (error) {
+      console.error('Failed to record payment:', error);
+      throw error;
+    }
   };
 
   const handleSendReminder = async (invoice) => {
@@ -475,7 +507,7 @@ export default function Invoices() {
                         )}
                         {invoice.status === 'sent' && (
                           <button
-                            onClick={() => handleMarkAsPaid(invoice.id)}
+                            onClick={() => handleMarkAsPaid(invoice)}
                             data-cy={`mark-paid-button-${invoice.id}`}
                             className="text-green-600 hover:text-green-900 dark:text-green-400 dark:hover:text-green-300"
                             title={t('invoice.markAsPaid')}
@@ -565,6 +597,17 @@ export default function Invoices() {
         isOpen={isModalOpen}
         onClose={handleCloseModal}
         invoice={selectedInvoice}
+      />
+
+      {/* Payment Confirmation Dialog */}
+      <PaymentConfirmationDialog
+        isOpen={showPaymentDialog}
+        onClose={() => {
+          setShowPaymentDialog(false);
+          setPaymentDialogInvoice(null);
+        }}
+        invoice={paymentDialogInvoice}
+        onConfirm={handleConfirmPayment}
       />
     </div>
   );

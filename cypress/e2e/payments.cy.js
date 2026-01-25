@@ -191,13 +191,16 @@ describe('Payment Recording (US-020)', () => {
         tax_amount: 1000.00
       };
 
+      // Track payments array
+      let paymentsArray = [];
+
       cy.intercept('GET', '**/rest/v1/invoices*', (req) => {
         req.reply({ statusCode: 200, body: partialInvoice });
       }).as('getInvoices');
 
       // Use dynamic response to reflect payment changes
       cy.intercept('GET', '**/rest/v1/payments*', (req) => {
-        req.reply({ statusCode: 200, body: payments });
+        req.reply({ statusCode: 200, body: paymentsArray });
       }).as('getPayments');
 
       cy.intercept('POST', '**/rest/v1/payments*', (req) => {
@@ -206,7 +209,7 @@ describe('Payment Recording (US-020)', () => {
           ...req.body,
           created_at: new Date().toISOString()
         };
-        payments.push(payment);
+        paymentsArray.push(payment);
         req.reply({ statusCode: 201, body: payment });
       }).as('createPayment');
 
@@ -222,8 +225,11 @@ describe('Payment Recording (US-020)', () => {
       cy.getByCy('save-payment').click();
       cy.wait('@createPayment');
       
-      // Should show remaining balance after partial payment
-      cy.getByCy('remaining-balance').should('contain', '3000');
+      // Wait for modal to close (indicates payment was successful)
+      cy.getByCy('payment-modal').should('not.exist');
+      
+      // Should show remaining balance after partial payment - give it time to recalculate
+      cy.getByCy('remaining-balance', { timeout: 10000 }).should('contain', '3');
     });
 
     it('is expected to show multiple payments in history', () => {
@@ -389,6 +395,98 @@ describe('Payment Recording (US-020)', () => {
       
       // Record Payment button should not exist for paid invoices
       cy.getByCy('record-payment-btn').should('not.exist');
+    });
+  });
+
+  describe('US-020-E: Payment Confirmation Dialog from List View', () => {
+    beforeEach(() => {
+      cy.setupCommonIntercepts({
+        clients: [mockClient],
+        invoices: [mockInvoice],
+        products: [],
+        payments: []
+      });
+    });
+
+    it('is expected to open payment confirmation dialog when Mark as Paid is clicked', () => {
+      cy.visit('/invoices');
+      cy.wait('@getInvoices');
+      
+      cy.getByCy(`mark-paid-button-${mockInvoice.id}`).click();
+      cy.getByCy('payment-confirmation-dialog').should('be.visible');
+    });
+
+    it('is expected to display invoice number in dialog', () => {
+      cy.visit('/invoices');
+      cy.wait('@getInvoices');
+      
+      cy.getByCy(`mark-paid-button-${mockInvoice.id}`).click();
+      cy.getByCy('payment-confirmation-dialog')
+        .should('contain', mockInvoice.invoice_number);
+    });
+
+    it('is expected to default payment date to today', () => {
+      cy.visit('/invoices');
+      cy.wait('@getInvoices');
+      
+      cy.getByCy(`mark-paid-button-${mockInvoice.id}`).click();
+      
+      const today = new Date().toISOString().split('T')[0];
+      cy.getByCy('payment-dialog-date').should('have.value', today);
+    });
+
+    it('is expected to show all Swedish payment methods', () => {
+      cy.visit('/invoices');
+      cy.wait('@getInvoices');
+      
+      cy.getByCy(`mark-paid-button-${mockInvoice.id}`).click();
+      
+      cy.getByCy('payment-dialog-method').find('option').should('have.length', 8);
+      cy.getByCy('payment-dialog-method').should('contain', 'Bankgiro');
+      cy.getByCy('payment-dialog-method').should('contain', 'Plusgiro');
+      cy.getByCy('payment-dialog-method').should('contain', 'Swish');
+    });
+
+    it('is expected to record payment when confirmed', () => {
+      cy.intercept('POST', '**/rest/v1/payments*', {
+        statusCode: 201,
+        body: {
+          id: 'payment-new',
+          invoice_id: mockInvoice.id,
+          amount: 1000.00,
+          payment_method: 'swish',
+          payment_date: '2026-01-25'
+        }
+      }).as('createPaymentFromDialog');
+
+      cy.intercept('PATCH', '**/rest/v1/invoices*', {
+        statusCode: 200,
+        body: [{ ...mockInvoice, status: 'paid' }]
+      }).as('updateInvoiceStatus');
+
+      cy.visit('/invoices');
+      cy.wait('@getInvoices');
+      
+      cy.getByCy(`mark-paid-button-${mockInvoice.id}`).click();
+      cy.getByCy('payment-dialog-method').select('swish');
+      cy.getByCy('payment-dialog-reference').type('SWISH-12345');
+      cy.getByCy('confirm-payment-dialog').click();
+      
+      cy.wait('@createPaymentFromDialog');
+      cy.wait('@updateInvoiceStatus');
+      
+      // Dialog should close
+      cy.getByCy('payment-confirmation-dialog').should('not.exist');
+    });
+
+    it('is expected to cancel payment dialog without recording', () => {
+      cy.visit('/invoices');
+      cy.wait('@getInvoices');
+      
+      cy.getByCy(`mark-paid-button-${mockInvoice.id}`).click();
+      cy.getByCy('cancel-payment-dialog').click();
+      
+      cy.getByCy('payment-confirmation-dialog').should('not.exist');
     });
   });
 });

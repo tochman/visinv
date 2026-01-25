@@ -1,112 +1,59 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Payment } from '../../services/resources';
 
-export default function PaymentModal({ isOpen, onClose, invoice, onPaymentRecorded }) {
+/**
+ * PaymentConfirmationDialog - Quick payment recording dialog for marking invoices as paid
+ * Used in list views for fast payment recording with minimal fields
+ * For full payment recording with partial payments, use PaymentModal
+ */
+export default function PaymentConfirmationDialog({ isOpen, onClose, invoice, onConfirm }) {
   const { t } = useTranslation();
   
   const [formData, setFormData] = useState({
-    amount: '',
     payment_date: new Date().toISOString().split('T')[0],
-    payment_method: 'bank_transfer',
+    payment_method: 'bankgiro',
     reference: '',
-    notes: '',
   });
 
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState(null);
-  const [remainingBalance, setRemainingBalance] = useState(0);
-
-  // Calculate remaining balance when modal opens
-  useEffect(() => {
-    if (isOpen && invoice) {
-      const calculateBalance = async () => {
-        const { totalPaid } = await Payment.getTotalPaid(invoice.id);
-        const balance = parseFloat(invoice.total_amount) - totalPaid;
-        setRemainingBalance(balance);
-        
-        // Pre-fill amount with remaining balance
-        setFormData(prev => ({
-          ...prev,
-          amount: balance.toFixed(2),
-        }));
-      };
-      calculateBalance();
-    }
-  }, [isOpen, invoice]);
-
-  // Reset form when modal closes
-  useEffect(() => {
-    if (!isOpen) {
-      setFormData({
-        amount: '',
-        payment_date: new Date().toISOString().split('T')[0],
-        payment_method: 'bankgiro',
-        reference: '',
-        notes: '',
-      });
-      setError(null);
-    }
-  }, [isOpen]);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
     setFormData(prev => ({ ...prev, [name]: value }));
-    setError(null);
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
-    setError(null);
 
     try {
-      // Validate amount
-      const amount = parseFloat(formData.amount);
-      if (isNaN(amount) || amount <= 0) {
-        setError(t('payment.errors.invalidAmount'));
-        setLoading(false);
-        return;
-      }
-
-      if (amount > remainingBalance) {
-        setError(t('payment.errors.exceedsBalance'));
-        setLoading(false);
-        return;
-      }
-
-      // Create payment
-      const { data, error: paymentError } = await Payment.create({
-        invoice_id: invoice.id,
-        amount: amount,
+      await onConfirm({
+        amount: parseFloat(invoice.total_amount),
         payment_date: formData.payment_date,
         payment_method: formData.payment_method,
         reference: formData.reference || null,
-        notes: formData.notes || null,
+        notes: null,
       });
-
-      if (paymentError) {
-        setError(paymentError.message);
-        setLoading(false);
-        return;
-      }
-
-      // Success - call callback and close
-      if (onPaymentRecorded) {
-        onPaymentRecorded(data);
-      }
+      
+      // Reset form
+      setFormData({
+        payment_date: new Date().toISOString().split('T')[0],
+        payment_method: 'bankgiro',
+        reference: '',
+      });
+      
       onClose();
-    } catch (err) {
-      setError(err.message || 'Failed to record payment');
+    } catch (error) {
+      console.error('Payment confirmation failed:', error);
     } finally {
       setLoading(false);
     }
   };
 
-  if (!isOpen) return null;
+  if (!isOpen || !invoice) return null;
 
   return (
-    <div className="fixed inset-0 z-50 overflow-y-auto" data-cy="payment-modal">
+    <div className="fixed inset-0 z-50 overflow-y-auto" data-cy="payment-confirmation-dialog">
       <div className="flex min-h-screen items-center justify-center p-4">
         {/* Backdrop */}
         <div 
@@ -114,16 +61,19 @@ export default function PaymentModal({ isOpen, onClose, invoice, onPaymentRecord
           onClick={onClose}
         />
 
-        {/* Modal */}
+        {/* Dialog */}
         <div className="relative bg-white dark:bg-gray-800 rounded-sm shadow-xl w-full max-w-md">
           <div className="px-6 py-4 border-b border-gray-200 dark:border-gray-700">
             <h2 className="text-xl font-bold text-gray-900 dark:text-white">
-              {t('payment.recordPayment')}
+              {t('payment.confirmDialog.title')}
             </h2>
+            <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
+              {invoice.invoice_number}
+            </p>
             <button
               onClick={onClose}
               className="absolute top-4 right-4 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300"
-              data-cy="close-payment-modal"
+              data-cy="close-payment-dialog"
             >
               <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
@@ -132,36 +82,12 @@ export default function PaymentModal({ isOpen, onClose, invoice, onPaymentRecord
           </div>
 
           <form onSubmit={handleSubmit} className="p-6 space-y-4">
-            {error && (
-              <div className="p-3 bg-red-50 dark:bg-red-900/30 border border-red-200 dark:border-red-800 rounded-sm" data-cy="payment-error">
-                <p className="text-red-600 dark:text-red-400 text-sm">{error}</p>
-              </div>
-            )}
-
-            {/* Remaining Balance Info */}
+            {/* Amount Display (read-only) */}
             <div className="p-3 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-sm">
               <p className="text-sm text-gray-700 dark:text-gray-300">
-                <span className="font-medium">{t('payment.remainingBalance')}:</span>{' '}
-                <span className="font-bold">{remainingBalance.toFixed(2)} {invoice?.currency || 'SEK'}</span>
+                <span className="font-medium">{t('payment.amount')}:</span>{' '}
+                <span className="font-bold">{parseFloat(invoice.total_amount).toFixed(2)} {invoice.currency || 'SEK'}</span>
               </p>
-            </div>
-
-            {/* Amount */}
-            <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                {t('payment.amount')} *
-              </label>
-              <input
-                type="number"
-                name="amount"
-                value={formData.amount}
-                onChange={handleChange}
-                step="0.01"
-                min="0.01"
-                required
-                data-cy="payment-amount"
-                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
-              />
             </div>
 
             {/* Payment Date */}
@@ -176,7 +102,7 @@ export default function PaymentModal({ isOpen, onClose, invoice, onPaymentRecord
                 onChange={handleChange}
                 required
                 max={new Date().toISOString().split('T')[0]}
-                data-cy="payment-date"
+                data-cy="payment-dialog-date"
                 className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
               />
             </div>
@@ -191,7 +117,7 @@ export default function PaymentModal({ isOpen, onClose, invoice, onPaymentRecord
                 value={formData.payment_method}
                 onChange={handleChange}
                 required
-                data-cy="payment-method"
+                data-cy="payment-dialog-method"
                 className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
               >
                 <option value="bankgiro">{t('payment.paymentMethods.bankgiro')}</option>
@@ -216,22 +142,7 @@ export default function PaymentModal({ isOpen, onClose, invoice, onPaymentRecord
                 value={formData.reference}
                 onChange={handleChange}
                 placeholder={t('payment.reference')}
-                data-cy="payment-reference"
-                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
-              />
-            </div>
-
-            {/* Notes */}
-            <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                {t('payment.notes')}
-              </label>
-              <textarea
-                name="notes"
-                value={formData.notes}
-                onChange={handleChange}
-                rows={3}
-                data-cy="payment-notes"
+                data-cy="payment-dialog-reference"
                 className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
               />
             </div>
@@ -242,17 +153,17 @@ export default function PaymentModal({ isOpen, onClose, invoice, onPaymentRecord
                 type="button"
                 onClick={onClose}
                 className="flex-1 px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-sm text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700"
-                data-cy="cancel-payment"
+                data-cy="cancel-payment-dialog"
               >
-                {t('common.cancel')}
+                {t('payment.confirmDialog.cancel')}
               </button>
               <button
                 type="submit"
                 disabled={loading}
-                className="flex-1 px-4 py-2 bg-blue-600 text-white rounded-sm hover:bg-blue-700 disabled:opacity-50"
-                data-cy="save-payment"
+                className="flex-1 px-4 py-2 bg-green-600 text-white rounded-sm hover:bg-green-700 disabled:opacity-50"
+                data-cy="confirm-payment-dialog"
               >
-                {loading ? t('common.saving') : t('common.save')}
+                {loading ? t('common.saving') : t('payment.confirmDialog.confirm')}
               </button>
             </div>
           </form>
