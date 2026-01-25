@@ -14,6 +14,7 @@ export default function Products() {
   const [selectedProduct, setSelectedProduct] = useState(null);
   const [searchTerm, setSearchTerm] = useState('');
   const [deleteConfirm, setDeleteConfirm] = useState(null);
+  const [pricePopover, setPricePopover] = useState(null);
 
   useEffect(() => {
     if (user) {
@@ -55,23 +56,48 @@ export default function Products() {
     }).format(price);
   };
 
-  const renderPrices = (prices) => {
+  const renderPrices = (prices, productId) => {
     if (!prices || prices.length === 0) return '-';
     
-    // Show up to 3 prices, then indicate if there are more
-    const displayPrices = prices.slice(0, 3);
-    const remaining = prices.length - 3;
+    if (prices.length === 1) {
+      return (
+        <div className="text-sm font-medium text-gray-900 dark:text-white">
+          {formatPrice(prices[0].price, prices[0].currency)}
+        </div>
+      );
+    }
     
     return (
-      <div className="text-sm">
-        {displayPrices.map((priceObj, idx) => (
-          <div key={idx} className="font-medium text-gray-900 dark:text-white">
-            {formatPrice(priceObj.price, priceObj.currency)}
-          </div>
-        ))}
-        {remaining > 0 && (
-          <div className="text-xs text-gray-500 dark:text-gray-400 mt-1">
-            +{remaining} {t('common.more')}
+      <div className="flex items-center gap-2">
+        <div className="text-sm font-medium text-gray-900 dark:text-white">
+          {formatPrice(prices[0].price, prices[0].currency)}
+        </div>
+        <button
+          onClick={(e) => {
+            e.stopPropagation();
+            setPricePopover(pricePopover === productId ? null : productId);
+          }}
+          className="text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300"
+          data-cy={`show-all-prices-${productId}`}
+        >
+          <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+          </svg>
+        </button>
+        {pricePopover === productId && (
+          <div 
+            className="fixed z-[9999] bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-md shadow-lg p-3 min-w-[150px]"
+            style={{ 
+              top: document.querySelector(`[data-cy="show-all-prices-${productId}"]`)?.getBoundingClientRect().bottom + 4,
+              left: document.querySelector(`[data-cy="show-all-prices-${productId}"]`)?.getBoundingClientRect().left
+            }}
+            data-cy={`price-popover-${productId}`}
+          >
+            {prices.map((priceObj, idx) => (
+              <div key={idx} className="text-sm font-medium text-gray-900 dark:text-white py-1">
+                {formatPrice(priceObj.price, priceObj.currency)}
+              </div>
+            ))}
           </div>
         )}
       </div>
@@ -167,8 +193,8 @@ export default function Products() {
 
       {/* Product List */}
       {!loading && filteredProducts.length > 0 && (
-        <div data-cy="products-list" className="bg-white dark:bg-gray-800 rounded-sm shadow dark:shadow-gray-900/20 overflow-hidden">
-          <div className="overflow-x-auto">
+        <div data-cy="products-list" className="bg-white dark:bg-gray-800 rounded-sm shadow dark:shadow-gray-900/20">
+          <div className="overflow-x-auto overflow-y-visible">
             <table data-cy="products-table" className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
               <thead className="bg-gray-50 dark:bg-gray-900/50">
                 <tr>
@@ -213,7 +239,7 @@ export default function Products() {
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
                       <div data-cy="product-prices">
-                        {renderPrices(product.prices)}
+                        {renderPrices(product.prices, product.id)}
                       </div>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-center">

@@ -453,5 +453,125 @@ describe("Multi-Currency Product Pricing (US-024-A)", () => {
       cy.getByCy("product-row-product-1").should("be.visible");
       cy.getByCy("product-row-product-2").should("be.visible");
     });
+
+    it("is expected to show popover with all prices for multi-currency products", () => {
+      // Single currency product should not have the plus icon
+      cy.getByCy("product-row-product-1").within(() => {
+        cy.getByCy("show-all-prices-product-1").should("not.exist");
+      });
+
+      // Multi-currency product should have the plus icon
+      cy.getByCy("show-all-prices-product-2").should("be.visible").click();
+
+      // Popover should show all three prices (outside the row context)
+      cy.contains("1 200,00 kr").should("be.visible"); // SEK
+      cy.contains("100,00 €").should("be.visible"); // EUR
+      cy.contains("120,00 US$").should("be.visible"); // USD
+
+      // Click again to close popover
+      cy.getByCy("show-all-prices-product-2").click();
+      cy.contains("100,00 €").should("not.exist");
+    });
+
+    it("is expected to filter products by search term", () => {
+      cy.getByCy("search-products-input").type("Multi");
+      cy.getByCy("product-row-product-1").should("not.exist");
+      cy.getByCy("product-row-product-2").should("be.visible");
+    });
+  });
+
+  describe("Modal Closing", () => {
+    beforeEach(() => {
+      cy.getByCy("sidebar-nav-products").click();
+    });
+
+    it("is expected to close modal when clicking cancel button", () => {
+      cy.getByCy("create-product-button").click();
+      cy.getByCy("product-modal").should("be.visible");
+      cy.getByCy("cancel-product-button").click();
+      cy.getByCy("product-modal").should("not.exist");
+    });
+
+    it("is expected to close modal when clicking X button", () => {
+      cy.getByCy("create-product-button").click();
+      cy.getByCy("product-modal").should("be.visible");
+      cy.getByCy("close-modal-button").click();
+      cy.getByCy("product-modal").should("not.exist");
+    });
+
+    it("is expected to close modal when clicking backdrop", () => {
+      cy.getByCy("create-product-button").click();
+      cy.getByCy("product-modal").should("be.visible");
+      cy.getByCy("modal-backdrop").click({ force: true });
+      cy.getByCy("product-modal").should("not.exist");
+    });
+  });
+
+  describe("Product Deletion", () => {
+    const existingProduct = {
+      id: "product-delete-test",
+      name: "Product to Delete",
+      description: "Test product",
+      unit: "st",
+      tax_rate: 25,
+      sku: "DEL-001",
+      is_active: true,
+      prices: [{ currency: "SEK", price: 500 }]
+    };
+
+    beforeEach(() => {
+      cy.intercept("GET", "**/rest/v1/products*", {
+        statusCode: 200,
+        body: [existingProduct],
+      }).as("getProductsForDelete");
+
+      cy.intercept("DELETE", "**/rest/v1/products*", {
+        statusCode: 204,
+      }).as("deleteProduct");
+
+      cy.getByCy("sidebar-nav-products").click();
+      cy.wait("@getProductsForDelete");
+    });
+
+    it("is expected to delete a product", () => {
+      cy.getByCy("delete-product-product-delete-test").click();
+      cy.getByCy("delete-confirm-modal").should("be.visible");
+      cy.getByCy("confirm-delete-button").click();
+
+      cy.wait("@deleteProduct");
+      cy.getByCy("delete-confirm-modal").should("not.exist");
+    });
+
+    it("is expected to cancel deletion", () => {
+      cy.getByCy("delete-product-product-delete-test").click();
+      cy.getByCy("delete-confirm-modal").should("be.visible");
+      cy.getByCy("cancel-delete-button").click();
+      cy.getByCy("delete-confirm-modal").should("not.exist");
+      cy.getByCy("product-row-product-delete-test").should("be.visible");
+    });
+  });
+
+  describe("Empty State", () => {
+    beforeEach(() => {
+      cy.intercept("GET", "**/rest/v1/products*", {
+        statusCode: 200,
+        body: [],
+      }).as("getEmptyProducts");
+
+      cy.getByCy("sidebar-nav-products").click();
+      cy.wait("@getEmptyProducts");
+    });
+
+    it("is expected to display empty state when no products exist", () => {
+      cy.getByCy("products-empty-state").should("be.visible");
+      cy.getByCy("products-empty-state").should("contain", "No products yet");
+    });
+
+    it("is expected to open modal from empty state button", () => {
+      cy.getByCy("products-empty-state").within(() => {
+        cy.contains("Add Your First Product").click();
+      });
+      cy.getByCy("product-modal").should("be.visible");
+    });
   });
 });
