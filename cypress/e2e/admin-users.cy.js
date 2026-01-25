@@ -8,18 +8,23 @@ describe('Admin Users Management', () => {
   ]
 
   beforeEach(() => {
-    cy.login('admin')
-  })
-
-  // Helper to set up intercepts AFTER login
-  const setupAdminIntercepts = () => {
-    // Prevent wizard and noise
+    // Set up intercepts BEFORE login to ensure they're active
     cy.intercept('GET', '**/rest/v1/organizations*', { statusCode: 200, body: [{ id: 'org-1', name: 'Test Org' }] }).as('getOrganizations')
     cy.intercept('GET', '**/rest/v1/organization_members*', { statusCode: 200, body: [{ organization_id: 'org-1', user_id: 'test-admin-user-id', role: 'owner' }] }).as('getOrgMembers')
     cy.intercept('GET', '**/rest/v1/invoices*', { statusCode: 200, body: [] }).as('getInvoices')
 
-    // Users list - match the actual query from User.index()
-    cy.intercept('GET', '**/rest/v1/profiles?select=id%2Cemail%2Cfull_name%2Cis_admin%2Ccreated_at%2Cupdated_at*', (req) => {
+    cy.setupCommonIntercepts({ 
+      clients: [], 
+      products: [], 
+      invoiceTemplates: [], 
+      recurringInvoices: [] 
+    })
+
+    cy.login('admin')
+    cy.wait('@getOrganizations')
+
+    // Set up users list intercept AFTER login (to not conflict with profile fetch during login)
+    cy.intercept('GET', '**/rest/v1/profiles?select=id*', (req) => {
       req.reply({ statusCode: 200, body: users })
     }).as('getUsers')
 
@@ -34,11 +39,10 @@ describe('Admin Users Management', () => {
         ]
       })
     }).as('getSubscriptions')
-  }
+  })
 
   context('US-037: User Management - List & Search', () => {
     it('is expected to show users and filter by search', () => {
-      setupAdminIntercepts()
       cy.getByCy('sidebar-nav-admin').click()
       cy.getByCy('admin-users-link').click()
       cy.wait('@getUsers')
@@ -68,7 +72,6 @@ describe('Admin Users Management', () => {
 
   context('US-037-A: User Profile Administration', () => {
     it('is expected to edit user profile details', () => {
-      setupAdminIntercepts()
       cy.getByCy('sidebar-nav-admin').click()
       cy.getByCy('admin-users-link').click()
       cy.wait('@getUsers')
