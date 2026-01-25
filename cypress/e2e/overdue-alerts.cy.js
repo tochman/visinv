@@ -241,7 +241,7 @@ describe('Overdue Invoice Alerts (US-026-A)', () => {
       veryOverdueInvoice.reminder_count = 1;
       veryOverdueInvoice.reminder_sent_at = new Date().toISOString();
       
-      cy.visit('/invoices');
+      cy.reload();
       cy.wait('@getInvoices');
       
       cy.getByCy(`reminder-badge-${veryOverdueInvoice.id}`)
@@ -252,8 +252,7 @@ describe('Overdue Invoice Alerts (US-026-A)', () => {
     it('should show correct reminder count in badge', () => {
       overdueInvoice.reminder_count = 3;
       overdueInvoice.reminder_sent_at = new Date().toISOString();
-      
-      cy.visit('/invoices');
+
       cy.wait('@getInvoices');
       
       cy.getByCy(`reminder-badge-${overdueInvoice.id}`)
@@ -264,7 +263,7 @@ describe('Overdue Invoice Alerts (US-026-A)', () => {
       notDueInvoice.reminder_count = 0;
       notDueInvoice.reminder_sent_at = null;
       
-      cy.visit('/invoices');
+      cy.reload();
       cy.wait('@getInvoices');
       
       cy.getByCy(`reminder-badge-${notDueInvoice.id}`).should('not.exist');

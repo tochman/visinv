@@ -195,13 +195,13 @@ describe('Swedish Compliance - Mandatory Fields', () => {
     it('is expected to have database constraints preventing invalid data', () => {
       // This test verifies that migration 013 is applied
       // The database has NOT NULL constraints on mandatory fields
-      cy.visit('/settings');
+      cy.getByCy('sidebar-nav-settings').click();
       // If we can view settings, the migration has been applied
       cy.getByCy('clients-page-title', { timeout: 1000 }).should('not.exist');
     });
 
     it('is expected to require all organization mandatory fields are filled', () => {
-      cy.visit('/settings');
+      cy.getByCy('sidebar-nav-settings').click();
       cy.getByCy('edit-organization').click();
       
       // Verify all mandatory fields exist (they have validation from react-hook-form)
@@ -219,7 +219,7 @@ describe('Swedish Compliance - Mandatory Fields', () => {
       // The validate_invoice_compliance() function exists in the database
       // This is verified by the successful migration
       // We test this indirectly by confirming the application loads
-      cy.visit('/invoices');
+      cy.getByCy('sidebar-nav-invoices').click();
       cy.getByCy('invoices-page-title').should('exist');
     });
   });

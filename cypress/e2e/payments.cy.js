@@ -414,7 +414,6 @@ describe('Payment Recording (US-020)', () => {
     });
 
     it('is expected to open payment confirmation dialog when Mark as Paid is clicked', () => {
-      cy.visit('/invoices');
       cy.wait('@getInvoices');
       
       cy.getByCy(`mark-paid-button-${mockInvoice.id}`).click();
@@ -422,7 +421,6 @@ describe('Payment Recording (US-020)', () => {
     });
 
     it('is expected to display invoice number in dialog', () => {
-      cy.visit('/invoices');
       cy.wait('@getInvoices');
       
       cy.getByCy(`mark-paid-button-${mockInvoice.id}`).click();
@@ -431,7 +429,6 @@ describe('Payment Recording (US-020)', () => {
     });
 
     it('is expected to default payment date to today', () => {
-      cy.visit('/invoices');
       cy.wait('@getInvoices');
       
       cy.getByCy(`mark-paid-button-${mockInvoice.id}`).click();
@@ -441,7 +438,6 @@ describe('Payment Recording (US-020)', () => {
     });
 
     it('is expected to show all Swedish payment methods', () => {
-      cy.visit('/invoices');
       cy.wait('@getInvoices');
       
       cy.getByCy(`mark-paid-button-${mockInvoice.id}`).click();
@@ -469,7 +465,7 @@ describe('Payment Recording (US-020)', () => {
         body: [{ ...mockInvoice, status: 'paid' }]
       }).as('updateInvoiceStatus');
 
-      cy.visit('/invoices');
+      cy.reload();
       cy.wait('@getInvoices');
       
       cy.getByCy(`mark-paid-button-${mockInvoice.id}`).click();
@@ -485,7 +481,6 @@ describe('Payment Recording (US-020)', () => {
     });
 
     it('is expected to cancel payment dialog without recording', () => {
-      cy.visit('/invoices');
       cy.wait('@getInvoices');
       
       cy.getByCy(`mark-paid-button-${mockInvoice.id}`).click();

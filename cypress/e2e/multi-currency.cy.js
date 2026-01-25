@@ -17,7 +17,7 @@ describe('Multi-Currency Support', () => {
       }]
     });
 
-    cy.visit('/invoices');
+    cy.getByCy('sidebar-nav-invoices').click();
     cy.wait('@getInvoices');
 
     cy.get('[data-cy="create-invoice-button"]').click();
@@ -49,7 +49,7 @@ describe('Multi-Currency Support', () => {
       }]
     });
 
-    cy.visit('/invoices');
+    cy.getByCy('sidebar-nav-invoices').click();
     cy.wait('@getInvoices');
 
     cy.get('[data-cy="create-invoice-button"]').click();
@@ -152,6 +152,7 @@ describe('Multi-Currency Support', () => {
           }]
         });
         
+        cy.getByCy('sidebar-nav-invoices').click();
         cy.get('[data-cy="create-invoice-button"]').click();
         cy.get('[data-cy="currency-select"]').find('option').should('have.length', 6);
       });

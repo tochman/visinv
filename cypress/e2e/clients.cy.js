@@ -252,7 +252,7 @@ describe('Client Management', () => {
         })
       }).as('updateClient')
 
-      cy.visit('/clients')
+      cy.reload()
       cy.wait('@getClients')
     })
 

@@ -56,7 +56,8 @@ describe('Admin Dashboard', () => {
       cy.login('user')
       cy.wait('@getOrganizations')
       
-      // Try to navigate to admin page
+      // Try to navigate to admin page directly
+      // Note: This is one of the rare acceptable uses of cy.visit() to test access control redirect behavior
       cy.visit('/admin')
       
       // Should be redirected to root dashboard

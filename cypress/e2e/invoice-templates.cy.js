@@ -63,7 +63,7 @@ describe('Invoice Template Management', () => {
       statusCode: 204
     }).as('deleteTemplate')
 
-    cy.visit('/templates')
+    cy.getByCy('sidebar-nav-templates').click()
     cy.wait('@getTemplates')
   })
 
@@ -241,7 +241,8 @@ describe('Invoice Template Management', () => {
         products: null
       })
       
-      cy.visit('/templates')
+      cy.reload()
+      cy.wait('@getTemplates')
       
       cy.getByCy('empty-state').should('be.visible')
       cy.contains('No templates yet').should('be.visible')
@@ -256,7 +257,8 @@ describe('Invoice Template Management', () => {
         products: null
       })
       
-      cy.visit('/templates')
+      cy.reload()
+      cy.wait('@getTemplates')
       
       cy.getByCy('empty-state-button').click()
       cy.getByCy('template-modal').should('be.visible')

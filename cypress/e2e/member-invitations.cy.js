@@ -116,7 +116,7 @@ describe('Organization Member Invitations', () => {
       
       setupMemberIntercepts()
       
-      cy.visit('/settings')
+      cy.getByCy('sidebar-nav-settings').click()
       cy.getByCy('tab-members').click()
       cy.wait('@getMembers')
     })
@@ -176,7 +176,7 @@ describe('Organization Member Invitations', () => {
         })
       }).as('createInvitation')
       
-      cy.visit('/settings')
+      cy.getByCy('sidebar-nav-settings').click()
       cy.getByCy('tab-members').click()
       cy.wait('@getMembers')
     })
@@ -241,7 +241,8 @@ describe('Organization Member Invitations', () => {
       
       setupMemberIntercepts(mockMembers, [mockPendingInvitation])
       
-      cy.visit('/settings')
+      cy.getByCy('sidebar-nav-settings').click()
+      cy.getByCy('tab-members').click()
       cy.getByCy('tab-members').click()
       cy.wait(['@getMembers', '@getInvitations'])
     })
@@ -276,7 +277,7 @@ describe('Organization Member Invitations', () => {
       
       setupMemberIntercepts()
       
-      cy.visit('/settings')
+      cy.getByCy('sidebar-nav-settings').click()
       cy.getByCy('tab-members').click()
       cy.wait('@getMembers')
     })
