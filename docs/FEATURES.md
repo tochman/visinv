@@ -248,14 +248,14 @@ These additions position VisInv as a comprehensive solution for:
   - Tests: Comprehensive Cypress test suite (multi-currency.cy.js)
   - Documentation: docs/MULTI_CURRENCY.md
 
-**US-024-A: Multi-Currency Product Pricing**
+**US-024-A: Multi-Currency Product Pricing** ✅
 - As a **user**, in order to **issue invoices in various currencies**, I would like to **set prices in multiple currencies for each product in my catalog**.
 - **Features:**
   - Each product can have multiple price entries (one per currency)
   - Default price in organization's primary currency
   - Optional prices in additional currencies (SEK, EUR, USD, GBP, NOK, DKK)
-  - Product modal shows currency-specific price fields
-  - Price list view displays all defined prices for a product
+  - Product modal shows currency-specific price fields with progressive disclosure
+  - Price list view displays first price with popover for multiple currencies
   - Validation: At least one price must be defined
 - **Database:** 
   - New `product_prices` table with columns: id, product_id, currency, price, created_at, updated_at
@@ -264,16 +264,22 @@ These additions position VisInv as a comprehensive solution for:
   - Unique constraint on (product_id, currency) to prevent duplicates
 - **UI:**
   - Product creation/edit modal with dynamic currency price inputs
-  - Show all currencies with input fields (or add/remove currency price rows)
-  - Display currency-specific prices in product list
+  - Progressive disclosure: Show only currencies with prices + "Add Currency" button
+  - Display first currency price in product list with + icon popover for multiple prices
   - Visual indicator for which currencies have prices defined
 - **Use Cases:** 
   - Consultants working with international clients
   - SaaS companies with global pricing
   - Product businesses selling in multiple markets
-- **Status:** Not Started
+- **Status:** Implemented
+  - Migration: 033_add_product_prices.sql
+  - Resource: ProductPrice resource with CRUD operations, Product resource updated
+  - UI: ProductModal with react-hook-form validation, progressive disclosure UX
+  - Product list: First price displayed, popover for multi-currency products
+  - i18n: Full English/Swedish translations
+  - Tests: Comprehensive Cypress test suite (multi-currency-products.cy.js) with 17 tests
 
-**US-024-B: Currency-Aware Product Selection**
+**US-024-B: Currency-Aware Product Selection** ✅
 - As a **user creating an invoice**, in order to **ensure accurate pricing**, I would like to **automatically use the product price that matches my invoice currency**.
 - **Features:**
   - When adding product to invoice, system selects price matching invoice currency
@@ -286,12 +292,19 @@ These additions position VisInv as a comprehensive solution for:
   - Invoice currency EUR + Product with only SEK price → Warning: "No EUR price defined, please enter manually"
   - Invoice currency USD + Product with both SEK and USD prices → Auto-fill USD price
 - **UI:**
-  - Product selector shows available currencies for each product
+  - Product selector shows available currencies for each product (e.g., "100 SEK, 10 EUR, 12 USD")
   - Line item auto-populates with matching currency price
-  - Warning message when currency mismatch occurs
+  - Warning message when currency mismatch occurs with amber background
   - Manual price entry remains editable as override
 - **Prerequisites:** US-024-A (Multi-Currency Product Pricing)
-- **Status:** Not Started
+- **Implementation:**
+  - InvoiceModal.jsx updated with currency matching logic in handleProductSelect()
+  - Added currencyMismatches state to track warnings per line item
+  - Product dropdown displays all available prices with currency codes
+  - Warning banner with ExclamationTriangleIcon for currency mismatches
+  - Translations added for noPrices, currencyMismatch, currencyMismatchHelp (EN/SV)
+- **Tests:** Comprehensive Cypress test suite (multi-currency-invoice-selection.cy.js) with 16 tests
+- **Status:** ✅ Complete
 
 **US-025: Recurring Invoices**
 - As a **premium user**, in order to **automate subscription billing**, I would like to **set up recurring invoices with custom intervals**.

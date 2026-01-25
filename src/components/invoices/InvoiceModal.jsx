@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { useTranslation } from 'react-i18next';
-import { CubeIcon, ChevronDownIcon } from '@heroicons/react/24/outline';
+import { CubeIcon, ChevronDownIcon, ExclamationTriangleIcon } from '@heroicons/react/24/outline';
 import { createInvoice, updateInvoice, checkInvoiceNumberExists } from '../../features/invoices/invoicesSlice';
 import { fetchClients } from '../../features/clients/clientsSlice';
 import { fetchProducts } from '../../features/products/productsSlice';
@@ -55,6 +55,7 @@ export default function InvoiceModal({ isOpen, onClose, invoice = null }) {
   const [error, setError] = useState(null);
   const [invoiceNumberError, setInvoiceNumberError] = useState(null);
   const [openProductMenu, setOpenProductMenu] = useState(null);
+  const [currencyMismatches, setCurrencyMismatches] = useState({});
 
   // Check for duplicate invoice number on blur
   const handleInvoiceNumberBlur = async () => {
@@ -144,15 +145,26 @@ export default function InvoiceModal({ isOpen, onClose, invoice = null }) {
     const product = products.find(p => p.id === productId);
     if (product) {
       const newRows = [...rows];
+      
+      // Find price matching the invoice currency
+      const matchingPrice = product.prices?.find(p => p.currency === formData.currency);
+      const hasCurrencyMismatch = !matchingPrice;
+      
       newRows[index] = {
         ...newRows[index],
         product_id: product.id,
         description: product.description || product.name,
-        unit_price: product.unit_price,
+        unit_price: matchingPrice?.price || 0,
         unit: product.unit,
         tax_rate: product.tax_rate,
       };
       setRows(newRows);
+      
+      // Track currency mismatch for this row
+      setCurrencyMismatches(prev => ({
+        ...prev,
+        [index]: hasCurrencyMismatch
+      }));
     }
   };
 
@@ -735,7 +747,11 @@ export default function InvoiceModal({ isOpen, onClose, invoice = null }) {
                                   >
                                     <div className="font-medium">{product.name}</div>
                                     <div className="text-xs text-gray-500 dark:text-gray-400">
-                                      {product.unit_price} SEK / {product.unit}
+                                      {product.prices && product.prices.length > 0 ? (
+                                        product.prices.map(p => `${p.price} ${p.currency}`).join(', ')
+                                      ) : (
+                                        t('invoices.noPrices')
+                                      )} / {product.unit}
                                     </div>
                                   </button>
                                 ))}
@@ -832,6 +848,21 @@ export default function InvoiceModal({ isOpen, onClose, invoice = null }) {
                         </button>
                       </div>
                     </div>
+                    
+                    {/* Currency Mismatch Warning */}
+                    {currencyMismatches[index] && (
+                      <div className="mt-2 p-2 bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 rounded-sm flex items-start gap-2" data-cy={`currency-mismatch-warning-${index}`}>
+                        <ExclamationTriangleIcon className="w-5 h-5 text-amber-600 dark:text-amber-400 flex-shrink-0 mt-0.5" />
+                        <div className="flex-1">
+                          <p className="text-sm text-amber-800 dark:text-amber-200 font-medium">
+                            {t('invoices.currencyMismatch', { currency: formData.currency })}
+                          </p>
+                          <p className="text-xs text-amber-700 dark:text-amber-300 mt-0.5">
+                            {t('invoices.currencyMismatchHelp')}
+                          </p>
+                        </div>
+                      </div>
+                    )}
                   </div>
                 ))}
               </div>
