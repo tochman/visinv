@@ -57,7 +57,7 @@ describe('Admin Dashboard', () => {
     it('is expected to allow access for admin users', () => {
       // Mock admin user login
       cy.login('admin')
-      cy.visit('/admin')
+      cy.getByCy('sidebar-nav-admin').click()
       
       // Wait for organization data to load
       cy.wait('@getOrganizations')
@@ -92,7 +92,7 @@ describe('Admin Dashboard', () => {
         body: null
       }).as('getInvoiceCount')
 
-      cy.visit('/admin')
+      cy.getByCy('sidebar-nav-admin').click()
       cy.wait('@getOrganizations')
       
       // Wait for stats to load

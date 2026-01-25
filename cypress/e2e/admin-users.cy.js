@@ -39,7 +39,8 @@ describe('Admin Users Management', () => {
   context('US-037: User Management - List & Search', () => {
     it('is expected to show users and filter by search', () => {
       setupAdminIntercepts()
-      cy.visit('/admin/users')
+      cy.getByCy('sidebar-nav-admin').click()
+      cy.getByCy('admin-users-link').click()
       cy.wait('@getUsers')
       cy.getByCy('admin-users-page').should('be.visible')
 
@@ -68,7 +69,8 @@ describe('Admin Users Management', () => {
   context('US-037-A: User Profile Administration', () => {
     it('is expected to edit user profile details', () => {
       setupAdminIntercepts()
-      cy.visit('/admin/users')
+      cy.getByCy('sidebar-nav-admin').click()
+      cy.getByCy('admin-users-link').click()
       cy.wait('@getUsers')
       cy.getByCy('admin-users-page').should('be.visible')
 
