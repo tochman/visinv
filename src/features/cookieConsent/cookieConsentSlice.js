@@ -51,6 +51,7 @@ const cookieConsentSlice = createSlice({
         timestamp: new Date().toISOString(),
       };
       state.showBanner = false;
+      state.showSettings = false;
       saveConsentToStorage(state.consent);
     },
     rejectNonEssentialCookies: (state) => {
@@ -62,6 +63,7 @@ const cookieConsentSlice = createSlice({
         timestamp: new Date().toISOString(),
       };
       state.showBanner = false;
+      state.showSettings = false;
       saveConsentToStorage(state.consent);
     },
     updateCookiePreferences: (state, action) => {
