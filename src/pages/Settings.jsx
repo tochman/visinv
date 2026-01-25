@@ -1,15 +1,19 @@
 import { useTranslation } from 'react-i18next';
 import { useState } from 'react';
+import { useDispatch } from 'react-redux';
 import { useOrganization } from '../contexts/OrganizationContext';
 import { OrganizationSettings, OrganizationMembers } from '../components/organization';
+import { openCookieSettings } from '../features/cookieConsent/cookieConsentSlice';
 
 const TABS = {
   SETTINGS: 'settings',
   MEMBERS: 'members',
+  PRIVACY: 'privacy',
 };
 
 export default function Settings() {
   const { t } = useTranslation();
+  const dispatch = useDispatch();
   const { currentOrganization, loading } = useOrganization();
   const [activeTab, setActiveTab] = useState(TABS.SETTINGS);
 
@@ -61,6 +65,17 @@ export default function Settings() {
           >
             {t('organization.members')}
           </button>
+          <button
+            onClick={() => setActiveTab(TABS.PRIVACY)}
+            className={`whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm ${
+              activeTab === TABS.PRIVACY
+                ? 'border-blue-500 text-blue-600 dark:text-blue-400'
+                : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 dark:text-gray-400 dark:hover:text-gray-300'
+            }`}
+            data-cy="tab-privacy"
+          >
+            Privacy
+          </button>
         </nav>
       </div>
 
@@ -68,6 +83,26 @@ export default function Settings() {
       <div className="animate-fade-in-up animate-delay-200">
         {activeTab === TABS.SETTINGS && <OrganizationSettings />}
         {activeTab === TABS.MEMBERS && <OrganizationMembers />}
+        {activeTab === TABS.PRIVACY && (
+          <div className="bg-white dark:bg-gray-800 rounded-lg shadow-md p-6">
+            <h2 className="text-xl font-semibold text-gray-900 dark:text-white mb-4">Privacy Settings</h2>
+            <div className="space-y-4">
+              <div className="border-b border-gray-200 dark:border-gray-700 pb-4">
+                <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-2">Cookie Preferences</h3>
+                <p className="text-sm text-gray-600 dark:text-gray-300 mb-4">
+                  Manage how we use cookies and similar technologies to improve your experience.
+                </p>
+                <button
+                  onClick={() => dispatch(openCookieSettings())}
+                  className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium rounded-md transition-colors"
+                  data-cy="open-cookie-settings"
+                >
+                  Manage Cookie Settings
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );

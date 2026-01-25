@@ -27,10 +27,13 @@ import Teams from './pages/Teams';
 import Settings from './pages/Settings';
 import AdminDashboard from './pages/admin/AdminDashboard';
 import AdminUsers from './pages/admin/AdminUsers';
+import CookiePolicy from './pages/CookiePolicy';
 
 // Components
 import ProtectedRoute from './components/auth/ProtectedRoute';
 import AdminRoute from './components/auth/AdminRoute';
+import CookieBanner from './components/common/CookieBanner';
+import CookieSettings from './components/common/CookieSettings';
 
 function App() {
   const dispatch = useDispatch();
@@ -74,7 +77,12 @@ function App() {
     <ToastProvider>
       <OrganizationProvider>
         <Router>
+        <CookieBanner />
+        <CookieSettings />
         <Routes>
+          {/* Public Routes */}
+          <Route path="/cookie-policy" element={<CookiePolicy />} />
+
           {/* Auth Routes */}
           <Route element={<AuthLayout />}>
             <Route path="/auth/signin" element={<SignIn />} />

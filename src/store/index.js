@@ -9,6 +9,7 @@ import teamsReducer from '../features/teams/teamsSlice';
 import invoiceTemplatesReducer from '../features/invoiceTemplates/invoiceTemplatesSlice';
 import recurringInvoicesReducer from '../features/recurringInvoices/recurringInvoicesSlice';
 import organizationsReducer from '../features/organizations/organizationsSlice';
+import cookieConsentReducer from '../features/cookieConsent/cookieConsentSlice';
 
 export const store = configureStore({
   reducer: {
@@ -22,6 +23,7 @@ export const store = configureStore({
     invoiceTemplates: invoiceTemplatesReducer,
     recurringInvoices: recurringInvoicesReducer,
     organizations: organizationsReducer,
+    cookieConsent: cookieConsentReducer,
   },
   middleware: (getDefaultMiddleware) =>
     getDefaultMiddleware({

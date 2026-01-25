@@ -1100,7 +1100,7 @@ These additions position VisInv as a comprehensive solution for:
   - Test recovery procedures
   - Download backups (for premium users)
 
-**US-119: Cookie Consent Management**
+**US-119: Cookie Consent Management** ✅
 - As a **user**, in order to **control what information I leave**, I would like to **accept and change the cookie settings**.
 - **GDPR/EU Compliance:** Full compliance with European data protection regulations (GDPR, ePrivacy Directive)
 - **Features:**
@@ -1120,12 +1120,23 @@ These additions position VisInv as a comprehensive solution for:
     - Easy withdrawal of consent
     - Consent tracking and audit trail
     - Default to privacy (no pre-checked boxes except essential)
-- **Technical Implementation:**
-  - Cookie consent library (e.g., CookieConsent.js, Cookiebot, OneTrust)
-  - Conditional loading of analytics/marketing scripts based on consent
-  - Consent state management in Redux
-  - i18n support for banner and settings (English/Swedish)
-- **Status:** Not Started
+- **Implementation:**
+  - Redux: `cookieConsentSlice` with actions for accept/reject/customize
+  - Components: `CookieBanner`, `CookieSettings` modal
+  - Page: `/cookie-policy` with detailed information
+  - Settings: Privacy tab in Settings page with cookie preferences button
+  - Storage: Preferences persisted to localStorage
+  - i18n: Full English/Swedish translations
+- **Tests:** Comprehensive Cypress test suite (`cookie-consent.cy.js`) covering:
+  - Banner display on first visit
+  - Accept all / Reject non-essential flows
+  - Custom preferences with granular toggles
+  - Settings modal interactions
+  - Cookie policy page navigation
+  - Privacy tab in Settings
+  - Persistence across page reloads
+  - Swedish language support
+- **Status:** ✅ Complete
 
 ---
 
