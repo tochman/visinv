@@ -306,6 +306,38 @@ These additions position VisInv as a comprehensive solution for:
 - **Tests:** Comprehensive Cypress test suite (multi-currency-invoice-selection.cy.js) with 16 tests
 - **Status:** ✅ Complete
 
+**US-024-C: Save Manual Price to Product** ✅
+- As a **user creating an invoice**, when I **manually enter a price for a product that lacks a price in the invoice currency**, I would like to **save that price to the product** so I don't have to enter it again.
+- **Features:**
+  - Show "Save price to product" action in currency mismatch warning
+  - Allow user to add the manually entered price to the product's price list
+  - Update product_prices table with the new currency/price
+  - Remove warning after successful save
+  - Show success confirmation message
+  - Price field must contain a valid value before saving
+- **Behavior:**
+  - Warning appears when product has no matching currency price
+  - User enters manual price (e.g., 150 GBP)
+  - User clicks "Save GBP 150 to product" button in warning
+  - System adds new price record to product_prices table
+  - Warning disappears, success message shows
+  - Future invoices with this product + currency auto-fill saved price
+- **UI:**
+  - Action button in warning banner: "Save [currency] [price] to product"
+  - Button only shows when price > 0
+  - Success toast: "Price saved to product successfully"
+  - Error toast on save failures
+- **Prerequisites:** US-024-B (Currency-Aware Product Selection)
+- **Implementation:**
+  - InvoiceModal.jsx: Added handleSavePriceToProduct() handler
+  - Uses ProductPrice resource to create new price record
+  - Refreshes products via fetchProducts() after successful save
+  - Removes currency mismatch warning after save
+  - Tracks saving state per line item to disable button during save
+  - Translations added for savePriceToProduct, priceSavedSuccess, priceSaveFailed (EN/SV)
+- **Tests:** Comprehensive Cypress test suite with 6 additional tests (22 total in multi-currency-invoice-selection.cy.js)
+- **Status:** ✅ Complete
+
 **US-025: Recurring Invoices**
 - As a **premium user**, in order to **automate subscription billing**, I would like to **set up recurring invoices with custom intervals**.
 

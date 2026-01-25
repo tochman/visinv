@@ -9,6 +9,7 @@ import { fetchTemplates } from '../../features/invoiceTemplates/invoiceTemplates
 import { getCurrencyCodes, getCurrency } from '../../config/currencies';
 import { usePremiumAccess } from '../../hooks/usePremiumAccess';
 import { useToast } from '../../context/ToastContext';
+import { ProductPrice } from '../../services/resources';
 
 export default function InvoiceModal({ isOpen, onClose, invoice = null }) {
   const { t } = useTranslation();
@@ -56,6 +57,7 @@ export default function InvoiceModal({ isOpen, onClose, invoice = null }) {
   const [invoiceNumberError, setInvoiceNumberError] = useState(null);
   const [openProductMenu, setOpenProductMenu] = useState(null);
   const [currencyMismatches, setCurrencyMismatches] = useState({});
+  const [savingPrice, setSavingPrice] = useState({});
 
   // Check for duplicate invoice number on blur
   const handleInvoiceNumberBlur = async () => {
@@ -165,6 +167,45 @@ export default function InvoiceModal({ isOpen, onClose, invoice = null }) {
         ...prev,
         [index]: hasCurrencyMismatch
       }));
+    }
+  };
+
+  const handleSavePriceToProduct = async (index) => {
+    const row = rows[index];
+    const price = parseFloat(row.unit_price);
+    
+    if (!row.product_id || !price || price <= 0) {
+      return;
+    }
+
+    setSavingPrice(prev => ({ ...prev, [index]: true }));
+
+    try {
+      const { data, error } = await ProductPrice.create({
+        product_id: row.product_id,
+        currency: formData.currency,
+        price: price
+      });
+
+      if (error) {
+        toast.error(t('invoices.priceSaveFailed'));
+      } else {
+        // Remove currency mismatch warning for this row
+        setCurrencyMismatches(prev => {
+          const newMismatches = { ...prev };
+          delete newMismatches[index];
+          return newMismatches;
+        });
+        
+        // Refresh products to get updated data
+        await dispatch(fetchProducts());
+        
+        toast.success(t('invoices.priceSavedSuccess'));
+      }
+    } catch (err) {
+      toast.error(t('invoices.priceSaveFailed'));
+    } finally {
+      setSavingPrice(prev => ({ ...prev, [index]: false }));
     }
   };
 
@@ -860,6 +901,17 @@ export default function InvoiceModal({ isOpen, onClose, invoice = null }) {
                           <p className="text-xs text-amber-700 dark:text-amber-300 mt-0.5">
                             {t('invoices.currencyMismatchHelp')}
                           </p>
+                          {rows[index].unit_price > 0 && (
+                            <button
+                              type="button"
+                              onClick={() => handleSavePriceToProduct(index)}
+                              disabled={savingPrice[index]}
+                              data-cy={`save-price-to-product-${index}`}
+                              className="mt-2 px-3 py-1 text-xs font-medium text-amber-800 dark:text-amber-200 bg-amber-100 dark:bg-amber-800/30 border border-amber-300 dark:border-amber-700 rounded-sm hover:bg-amber-200 dark:hover:bg-amber-800/50 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                            >
+                              {savingPrice[index] ? t('common.saving') : t('invoices.savePriceToProduct', { currency: formData.currency, price: parseFloat(rows[index].unit_price).toFixed(2) })}
+                            </button>
+                          )}
                         </div>
                       </div>
                     )}

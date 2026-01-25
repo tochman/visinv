@@ -417,4 +417,182 @@ describe('Multi-Currency Invoice Product Selection', () => {
         .should('have.class', 'bg-blue-50');
     });
   });
+
+  describe('Feature: Save Manual Price to Product (US-024-C)', () => {
+    it('is expected to show "Save price to product" button when currency mismatch exists', () => {
+      // Create mismatch scenario
+      cy.getByCy('currency-select').select('GBP');
+      cy.getByCy('product-select-btn-0').click();
+      cy.getByCy(`product-option-${mockProductSekOnly.id}`).click();
+      
+      // Warning should be visible
+      cy.getByCy('currency-mismatch-warning-0').should('be.visible');
+      
+      // Enter manual price
+      cy.getByCy('unit-price-input-0').clear().type('150');
+      
+      // Save price button should appear in warning
+      cy.getByCy('save-price-to-product-0').should('be.visible')
+        .and('contain', 'Save')
+        .and('contain', 'GBP')
+        .and('contain', '150');
+    });
+
+    it('is expected to only show save button when price is greater than 0', () => {
+      cy.getByCy('currency-select').select('GBP');
+      cy.getByCy('product-select-btn-0').click();
+      cy.getByCy(`product-option-${mockProductSekOnly.id}`).click();
+      
+      // Price is 0 by default, button should not exist
+      cy.getByCy('unit-price-input-0').should('have.value', '0');
+      cy.getByCy('save-price-to-product-0').should('not.exist');
+      
+      // Enter valid price
+      cy.getByCy('unit-price-input-0').clear().type('100');
+      cy.getByCy('save-price-to-product-0').should('exist').and('not.be.disabled');
+      
+      // Clear price
+      cy.getByCy('unit-price-input-0').clear();
+      cy.getByCy('save-price-to-product-0').should('not.exist');
+    });
+
+    it('is expected to save price to product and remove warning', () => {
+      // Mock successful price save
+      cy.intercept('POST', '**/rest/v1/product_prices*', {
+        statusCode: 201,
+        body: {
+          id: 'new-price-id',
+          product_id: mockProductSekOnly.id,
+          currency: 'GBP',
+          price: 200
+        }
+      }).as('createProductPrice');
+
+      cy.getByCy('currency-select').select('GBP');
+      cy.getByCy('product-select-btn-0').click();
+      cy.getByCy(`product-option-${mockProductSekOnly.id}`).click();
+      
+      // Enter manual price
+      cy.getByCy('unit-price-input-0').clear().type('200');
+      
+      // Click save button
+      cy.getByCy('save-price-to-product-0').click();
+      cy.wait('@createProductPrice');
+      
+      // Warning should disappear
+      cy.getByCy('currency-mismatch-warning-0').should('not.exist');
+      
+      // Success message should appear (toast)
+      // Note: Actual implementation would show toast notification
+    });
+
+    it('is expected to handle save failure with error message', () => {
+      // Mock failed price save
+      cy.intercept('POST', '**/rest/v1/product_prices*', {
+        statusCode: 500,
+        body: { error: 'Database error' }
+      }).as('createProductPriceFail');
+
+      cy.getByCy('currency-select').select('GBP');
+      cy.getByCy('product-select-btn-0').click();
+      cy.getByCy(`product-option-${mockProductSekOnly.id}`).click();
+      
+      // Enter manual price
+      cy.getByCy('unit-price-input-0').clear().type('250');
+      
+      // Click save button
+      cy.getByCy('save-price-to-product-0').click();
+      cy.wait('@createProductPriceFail');
+      
+      // Warning should still be visible
+      cy.getByCy('currency-mismatch-warning-0').should('be.visible');
+      
+      // Error message should appear (toast or inline)
+      // Note: Actual implementation would show error notification
+    });
+
+    it('is expected to auto-fill price on next product selection after saving', () => {
+      // First: Save a GBP price
+      cy.intercept('POST', '**/rest/v1/product_prices*', {
+        statusCode: 201,
+        body: {
+          id: 'new-price-id',
+          product_id: mockProductSekOnly.id,
+          currency: 'GBP',
+          price: 175
+        }
+      }).as('createProductPrice');
+
+      // Mock updated product with new price for subsequent GET requests
+      const updatedProduct = {
+        ...mockProductSekOnly,
+        prices: [
+          { currency: 'SEK', price: 500 },
+          { currency: 'GBP', price: 175 }
+        ]
+      };
+
+      cy.getByCy('currency-select').select('GBP');
+      cy.getByCy('product-select-btn-0').click();
+      cy.getByCy(`product-option-${mockProductSekOnly.id}`).click();
+      cy.getByCy('unit-price-input-0').clear().type('175');
+      cy.getByCy('save-price-to-product-0').click();
+      cy.wait('@createProductPrice');
+      
+      // Mock GET products to return updated product
+      cy.intercept('GET', '**/rest/v1/products*', {
+        statusCode: 200,
+        body: [updatedProduct, mockProductWithMultiCurrency, mockProductNoPrice]
+      }).as('getProductsUpdated');
+      
+      // Add new line item
+      cy.getByCy('add-line-item-button').click();
+      
+      // Select same product again on second line
+      cy.getByCy('product-select-btn-1').click();
+      cy.getByCy(`product-option-${mockProductSekOnly.id}`).click();
+      
+      // Price should auto-fill with saved GBP price
+      cy.getByCy('unit-price-input-1').should('have.value', '175');
+      cy.getByCy('currency-mismatch-warning-1').should('not.exist');
+    });
+
+    it('is expected to track multiple currency saves independently', () => {
+      // Test saving different currencies for the same product
+      cy.intercept('POST', '**/rest/v1/product_prices*', {
+        statusCode: 201,
+        body: { id: 'price-1', product_id: mockProductNoPrice.id, currency: 'SEK', price: 100 }
+      }).as('createPrice1');
+
+      // First line - SEK
+      cy.getByCy('currency-select').select('SEK');
+      cy.getByCy('product-select-btn-0').click();
+      cy.getByCy(`product-option-${mockProductNoPrice.id}`).click();
+      cy.getByCy('unit-price-input-0').clear().type('100');
+      cy.getByCy('save-price-to-product-0').click();
+      cy.wait('@createPrice1');
+      
+      // Add second line
+      cy.getByCy('add-line-item-button').click();
+      
+      // Change currency to EUR
+      cy.getByCy('currency-select').select('EUR');
+      
+      cy.intercept('POST', '**/rest/v1/product_prices*', {
+        statusCode: 201,
+        body: { id: 'price-2', product_id: mockProductNoPrice.id, currency: 'EUR', price: 12 }
+      }).as('createPrice2');
+      
+      // Second line - EUR (same product, different currency)
+      cy.getByCy('product-select-btn-1').click();
+      cy.getByCy(`product-option-${mockProductNoPrice.id}`).click();
+      cy.getByCy('unit-price-input-1').clear().type('12');
+      cy.getByCy('save-price-to-product-1').click();
+      cy.wait('@createPrice2');
+      
+      // Both warnings should be gone
+      cy.getByCy('currency-mismatch-warning-0').should('not.exist');
+      cy.getByCy('currency-mismatch-warning-1').should('not.exist');
+    });
+  });
 });
