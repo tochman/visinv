@@ -1,4 +1,5 @@
 import { BaseResource } from './BaseResource';
+import { ProductPrice } from './ProductPrice';
 
 /**
  * Product Resource
@@ -11,52 +12,129 @@ class ProductResource extends BaseResource {
 
   /**
    * Get all products for the current user
+   * Includes prices for all currencies
    * @param {Object} options - Query options
    * @returns {Promise<{data: Array|null, error: Error|null}>}
    */
   async index(options = {}) {
-    return super.index({
-      select: '*',
-      order: 'name',
-      ascending: true,
-      filters: [{ column: 'is_active', value: true }],
-      ...options,
-    });
+    const { data, error } = await this.supabase
+      .from(this.tableName)
+      .select(`
+        *,
+        prices:product_prices(currency, price)
+      `)
+      .eq('is_active', true)
+      .order('name');
+
+    return { data, error };
   }
 
   /**
-   * Create a new product
-   * @param {Object} productData - Product attributes
+   * Create a new product with prices
+   * @param {Object} productData - Product attributes including prices array
    * @returns {Promise<{data: Object|null, error: Error|null}>}
    */
   async create(productData) {
-    // Trim name and ensure unit_price is a number
+    const { prices, ...productFields } = productData;
+    
+    // Trim name and set defaults
     const dataToCreate = {
-      ...productData,
-      name: productData.name?.trim(),
-      unit_price: parseFloat(productData.unit_price) || 0,
-      tax_rate: productData.tax_rate !== undefined ? parseFloat(productData.tax_rate) : 25.00,
+      ...productFields,
+      name: productFields.name?.trim(),
+      tax_rate: productFields.tax_rate !== undefined ? parseFloat(productFields.tax_rate) : 25.00,
     };
 
-    return super.create(dataToCreate);
+    // Create product
+    const { data: product, error: productError } = await super.create(dataToCreate);
+    
+    if (productError || !product) {
+      return { data: null, error: productError };
+    }
+
+    // Create prices if provided
+    if (prices && prices.length > 0) {
+      const { error: pricesError } = await ProductPrice.bulkSetPrices(
+        product.id,
+        prices.filter(p => p.price && parseFloat(p.price) > 0)
+      );
+      
+      if (pricesError) {
+        return { data: null, error: pricesError };
+      }
+    }
+
+    // Fetch the complete product with prices
+    return this.show(product.id);
   }
 
   /**
    * Update an existing product
    * @param {string} id - Product ID
-   * @param {Object} updates - Attributes to update
+   * @param {Object} updates - Attributes to update (including prices array)
    * @returns {Promise<{data: Object|null, error: Error|null}>}
    */
   async update(id, updates) {
-    // Trim name if it's being updated and ensure numeric fields are numbers
+    const { prices, ...productFields } = updates;
+    
+    // Trim name if provided
     const dataToUpdate = {
-      ...updates,
-      ...(updates.name && { name: updates.name.trim() }),
-      ...(updates.unit_price !== undefined && { unit_price: parseFloat(updates.unit_price) }),
-      ...(updates.tax_rate !== undefined && { tax_rate: parseFloat(updates.tax_rate) }),
+      ...productFields,
+      name: productFields.name?.trim(),
+      tax_rate: productFields.tax_rate !== undefined ? parseFloat(productFields.tax_rate) : undefined,
     };
 
-    return super.update(id, dataToUpdate);
+    // Remove undefined values
+    Object.keys(dataToUpdate).forEach(key => {
+      if (dataToUpdate[key] === undefined) delete dataToUpdate[key];
+    });
+
+    // Update product
+    const { data: product, error: productError } = await super.update(id, dataToUpdate);
+    
+    if (productError || !product) {
+      return { data: null, error: productError };
+    }
+
+    // Update prices if provided
+    if (prices) {
+      // Delete all existing prices first
+      const { data: existingPrices } = await ProductPrice.getByProduct(id);
+      if (existingPrices) {
+        for (const existing of existingPrices) {
+          await ProductPrice.deletePrice(id, existing.currency);
+        }
+      }
+      
+      // Insert new prices
+      const validPrices = prices.filter(p => p.price && parseFloat(p.price) > 0);
+      if (validPrices.length > 0) {
+        const { error: pricesError } = await ProductPrice.bulkSetPrices(id, validPrices);
+        if (pricesError) {
+          return { data: null, error: pricesError };
+        }
+      }
+    }
+
+    // Fetch the complete product with prices
+    return this.show(id);
+  }
+
+  /**
+   * Get a single product with its prices
+   * @param {string} id - Product ID
+   * @returns {Promise<{data: Object|null, error: Error|null}>}
+   */
+  async show(id) {
+    const { data, error } = await this.supabase
+      .from(this.tableName)
+      .select(`
+        *,
+        prices:product_prices(currency, price)
+      `)
+      .eq('id', id)
+      .single();
+
+    return { data, error };
   }
 
   /**

@@ -280,6 +280,10 @@
     "name": "Produktnamn",
     "description": "Beskrivning",
     "unitPrice": "Enhetspris",
+    "prices": "Priser",
+    "atLeastOnePrice": "Minst ett pris krävs",
+    "atLeastOnePriceRequired": "Ange minst ett pris för någon valuta",
+    "addCurrency": "Lägg till valuta",
     "unit": "Enhet",
     "taxRate": "Momssats",
     "sku": "Artikelnummer",
@@ -421,7 +425,8 @@
     "optional": "valfritt",
     "allStatuses": "Alla statusar",
     "client": "Kund",
-    "status": "Status"
+    "status": "Status",
+    "more": "till"
   },
   "validation": {
     "required": "{{field}} är obligatoriskt"

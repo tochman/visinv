@@ -47,12 +47,35 @@ export default function Products() {
     product.sku?.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
-  const formatPrice = (price) => {
+  const formatPrice = (price, currency = 'SEK') => {
     return new Intl.NumberFormat('sv-SE', {
       style: 'currency',
-      currency: 'SEK',
+      currency: currency,
       minimumFractionDigits: 2,
     }).format(price);
+  };
+
+  const renderPrices = (prices) => {
+    if (!prices || prices.length === 0) return '-';
+    
+    // Show up to 3 prices, then indicate if there are more
+    const displayPrices = prices.slice(0, 3);
+    const remaining = prices.length - 3;
+    
+    return (
+      <div className="text-sm">
+        {displayPrices.map((priceObj, idx) => (
+          <div key={idx} className="font-medium text-gray-900 dark:text-white">
+            {formatPrice(priceObj.price, priceObj.currency)}
+          </div>
+        ))}
+        {remaining > 0 && (
+          <div className="text-xs text-gray-500 dark:text-gray-400 mt-1">
+            +{remaining} {t('common.more')}
+          </div>
+        )}
+      </div>
+    );
   };
 
   return (
@@ -158,8 +181,8 @@ export default function Products() {
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
                     {t('products.sku')}
                   </th>
-                  <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-                    {t('products.unitPrice')}
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                    {t('products.prices')}
                   </th>
                   <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
                     {t('products.unit')}
@@ -188,9 +211,9 @@ export default function Products() {
                         {product.sku || '-'}
                       </div>
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-right">
-                      <div data-cy="product-price" className="text-sm font-medium text-gray-900 dark:text-white">
-                        {formatPrice(product.unit_price)}
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      <div data-cy="product-prices">
+                        {renderPrices(product.prices)}
                       </div>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-center">

@@ -292,6 +292,10 @@
     "name": "Product Name",
     "description": "Description",
     "unitPrice": "Unit Price",
+    "prices": "Prices",
+    "atLeastOnePrice": "At least one price required",
+    "atLeastOnePriceRequired": "Please enter at least one price for any currency",
+    "addCurrency": "Add Currency",
     "unit": "Unit",
     "taxRate": "Tax Rate",
     "sku": "SKU",
@@ -433,7 +437,8 @@
     "optional": "optional",
     "allStatuses": "All Statuses",
     "client": "Client",
-    "status": "Status"
+    "status": "Status",
+    "more": "more"
   },
   "validation": {
     "required": "{{field}} is required"
