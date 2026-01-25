@@ -128,6 +128,11 @@ describe('Payment Recording (US-020)', () => {
     it('is expected to display Record Payment button on invoice detail page', () => {
       setupInvoiceIntercepts();
       
+      // Navigate to invoices list first
+      cy.getByCy('sidebar-nav-invoices').click();
+      cy.wait('@getInvoices');
+      
+      // Then navigate to specific invoice detail
       cy.visit(`/invoices/${mockInvoice.id}`);
       cy.wait('@getInvoices');
       

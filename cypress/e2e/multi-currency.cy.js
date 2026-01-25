@@ -111,7 +111,7 @@ describe('Multi-Currency Support', () => {
       body: []
     }).as('createInvoiceRows');
 
-    cy.visit('/invoices');
+    cy.getByCy('sidebar-nav-invoices').click();
     cy.wait('@getInvoices');
 
     cy.get('[data-cy="create-invoice-button"]').click();
@@ -132,7 +132,7 @@ describe('Multi-Currency Support', () => {
   it('should verify exchange rates are correctly configured for all currencies', () => {
     // This test verifies the currency configuration itself
     // by checking the config file is properly loaded
-    cy.visit('/invoices');
+    cy.getByCy('sidebar-nav-invoices').click();
     
     cy.window().then((_win) => {
       // Import the currency config
@@ -170,7 +170,7 @@ describe('Multi-Currency Support', () => {
       }]
     });
 
-    cy.visit('/invoices');
+    cy.getByCy('sidebar-nav-invoices').click();
     cy.get('[data-cy="create-invoice-button"]').click();
     cy.get('[data-cy="invoice-modal"]').should('be.visible');
 

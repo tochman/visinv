@@ -77,7 +77,7 @@ describe('Organization Member Invitations', () => {
       // Set up member intercepts AFTER login (to override the login's intercept)
       setupMemberIntercepts()
       
-      cy.visit('/settings')
+      cy.getByCy('sidebar-nav-settings').click()
       cy.getByCy('tab-members', { timeout: 5000 }).should('be.visible')
     })
 

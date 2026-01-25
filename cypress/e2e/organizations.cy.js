@@ -38,10 +38,8 @@ describe('Organization Management', () => {
         })
       }).as('createOrgMember')
       
-      // Visit dashboard where wizard should appear
-      cy.visit('/dashboard')
-      
-      // Wait for wizard to appear
+      // Wait for wizard to appear on dashboard (already navigated by login)
+      // The wizard appears automatically when no organization exists
       cy.getByCy('organization-wizard', { timeout: 5000 }).should('exist')
     })
 
@@ -119,7 +117,7 @@ describe('Organization Management', () => {
       cy.fixture('organizations').then((data) => {
         // Login with custom organization data
         cy.login('admin', { customOrganization: data.mockOrganization })
-        cy.visit('/settings')
+        cy.getByCy('sidebar-nav-settings').click()
         
         // Wait for page to load
         cy.getByCy('edit-organization', { timeout: 10000 }).should('be.visible')

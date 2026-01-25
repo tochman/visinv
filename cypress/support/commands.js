@@ -156,6 +156,14 @@ Cypress.Commands.add('login', (userType = 'user', options = {}) => {
       const storageKey = `sb-${Cypress.env('SUPABASE_PROJECT_REF') || 'test'}-auth-token`
       win.localStorage.setItem(storageKey, JSON.stringify(mockSession))
       win.localStorage.setItem('language', 'en')
+      // Set cookie consent to prevent banner from blocking UI
+      win.localStorage.setItem('visinv_cookie_consent', JSON.stringify({
+        essential: true,
+        analytics: false,
+        marketing: false,
+        preferences: false,
+        timestamp: Date.now()
+      }))
     }
   })
 

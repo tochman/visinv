@@ -103,9 +103,13 @@ describe('Overdue Invoice Alerts (US-026-A)', () => {
   });
 
   describe('Visual Overdue Indicators', () => {
-    it('should highlight overdue invoices in red', () => {
-      cy.visit('/invoices');
+    beforeEach(() => {
+      cy.getByCy('sidebar-nav-invoices').click();
       cy.wait('@getInvoices');
+    });
+
+    it('should highlight overdue invoices in red', () => {
+      // Already navigated to invoices in beforeEach
       
       // All overdue invoices should be highlighted with bg-red-50
       cy.contains(overdueInvoice.invoice_number)
@@ -123,8 +127,7 @@ describe('Overdue Invoice Alerts (US-026-A)', () => {
     });
 
     it('should display days overdue for overdue invoices', () => {
-      cy.visit('/invoices');
-      cy.wait('@getInvoices');
+      // Already navigated in beforeEach
       
       // Check for overdue indicator with data-cy attribute
       cy.getByCy(`overdue-indicator-${overdueInvoice.id}`)
@@ -137,8 +140,7 @@ describe('Overdue Invoice Alerts (US-026-A)', () => {
     });
 
     it('should not highlight non-overdue invoices', () => {
-      cy.visit('/invoices');
-      cy.wait('@getInvoices');
+      // Already navigated in beforeEach
       
       cy.contains(notDueInvoice.invoice_number)
         .parents('tr')
@@ -148,9 +150,13 @@ describe('Overdue Invoice Alerts (US-026-A)', () => {
   });
 
   describe('Reminder Button and Actions', () => {
-    it('should display send reminder button for overdue invoices', () => {
-      cy.visit('/invoices');
+    beforeEach(() => {
+      cy.getByCy('sidebar-nav-invoices').click();
       cy.wait('@getInvoices');
+    });
+
+    it('should display send reminder button for overdue invoices', () => {
+      // Already navigated in beforeEach
       
       cy.getByCy(`send-reminder-button-${overdueInvoice.id}`)
         .scrollIntoView()
@@ -158,15 +164,13 @@ describe('Overdue Invoice Alerts (US-026-A)', () => {
     });
 
     it('should not display send reminder button for non-overdue invoices', () => {
-      cy.visit('/invoices');
-      cy.wait('@getInvoices');
+      // Already navigated in beforeEach
       
       cy.getByCy(`send-reminder-button-${notDueInvoice.id}`).should('not.exist');
     });
 
     it('should send reminder and update reminder count', () => {
-      cy.visit('/invoices');
-      cy.wait('@getInvoices');
+      // Already navigated in beforeEach
       
       cy.getByCy(`send-reminder-button-${overdueInvoice.id}`).click();
       
@@ -183,7 +187,8 @@ describe('Overdue Invoice Alerts (US-026-A)', () => {
       overdueInvoice.reminder_count = 1;
       overdueInvoice.reminder_sent_at = new Date().toISOString();
       
-      cy.visit('/invoices');
+      // Reload data with updated invoice
+      cy.reload();
       cy.wait('@getInvoices');
       
       // Verify initial count is 1
@@ -227,6 +232,11 @@ describe('Overdue Invoice Alerts (US-026-A)', () => {
   });
 
   describe('Reminder Badge Display', () => {
+    beforeEach(() => {
+      cy.getByCy('sidebar-nav-invoices').click();
+      cy.wait('@getInvoices');
+    });
+
     it('should display reminder badge after sending reminder', () => {
       veryOverdueInvoice.reminder_count = 1;
       veryOverdueInvoice.reminder_sent_at = new Date().toISOString();

@@ -16,7 +16,7 @@ describe('Swedish Compliance - Mandatory Fields', () => {
 
   describe('US-061: Organization Mandatory Fields', () => {
     beforeEach(() => {
-      cy.visit('/settings');
+      cy.getByCy('sidebar-nav-settings').click();
     });
 
     it('is expected to validate and show errors for empty required fields', () => {
@@ -42,7 +42,7 @@ describe('Swedish Compliance - Mandatory Fields', () => {
 
   describe('US-062: Client Mandatory Fields', () => {
     beforeEach(() => {
-      cy.visit('/clients');
+      cy.getByCy('sidebar-nav-clients').click();
       cy.getByCy('create-client-button').click();
     });
 
@@ -81,7 +81,7 @@ describe('Swedish Compliance - Mandatory Fields', () => {
 
   describe('US-063: Invoice Mandatory Fields', () => {
     beforeEach(() => {
-      cy.visit('/invoices');
+      cy.getByCy('sidebar-nav-invoices').click();
       cy.getByCy('create-invoice-button').click();
     });
 
@@ -113,7 +113,7 @@ describe('Swedish Compliance - Mandatory Fields', () => {
 
   describe('US-064: Invoice Item VAT Rate Required', () => {
     beforeEach(() => {
-      cy.visit('/invoices');
+      cy.getByCy('sidebar-nav-invoices').click();
       cy.getByCy('create-invoice-button').click();
       cy.getByCy('add-line-item-button').click();
     });
@@ -151,12 +151,12 @@ describe('Swedish Compliance - Mandatory Fields', () => {
 
   describe('US-067: F-skatt Display - LEGAL REQUIREMENT', () => {
     it('is expected to show F-skatt status in organization settings', () => {
-      cy.visit('/settings');
+      cy.getByCy('sidebar-nav-settings').click();
       cy.getByCy('org-f-skatt-approved').should('exist');
     });
 
     it('is expected to have F-skatt checkbox available for editing', () => {
-      cy.visit('/settings');
+      cy.getByCy('sidebar-nav-settings').click();
       cy.getByCy('edit-organization').click();
       
       // Verify the F-skatt checkbox exists and can be interacted with
@@ -165,7 +165,7 @@ describe('Swedish Compliance - Mandatory Fields', () => {
     });
 
     it('is expected to allow toggling F-skatt checkbox', () => {
-      cy.visit('/settings');
+      cy.getByCy('sidebar-nav-settings').click();
       cy.getByCy('edit-organization').click();
       
       // Get initial state
@@ -181,7 +181,7 @@ describe('Swedish Compliance - Mandatory Fields', () => {
     });
 
     it('is expected to include F-skatt in organization form structure', () => {
-      cy.visit('/settings');
+      cy.getByCy('sidebar-nav-settings').click();
       cy.getByCy('edit-organization').click();
       
       // Verify F-skatt field is part of the organization settings

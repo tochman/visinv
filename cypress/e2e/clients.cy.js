@@ -16,7 +16,7 @@ describe('Client Management', () => {
       })
     }).as('createClient')
 
-    cy.visit('/clients')
+    cy.getByCy('sidebar-nav-clients').click()
     cy.wait('@getClients')
   })
 

@@ -298,7 +298,8 @@ describe("Invoice Management", () => {
         products: [],
       });
 
-      cy.visit("/invoices");
+      // Need to reload/refresh data with new intercepts for this nested context
+      cy.reload();
       cy.wait("@getInvoices");
     });
 
@@ -440,7 +441,8 @@ describe("Invoice Management", () => {
         products: [],
       });
 
-      cy.visit("/invoices");
+      // Reload to pick up new intercepts
+      cy.reload();
       cy.wait("@getInvoices");
     });
 
@@ -1378,8 +1380,9 @@ describe("Invoice Management", () => {
         templates: [mockTemplate],
         products: [],
       });
-
-      cy.visit("/invoices");
+Reload to pick up new intercepts
+      cy.reload();
+      // Already navigated to invoices in parent beforeEach
       cy.wait("@getInvoices");
       cy.wait("@getTemplates");
     });
@@ -1409,7 +1412,8 @@ describe("Invoice Management", () => {
         products: [],
       });
 
-      cy.visit("/invoices");
+      // Reload data with new intercepts
+      cy.reload();
       cy.wait("@getInvoices");
       cy.wait("@getTemplates");
 
@@ -1610,9 +1614,7 @@ describe("Invoice Management", () => {
           });
         }).as(`createInvoice${invoiceNumber}`);
 
-        cy.visit("/invoices");
-        
-        // Dispatch organization to Redux after page load
+        // Dispatch organization to Redux
         cy.window().its('store').invoke('dispatch', {
           type: 'organizations/setCurrentOrganization',
           payload: mockOrganizationOCR
