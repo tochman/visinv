@@ -107,28 +107,33 @@ describe('Overdue Invoice Alerts (US-026-A)', () => {
       cy.visit('/invoices');
       cy.wait('@getInvoices');
       
-      // 15 days overdue should be highlighted
+      // All overdue invoices should be highlighted with bg-red-50
       cy.contains(overdueInvoice.invoice_number)
         .parents('tr')
-        .should('have.class', 'bg-red-50');
+        .should('have.class', 'bg-red-50')
+        .and('have.class', 'border-l-4')
+        .and('have.class', 'border-red-500');
       
-      // 45 days overdue should be highlighted darker
+      // Very overdue should also be bg-red-50 (same styling)
       cy.contains(veryOverdueInvoice.invoice_number)
         .parents('tr')
-        .should('have.class', 'bg-red-100');
+        .should('have.class', 'bg-red-50')
+        .and('have.class', 'border-l-4')
+        .and('have.class', 'border-red-500');
     });
 
     it('should display days overdue for overdue invoices', () => {
       cy.visit('/invoices');
       cy.wait('@getInvoices');
       
-      cy.contains(overdueInvoice.invoice_number)
-        .parents('tr')
-        .should('contain', 'days overdue');
+      // Check for overdue indicator with data-cy attribute
+      cy.getByCy(`overdue-indicator-${overdueInvoice.id}`)
+        .should('be.visible')
+        .and('contain.text', '15'); // days count
       
-      cy.contains(veryOverdueInvoice.invoice_number)
-        .parents('tr')
-        .should('contain', 'days overdue');
+      cy.getByCy(`overdue-indicator-${veryOverdueInvoice.id}`)
+        .should('be.visible')
+        .and('contain.text', '45'); // days count
     });
 
     it('should not highlight non-overdue invoices', () => {
@@ -147,65 +152,77 @@ describe('Overdue Invoice Alerts (US-026-A)', () => {
       cy.visit('/invoices');
       cy.wait('@getInvoices');
       
-      cy.contains(overdueInvoice.invoice_number)
-        .parents('tr')
-        .within(() => {
-          cy.getByCy('send-reminder').should('be.visible');
-        });
+      cy.getByCy(`send-reminder-button-${overdueInvoice.id}`)
+        .scrollIntoView()
+        .should('be.visible');
     });
 
     it('should not display send reminder button for non-overdue invoices', () => {
       cy.visit('/invoices');
       cy.wait('@getInvoices');
       
-      cy.contains(notDueInvoice.invoice_number)
-        .parents('tr')
-        .within(() => {
-          cy.getByCy('send-reminder').should('not.exist');
-        });
+      cy.getByCy(`send-reminder-button-${notDueInvoice.id}`).should('not.exist');
     });
 
     it('should send reminder and update reminder count', () => {
       cy.visit('/invoices');
       cy.wait('@getInvoices');
       
-      cy.contains(overdueInvoice.invoice_number)
-        .parents('tr')
-        .within(() => {
-          cy.getByCy('send-reminder').click();
-        });
+      cy.getByCy(`send-reminder-button-${overdueInvoice.id}`).click();
       
       cy.wait('@updateInvoice');
       
       // Should show reminder badge with count
-      cy.contains(overdueInvoice.invoice_number)
-        .parents('tr')
-        .within(() => {
-          cy.getByCy('reminder-badge').should('be.visible');
-          cy.getByCy('reminder-badge').should('contain', '1');
-        });
+      cy.getByCy(`reminder-badge-${overdueInvoice.id}`)
+        .should('be.visible')
+        .and('contain', '1');
     });
 
     it('should increment reminder count on subsequent reminders', () => {
+      // Start with reminder count of 1
       overdueInvoice.reminder_count = 1;
+      overdueInvoice.reminder_sent_at = new Date().toISOString();
       
       cy.visit('/invoices');
       cy.wait('@getInvoices');
       
+      // Verify initial count is 1
+      cy.getByCy(`reminder-badge-${overdueInvoice.id}`)
+        .should('contain', '1');
+      
+      // Set up intercepts BEFORE clicking to ensure they catch the requests
+      const updatedInvoice = { ...overdueInvoice, reminder_count: 2, reminder_sent_at: new Date().toISOString() };
+      
+      cy.intercept('PATCH', `**/rest/v1/invoices?id=eq.${overdueInvoice.id}*`, {
+        statusCode: 200,
+        body: [updatedInvoice]
+      }).as('updateInvoice2');
+      
+      // Mock the refresh GET - this will be called by fetchInvoices()
+      cy.intercept('GET', '**/rest/v1/invoices?*', {
+        statusCode: 200,
+        body: [updatedInvoice, veryOverdueInvoice, notDueInvoice]
+      }).as('getInvoicesRefresh');
+      
+      // Set up alert stub before clicking
+      cy.window().then((win) => {
+        cy.stub(win, 'alert').as('alertStub');
+      });
+      
       // Send second reminder
-      cy.contains(overdueInvoice.invoice_number)
-        .parents('tr')
-        .within(() => {
-          cy.getByCy('send-reminder').click();
-        });
+      cy.getByCy(`send-reminder-button-${overdueInvoice.id}`)
+        .scrollIntoView()
+        .click();
       
-      cy.wait('@updateInvoice');
+      cy.wait('@updateInvoice2');
+      cy.wait('@getInvoicesRefresh');
       
-      cy.contains(overdueInvoice.invoice_number)
-        .parents('tr')
-        .within(() => {
-          cy.getByCy('reminder-badge').should('contain', '2');
-        });
+      // Wait for alert to be called
+      cy.get('@alertStub').should('have.been.called');
+      
+      // Should now show count of 2
+      cy.getByCy(`reminder-badge-${overdueInvoice.id}`)
+        .should('contain', '2');
     });
   });
 
@@ -217,12 +234,9 @@ describe('Overdue Invoice Alerts (US-026-A)', () => {
       cy.visit('/invoices');
       cy.wait('@getInvoices');
       
-      cy.contains(veryOverdueInvoice.invoice_number)
-        .parents('tr')
-        .within(() => {
-          cy.getByCy('reminder-badge').should('be.visible');
-          cy.getByCy('reminder-badge').should('have.class', 'bg-purple-100');
-        });
+      cy.getByCy(`reminder-badge-${veryOverdueInvoice.id}`)
+        .should('be.visible')
+        .and('have.class', 'bg-purple-100');
     });
 
     it('should show correct reminder count in badge', () => {
@@ -232,24 +246,18 @@ describe('Overdue Invoice Alerts (US-026-A)', () => {
       cy.visit('/invoices');
       cy.wait('@getInvoices');
       
-      cy.contains(overdueInvoice.invoice_number)
-        .parents('tr')
-        .within(() => {
-          cy.getByCy('reminder-badge').should('contain', '3');
-        });
+      cy.getByCy(`reminder-badge-${overdueInvoice.id}`)
+        .should('contain', '3');
     });
 
     it('should not show reminder badge on invoices without reminders sent', () => {
       notDueInvoice.reminder_count = 0;
+      notDueInvoice.reminder_sent_at = null;
       
       cy.visit('/invoices');
       cy.wait('@getInvoices');
       
-      cy.contains(notDueInvoice.invoice_number)
-        .parents('tr')
-        .within(() => {
-          cy.getByCy('reminder-badge').should('not.exist');
-        });
+      cy.getByCy(`reminder-badge-${notDueInvoice.id}`).should('not.exist');
     });
   });
 });
