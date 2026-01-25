@@ -27,7 +27,7 @@ export function highlightCode(code, isDarkMode = false) {
   
   // Simple Handlebars variables: {{variable}}, {{object.property}}
   html = html.replace(
-    /(\{\{)([^#\/][^}]*)(\}\})/g,
+    /(\{\{)([^#/][^}]*)(\}\})/g,
     '<span class="token handlebars-delimiter">$1</span><span class="token handlebars-variable">$2</span><span class="token handlebars-delimiter">$3</span>'
   );
   

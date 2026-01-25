@@ -75,7 +75,7 @@ describe('Payment Recording (US-020)', () => {
     }
   };
 
-  const mockTemplate = {
+  const _mockTemplate = {
     id: '3850a63a-82a7-41c0-b85b-ae51e611a746',
     user_id: null,
     name: 'Kompakt - Enkel',

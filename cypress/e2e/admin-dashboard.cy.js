@@ -1,7 +1,7 @@
 /// <reference types="cypress" />
 
 describe('Admin Dashboard', () => {
-  const adminUser = {
+  const _adminUser = {
     id: 'test-admin-user-id',
     email: 'admin@test.com',
     is_admin: true,
@@ -9,7 +9,7 @@ describe('Admin Dashboard', () => {
     full_name: 'Admin User'
   }
 
-  const regularUser = {
+  const _regularUser = {
     id: 'test-regular-user-id',
     email: 'user@test.com',
     is_admin: false,

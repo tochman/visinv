@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
+import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
 import { checkSession } from './features/auth/authSlice';
 import { OrganizationProvider } from './contexts/OrganizationContext';
@@ -76,7 +76,7 @@ function App() {
   return (
     <ToastProvider>
       <OrganizationProvider>
-        <Router>
+        <BrowserRouter>
         <CookieBanner />
         <CookieSettings />
         <Routes>
@@ -114,7 +114,7 @@ function App() {
           {/* Redirect */}
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
-      </Router>
+      </BrowserRouter>
     </OrganizationProvider>
     </ToastProvider>
   );

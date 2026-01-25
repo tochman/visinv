@@ -134,11 +134,11 @@ describe('Multi-Currency Support', () => {
     // by checking the config file is properly loaded
     cy.visit('/invoices');
     
-    cy.window().then((win) => {
+    cy.window().then((_win) => {
       // Import the currency config
       return cy.wrap(null).then(() => {
         // Verify getCurrencyCodes function returns all 6 currencies
-        const expectedCurrencies = ['SEK', 'EUR', 'USD', 'GBP', 'NOK', 'DKK'];
+        const _expectedCurrencies = ['SEK', 'EUR', 'USD', 'GBP', 'NOK', 'DKK'];
         
         // The currency dropdown having all options proves the config is loaded
         cy.setupCommonIntercepts({

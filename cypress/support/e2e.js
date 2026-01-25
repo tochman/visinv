@@ -10,7 +10,7 @@ import './commands'
 import '@cypress/code-coverage/support'
 
 // Prevent uncaught exceptions from failing tests
-Cypress.on('uncaught:exception', (err, runnable) => {
+Cypress.on('uncaught:exception', (err, _runnable) => {
   // Return false to prevent the error from failing the test
   // You can add conditions here if you want to fail on specific errors
   console.log('Uncaught exception:', err.message)

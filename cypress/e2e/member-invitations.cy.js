@@ -651,7 +651,7 @@ describe('Organization Member Invitations', () => {
       })
 
       it('is expected to show error for expired invitation', () => {
-        const expiredInvitation = {
+        const _expiredInvitation = {
           ...mockInvitation,
           token: expiredToken,
           expires_at: new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString() // expired yesterday

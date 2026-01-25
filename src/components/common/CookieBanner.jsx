@@ -1,7 +1,7 @@
 import { useEffect } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { useTranslation } from 'react-i18next';
-import { Link } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import {
   acceptAllCookies,
   rejectNonEssentialCookies,
@@ -12,6 +12,7 @@ import {
 export default function CookieBanner() {
   const { t } = useTranslation();
   const dispatch = useDispatch();
+  const navigate = useNavigate();
   const showBanner = useSelector(selectShowBanner);
 
   // Prevent body scroll when banner is shown
@@ -64,13 +65,13 @@ export default function CookieBanner() {
                 <p className="text-sm text-gray-600 dark:text-gray-300 mb-3">
                   {t('cookieConsent.banner.description')}
                 </p>
-                <Link
-                  to="/cookie-policy"
-                  className="text-sm text-blue-600 dark:text-blue-400 hover:underline"
+                <button
+                  onClick={() => navigate('/cookie-policy')}
+                  className="text-sm text-blue-600 dark:text-blue-400 hover:underline bg-transparent border-none cursor-pointer p-0"
                   data-cy="cookie-learn-more"
                 >
                   {t('cookieConsent.banner.learnMore')} →
-                </Link>
+                </button>
               </div>
 
               {/* Actions */}

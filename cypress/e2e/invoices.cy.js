@@ -1548,9 +1548,9 @@ describe("Invoice Management", () => {
       });
 
       // Mock to capture the created invoice data
-      let capturedInvoice = null;
+      let _capturedInvoice = null;
       cy.intercept("POST", "**/rest/v1/invoices*", (req) => {
-        capturedInvoice = req.body;
+        __capturedInvoice = req.body;
         req.reply({
           statusCode: 201,
           body: {
@@ -1590,7 +1590,7 @@ describe("Invoice Management", () => {
         { invoiceNumber: "INV-0042", expectedOCR: "424" }, // 42 + checksum 4
       ];
 
-      testCases.forEach(({ invoiceNumber, expectedOCR }) => {
+      testCases.forEach(({ invoiceNumber, expectedOCR: _expectedOCR }) => {
         cy.intercept("POST", "**/rest/v1/invoices*", (req) => {
           // Generate OCR based on invoice number for testing
           const numericPart = parseInt(invoiceNumber.replace(/\D/g, ""), 10)
