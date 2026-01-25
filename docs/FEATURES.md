@@ -52,21 +52,44 @@ These additions position VisInv as a comprehensive solution for:
 
 ### Organization Management
 
-**US-052: Organization Creation**
+**US-052: Organization Creation** ✅
 - As a **user**, in order to **represent my company on invoices**, I would like to **create an organization with company information (name, organization number, VAT number, address, municipality, bank details)**.
 - **Required fields (Swedish compliance):** Company name, organization number, VAT registration number, address, municipality
 - **Optional fields:** Bank/giro number, F-skatt approval, contact details, website
+- **Implementation:**
+  - Database: organizations table (migration 007) with all required Swedish compliance fields
+  - UI: OrganizationSetupWizard with 4-step wizard (Basic Info, Address, Banking, Invoice Settings)
+  - Resource: Organization resource with CRUD operations
+  - Context: OrganizationContext for managing current organization state
+  - Validation: Required fields enforced, Swedish org number format validation
+- **Tests:** Comprehensive Cypress test suite (organizations.cy.js) covering wizard flow, navigation, and organization creation
+- **Status:** ✅ Complete
 
 **US-053: Organization Logo Upload**
 - As an **organization owner**, in order to **brand my invoices professionally**, I would like to **upload my company logo to appear on all invoices**.
+- **Status:** Not Started
 
-**US-054: Organization Settings Management**
+**US-054: Organization Settings Management** ✅
 - As an **organization owner**, in order to **maintain accurate company information**, I would like to **edit organization details, payment terms, and invoice settings**.
 - **Invoice settings:** Default payment terms, currency, tax rate, invoice number prefix, next invoice number
+- **Implementation:**
+  - UI: OrganizationSettings component with edit mode
+  - Resource: Organization.update() method
+  - Features: Editable organization details, banking info, invoice settings, logo upload
+  - Validation: All required fields validated on update
+  - Real-time updates: OrganizationContext refreshes on successful update
+- **Tests:** Cypress test suite (organizations.cy.js) covering display, edit mode, field updates
+- **Status:** ✅ Complete
 
-**US-055: Organization-Scoped Invoice Numbering**
+**US-055: Organization-Scoped Invoice Numbering** ✅
 - As an **organization**, in order to **maintain proper Swedish accounting compliance**, I would like to **have invoice numbers in unbroken sequence at organization level, shared by all users in the organization**.
 - **Technical:** Invoice numbers scoped to organization_id, not user_id
+- **Implementation:**
+  - Database: organization_id foreign key in invoices table
+  - Invoice numbering: generateInvoiceNumber() scoped to organization_id
+  - Sequence tracking: next_invoice_number stored per organization
+  - RLS policies: Updated to enforce organization-based data isolation
+- **Status:** ✅ Complete (refactored with US-064)
 
 **US-064: Manual vs Automatic Invoice Numbering** ✅
 - As a **user that issues an invoice**, in order to **keep my books in good order**, I would like to **be able to choose whether invoice numbering is auto-incremented or manually set by me**.
