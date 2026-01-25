@@ -25,8 +25,7 @@ describe('Admin Dashboard', () => {
   }
 
   beforeEach(() => {
-    // Login first based on test context (done in each test)
-    // Set up intercepts after login
+    // Set up intercepts before login to ensure they're active
     cy.intercept('GET', '**/rest/v1/organizations*', {
       statusCode: 200,
       body: [mockOrganization]
@@ -42,13 +41,24 @@ describe('Admin Dashboard', () => {
       statusCode: 200,
       body: []
     }).as('getInvoices')
+
+    cy.setupCommonIntercepts({ 
+      clients: [], 
+      products: [], 
+      invoiceTemplates: [], 
+      recurringInvoices: [] 
+    })
   })
 
   context('US-036: Admin Dashboard Access', () => {
     it('is expected to redirect regular users to dashboard', () => {
       // Mock regular user login
       cy.login('user')
+      cy.wait('@getOrganizations')
+      
+      // Try to navigate to admin page
       cy.visit('/admin')
+      
       // Should be redirected to root dashboard
       cy.url().should('eq', Cypress.config().baseUrl + '/')
       cy.get('h1').should('not.contain', 'Admin')
@@ -57,10 +67,10 @@ describe('Admin Dashboard', () => {
     it('is expected to allow access for admin users', () => {
       // Mock admin user login
       cy.login('admin')
-      cy.getByCy('sidebar-nav-admin').click()
-      
-      // Wait for organization data to load
       cy.wait('@getOrganizations')
+      
+      // Navigate via sidebar
+      cy.getByCy('sidebar-nav-admin').click()
 
       // Check URL and Page content
       cy.url().should('include', '/admin')
@@ -71,8 +81,6 @@ describe('Admin Dashboard', () => {
 
   context('US-038: Platform Analytics', () => {
     beforeEach(() => {
-      cy.login('admin')
-      
       // Mock stats data - these are HEAD requests with count
       cy.intercept('HEAD', '**/rest/v1/profiles?select=id', { 
         statusCode: 200, 
@@ -92,8 +100,10 @@ describe('Admin Dashboard', () => {
         body: null
       }).as('getInvoiceCount')
 
-      cy.getByCy('sidebar-nav-admin').click()
+      cy.login('admin')
       cy.wait('@getOrganizations')
+      
+      cy.getByCy('sidebar-nav-admin').click()
       
       // Wait for stats to load
       cy.wait('@getUserCount')
