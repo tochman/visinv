@@ -350,6 +350,157 @@ These additions position VisInv as a comprehensive solution for:
 **US-022: Per-Client Invoice Sequences**
 - As a **user**, in order to **organize invoices by client**, I would like to **maintain separate invoice number sequences for different clients** (optional).
 
+**US-022-A: Save or Send Invoice from Creation Modal**
+- As a **user**, in order to **control my invoice workflow**, I would like to **either save an invoice as a draft or send it immediately from the creation modal**.
+- **Current Problem:** Two-step process requires saving first, then marking as sent
+- **Proposed Solution:** Modal footer with two action buttons: "Save as Draft" and "Send Invoice"
+- **Behavior:**
+  - **Save as Draft:** Creates invoice with status='draft', assigns invoice number, closes modal, shows success toast
+  - **Send Invoice:** Creates invoice with status='sent', assigns invoice number, triggers email (if configured), closes modal, shows success toast
+  - Both actions validate required fields before proceeding
+  - "Send Invoice" may show confirmation dialog with email preview (optional)
+- **Benefits:** 
+  - Faster workflow for immediate invoicing
+  - Clear intent separation (draft vs. final)
+  - Reduces clicks and confusion
+- **i18n Keys:** invoice.saveAsDraft, invoice.sendInvoice, invoice.sentSuccessfully, invoice.draftSavedSuccessfully
+- **Technical:**
+  - InvoiceModal: Add two submit buttons with different handlers
+  - Create thunks: createInvoiceDraft() and createAndSendInvoice()
+  - Validation: Both require same field validation
+  - Email: sendInvoice() triggers email notification to client (if US-027 implemented)
+
+**US-022-B: Edit Lock for Sent Invoices**
+- As a **user**, in order to **maintain invoice integrity and compliance**, I would like to **prevent editing or deleting invoices once they are sent**.
+- **Compliance Rationale:** 
+  - Swedish Bokföringslagen requires maintaining original invoice records
+  - Audit trail integrity for tax purposes
+  - Prevents accidental modification of legally binding documents
+- **Edit Restrictions:**
+  - Invoices with status='sent', 'paid', 'overdue' cannot be edited
+  - Edit button disabled in invoice list for non-draft invoices
+  - Opening sent invoice shows read-only view (no edit modal)
+  - Display lock icon and message: "This invoice cannot be edited because it has been sent"
+- **Delete Restrictions:**
+  - Delete action hidden/disabled for non-draft invoices
+  - If user attempts to delete via URL/API, show error message
+  - Error message: "Sent invoices cannot be deleted. Create a credit invoice instead."
+- **Allowed Actions on Sent Invoices:**
+  - View/download PDF
+  - Mark as paid
+  - Record payments
+  - Send reminder
+  - Create credit invoice (US-063)
+  - Copy invoice (US-022-C)
+- **Visual Indicators:**
+  - Lock icon in invoice list for sent invoices
+  - Disabled edit/delete buttons with tooltip explanation
+  - Badge showing invoice is locked
+- **i18n Keys:** 
+  - invoice.locked, invoice.cannotEditSent, invoice.cannotDeleteSent
+  - invoice.useCreditInvoiceInstead, invoice.invoiceIsReadOnly
+- **Technical:**
+  - Frontend: Conditional rendering of edit/delete buttons based on status
+  - Backend: Validate status before allowing updates/deletes in Invoice resource
+  - Database: Add CHECK constraint to prevent updates on sent invoices (optional)
+  - Error handling: Return 403 Forbidden with clear error message
+
+**US-022-C: Copy Invoice**
+- As a **user**, in order to **quickly create similar invoices**, I would like to **copy an existing invoice with the same client and line items**.
+- **Use Cases:**
+  - Recurring work for same client (monthly retainer, ongoing services)
+  - Similar projects for different clients (change client, keep items)
+  - Correcting a sent invoice (copy, modify, send new one, credit the old one)
+  - Template-like workflow without formal recurring invoices
+- **Functionality:**
+  - "Copy Invoice" action in invoice list and detail view
+  - Creates new draft invoice with:
+    - Same client
+    - Same line items (description, quantity, unit_price, tax_rate)
+    - Same currency
+    - Same template selection
+    - New invoice number (auto-generated)
+    - New invoice date (today)
+    - New due date (today + default payment terms, e.g., 30 days)
+    - Status: draft
+    - All other fields reset (no payments, no reminder history)
+  - Opens InvoiceModal in edit mode with copied data
+  - User can modify before saving
+- **Visual Design:**
+  - "Copy" button with duplicate/copy icon in invoice list dropdown
+  - "Copy Invoice" button in invoice detail view
+  - Modal title shows: "Copy Invoice - Based on INV-1234"
+  - Info banner in modal: "This is a copy of invoice INV-1234. Modify as needed before saving."
+- **Benefits:**
+  - Saves time for repetitive invoicing
+  - Reduces data entry errors
+  - Faster than recurring invoices for irregular patterns
+- **i18n Keys:** 
+  - invoice.copy, invoice.copyInvoice, invoice.basedOn
+  - invoice.copyDescription, invoice.invoiceCopied
+- **Technical:**
+  - Frontend: Add copyInvoice() thunk in invoicesSlice
+  - Resource: Invoice.copy(id) method to fetch and transform data
+  - Populate InvoiceModal with copied data
+  - Generate new invoice number on save
+  - Validation: Ensure all copied data is valid
+
+**US-022-D: Draft-Only Edit Mode**
+- As a **user**, in order to **have clarity on what can be changed**, I would like to **only see edit functionality for draft invoices**.
+- **Current Problem:** Edit action may be visible/available for all invoices, causing confusion
+- **Proposed Solution:** 
+  - Edit button only appears for invoices with status='draft'
+  - For sent/paid/overdue invoices, show "View" button instead
+  - View mode shows all invoice data in read-only format
+  - Clear visual distinction between editable (draft) and locked (sent) invoices
+- **List View Changes:**
+  - Draft invoices: Pencil icon → "Edit" (opens edit modal)
+  - Sent invoices: Eye icon → "View" (opens read-only view)
+  - Lock badge on sent/paid/overdue invoices
+- **Detail View Changes:**
+  - Draft: "Edit Invoice" button available
+  - Sent: "Edit Invoice" button replaced with info message
+  - Info message: "This invoice is locked and cannot be edited. Use Copy to create a similar invoice."
+- **Benefits:**
+  - Prevents user frustration from trying to edit locked invoices
+  - Clear visual communication of invoice state
+  - Guides users to correct workflow (copy instead of edit)
+- **i18n Keys:** 
+  - invoice.view, invoice.viewInvoice, invoice.editOnlyDrafts
+  - invoice.copyToEdit
+- **Technical:**
+  - Conditional rendering based on invoice.status
+  - Read-only modal variant for viewing sent invoices
+  - Tooltip on disabled edit button explaining why
+
+**US-022-E: Audit Trail for Invoice Lifecycle**
+- As a **user**, in order to **track invoice history**, I would like to **see an audit trail of all status changes and key events**.
+- **Tracked Events:**
+  - Invoice created (draft)
+  - Invoice sent (with timestamp and user)
+  - Invoice viewed by client (if tracking enabled)
+  - Payment recorded (with amount, date, method)
+  - Status changes (draft → sent → paid/overdue)
+  - Reminder sent (with count and timestamps)
+  - Credit invoice created (reference to credit invoice)
+  - Invoice copied (reference to new invoice)
+- **Display:**
+  - Timeline view in invoice detail page
+  - Each event shows: timestamp, event type, user (if applicable), details
+  - Visual timeline with icons for each event type
+  - Expandable details for complex events (payment details, etc.)
+- **Benefits:**
+  - Complete history for accounting and compliance
+  - Transparency for multi-user organizations
+  - Debugging and support assistance
+  - Swedish compliance (Bokföringslagen audit requirements)
+- **Technical:**
+  - Database: invoice_events table (invoice_id, event_type, event_data JSON, user_id, created_at)
+  - Resource: InvoiceEvent.js for CRUD operations
+  - Hook: useInvoiceAuditTrail(invoiceId) to fetch timeline
+  - Component: InvoiceTimeline.jsx to display events
+- **Future Enhancement:** Link to US-040 (full audit logs system)
+
 **US-023: Tax/VAT Calculations** ✅
 - As a **user**, in order to **comply with tax regulations**, I would like to **automatically calculate and display taxes (including Swedish moms)**.
 - **Status:** Implemented - Automatic calculation in InvoiceModal, configurable tax rate (default 25% Swedish moms), tested in invoice tests
@@ -470,8 +621,16 @@ These additions position VisInv as a comprehensive solution for:
 - **Tests:** Comprehensive Cypress test suite with 6 additional tests (22 total in multi-currency-invoice-selection.cy.js)
 - **Status:** ✅ Complete
 
-**US-025: Recurring Invoices**
+**US-025: Recurring Invoices** ✅
 - As a **premium user**, in order to **automate subscription billing**, I would like to **set up recurring invoices with custom intervals**.
+- **Status:** Implemented
+  - Database: `recurring_invoices` table with schedule, interval, status tracking
+  - Migration: 030_create_recurring_invoices.sql
+  - Resource: RecurringInvoice.js for CRUD operations
+  - Fixtures: recurring_invoices.json for testing
+  - Intervals: Daily, weekly, monthly, quarterly, yearly
+  - Status tracking: Active, paused, cancelled
+  - Auto-generation: next_invoice_date calculation
 
 **US-063: Credit Invoices** ✅
 - As a **user that issues an invoice**, in order to **keep my books in good order**, I would like to **be able to issue CREDIT invoices (either partial or whole) for previously issued invoices**.
@@ -1451,8 +1610,8 @@ These additions position VisInv as a comprehensive solution for:
 | **Organization Management** | 9 | 3 | 0 | 6 |
 | **Free Tier Features** | 8 | 6 | 0 | 2 |
 | **Premium Features** | 4 | 3 | 0 | 1 |
-| **Invoice Management** | 8 | 7 | 0 | 1 |
-| **Notifications & Reminders** | 4 | 0 | 0 | 4 |
+| **Invoice Management** | 8 | 8 | 0 | 0 |
+| **Notifications & Reminders** | 4 | 1 | 0 | 3 |
 | **Analytics & Reporting** | 5 | 3 | 0 | 2 |
 | **Internationalization** | 3 | 0 | 0 | 3 |
 | **Administration** | 9 | 4 | 0 | 5 |
@@ -1469,10 +1628,10 @@ These additions position VisInv as a comprehensive solution for:
 | **Integrations & Ecosystem** | 5 | 0 | 0 | 5 |
 | **Inventory Management** | 3 | 0 | 0 | 3 |
 | **Mobile & Accessibility** | 3 | 0 | 0 | 3 |
-| **Security Enhancements** | 6 | 0 | 0 | 6 |
+| **Security Enhancements** | 6 | 1 | 0 | 5 |
 | **White Label** | 3 | 0 | 0 | 3 |
-| **Support & Growth** | 6 | 0 | 0 | 6 |
-| **TOTAL** | **118** | **28** | **2** | **88** |
+| **Support & Growth** | 6 | 1 | 0 | 5 |
+| **TOTAL** | **118** | **31** | **2** | **85** |
 
 ### Quick Reference: User Stories by Number
 
