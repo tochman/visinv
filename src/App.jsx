@@ -40,34 +40,33 @@ function App() {
   const dispatch = useDispatch();
   const { initialized, loading } = useSelector((state) => state.auth);
   const [showLoader, setShowLoader] = useState(true);
-  const [animateOut, setAnimateOut] = useState(false);
+  
+  // Derive animation state from conditions instead of using effect
+  const shouldAnimate = initialized && !loading && showLoader;
 
   useEffect(() => {
     dispatch(checkSession());
   }, [dispatch]);
 
-  // When loading is done, trigger exit animation then hide loader
+  // When loading is done, hide loader after animation completes
   useEffect(() => {
-    if (initialized && !loading && showLoader) {
-      // Start exit animation
-      setAnimateOut(true);
-      // Hide loader after animation completes
+    if (shouldAnimate) {
       const timer = setTimeout(() => {
         setShowLoader(false);
       }, 600); // Match animation duration
       return () => clearTimeout(timer);
     }
-  }, [initialized, loading, showLoader]);
+  }, [shouldAnimate]);
 
   // Show loader while checking session or during exit animation
   if (showLoader) {
     return (
       <div className="flex items-center justify-center min-h-screen bg-gray-100 dark:bg-gray-900">
-        <div className={animateOut ? 'animate-logo-to-corner' : ''}>
+        <div className={shouldAnimate ? 'animate-logo-to-corner' : ''}>
           <img 
             src="/svethna_logo.svg" 
             alt="VisInv" 
-            className={`h-16 w-auto dark:invert-0 invert ${!animateOut ? 'animate-pulse' : ''}`}
+            className={`h-16 w-auto dark:invert-0 invert ${!shouldAnimate ? 'animate-pulse' : ''}`}
           />
         </div>
       </div>

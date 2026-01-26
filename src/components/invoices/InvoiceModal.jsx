@@ -248,7 +248,7 @@ export default function InvoiceModal({ isOpen, onClose, invoice = null }) {
 
   const { subtotal, taxAmount, total, vatGroups } = calculateTotals();
 
-  const handleSubmit = async (e) => {
+  const handleSubmit = async (e, sendImmediately = false) => {
     e.preventDefault();
     
     if (!formData.client_id) {
@@ -292,12 +292,21 @@ export default function InvoiceModal({ isOpen, onClose, invoice = null }) {
         })),
       };
 
+      // Add status and sent_at if sending immediately
+      if (sendImmediately && !isEditing) {
+        invoiceData.status = 'sent';
+        invoiceData.sent_at = new Date().toISOString();
+      }
+
       if (isEditing) {
         await dispatch(updateInvoice({ id: invoice.id, updates: invoiceData })).unwrap();
         toast.success(t('invoices.invoiceUpdatedSuccessfully') || 'Invoice updated successfully');
       } else {
         await dispatch(createInvoice(invoiceData)).unwrap();
-        toast.success(t('invoices.invoiceCreatedSuccessfully') || 'Invoice created successfully');
+        const successMessage = sendImmediately 
+          ? (t('invoices.sentSuccessfully') || 'Invoice sent successfully')
+          : (t('invoices.draftSavedSuccessfully') || 'Draft saved successfully');
+        toast.success(successMessage);
         // Trigger NPS survey check after successful creation
         triggerNps('invoice_created');
       }
@@ -310,6 +319,14 @@ export default function InvoiceModal({ isOpen, onClose, invoice = null }) {
     } finally {
       setLoading(false);
     }
+  };
+
+  const handleSaveAsDraft = (e) => {
+    handleSubmit(e, false);
+  };
+
+  const handleSendInvoice = (e) => {
+    handleSubmit(e, true);
   };
 
   if (!isOpen) return null;
@@ -997,14 +1014,37 @@ export default function InvoiceModal({ isOpen, onClose, invoice = null }) {
               >
                 {t('common.cancel')}
               </button>
-              <button
-                type="submit"
-                data-cy="submit-button"
-                disabled={loading}
-                className="px-4 py-2 bg-blue-600 text-white rounded-sm hover:bg-blue-700 transition-colors disabled:opacity-50"
-              >
-                {loading ? t('common.saving') : t('common.save')}
-              </button>
+              {isEditing ? (
+                <button
+                  type="submit"
+                  data-cy="submit-button"
+                  disabled={loading}
+                  className="px-4 py-2 bg-blue-600 text-white rounded-sm hover:bg-blue-700 transition-colors disabled:opacity-50"
+                >
+                  {loading ? t('common.saving') : t('common.save')}
+                </button>
+              ) : (
+                <>
+                  <button
+                    type="button"
+                    onClick={handleSaveAsDraft}
+                    data-cy="save-draft-button"
+                    disabled={loading}
+                    className="px-4 py-2 text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-sm hover:bg-gray-50 dark:hover:bg-gray-600 transition-colors disabled:opacity-50"
+                  >
+                    {loading ? t('common.saving') : t('invoices.saveAsDraft')}
+                  </button>
+                  <button
+                    type="button"
+                    onClick={handleSendInvoice}
+                    data-cy="send-invoice-button"
+                    disabled={loading}
+                    className="px-4 py-2 bg-blue-600 text-white rounded-sm hover:bg-blue-700 transition-colors disabled:opacity-50"
+                  >
+                    {loading ? t('common.sending') : t('invoices.sendInvoice')}
+                  </button>
+                </>
+              )}
             </div>
           </form>
         </div>

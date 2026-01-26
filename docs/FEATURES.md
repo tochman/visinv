@@ -350,7 +350,7 @@ These additions position VisInv as a comprehensive solution for:
 **US-022: Per-Client Invoice Sequences**
 - As a **user**, in order to **organize invoices by client**, I would like to **maintain separate invoice number sequences for different clients** (optional).
 
-**US-022-A: Save or Send Invoice from Creation Modal**
+**US-022-A: Save or Send Invoice from Creation Modal** ✅
 - As a **user**, in order to **control my invoice workflow**, I would like to **either save an invoice as a draft or send it immediately from the creation modal**.
 - **Current Problem:** Two-step process requires saving first, then marking as sent
 - **Proposed Solution:** Modal footer with two action buttons: "Save as Draft" and "Send Invoice"

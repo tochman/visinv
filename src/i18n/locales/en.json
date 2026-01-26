@@ -150,6 +150,10 @@
     "invoiceNumberRequired": "Invoice number is required in manual mode",
     "invoiceNumberPlaceholder": "e.g., INV-2024-001",
     "manualNumberingHint": "Enter a unique invoice number for this invoice",
+    "saveAsDraft": "Save as Draft",
+    "sendInvoice": "Send Invoice",
+    "sentSuccessfully": "Invoice sent successfully",
+    "draftSavedSuccessfully": "Draft saved successfully",
     "errors": {
       "duplicateInvoiceNumber": "This invoice number already exists in your organization"
     },
@@ -431,6 +435,7 @@
   "common": {
     "save": "Save",
     "saving": "Saving...",
+    "sending": "Sending...",
     "cancel": "Cancel",
     "delete": "Delete",
     "edit": "Edit",

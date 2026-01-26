@@ -118,9 +118,43 @@ describe("Invoice Management", () => {
       cy.getByCy("vat-25-display").should("contain", "3750.00"); // 25% of 15000
       cy.getByCy("total-display").should("contain", "18750.00");
 
-      cy.getByCy("submit-button").scrollIntoView().click();
+      // Use "Save as Draft" button for new invoices
+      cy.getByCy("save-draft-button").scrollIntoView().click();
 
       cy.wait("@createInvoice");
+      cy.getByCy("invoice-modal").should("not.exist");
+    });
+
+    it("is expected to send an invoice immediately using Send Invoice button", () => {
+      cy.getByCy("create-invoice-button").should("be.visible").click();
+      cy.getByCy("invoice-modal").should("be.visible");
+
+      // Wait for clients and products to load
+      cy.wait("@getClients");
+      cy.wait("@getProducts");
+
+      // Select client
+      cy.getByCy("client-select").should("be.visible").select("Test Client AB");
+
+      // Add line item
+      cy.getByCy("description-input-0").type("Consulting Services");
+      cy.getByCy("quantity-input-0").clear().type("10");
+      cy.getByCy("unit-input-0").clear().type("hours");
+      cy.getByCy("unit-price-input-0").clear().type("1500");
+
+      // Verify totals
+      cy.getByCy("subtotal-display").should("contain", "15000.00");
+      cy.getByCy("total-display").should("contain", "18750.00");
+
+      // Use "Send Invoice" button
+      cy.getByCy("send-invoice-button").scrollIntoView().click();
+
+      cy.wait("@createInvoice").then((interception) => {
+        // Verify that status and sent_at were set
+        expect(interception.request.body.status).to.equal('sent');
+        expect(interception.request.body.sent_at).to.exist;
+      });
+      
       cy.getByCy("invoice-modal").should("not.exist");
     });
 
@@ -160,7 +194,7 @@ describe("Invoice Management", () => {
       cy.getByCy("subtotal-display").should("contain", "54000.00");
       cy.getByCy("total-display").should("contain", "67500.00"); // +25% tax
 
-      cy.getByCy("submit-button").click();
+      cy.getByCy("save-draft-button").click();
       cy.wait("@createInvoice");
     });
 
@@ -222,7 +256,7 @@ describe("Invoice Management", () => {
       cy.getByCy("description-input-0").type("Test Service");
       cy.getByCy("unit-price-input-0").clear().type("1000");
 
-      cy.getByCy("submit-button").click();
+      cy.getByCy("save-draft-button").click();
 
       // Error should exist (may be partially covered by sticky header)
       cy.getByCy("invoice-form-error").should("exist");
@@ -237,7 +271,7 @@ describe("Invoice Management", () => {
       // Leave description empty
       cy.getByCy("unit-price-input-0").clear().type("1000");
 
-      cy.getByCy("submit-button").click();
+      cy.getByCy("save-draft-button").click();
 
       cy.getByCy("invoice-form-error").should("exist");
     });
@@ -259,7 +293,7 @@ describe("Invoice Management", () => {
 
       // Leave others empty
 
-      cy.getByCy("submit-button").click();
+      cy.getByCy("save-draft-button").click();
 
       cy.wait("@createInvoice");
       cy.getByCy("invoice-modal").should("not.exist");
@@ -686,7 +720,7 @@ describe("Invoice Management", () => {
         cy.getByCy("quantity-input-0").clear().type("1");
         cy.getByCy("unit-price-input-0").clear().type("1000");
 
-        cy.getByCy("submit-button").scrollIntoView().click();
+        cy.getByCy("save-draft-button").scrollIntoView().click();
 
         // Assert
         cy.wait("@createInvoice");
@@ -815,7 +849,7 @@ describe("Invoice Management", () => {
         cy.getByCy("vat-25-display").should("contain", "3750.00"); // 25% of 15000
         cy.getByCy("total-display").should("contain", "18750.00");
 
-        cy.getByCy("submit-button").scrollIntoView().click();
+        cy.getByCy("save-draft-button").scrollIntoView().click();
 
         // Assert - Invoice created and modal closes
         cy.wait("@createManualInvoice");
@@ -844,7 +878,7 @@ describe("Invoice Management", () => {
         cy.getByCy("quantity-input-0").clear().type("1");
         cy.getByCy("unit-price-input-0").clear().type("1000");
 
-        cy.getByCy("submit-button").scrollIntoView().click();
+        cy.getByCy("save-draft-button").scrollIntoView().click();
 
         // Assert - Modal should remain open because invoice number is required
         cy.getByCy("invoice-modal").should("exist");
@@ -891,7 +925,7 @@ describe("Invoice Management", () => {
         cy.getByCy("quantity-input-0").clear().type("1");
         cy.getByCy("unit-price-input-0").clear().type("1000");
 
-        cy.getByCy("submit-button").scrollIntoView().click();
+        cy.getByCy("save-draft-button").scrollIntoView().click();
 
         // Assert - Modal should remain open because of duplicate error
         cy.getByCy("invoice-modal").should("exist");
@@ -934,7 +968,7 @@ describe("Invoice Management", () => {
         cy.getByCy("description-input-0").type("Test Service");
         cy.getByCy("quantity-input-0").clear().type("1");
         cy.getByCy("unit-price-input-0").clear().type("1000");
-        cy.getByCy("submit-button").scrollIntoView().click();
+        cy.getByCy("save-draft-button").scrollIntoView().click();
 
         // Assert - Modal should remain open because of duplicate error
         cy.getByCy("invoice-modal").should("exist");
@@ -1070,7 +1104,7 @@ describe("Invoice Management", () => {
         cy.get('[data-cy="unit-price-input-0"]').clear().type("1000");
         // cy.screenshot("recurring-invoice-before-enabling");
         // Save invoice
-        cy.get('[data-cy="submit-button"]').scrollIntoView().click();
+        cy.get('[data-cy="save-draft-button"]').scrollIntoView().click();
 
         // Wait for invoice creation
         cy.wait("@createInvoice");
@@ -1097,7 +1131,7 @@ describe("Invoice Management", () => {
         cy.get('[data-cy="recurring-frequency-select"]').select("monthly");
 
         // Don't set end date or max count - should be unlimited
-        cy.get('[data-cy="submit-button"]').click();
+        cy.get('[data-cy="save-draft-button"]').click();
 
         // Wait for invoice creation
         cy.wait("@createInvoice");
@@ -1136,7 +1170,7 @@ describe("Invoice Management", () => {
         );
 
         // Save should work
-        cy.get('[data-cy="submit-button"]').click();
+        cy.get('[data-cy="save-draft-button"]').click();
         cy.wait("@createInvoice");
         cy.wait("@createInvoiceRows");
       });
@@ -1628,7 +1662,7 @@ describe("Invoice Management", () => {
       cy.getByCy("description-input-0").type("Consulting");
       cy.getByCy("unit-price-input-0").clear().type("1000");
 
-      cy.getByCy("submit-button").click();
+      cy.getByCy("save-draft-button").click();
 
       cy.wait("@createInvoiceWithOCR").then((interception) => {
         // Verify OCR was included in the created invoice
@@ -1678,7 +1712,7 @@ describe("Invoice Management", () => {
         cy.getByCy("client-select").select(mockClient.id);
         cy.getByCy("description-input-0").type("Test");
         cy.getByCy("unit-price-input-0").clear().type("100");
-        cy.getByCy("submit-button").click();
+        cy.getByCy("save-draft-button").click();
 
         cy.wait(`@createInvoice${invoiceNumber}`).then((interception) => {
           const ocr = interception.response.body.payment_reference;
@@ -1917,7 +1951,7 @@ describe("Invoice Management", () => {
       cy.getByCy("total-display").should("contain", "11200.00");
 
       // Submit should work
-      cy.getByCy("submit-button").click();
+      cy.getByCy("save-draft-button").click();
       cy.wait("@createInvoice");
     });
 

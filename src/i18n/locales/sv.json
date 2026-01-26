@@ -139,6 +139,10 @@
     "invoiceNumberRequired": "Fakturanummer krävs i manuellt läge",
     "invoiceNumberPlaceholder": "t.ex. FAKT-2024-001",
     "manualNumberingHint": "Ange ett unikt fakturanummer för denna faktura",
+    "saveAsDraft": "Spara som utkast",
+    "sendInvoice": "Skicka faktura",
+    "sentSuccessfully": "Faktura skickad",
+    "draftSavedSuccessfully": "Utkast sparat",
     "errors": {
       "duplicateInvoiceNumber": "Detta fakturanummer finns redan i din organisation"
     },
@@ -419,6 +423,7 @@
   "common": {
     "save": "Spara",
     "saving": "Sparar...",
+    "sending": "Skickar...",
     "cancel": "Avbryt",
     "delete": "Ta bort",
     "edit": "Redigera",
