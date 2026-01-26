@@ -240,6 +240,9 @@ describe('Cookie Consent (US-119)', () => {
         win.localStorage.setItem('visinv_cookie_consent', JSON.stringify(consent));
       });
       
+      // Reload to ensure app picks up the new consent values
+      cy.reload();
+      
       // Navigate to settings using sidebar
       cy.getByCy('sidebar-nav-settings').click();
     });
