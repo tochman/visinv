@@ -512,6 +512,15 @@ describe('Multi-Currency Invoice Product Selection', () => {
     });
 
     it('is expected to auto-fill price on next product selection after saving', () => {
+      // Mock updated product with new price for subsequent GET requests
+      const updatedProduct = {
+        ...mockProductSekOnly,
+        prices: [
+          { currency: 'SEK', price: 500 },
+          { currency: 'GBP', price: 175 }
+        ]
+      };
+
       // First: Save a GBP price
       cy.intercept('POST', '**/rest/v1/product_prices*', {
         statusCode: 201,
@@ -523,14 +532,12 @@ describe('Multi-Currency Invoice Product Selection', () => {
         }
       }).as('createProductPrice');
 
-      // Mock updated product with new price for subsequent GET requests
-      const updatedProduct = {
-        ...mockProductSekOnly,
-        prices: [
-          { currency: 'SEK', price: 500 },
-          { currency: 'GBP', price: 175 }
-        ]
-      };
+      // Set up the intercept for updated products BEFORE clicking save
+      // This is important because fetchProducts() is called immediately after the POST succeeds
+      cy.intercept('GET', '**/rest/v1/products*', {
+        statusCode: 200,
+        body: [updatedProduct, mockProductWithMultiCurrency, mockProductNoPrice]
+      }).as('getProductsUpdated');
 
       cy.getByCy('currency-select').select('GBP');
       cy.getByCy('product-select-btn-0').click();
@@ -539,11 +546,8 @@ describe('Multi-Currency Invoice Product Selection', () => {
       cy.getByCy('save-price-to-product-0').click();
       cy.wait('@createProductPrice');
       
-      // Mock GET products to return updated product
-      cy.intercept('GET', '**/rest/v1/products*', {
-        statusCode: 200,
-        body: [updatedProduct, mockProductWithMultiCurrency, mockProductNoPrice]
-      }).as('getProductsUpdated');
+      // Wait for products to be refetched after save
+      cy.wait('@getProductsUpdated');
       
       // Add new line item
       cy.getByCy('add-line-item-button').click();
