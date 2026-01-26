@@ -1,9 +1,9 @@
 import { useState, useEffect } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { useTranslation } from 'react-i18next';
-import { ArrowPathIcon, LockClosedIcon } from '@heroicons/react/24/outline';
+import { ArrowPathIcon, LockClosedIcon, DocumentDuplicateIcon } from '@heroicons/react/24/outline';
 import { useToast } from '../context/ToastContext';
-import { fetchInvoices, deleteInvoice, markInvoiceAsSent, markInvoiceAsPaid, updateInvoiceTemplate } from '../features/invoices/invoicesSlice';
+import { fetchInvoices, deleteInvoice, markInvoiceAsSent, markInvoiceAsPaid, updateInvoiceTemplate, copyInvoice } from '../features/invoices/invoicesSlice';
 import { fetchTemplates } from '../features/invoiceTemplates/invoiceTemplatesSlice';
 import InvoiceModal from '../components/invoices/InvoiceModal';
 import PaymentConfirmationDialog from '../components/invoices/PaymentConfirmationDialog';
@@ -54,6 +54,17 @@ export default function Invoices() {
     }
     setSelectedInvoice(invoice);
     setIsModalOpen(true);
+  };
+
+  const handleCopy = async (invoice) => {
+    const result = await dispatch(copyInvoice(invoice.id));
+    if (copyInvoice.fulfilled.match(result)) {
+      setSelectedInvoice(result.payload);
+      setIsModalOpen(true);
+      toast.success(t('invoice.invoiceCopied'));
+    } else {
+      toast.error(result.payload || 'Failed to copy invoice');
+    }
   };
 
   const handleDelete = async (id) => {
@@ -566,6 +577,14 @@ export default function Invoices() {
                             </svg>
                           </button>
                         )}
+                        <button
+                          onClick={() => handleCopy(invoice)}
+                          data-cy={`copy-invoice-button-${invoice.id}`}
+                          className="text-indigo-600 hover:text-indigo-900 dark:text-indigo-400 dark:hover:text-indigo-300"
+                          title={t('invoice.copyInvoice')}
+                        >
+                          <DocumentDuplicateIcon className="w-5 h-5" />
+                        </button>
                         {isInvoiceEditable(invoice) && (
                           <button
                             onClick={() => setDeleteConfirm(invoice.id)}

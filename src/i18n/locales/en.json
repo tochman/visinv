@@ -67,7 +67,13 @@
       "paid": "Paid",
       "overdue": "Overdue",
       "cancelled": "Cancelled"
-    }
+    },
+    "copy": "Copy",
+    "copyInvoice": "Copy Invoice",
+    "basedOn": "Based on {{invoiceNumber}}",
+    "copyDescription": "This is a copy of invoice {{invoiceNumber}}. Modify as needed before saving.",
+    "invoiceCopied": "Invoice copied successfully",
+    "preview": "Preview"
   },
   "currencies": {
     "SEK": "Swedish Krona",
