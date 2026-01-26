@@ -1380,7 +1380,7 @@ describe("Invoice Management", () => {
         templates: [mockTemplate],
         products: [],
       });
-Reload to pick up new intercepts
+      // Reload to pick up new intercepts
       cy.reload();
       // Already navigated to invoices in parent beforeEach
       cy.wait("@getInvoices");
