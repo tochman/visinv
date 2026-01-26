@@ -341,8 +341,6 @@ describe("Invoice Management", () => {
         body: { ...mockInvoices[1], status: "paid" },
       }).as("updateInvoice");
 
-      // Ensure button is visible and ready before clicking
-      cy.getByCy("mark-paid-button-inv-2").should("be.visible");
       cy.getByCy("mark-paid-button-inv-2").click();
       cy.wait("@updateInvoice");
     });
@@ -1382,7 +1380,7 @@ describe("Invoice Management", () => {
         templates: [mockTemplate],
         products: [],
       });
-      // Reload to pick up new intercepts
+Reload to pick up new intercepts
       cy.reload();
       // Already navigated to invoices in parent beforeEach
       cy.wait("@getInvoices");

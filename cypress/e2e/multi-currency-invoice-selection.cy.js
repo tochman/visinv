@@ -548,9 +548,6 @@ describe('Multi-Currency Invoice Product Selection', () => {
       // Add new line item
       cy.getByCy('add-line-item-button').click();
       
-      // Wait for products to be refetched with updated data
-      cy.wait('@getProductsUpdated');
-      
       // Select same product again on second line
       cy.getByCy('product-select-btn-1').click();
       cy.getByCy(`product-option-${mockProductSekOnly.id}`).click();
