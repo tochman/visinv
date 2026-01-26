@@ -227,11 +227,18 @@ describe('Cookie Consent (US-119)', () => {
 
   describe('Settings Page - Privacy Tab', () => {
     beforeEach(() => {
-      // Accept cookies first to hide banner
-      cy.getByCy('cookie-accept-btn').click();
-      
-      // Login and setup (cy.login already loads the app)
+      // Login and setup (cy.login already loads the app and sets cookie consent)
       cy.login('admin');
+      
+      // Set analytics to true (simulating user accepting all cookies)
+      // cy.login() sets it to false by default, but this test needs to start with analytics=true
+      cy.window().then((win) => {
+        const consent = JSON.parse(win.localStorage.getItem('visinv_cookie_consent'));
+        consent.analytics = true;
+        consent.marketing = true;
+        consent.preferences = true;
+        win.localStorage.setItem('visinv_cookie_consent', JSON.stringify(consent));
+      });
       
       // Navigate to settings using sidebar
       cy.getByCy('sidebar-nav-settings').click();
