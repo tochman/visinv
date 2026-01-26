@@ -19,7 +19,7 @@ Before making changes, consult these comprehensive documentation files in the `/
 
 - **ARCHITECTURE.md** - Code patterns, Resource pattern (ORM-like), best practices for data access
 - **REDUX_BEST_PRACTICES.md** - Redux Toolkit patterns and optimization strategies
-- **FEATURES.md** - Complete feature list with user stories and implementation status
+- **docs/FEATURES.md** - Complete feature list with user stories and implementation status
 - **DATABASE.md** - Database schema and setup instructions
 - **TESTING.md** - Testing guide with Cypress best practices
 - **WORKFLOW.md** - Development workflow and processes
@@ -167,11 +167,11 @@ A feature is **COMPLETE** only when:
 - ✅ Cypress tests written and passing
 - ✅ Database migrations applied (if needed)
 - ✅ Documentation updated
-- ✅ Feature marked with ✅ in FEATURES.md
+- ✅ Feature marked with ✅ in docs/FEATURES.md
 
 ### Before Implementing Features
 
-1. Check FEATURES.md for the user story (US-XXX)
+1. Check docs/FEATURES.md for the user story (US-XXX)
 2. Verify existing code with grep/glob tools
 3. Check existing tests in `cypress/e2e/`
 4. Check database schema in `docs/DATABASE.md`
@@ -190,7 +190,7 @@ A feature is **COMPLETE** only when:
 
 1. Run linter: `npm run lint`
 2. Run tests: `npm run cy:run`
-3. Update FEATURES.md status
+3. Update docs/FEATURES.md status
 4. Commit with short, descriptive message
 5. Update relevant documentation if needed
 
@@ -245,7 +245,7 @@ The application supports Swedish invoice requirements:
 
 ## Current Implementation Status
 
-Check FEATURES.md for current status of all user stories. Features are marked:
+Check docs/FEATURES.md for current status of all user stories. Features are marked:
 - ✅ Fully implemented and tested
 - 🚧 In progress
 - ⏸️ Blocked or pending

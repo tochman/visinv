@@ -10,6 +10,7 @@ import invoiceTemplatesReducer from '../features/invoiceTemplates/invoiceTemplat
 import recurringInvoicesReducer from '../features/recurringInvoices/recurringInvoicesSlice';
 import organizationsReducer from '../features/organizations/organizationsSlice';
 import cookieConsentReducer from '../features/cookieConsent/cookieConsentSlice';
+import npsReducer from '../features/nps/npsSlice';
 
 export const store = configureStore({
   reducer: {
@@ -24,6 +25,7 @@ export const store = configureStore({
     recurringInvoices: recurringInvoicesReducer,
     organizations: organizationsReducer,
     cookieConsent: cookieConsentReducer,
+    nps: npsReducer,
   },
   middleware: (getDefaultMiddleware) =>
     getDefaultMiddleware({

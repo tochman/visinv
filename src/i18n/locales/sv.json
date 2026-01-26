@@ -441,16 +441,22 @@
     "allStatuses": "Alla statusar",
     "client": "Kund",
     "status": "Status",
-    "more": "till"
+    "more": "till",
+    "close": "Stäng",
+    "submitting": "Skickar..."
   },
   "validation": {
     "required": "{{field}} är obligatoriskt"
   },
   "nps": {
+    "title": "Vi skulle älska din feedback!",
     "question": "Hur sannolikt är det att du skulle rekommendera VisInv till en vän eller kollega?",
-    "selectOption": "Välj ett alternativ",
-    "notLikely": "0 - Inte alls sannolikt",
-    "veryLikely": "10 - Mycket sannolikt",
+    "notLikely": "Inte sannolikt",
+    "veryLikely": "Mycket sannolikt",
+    "feedbackLabel": "Varför gav du detta betyg? (valfritt)",
+    "feedbackPlaceholder": "Din feedback hjälper oss att förbättra...",
+    "submit": "Skicka",
+    "maybeLater": "Kanske senare",
     "thankYou": "Tack för din feedback!"
   },
   "dashboard": {

@@ -4,10 +4,12 @@ import { useTranslation } from 'react-i18next';
 import { useForm } from 'react-hook-form';
 import { createProduct, updateProduct } from '../../features/products/productsSlice';
 import { CURRENCIES } from '../../config/currencies';
+import { useNpsTrigger } from '../../hooks/useNpsTrigger';
 
 export default function ProductModal({ isOpen, onClose, product = null }) {
   const { t } = useTranslation();
   const dispatch = useDispatch();
+  const triggerNps = useNpsTrigger();
   const isEditing = !!product;
   const organization = useSelector((state) => state.organizations.currentOrganization);
   const defaultCurrency = organization?.default_currency || 'SEK';
@@ -142,6 +144,8 @@ export default function ProductModal({ isOpen, onClose, product = null }) {
         await dispatch(updateProduct({ id: product.id, updates: dataToSubmit })).unwrap();
       } else {
         await dispatch(createProduct(dataToSubmit)).unwrap();
+        // Trigger NPS survey check after successful creation
+        triggerNps('product_created');
       }
       onClose();
     } catch (err) {

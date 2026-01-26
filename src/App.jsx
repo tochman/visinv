@@ -34,6 +34,7 @@ import ProtectedRoute from './components/auth/ProtectedRoute';
 import AdminRoute from './components/auth/AdminRoute';
 import CookieBanner from './components/common/CookieBanner';
 import CookieSettings from './components/common/CookieSettings';
+import NpsModal from './components/common/NpsModal';
 
 function App() {
   const dispatch = useDispatch();
@@ -79,6 +80,7 @@ function App() {
         <BrowserRouter>
         <CookieBanner />
         <CookieSettings />
+        <NpsModal />
         <Routes>
           {/* Public Routes */}
           <Route path="/cookie-policy" element={<CookiePolicy />} />

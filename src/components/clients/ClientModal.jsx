@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { useDispatch } from 'react-redux';
 import { useTranslation } from 'react-i18next';
 import { createClient, updateClient } from '../../features/clients/clientsSlice';
+import { useNpsTrigger } from '../../hooks/useNpsTrigger';
 
 const getInitialFormData = (client) => ({
   name: client?.name || '',
@@ -20,6 +21,7 @@ const getInitialFormData = (client) => ({
 export default function ClientModal({ isOpen, onClose, client = null }) {
   const { t } = useTranslation();
   const dispatch = useDispatch();
+  const triggerNps = useNpsTrigger();
   const isEditing = !!client;
 
   const [formData, setFormData] = useState(getInitialFormData(client));
@@ -61,6 +63,8 @@ export default function ClientModal({ isOpen, onClose, client = null }) {
         await dispatch(updateClient({ id: client.id, updates: dataToSubmit })).unwrap();
       } else {
         await dispatch(createClient(dataToSubmit)).unwrap();
+        // Trigger NPS survey check after successful creation
+        triggerNps('client_created');
       }
       onClose();
     } catch (err) {

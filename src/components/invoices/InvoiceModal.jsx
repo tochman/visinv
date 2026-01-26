@@ -10,11 +10,13 @@ import { getCurrencyCodes, getCurrency } from '../../config/currencies';
 import { usePremiumAccess } from '../../hooks/usePremiumAccess';
 import { useToast } from '../../context/ToastContext';
 import { ProductPrice } from '../../services/resources';
+import { useNpsTrigger } from '../../hooks/useNpsTrigger';
 
 export default function InvoiceModal({ isOpen, onClose, invoice = null }) {
   const { t } = useTranslation();
   const dispatch = useDispatch();
   const toast = useToast();
+  const triggerNps = useNpsTrigger();
   const isEditing = !!invoice;
   const { hasPremiumAccess } = usePremiumAccess();
   
@@ -296,6 +298,8 @@ export default function InvoiceModal({ isOpen, onClose, invoice = null }) {
       } else {
         await dispatch(createInvoice(invoiceData)).unwrap();
         toast.success(t('invoices.invoiceCreatedSuccessfully') || 'Invoice created successfully');
+        // Trigger NPS survey check after successful creation
+        triggerNps('invoice_created');
       }
       onClose();
     } catch (err) {

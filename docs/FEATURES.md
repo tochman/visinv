@@ -1228,6 +1228,46 @@ These additions position VisInv as a comprehensive solution for:
   - View feedback dashboard
   - Respond to feedback
 
+**US-120: NPS Survey System**
+- As an **admin/system owner**, in order to **understand what users think about the system**, I would like to **present an optional NPS survey to users at certain intervals**.
+- **User Story:** Track user satisfaction through Net Promoter Score (NPS) surveys shown to engaged users
+- **Eligibility Criteria (any of these):**
+  - User has created at least 3 invoices
+  - User has created at least 3 clients
+  - User has created at least 3 products
+- **Display Rules:**
+  - Survey shown after creating an invoice, client, or product (post-request success)
+  - Not shown to new users who haven't used the system substantially
+  - 20% random chance of showing survey again after responding
+  - Minimum 30-day interval between survey displays (regardless of response)
+- **Survey Format:**
+  - Standard NPS question: "How likely are you to recommend VisInv to a friend or colleague?" (0-10 scale)
+  - Follow-up question: "Why did you give this score?" (optional text field)
+  - Simple modal interface with easy dismiss option
+- **Data Tracking:**
+  - Each NPS response stored with: score (0-10), feedback text, timestamp, user ID
+  - Track when survey was shown (even if not responded to)
+  - Record trigger context (which action triggered the display: invoice/client/product creation)
+  - Response rate analytics
+  - NPS score calculation (% Promoters - % Detractors)
+- **Implementation:**
+  - Database: `nps_responses` table with user_id, score, feedback, shown_at, responded_at, trigger_context
+  - Migration: `034_add_nps_tracking_fields.sql` adds tracking columns to existing table
+  - Resource: `NpsResponse.js` for data operations with eligibility check and submission methods
+  - Redux: `npsSlice` with eligibility check, submission actions, and modal state management
+  - Hook: `useNpsTrigger` custom hook for easy integration in success flows
+  - Component: `NpsModal.jsx` with 0-10 scale buttons (color-coded by category), feedback textarea, and responsive design
+  - Triggers: Integrated in InvoiceModal, ClientModal, and ProductModal after successful creation
+  - i18n: Full English/Swedish translations
+- **Tests:** Cypress test suite (`nps.cy.js`) covering:
+  - Eligibility checks with activity thresholds
+  - Display rules (30-day interval enforcement)
+  - Score selection and feedback submission
+  - Dismiss/close functionality
+  - Trigger context tracking (invoice_created, client_created, product_created)
+  - Score category styling (detractors/passives/promoters)
+- **Status:** ✅ Complete - Ready for testing and deployment
+
 ---
 
 ## Technical Stack

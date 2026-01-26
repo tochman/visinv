@@ -453,7 +453,20 @@
     "allStatuses": "All Statuses",
     "client": "Client",
     "status": "Status",
-    "more": "more"
+    "more": "more",
+    "close": "Close",
+    "submitting": "Submitting..."
+  },
+  "nps": {
+    "title": "We'd love your feedback!",
+    "question": "How likely are you to recommend VisInv to a friend or colleague?",
+    "notLikely": "Not likely",
+    "veryLikely": "Very likely",
+    "feedbackLabel": "Why did you give this score? (optional)",
+    "feedbackPlaceholder": "Your feedback helps us improve...",
+    "submit": "Submit",
+    "maybeLater": "Maybe later",
+    "thankYou": "Thank you for your feedback!"
   },
   "validation": {
     "required": "{{field}} is required"
