@@ -1,6 +1,6 @@
 describe('Multi-Currency Support', () => {
   beforeEach(() => {
-    cy.login('premium_user');
+    cy.login('premiumUser');
   });
 
   it('should display all 6 supported currencies in the currency dropdown', () => {
