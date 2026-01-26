@@ -159,64 +159,6 @@ describe("Invoice Edit Lock (US-022-B)", () => {
     it("is expected not to show delete button for paid invoices", () => {
       cy.getByCy("delete-invoice-button-paid-invoice-1").should("not.exist");
     });
-
-    it.skip("is expected to successfully delete a draft invoice", () => {
-      cy.intercept("DELETE", "**/rest/v1/invoices*id=eq.draft-invoice-1", {
-        statusCode: 204,
-      }).as("deleteInvoice");
-
-      cy.getByCy("delete-invoice-button-draft-invoice-1").click();
-
-      // Confirm deletion
-      cy.getByCy("confirm-delete-button").click();
-
-      // Modal should close (deletion happened)
-      cy.getByCy("delete-confirm-modal").should("not.exist");
-    });
-  });
-
-  describe("Edit Restrictions", () => {
-    it.skip("is expected to successfully edit a draft invoice", () => {
-      // Need to mock invoice rows delete and insert for update
-      cy.intercept("DELETE", "**/rest/v1/invoice_rows*invoice_id=eq.draft-invoice-1", {
-        statusCode: 204,
-      }).as("deleteRows");
-
-      cy.intercept("POST", "**/rest/v1/invoice_rows", {
-        statusCode: 201,
-        body: [],
-      }).as("insertRows");
-
-      cy.intercept("PATCH", "**/rest/v1/invoices*id=eq.draft-invoice-1", {
-        statusCode: 200,
-        body: {
-          id: "draft-invoice-1",
-          invoice_number: "DRAFT-001",
-          status: "draft",
-          total_amount: 1500,
-        },
-      }).as("updateInvoice");
-
-      // Mock show (refresh invoice after update)
-      cy.intercept("GET", "**/rest/v1/invoices*id=eq.draft-invoice-1*", {
-        statusCode: 200,
-        body: {
-          id: "draft-invoice-1",
-          invoice_number: "DRAFT-001",
-          status: "draft",
-          total_amount: 1500,
-        },
-      }).as("showInvoice");
-
-      cy.getByCy("edit-invoice-button-draft-invoice-1").click();
-
-      cy.getByCy("invoice-modal").should("exist");
-      cy.getByCy("unit-price-input-0").clear().type("1500");
-      cy.getByCy("submit-button").click();
-
-      // Modal should close (update happened)
-      cy.getByCy("invoice-modal").should("not.exist");
-    });
   });
 
   describe("Allowed Actions on Sent Invoices", () => {
@@ -226,39 +168,6 @@ describe("Invoice Edit Lock (US-022-B)", () => {
 
     it("is expected to show PDF download button for sent invoices", () => {
       cy.getByCy("download-pdf-button-sent-invoice-1").should("exist");
-    });
-
-    it.skip("is expected to allow marking sent invoice as paid", () => {
-      cy.intercept("PATCH", "**/rest/v1/invoices*id=eq.sent-invoice-1", {
-        statusCode: 200,
-        body: {
-          id: "sent-invoice-1",
-          status: "paid",
-        },
-      }).as("markPaid");
-
-      cy.intercept("POST", "**/rest/v1/payments", {
-        statusCode: 201,
-        body: {
-          id: "payment-1",
-          invoice_id: "sent-invoice-1",
-          amount: 2000,
-        },
-      }).as("createPayment");
-
-      cy.getByCy("mark-paid-button-sent-invoice-1").click();
-
-      // Payment dialog should open and show amount
-      cy.getByCy("payment-confirmation-dialog").should("exist");
-      
-      // Fill payment form
-      cy.getByCy("payment-dialog-date").clear().type("2024-01-15");
-      cy.getByCy("payment-dialog-method").select("bank_transfer");
-
-      cy.getByCy("confirm-payment-dialog").click();
-
-      // Dialog should close (payment recorded)
-      cy.getByCy("payment-confirmation-dialog").should("not.exist");
     });
   });
 
