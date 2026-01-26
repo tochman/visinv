@@ -272,7 +272,7 @@ beforeEach(() => {
 ```javascript
 // MISSING: Complete invoice lifecycle
 describe('E2E: Invoice Lifecycle', () => {
-  it('should create, send, mark as paid, and generate receipt', () => {
+  it('is expected to create, send, mark as paid, and generate receipt', () => {
     // 1. Create invoice
     // 2. Preview/send to client
     // 3. Mark as paid
@@ -286,7 +286,7 @@ describe('E2E: Invoice Lifecycle', () => {
 ```javascript
 // MISSING: Multi-user conflict scenarios
 describe('Concurrent Editing', () => {
-  it('should handle two users editing same client', () => {
+  it('is expected to handle two users editing same client', () => {
     // User A and User B edit same record
     // Test conflict resolution
   })
@@ -297,9 +297,9 @@ describe('Concurrent Editing', () => {
 ```javascript
 // MISSING: Export functionality
 describe('Data Export', () => {
-  it('should export invoices to CSV', () => {})
-  it('should export invoices to PDF', () => {})
-  it('should import clients from CSV', () => {})
+  it('is expected to export invoices to CSV', () => {})
+  it('is expected to export invoices to PDF', () => {})
+  it('is expected to import clients from CSV', () => {})
 })
 ```
 
@@ -307,9 +307,9 @@ describe('Data Export', () => {
 ```javascript
 // MISSING: Payment flows (if applicable)
 describe('Payment Integration', () => {
-  it('should process Stripe payment', () => {})
-  it('should handle failed payment', () => {})
-  it('should update invoice status after payment', () => {})
+  it('is expected to process Stripe payment', () => {})
+  it('is expected to handle failed payment', () => {})
+  it('is expected to update invoice status after payment', () => {})
 })
 ```
 
@@ -318,13 +318,13 @@ describe('Payment Integration', () => {
 #### 🟡 Accessibility Testing
 ```javascript
 describe('Accessibility', () => {
-  it('should be navigable by keyboard', () => {
+  it('is expected to be navigable by keyboard', () => {
     cy.visit('/clients')
     cy.get('body').tab()  // Use cypress-plugin-tab
     // Verify focus indicators
   })
   
-  it('should have proper ARIA labels', () => {
+  it('is expected to have proper ARIA labels', () => {
     cy.checkA11y()  // Use cypress-axe plugin
   })
 })
@@ -333,7 +333,7 @@ describe('Accessibility', () => {
 #### 🟡 Performance Testing
 ```javascript
 describe('Performance: Large Datasets', () => {
-  it('should handle 1000+ clients efficiently', () => {
+  it('is expected to handle 1000+ clients efficiently', () => {
     // Mock large dataset
     // Verify pagination works
     // Verify search is fast
@@ -348,31 +348,31 @@ describe('Mobile View', () => {
     cy.viewport('iphone-x')
   })
   
-  it('should display mobile menu', () => {})
-  it('should collapse tables on mobile', () => {})
+  it('is expected to display mobile menu', () => {})
+  it('is expected to collapse tables on mobile', () => {})
 })
 ```
 
 #### 🟡 Network Failure Recovery
 ```javascript
 describe('Network Resilience', () => {
-  it('should retry failed requests', () => {
+  it('is expected to retry failed requests', () => {
     cy.intercept('POST', '**/clients', { forceNetworkError: true })
     // Verify error handling and retry logic
   })
   
-  it('should save draft when offline', () => {})
+  it('is expected to save draft when offline', () => {})
 })
 ```
 
 #### 🟡 File Operations
 ```javascript
 describe('File Upload/Download', () => {
-  it('should upload client logo', () => {
+  it('is expected to upload client logo', () => {
     cy.get('[data-cy="logo-upload"]').attachFile('logo.png')
   })
   
-  it('should download invoice PDF', () => {
+  it('is expected to download invoice PDF', () => {
     cy.get('[data-cy="download-pdf"]').click()
     cy.readFile('cypress/downloads/invoice-001.pdf').should('exist')
   })
@@ -388,7 +388,7 @@ describe('File Upload/Download', () => {
 #### 🟢 Localization
 ```javascript
 describe('Internationalization', () => {
-  it('should switch to Swedish', () => {
+  it('is expected to switch to Swedish', () => {
     cy.visit('/')
     cy.get('[data-cy="language-selector"]').select('sv')
     cy.contains('Fakturor').should('be.visible')
@@ -399,7 +399,7 @@ describe('Internationalization', () => {
 #### 🟢 Advanced Search
 ```javascript
 describe('Advanced Search', () => {
-  it('should filter by multiple criteria', () => {
+  it('is expected to filter by multiple criteria', () => {
     cy.get('[data-cy="filter-status"]').select('paid')
     cy.get('[data-cy="filter-date-from"]').type('2024-01-01')
     cy.get('[data-cy="filter-date-to"]').type('2024-12-31')
@@ -411,7 +411,7 @@ describe('Advanced Search', () => {
 #### 🟢 Keyboard Shortcuts
 ```javascript
 describe('Keyboard Shortcuts', () => {
-  it('should create new invoice with Ctrl+N', () => {
+  it('is expected to create new invoice with Ctrl+N', () => {
     cy.visit('/invoices')
     cy.get('body').type('{ctrl}n')
     cy.get('[data-cy="invoice-modal"]').should('be.visible')
@@ -478,7 +478,7 @@ describe('Keyboard Shortcuts', () => {
 it('is expected to create a client', () => {})
 
 // Recommended - more specific
-it('should successfully create client with valid data and display in list', () => {})
+it('is expected to successfully create client with valid data and display in list', () => {})
 ```
 
 #### 2. **Use Page Object Model**
@@ -504,7 +504,7 @@ export class ClientsPage {
 ```javascript
 // Tag tests for selective execution
 describe('Clients', { tags: ['@smoke', '@critical'] }, () => {
-  it('should create client', { tags: '@happy-path' }, () => {})
+  it('is expected to create client', { tags: '@happy-path' }, () => {})
 })
 
 // Run only smoke tests
@@ -515,7 +515,7 @@ npm run cy:run -- --env grepTags=@smoke
 ```javascript
 // Use cypress-image-snapshot
 describe('Visual Regression', () => {
-  it('should match invoice preview screenshot', () => {
+  it('is expected to match invoice preview screenshot', () => {
     cy.visit('/invoices/123/preview')
     cy.matchImageSnapshot('invoice-preview')
   })
@@ -554,7 +554,7 @@ cy.login('testUser')  // Uses mocked authentication
 **Recommendation:** Add explicit test for data deletion (GDPR "right to be forgotten"):
 ```javascript
 describe('GDPR Compliance', () => {
-  it('should permanently delete user data on request', () => {
+  it('is expected to permanently delete user data on request', () => {
     // Create user
     // Request deletion
     // Verify all related data is gone
@@ -575,7 +575,7 @@ describe('GDPR Compliance', () => {
 **Recommendation:** Add tests for:
 ```javascript
 describe('Swedish Compliance: Data Retention', () => {
-  it('should retain invoices for 7 years per Bokföringslagen', () => {
+  it('is expected to retain invoices for 7 years per Bokföringslagen', () => {
     // Verify old invoices cannot be deleted
   })
 })

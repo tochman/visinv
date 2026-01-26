@@ -95,7 +95,7 @@ cy.get('[data-cy="success-message"]').should('be.visible')
 
 ```javascript
 describe('E2E: Complete Invoice Workflow', () => {
-  it('should complete full invoice lifecycle from creation to payment', () => {
+  it('is expected to complete full invoice lifecycle from creation to payment', () => {
     // 1. Login
     cy.login('user')
     
@@ -125,7 +125,7 @@ describe('E2E: Complete Invoice Workflow', () => {
     cy.get('[data-cy="invoice-status"]').should('contain', 'Paid')
   })
   
-  it('should create and link credit invoice to original', () => {
+  it('is expected to create and link credit invoice to original', () => {
     // Complete credit invoice workflow
   })
 })
@@ -138,7 +138,7 @@ describe('E2E: Complete Invoice Workflow', () => {
 
 ```javascript
 describe('Network Failure Handling', () => {
-  it('should show error message on network failure', () => {
+  it('is expected to show error message on network failure', () => {
     cy.login('user')
     cy.visit('/clients')
     
@@ -155,11 +155,11 @@ describe('Network Failure Handling', () => {
     cy.get('[data-cy="error-message"]').should('contain', 'network')
   })
   
-  it('should retry failed request', () => {
+  it('is expected to retry failed request', () => {
     // Test automatic retry logic
   })
   
-  it('should preserve form data after error', () => {
+  it('is expected to preserve form data after error', () => {
     // Verify form data isn't lost on error
   })
 })
@@ -184,20 +184,20 @@ describe('Accessibility', () => {
     cy.login('user')
   })
   
-  it('should have no accessibility violations on clients page', () => {
+  it('is expected to have no accessibility violations on clients page', () => {
     cy.visit('/clients')
     cy.injectAxe()
     cy.checkA11y()
   })
   
-  it('should have no violations on invoice modal', () => {
+  it('is expected to have no violations on invoice modal', () => {
     cy.visit('/invoices')
     cy.get('[data-cy="create-invoice-button"]').click()
     cy.injectAxe()
     cy.checkA11y('[data-cy="invoice-modal"]')
   })
   
-  it('should be keyboard navigable', () => {
+  it('is expected to be keyboard navigable', () => {
     cy.visit('/clients')
     cy.get('body').tab()
     cy.focused().should('have.attr', 'data-cy', 'create-client-button')
@@ -341,7 +341,7 @@ export const ProductFactory = {
 ```javascript
 import { ClientFactory } from '../support/factories'
 
-it('should create client', () => {
+it('is expected to create client', () => {
   const client = ClientFactory.build({ name: 'Special Client' })
   cy.fillClientForm(client)
   cy.get('[data-cy="save-client-button"]').click()
@@ -388,12 +388,12 @@ describe('Mobile Responsive Design', () => {
         cy.login('user')
       })
       
-      it('should display mobile menu', () => {
+      it('is expected to display mobile menu', () => {
         cy.visit('/')
         cy.get('[data-cy="mobile-menu-button"]').should('be.visible')
       })
       
-      it('should collapse tables appropriately', () => {
+      it('is expected to collapse tables appropriately', () => {
         cy.visit('/clients')
         cy.get('[data-cy="clients-table"]').should('be.visible')
         // Verify mobile-friendly display
@@ -410,7 +410,7 @@ describe('Mobile Responsive Design', () => {
 
 ```javascript
 describe('Performance with Large Datasets', () => {
-  it('should handle 1000+ clients with pagination', () => {
+  it('is expected to handle 1000+ clients with pagination', () => {
     // Generate large dataset
     const largeClientList = Array.from({ length: 1000 }, (_, i) => ({
       id: `client-${i}`,
@@ -435,7 +435,7 @@ describe('Performance with Large Datasets', () => {
     cy.get('[data-cy="pagination"]').should('be.visible')
   })
   
-  it('should search through large dataset quickly', () => {
+  it('is expected to search through large dataset quickly', () => {
     // Test search performance
     const start = Date.now()
     cy.get('[data-cy="search-clients-input"]').type('Client 999')
@@ -465,14 +465,14 @@ describe('Visual Regression', () => {
     cy.login('user')
   })
   
-  it('should match invoice preview screenshot', () => {
+  it('is expected to match invoice preview screenshot', () => {
     cy.visit('/invoices')
     cy.get('[data-cy="preview-invoice-1"]').click()
     cy.get('[data-cy="invoice-preview"]').should('be.visible')
     cy.matchImageSnapshot('invoice-preview')
   })
   
-  it('should match client form screenshot', () => {
+  it('is expected to match client form screenshot', () => {
     cy.visit('/clients')
     cy.get('[data-cy="create-client-button"]').click()
     cy.get('[data-cy="client-modal"]').should('be.visible')

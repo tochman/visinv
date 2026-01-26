@@ -3,7 +3,7 @@ describe('Multi-Currency Support', () => {
     cy.login('premiumUser');
   });
 
-  it('should display all 6 supported currencies in the currency dropdown', () => {
+  it('is expected to display all 6 supported currencies in the currency dropdown', () => {
     // Set up common intercepts
     cy.setupCommonIntercepts({
       invoices: [],
@@ -36,7 +36,7 @@ describe('Multi-Currency Support', () => {
     cy.get('[data-cy="currency-select"]').should('have.value', 'SEK');
   });
 
-  it('should display currency symbols in dropdown options', () => {
+  it('is expected to display currency symbols in dropdown options', () => {
     cy.setupCommonIntercepts({
       invoices: [],
       clients: [],
@@ -71,7 +71,7 @@ describe('Multi-Currency Support', () => {
     });
   });
 
-  it('should send correct currency and exchange rate when creating an invoice', () => {
+  it('is expected to send correct currency and exchange rate when creating an invoice', () => {
     const mockClient = {
       id: 'client-1',
       name: 'Test Client'
@@ -129,7 +129,7 @@ describe('Multi-Currency Support', () => {
     // The actual line item form interaction is tested separately in integration tests
   });
 
-  it('should verify exchange rates are correctly configured for all currencies', () => {
+  it('is expected to verify exchange rates are correctly configured for all currencies', () => {
     // This test verifies the currency configuration itself
     // by checking the config file is properly loaded
     cy.getByCy('sidebar-nav-invoices').click();
@@ -159,7 +159,7 @@ describe('Multi-Currency Support', () => {
     });
   });
 
-  it('should allow selecting different currencies without errors', () => {
+  it('is expected to allow selecting different currencies without errors', () => {
     cy.setupCommonIntercepts({
       invoices: [],
       clients: [],

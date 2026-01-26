@@ -130,7 +130,7 @@ describe('Feature Name', () => {
   })
 
   describe('Happy Path - Success Scenarios', () => {
-    it('should successfully create a resource', () => {
+    it('is expected to successfully create a resource', () => {
       // Arrange
       cy.get('[data-cy="create-button"]').click()
       
@@ -145,7 +145,7 @@ describe('Feature Name', () => {
   })
 
   describe('Sad Path - Error Scenarios', () => {
-    it('should show validation error for empty form', () => {
+    it('is expected to show validation error for empty form', () => {
       cy.get('[data-cy="create-button"]').click()
       cy.get('[data-cy="save-button"]').click()
       
@@ -207,7 +207,7 @@ beforeEach(() => {
 })
 
 // ❌ Bad - Tests depend on database state
-it('should list clients', () => {
+it('is expected to list clients', () => {
   cy.visit('/clients')
   cy.get('[data-cy="client-row"]').should('have.length', 5)  // Fragile!
 })
@@ -286,9 +286,9 @@ Use descriptive test names with "should" or "is expected to":
 
 ```javascript
 // ✅ Good - Clear what behavior is tested
-it('should display validation error when email format is invalid', () => {})
+it('is expected to display validation error when email format is invalid', () => {})
 it('is expected to create invoice and display in list', () => {})
-it('should prevent duplicate invoice numbers in manual mode', () => {})
+it('is expected to prevent duplicate invoice numbers in manual mode', () => {})
 
 // ❌ Bad - Vague or unclear
 it('test email validation', () => {})
@@ -303,22 +303,22 @@ Group related tests with nested `describe` blocks:
 ```javascript
 describe('Client Management', () => {
   describe('Happy Path - Creating Clients', () => {
-    it('should create client with only required fields', () => {})
-    it('should create client with all fields', () => {})
+    it('is expected to create client with only required fields', () => {})
+    it('is expected to create client with all fields', () => {})
   })
 
   describe('Sad Path - Validation Errors', () => {
-    it('should show error for empty name', () => {})
-    it('should show error for invalid email', () => {})
+    it('is expected to show error for empty name', () => {})
+    it('is expected to show error for invalid email', () => {})
   })
 
   describe('Happy Path - Editing Clients', () => {
-    it('should open edit modal with prefilled data', () => {})
-    it('should update client successfully', () => {})
+    it('is expected to open edit modal with prefilled data', () => {})
+    it('is expected to update client successfully', () => {})
   })
 
   describe('Sad Path - Network Errors', () => {
-    it('should handle network timeout gracefully', () => {})
+    it('is expected to handle network timeout gracefully', () => {})
   })
 })
 ```
