@@ -414,27 +414,28 @@ describe('Organization Member Invitations', () => {
 
     describe('Valid Invitation - Authenticated User with Matching Email', () => {
       beforeEach(() => {
-        // First set up invitation intercept
+        // Set up invitation intercept
         cy.intercept('GET', `**/rest/v1/organization_invitations?*token=eq.${validToken}*`, {
           statusCode: 200,
           body: mockInvitation
         }).as('getInvitation')
 
-        // Login as user with matching email
-        cy.login('user', { 
-          customOrganization: mockOrganization 
+        // Set up authentication with matching email (without visiting any page)
+        cy.setupAuth('user', { 
+          customOrganization: mockOrganization,
+          customEmail: invitedEmail
         })
 
-        // Override the user's email to match the invitation
-        cy.window().then((win) => {
-          const storageKey = `sb-${Cypress.env('SUPABASE_PROJECT_REF') || 'test'}-auth-token`
-          const sessionData = JSON.parse(win.localStorage.getItem(storageKey))
-          sessionData.user.email = invitedEmail
-          win.localStorage.setItem(storageKey, JSON.stringify(sessionData))
+        // Visit invite page directly with auth already configured
+        cy.get('@authSetup').then((authSetup) => {
+          cy.visit(`/invite/${validToken}`, {
+            onBeforeLoad(win) {
+              win.localStorage.setItem(authSetup.storageKey, authSetup.authData)
+              win.localStorage.setItem('visinv_cookie_consent', authSetup.cookieConsent)
+              win.localStorage.setItem('language', authSetup.language)
+            }
+          })
         })
-
-        // Visit invite page
-        cy.visit(`/invite/${validToken}`)
       })
 
       it('is expected to show accept button for authenticated user', () => {
@@ -455,12 +456,21 @@ describe('Organization Member Invitations', () => {
           body: mockInvitation
         }).as('getInvitation')
 
-        // Login as user with different email
-        cy.login('admin', { 
+        // Set up authentication with different email (without visiting any page)
+        cy.setupAuth('admin', { 
           customOrganization: mockOrganization 
         })
 
-        cy.visit(`/invite/${validToken}`)
+        // Visit invite page directly with auth already configured
+        cy.get('@authSetup').then((authSetup) => {
+          cy.visit(`/invite/${validToken}`, {
+            onBeforeLoad(win) {
+              win.localStorage.setItem(authSetup.storageKey, authSetup.authData)
+              win.localStorage.setItem('visinv_cookie_consent', authSetup.cookieConsent)
+              win.localStorage.setItem('language', authSetup.language)
+            }
+          })
+        })
       })
 
       it('is expected to show email mismatch warning', () => {

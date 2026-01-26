@@ -411,6 +411,9 @@ describe('Payment Recording (US-020)', () => {
         products: [],
         payments: []
       });
+      
+      // Navigate to invoices list page where Mark as Paid button is located
+      cy.getByCy('sidebar-nav-invoices').click();
     });
 
     it('is expected to open payment confirmation dialog when Mark as Paid is clicked', () => {

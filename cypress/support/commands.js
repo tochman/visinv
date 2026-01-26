@@ -189,6 +189,124 @@ Cypress.Commands.add('login', (userType = 'user', options = {}) => {
   }
 })
 
+/**
+ * Set up authentication state without visiting any page.
+ * Useful for tests that need to visit a specific URL with authentication already configured.
+ * 
+ * @param {string} userType - Type of user ('admin', 'user', 'premiumUser', 'visitor')
+ * @param {Object} options - Configuration options
+ * @param {Object} options.customOrganization - Custom organization data
+ * @param {boolean} options.skipOrgMock - Skip organization mock setup
+ * @param {string} options.customEmail - Override user email
+ */
+Cypress.Commands.add('setupAuth', (userType = 'user', options = {}) => {
+  const userData = users[userType]
+  if (!userData) {
+    return
+  }
+
+  const mockSession = {
+    access_token: 'test-access-token-' + userData.id,
+    refresh_token: 'test-refresh-token',
+    expires_in: 3600,
+    expires_at: Math.floor(Date.now() / 1000) + 3600,
+    token_type: 'bearer',
+    user: {
+      id: userData.id,
+      email: options.customEmail || userData.email,
+      user_metadata: userData.user_metadata,
+      aud: 'authenticated',
+      role: 'authenticated'
+    }
+  }
+
+  cy.intercept('GET', '**/auth/v1/user', {
+    statusCode: 200,
+    body: mockSession.user
+  }).as('getUser')
+
+  cy.intercept('GET', '**/auth/v1/token?*', {
+    statusCode: 200,
+    body: mockSession
+  }).as('getToken')
+
+  cy.intercept('POST', '**/auth/v1/token*', {
+    statusCode: 200,
+    body: mockSession
+  }).as('refreshToken')
+
+  cy.intercept('GET', '**/rest/v1/profiles*', {
+    statusCode: 200,
+    body: userData.profile
+  }).as('getProfile')
+
+  const isPremium = userData.profile.plan_type === 'premium' || userData.profile.is_admin
+  cy.intercept('GET', '**/rest/v1/subscriptions*', {
+    statusCode: 200,
+    body: isPremium ? {
+      id: 'test-subscription-id',
+      user_id: userData.id,
+      status: 'active',
+      plan_type: 'premium',
+      stripe_subscription_id: 'sub_test',
+      created_at: new Date().toISOString(),
+      updated_at: new Date().toISOString()
+    } : null
+  }).as('getSubscription')
+
+  if (!options.skipOrgMock) {
+    const defaultOrganization = {
+      id: 'test-org-id',
+      name: 'Test Organization',
+      organization_number: '',
+      vat_number: '',
+      municipality: '',
+      address: '',
+      city: '',
+      postal_code: '',
+      email: '',
+      created_by: userData.id,
+      created_at: new Date().toISOString(),
+      updated_at: new Date().toISOString()
+    }
+
+    const organizationToUse = options.customOrganization || userData.organization || defaultOrganization
+    const roleToUse = options.customOrganization?.role || 'owner'
+
+    cy.intercept('GET', '**/rest/v1/organization_members*', {
+      statusCode: 200,
+      body: [{
+        id: 'test-org-member-id',
+        user_id: userData.id,
+        organization_id: organizationToUse.id,
+        role: roleToUse,
+        is_default: true,
+        joined_at: new Date().toISOString(),
+        organizations: organizationToUse
+      }]
+    }).as('getOrganizations')
+  }
+
+  // Set up localStorage with auth and cookie consent
+  const storageKey = `sb-${Cypress.env('SUPABASE_PROJECT_REF') || 'test'}-auth-token`
+  const authData = JSON.stringify(mockSession)
+  const cookieConsent = JSON.stringify({
+    essential: true,
+    analytics: false,
+    marketing: false,
+    preferences: false,
+    timestamp: Date.now()
+  })
+
+  // Return commands to be used with cy.visit's onBeforeLoad
+  cy.wrap({
+    storageKey,
+    authData,
+    cookieConsent,
+    language: 'en'
+  }).as('authSetup')
+})
+
 Cypress.Commands.add('logout', () => {
   cy.clearLocalStorage()
   cy.clearCookies()
