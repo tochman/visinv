@@ -1228,7 +1228,7 @@ These additions position VisInv as a comprehensive solution for:
   - View feedback dashboard
   - Respond to feedback
 
-**US-120: NPS Survey System**
+**US-120: NPS Survey System** ✅
 - As an **admin/system owner**, in order to **understand what users think about the system**, I would like to **present an optional NPS survey to users at certain intervals**.
 - **User Story:** Track user satisfaction through Net Promoter Score (NPS) surveys shown to engaged users
 - **Eligibility Criteria (any of these):**

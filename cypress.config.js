@@ -11,7 +11,7 @@ export default defineConfig({
     screenshotOnRunFailure: true,
     defaultCommandTimeout: 10000,
     retries: {
-      runMode: 2, // Retry failed tests up to 2 times in CI/headless mode
+      runMode: 1, // Retry failed tests up to 2 times in CI/headless mode
       openMode: 0, // No retries in interactive mode
     },
     numTestsKeptInMemory: 0, // Optimize memory for parallel execution
