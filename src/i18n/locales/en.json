@@ -154,6 +154,11 @@
     "sendInvoice": "Send Invoice",
     "sentSuccessfully": "Invoice sent successfully",
     "draftSavedSuccessfully": "Draft saved successfully",
+    "locked": "Locked",
+    "cannotEditSent": "This invoice cannot be edited because it has been sent",
+    "cannotDeleteSent": "Sent invoices cannot be deleted. Create a credit invoice instead.",
+    "invoiceIsReadOnly": "This invoice is locked and cannot be edited",
+    "useCreditInvoiceInstead": "Use credit invoice to correct this invoice",
     "errors": {
       "duplicateInvoiceNumber": "This invoice number already exists in your organization"
     },

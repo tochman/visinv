@@ -143,6 +143,11 @@
     "sendInvoice": "Skicka faktura",
     "sentSuccessfully": "Faktura skickad",
     "draftSavedSuccessfully": "Utkast sparat",
+    "locked": "Låst",
+    "cannotEditSent": "Denna faktura kan inte redigeras eftersom den har skickats",
+    "cannotDeleteSent": "Skickade fakturor kan inte raderas. Skapa en kreditfaktura istället.",
+    "invoiceIsReadOnly": "Denna faktura är låst och kan inte redigeras",
+    "useCreditInvoiceInstead": "Använd kreditfaktura för att korrigera denna faktura",
     "errors": {
       "duplicateInvoiceNumber": "Detta fakturanummer finns redan i din organisation"
     },

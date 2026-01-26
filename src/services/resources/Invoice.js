@@ -247,6 +247,22 @@ class InvoiceResource extends BaseResource {
    * @returns {Promise<{data: Object|null, error: Error|null}>}
    */
   async update(id, updates) {
+    // Check if invoice can be edited (only drafts can be edited)
+    const { data: existingInvoice, error: fetchError } = await this.supabase
+      .from(this.tableName)
+      .select('status')
+      .eq('id', id)
+      .single();
+
+    if (fetchError) return { data: null, error: fetchError };
+
+    if (existingInvoice.status !== 'draft') {
+      return {
+        data: null,
+        error: new Error('Sent invoices cannot be edited. Create a credit invoice instead.')
+      };
+    }
+
     const { rows, ...invoiceFields } = updates;
 
     // Recalculate totals if rows are provided
@@ -292,6 +308,32 @@ class InvoiceResource extends BaseResource {
 
     // Fetch complete invoice with relations
     return this.show(id);
+  }
+
+  /**
+   * Delete an invoice (only drafts can be deleted)
+   * @param {string} id - Invoice ID
+   * @returns {Promise<{data: Object|null, error: Error|null}>}
+   */
+  async delete(id) {
+    // Check if invoice can be deleted (only drafts can be deleted)
+    const { data: existingInvoice, error: fetchError } = await this.supabase
+      .from(this.tableName)
+      .select('status')
+      .eq('id', id)
+      .single();
+
+    if (fetchError) return { data: null, error: fetchError };
+
+    if (existingInvoice.status !== 'draft') {
+      return {
+        data: null,
+        error: new Error('Sent invoices cannot be deleted. Create a credit invoice instead.')
+      };
+    }
+
+    // Call parent delete method
+    return super.delete(id);
   }
 
   /**

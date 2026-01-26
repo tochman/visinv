@@ -1,7 +1,8 @@
 import { useState, useEffect } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { useTranslation } from 'react-i18next';
-import { ArrowPathIcon } from '@heroicons/react/24/outline';
+import { ArrowPathIcon, LockClosedIcon } from '@heroicons/react/24/outline';
+import { useToast } from '../context/ToastContext';
 import { fetchInvoices, deleteInvoice, markInvoiceAsSent, markInvoiceAsPaid, updateInvoiceTemplate } from '../features/invoices/invoicesSlice';
 import { fetchTemplates } from '../features/invoiceTemplates/invoiceTemplatesSlice';
 import InvoiceModal from '../components/invoices/InvoiceModal';
@@ -15,6 +16,7 @@ import { Payment } from '../services/resources';
 export default function Invoices() {
   const { t } = useTranslation();
   const dispatch = useDispatch();
+  const toast = useToast();
   const { items: invoices, loading, error } = useSelector((state) => state.invoices);
   const { items: templates } = useSelector((state) => state.invoiceTemplates);
   const { user } = useSelector((state) => state.auth);
@@ -41,12 +43,26 @@ export default function Invoices() {
     setIsModalOpen(true);
   };
 
+  const isInvoiceEditable = (invoice) => {
+    return invoice.status === 'draft';
+  };
+
   const handleEdit = (invoice) => {
+    if (!isInvoiceEditable(invoice)) {
+      toast.error(t('invoice.cannotEditSent'));
+      return;
+    }
     setSelectedInvoice(invoice);
     setIsModalOpen(true);
   };
 
   const handleDelete = async (id) => {
+    const invoice = invoices.find(inv => inv.id === id);
+    if (invoice && !isInvoiceEditable(invoice)) {
+      toast.error(t('invoice.cannotDeleteSent'));
+      setDeleteConfirm(null);
+      return;
+    }
     await dispatch(deleteInvoice(id));
     setDeleteConfirm(null);
   };
@@ -529,26 +545,39 @@ export default function Invoices() {
                             </svg>
                           </button>
                         )}
-                        <button
-                          onClick={() => handleEdit(invoice)}
-                          data-cy={`edit-invoice-button-${invoice.id}`}
-                          className="text-gray-600 hover:text-gray-900 dark:text-gray-400 dark:hover:text-gray-200"
-                          title={t('common.edit')}
-                        >
-                          <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
-                          </svg>
-                        </button>
-                        <button
-                          onClick={() => setDeleteConfirm(invoice.id)}
-                          data-cy={`delete-invoice-button-${invoice.id}`}
-                          className="text-red-600 hover:text-red-900 dark:text-red-400 dark:hover:text-red-300"
-                          title={t('common.delete')}
-                        >
-                          <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                          </svg>
-                        </button>
+                        {!isInvoiceEditable(invoice) && (
+                          <div 
+                            className="text-gray-400 dark:text-gray-600"
+                            title={t('invoice.invoiceIsReadOnly')}
+                            data-cy={`lock-icon-${invoice.id}`}
+                          >
+                            <LockClosedIcon className="w-5 h-5" />
+                          </div>
+                        )}
+                        {isInvoiceEditable(invoice) && (
+                          <button
+                            onClick={() => handleEdit(invoice)}
+                            data-cy={`edit-invoice-button-${invoice.id}`}
+                            className="text-gray-600 hover:text-gray-900 dark:text-gray-400 dark:hover:text-gray-200"
+                            title={t('common.edit')}
+                          >
+                            <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                            </svg>
+                          </button>
+                        )}
+                        {isInvoiceEditable(invoice) && (
+                          <button
+                            onClick={() => setDeleteConfirm(invoice.id)}
+                            data-cy={`delete-invoice-button-${invoice.id}`}
+                            className="text-red-600 hover:text-red-900 dark:text-red-400 dark:hover:text-red-300"
+                            title={t('common.delete')}
+                          >
+                            <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                            </svg>
+                          </button>
+                        )}
                       </div>
                     </td>
                   </tr>
