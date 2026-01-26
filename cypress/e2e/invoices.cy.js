@@ -336,12 +336,25 @@ describe("Invoice Management", () => {
     });
 
     it("is expected to mark invoice as paid", () => {
+      cy.intercept("POST", "**/rest/v1/payments*", {
+        statusCode: 201,
+        body: { id: "payment-1", invoice_id: "inv-2", amount: 25000 },
+      }).as("createPayment");
+
       cy.intercept("PATCH", "**/rest/v1/invoices*", {
         statusCode: 200,
         body: { ...mockInvoices[1], status: "paid" },
       }).as("updateInvoice");
 
       cy.getByCy("mark-paid-button-inv-2").click();
+      
+      // Payment confirmation dialog should appear
+      cy.getByCy("payment-confirmation-dialog").should("be.visible");
+      cy.getByCy("payment-dialog-date").should("exist");
+      cy.getByCy("payment-dialog-method").should("exist");
+      cy.getByCy("confirm-payment-dialog").click();
+
+      cy.wait("@createPayment");
       cy.wait("@updateInvoice");
     });
 
@@ -1476,6 +1489,7 @@ describe("Invoice Management", () => {
             unit_price: 1000,
             tax_rate: 25,
             unit: "st",
+            prices: [{ currency: "SEK", price: 1000 }],
           },
           {
             id: "prod-2",
@@ -1483,6 +1497,7 @@ describe("Invoice Management", () => {
             unit_price: 500,
             tax_rate: 12,
             unit: "st",
+            prices: [{ currency: "SEK", price: 500 }],
           },
           {
             id: "prod-3",
@@ -1490,6 +1505,7 @@ describe("Invoice Management", () => {
             unit_price: 300,
             tax_rate: 6,
             unit: "st",
+            prices: [{ currency: "SEK", price: 300 }],
           },
         ],
       });
@@ -1592,10 +1608,7 @@ describe("Invoice Management", () => {
         payload: mockOrganizationOCR,
       });
 
-      // Mock to capture the created invoice data
-      let _capturedInvoice = null;
       cy.intercept("POST", "**/rest/v1/invoices*", (req) => {
-        __capturedInvoice = req.body;
         req.reply({
           statusCode: 201,
           body: {
@@ -1688,6 +1701,7 @@ describe("Invoice Management", () => {
         unit_price: 1500,
         tax_rate: 25,
         unit: "hour",
+        prices: [{ currency: "SEK", price: 1500 }],
       },
       {
         id: "prod-development",
@@ -1696,6 +1710,7 @@ describe("Invoice Management", () => {
         unit_price: 1200,
         tax_rate: 25,
         unit: "hour",
+        prices: [{ currency: "SEK", price: 1200 }],
       },
       {
         id: "prod-food",
@@ -1704,6 +1719,7 @@ describe("Invoice Management", () => {
         unit_price: 500,
         tax_rate: 12,
         unit: "person",
+        prices: [{ currency: "SEK", price: 500 }],
       },
       {
         id: "prod-books",
@@ -1712,6 +1728,7 @@ describe("Invoice Management", () => {
         unit_price: 300,
         tax_rate: 6,
         unit: "st",
+        prices: [{ currency: "SEK", price: 300 }],
       },
     ];
 
