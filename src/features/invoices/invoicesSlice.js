@@ -115,7 +115,7 @@ export const copyInvoice = createAsyncThunk(
       terms: originalInvoice.terms,
       issue_date: new Date().toISOString().split('T')[0],
       due_date: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
-      rows: originalInvoice.invoice_rows?.map(row => ({
+      invoice_rows: originalInvoice.invoice_rows?.map(row => ({
         description: row.description,
         quantity: row.quantity,
         unit_price: row.unit_price,

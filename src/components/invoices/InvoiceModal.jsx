@@ -17,7 +17,7 @@ export default function InvoiceModal({ isOpen, onClose, invoice = null }) {
   const dispatch = useDispatch();
   const toast = useToast();
   const triggerNps = useNpsTrigger();
-  const isEditing = !!invoice;
+  const isEditing = !!(invoice?.id); // Only editing if invoice has an id
   const { hasPremiumAccess } = usePremiumAccess();
   
   const clients = useSelector(state => state.clients.items);
