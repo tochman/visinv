@@ -360,9 +360,10 @@ describe("Invoice Management", () => {
     });
 
     it("is expected to mark invoice as sent", () => {
-      cy.intercept("PATCH", "**/rest/v1/invoices*", {
+      // Set up intercept for PATCH (status check is bypassed)
+      cy.intercept("PATCH", "**/rest/v1/invoices?id=eq.inv-1*", {
         statusCode: 200,
-        body: { ...mockInvoices[0], status: "sent" },
+        body: { ...mockInvoices[0], status: "sent", sent_at: new Date().toISOString() },
       }).as("updateInvoice");
 
       cy.getByCy("mark-sent-button-inv-1").click();
@@ -370,14 +371,15 @@ describe("Invoice Management", () => {
     });
 
     it("is expected to mark invoice as paid", () => {
+      // Set up intercepts BEFORE clicking
       cy.intercept("POST", "**/rest/v1/payments*", {
         statusCode: 201,
         body: { id: "payment-1", invoice_id: "inv-2", amount: 25000 },
       }).as("createPayment");
 
-      cy.intercept("PATCH", "**/rest/v1/invoices*", {
+      cy.intercept("PATCH", "**/rest/v1/invoices?id=eq.inv-2*", {
         statusCode: 200,
-        body: { ...mockInvoices[1], status: "paid" },
+        body: { ...mockInvoices[1], status: "paid", paid_at: new Date().toISOString() },
       }).as("updateInvoice");
 
       cy.getByCy("mark-paid-button-inv-2").click();
@@ -431,14 +433,23 @@ describe("Invoice Management", () => {
     });
 
     it("is expected to delete an invoice", () => {
-      cy.intercept("DELETE", "**/rest/v1/invoices*", {
+      // Set up intercept for status check (delete still checks if draft)
+      cy.intercept("GET", "**/rest/v1/invoices?select=status&id=eq.inv-1*", {
+        statusCode: 200,
+        body: { status: "draft" },
+      }).as("checkStatus");
+
+      // Set up intercept for DELETE
+      cy.intercept("DELETE", "**/rest/v1/invoices?id=eq.inv-1*", {
         statusCode: 204,
+        body: null,
       }).as("deleteInvoice");
 
       cy.getByCy("delete-invoice-button-inv-1").click();
       cy.getByCy("delete-confirm-modal").should("be.visible");
       cy.getByCy("confirm-delete-button").click();
 
+      cy.wait("@checkStatus");
       cy.wait("@deleteInvoice");
       cy.getByCy("delete-confirm-modal").should("not.exist");
     });
@@ -511,14 +522,33 @@ describe("Invoice Management", () => {
     it("is expected to update invoice data", () => {
       cy.intercept("PATCH", "**/rest/v1/invoices?id=eq.inv-edit*", {
         statusCode: 200,
-        body: { ...existingInvoice, status: "updated" },
+        body: [{ ...existingInvoice, status: "updated" }],
       }).as("updateInvoice");
+
+      // Also mock the DELETE for invoice_rows (edit clears and recreates rows)
+      cy.intercept("DELETE", "**/rest/v1/invoice_rows*", {
+        statusCode: 204,
+        body: null,
+      }).as("deleteRows");
+
+      // Mock the POST for new invoice_rows
+      cy.intercept("POST", "**/rest/v1/invoice_rows*", {
+        statusCode: 201,
+        body: [],
+      }).as("createRows");
+
+      // Intercept for status check (update checks if draft before allowing edit)
+      cy.intercept("GET", "**/rest/v1/invoices?select=status&id=eq.inv-edit*", {
+        statusCode: 200,
+        body: { status: "draft" },
+      }).as("checkStatus");
 
       cy.getByCy("edit-invoice-button-inv-edit").click();
 
       cy.getByCy("description-input-0").clear().type("Updated Service");
       cy.getByCy("unit-price-input-0").clear().type("1500");
 
+      // In edit mode, use submit-button (not save-draft-button)
       cy.getByCy("submit-button").click();
 
       cy.wait("@updateInvoice", { timeout: 10000 });
@@ -1273,6 +1303,18 @@ describe("Invoice Management", () => {
       });
 
       it("is expected to update recurring settings", () => {
+        // Set up status check intercept
+        cy.intercept("GET", "**/rest/v1/invoices?select=status&id=eq.*", {
+          statusCode: 200,
+          body: { status: "draft" },
+        }).as("checkStatusRecurring");
+
+        // Set up more specific intercept for this test
+        cy.intercept("PATCH", "**/rest/v1/invoices?id=eq.*", {
+          statusCode: 200,
+          body: [],
+        }).as("updateRecurringInvoice");
+
         cy.get('[data-cy^="edit-invoice-button-"]').first().click();
 
         // Change frequency
@@ -1281,22 +1323,36 @@ describe("Invoice Management", () => {
         // Change max count
         cy.get('[data-cy="recurring-max-invoices-input"]').clear().type("4");
 
+        // In edit mode, use submit-button (not save-draft-button)
         cy.get('[data-cy="submit-button"]').click();
 
-        cy.wait("@updateInvoice");
+        cy.wait("@updateRecurringInvoice");
         cy.get('[data-cy="invoice-modal"]').should("not.exist");
       });
 
       it("is expected to disable recurring on an existing recurring invoice", () => {
+        // Set up status check intercept
+        cy.intercept("GET", "**/rest/v1/invoices?select=status&id=eq.*", {
+          statusCode: 200,
+          body: { status: "draft" },
+        }).as("checkStatusDisable");
+
+        // Set up more specific intercept for this test
+        cy.intercept("PATCH", "**/rest/v1/invoices?id=eq.*", {
+          statusCode: 200,
+          body: [],
+        }).as("updateDisableRecurring");
+
         cy.get('[data-cy^="edit-invoice-button-"]').first().click();
 
         // Disable recurring
         cy.get('[data-cy="recurring-toggle"]').click({ force: true });
         cy.get('[data-cy="recurring-section"]').should("not.be.visible");
 
+        // In edit mode, use submit-button (not save-draft-button)
         cy.get('[data-cy="submit-button"]').click();
 
-        cy.wait("@updateInvoice");
+        cy.wait("@updateDisableRecurring");
         cy.get('[data-cy="invoice-modal"]').should("not.exist");
       });
     });
@@ -1414,6 +1470,18 @@ describe("Invoice Management", () => {
       });
 
       it("is expected to delete a recurring invoice", () => {
+        // Set up status check intercept (delete checks if draft)
+        cy.intercept("GET", "**/rest/v1/invoices?select=status&id=eq.*", {
+          statusCode: 200,
+          body: { status: "draft" },
+        }).as("checkStatusDelete");
+
+        // Set up intercept for delete
+        cy.intercept("DELETE", "**/rest/v1/invoices?id=eq.*", {
+          statusCode: 204,
+          body: null,
+        }).as("deleteRecurringInvoice");
+
         // Click delete button on recurring invoice
         cy.get('[data-cy^="delete-invoice-button-"]').first().click();
 
@@ -1422,7 +1490,8 @@ describe("Invoice Management", () => {
         cy.get('[data-cy="confirm-delete-button"]').click();
 
         // Wait for deletion
-        cy.wait("@deleteInvoice");
+        cy.wait("@checkStatusDelete");
+        cy.wait("@deleteRecurringInvoice");
         cy.getByCy("delete-confirm-modal").should("not.exist");
       });
     });

@@ -246,21 +246,26 @@ class InvoiceResource extends BaseResource {
    * @param {Array} updates.rows - Invoice line items (optional)
    * @returns {Promise<{data: Object|null, error: Error|null}>}
    */
-  async update(id, updates) {
+  async update(id, updates, options = {}) {
+    const { bypassDraftCheck = false } = options;
+
     // Check if invoice can be edited (only drafts can be edited)
-    const { data: existingInvoice, error: fetchError } = await this.supabase
-      .from(this.tableName)
-      .select('status')
-      .eq('id', id)
-      .single();
+    // Unless bypassDraftCheck is true (used for status transitions like markAsSent, markAsPaid)
+    if (!bypassDraftCheck) {
+      const { data: existingInvoice, error: fetchError } = await this.supabase
+        .from(this.tableName)
+        .select('status')
+        .eq('id', id)
+        .single();
 
-    if (fetchError) return { data: null, error: fetchError };
+      if (fetchError) return { data: null, error: fetchError };
 
-    if (existingInvoice.status !== 'draft') {
-      return {
-        data: null,
-        error: new Error('Sent invoices cannot be edited. Create a credit invoice instead.')
-      };
+      if (existingInvoice.status !== 'draft') {
+        return {
+          data: null,
+          error: new Error('Sent invoices cannot be edited. Create a credit invoice instead.')
+        };
+      }
     }
 
     const { rows, ...invoiceFields } = updates;
@@ -417,7 +422,7 @@ class InvoiceResource extends BaseResource {
     return this.update(id, {
       status: 'sent',
       sent_at: new Date().toISOString(),
-    });
+    }, { bypassDraftCheck: true });
   }
 
   /**
@@ -440,7 +445,7 @@ class InvoiceResource extends BaseResource {
     return this.update(id, {
       reminder_sent_at: new Date().toISOString(),
       reminder_count: (invoice.reminder_count || 0) + 1,
-    });
+    }, { bypassDraftCheck: true });
   }
 
   /**
@@ -453,7 +458,7 @@ class InvoiceResource extends BaseResource {
     return this.update(id, {
       status: 'paid',
       paid_at: paidAt || new Date().toISOString(),
-    });
+    }, { bypassDraftCheck: true });
   }
 
   /**
