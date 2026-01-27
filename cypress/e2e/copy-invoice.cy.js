@@ -92,9 +92,10 @@ describe('Copy Invoice (US-022-C)', () => {
     });
 
     // Mock show invoice endpoint for copy operation
-    cy.intercept('GET', `**/rest/v1/invoices?id=eq.${mockInvoice.id}*`, {
+    // .single() expects a single object, not an array
+    cy.intercept('GET', `**/rest/v1/invoices**id=eq.${mockInvoice.id}**`, {
       statusCode: 200,
-      body: [mockInvoice],
+      body: mockInvoice,
     }).as('getInvoiceForCopy');
 
     // Mock create invoice
@@ -280,7 +281,7 @@ describe('Copy Invoice (US-022-C)', () => {
   describe('Sad Path - Error Scenarios', () => {
     it('is expected to handle error when invoice cannot be loaded for copying', () => {
       // Arrange - Mock error response for show invoice
-      cy.intercept('GET', `**/rest/v1/invoices?id=eq.${mockInvoice.id}*`, {
+      cy.intercept('GET', `**/rest/v1/invoices**id=eq.${mockInvoice.id}**`, {
         statusCode: 500,
         body: { error: 'Failed to load invoice' },
       }).as('getInvoiceError');
@@ -324,9 +325,9 @@ describe('Copy Invoice (US-022-C)', () => {
         terms: '',
       };
 
-      cy.intercept('GET', `**/rest/v1/invoices?id=eq.${invoiceWithoutNotes.id}*`, {
+      cy.intercept('GET', `**/rest/v1/invoices**id=eq.${invoiceWithoutNotes.id}**`, {
         statusCode: 200,
-        body: [invoiceWithoutNotes],
+        body: invoiceWithoutNotes,
       }).as('getInvoiceNoNotes');
 
       // Mock the invoice in the list
@@ -360,9 +361,9 @@ describe('Copy Invoice (US-022-C)', () => {
         invoice_rows: [mockInvoice.invoice_rows[0]],
       };
 
-      cy.intercept('GET', `**/rest/v1/invoices?id=eq.${invoiceWithOneRow.id}*`, {
+      cy.intercept('GET', `**/rest/v1/invoices**id=eq.${invoiceWithOneRow.id}**`, {
         statusCode: 200,
-        body: [invoiceWithOneRow],
+        body: invoiceWithOneRow,
       }).as('getInvoiceOneRow');
 
       cy.intercept('GET', '**/rest/v1/invoices*', {
@@ -392,9 +393,9 @@ describe('Copy Invoice (US-022-C)', () => {
         status: 'draft',
       };
 
-      cy.intercept('GET', `**/rest/v1/invoices?id=eq.${draftInvoice.id}*`, {
+      cy.intercept('GET', `**/rest/v1/invoices**id=eq.${draftInvoice.id}**`, {
         statusCode: 200,
-        body: [draftInvoice],
+        body: draftInvoice,
       }).as('getDraftInvoice');
 
       cy.intercept('GET', '**/rest/v1/invoices*', {
