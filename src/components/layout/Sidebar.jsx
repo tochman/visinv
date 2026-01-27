@@ -12,6 +12,7 @@ import {
   WrenchScrewdriverIcon,
   ShieldCheckIcon,
 } from '@heroicons/react/24/outline';
+import { OrganizationSwitcher } from '../organization';
 
 export default function Sidebar() {
   const { t } = useTranslation();
@@ -39,7 +40,7 @@ export default function Sidebar() {
   const hasPremiumAccess = isPremium || isAdmin;
 
   return (
-    <div className="w-64 bg-white dark:bg-gray-800 shadow-lg dark:shadow-gray-900/20">
+    <div className="w-64 bg-white dark:bg-gray-800 shadow-lg dark:shadow-gray-900/20 flex flex-col h-full">
       <div className="p-6">
         <img src="/svethna_logo.svg" alt="VisInv" className="h-10 w-auto dark:invert-0 invert" />
         {isAdmin && (
@@ -61,7 +62,7 @@ export default function Sidebar() {
         )}
       </div>
 
-      <nav className="px-4 space-y-1">
+      <nav className="px-4 space-y-1 flex-1">
         {navItems.map((item) => {
           const disabled = item.premium && !hasPremiumAccess;
           const Icon = item.icon;
@@ -91,6 +92,11 @@ export default function Sidebar() {
           );
         })}
       </nav>
+
+      {/* Organization Switcher */}
+      <div className="relative mt-auto">
+        <OrganizationSwitcher />
+      </div>
     </div>
   );
 }

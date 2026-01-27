@@ -388,9 +388,13 @@
   "organization": {
     "title": "Organisation",
     "create": "Skapa organisation",
+    "createNew": "Skapa ny organisation",
+    "selectOrganization": "Välj organisation",
     "edit": "Redigera organisation",
     "settings": "Organisationsinställningar",
     "switch": "Byt organisation",
+    "switchTo": "Byt till {{name}}",
+    "current": "Aktuell organisation",
     "name": "Företagsnamn",
     "organizationNumber": "Organisationsnummer",
     "vatNumber": "Momsregistreringsnummer",

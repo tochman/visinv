@@ -3,7 +3,7 @@ import { useTranslation } from 'react-i18next';
 import { useOrganization } from '../../contexts/OrganizationContext';
 import { XMarkIcon } from '@heroicons/react/24/outline';
 
-const OrganizationSetupWizard = ({ onClose, onComplete }) => {
+const OrganizationSetupWizard = ({ onClose, onComplete, isModal = false }) => {
   const { t } = useTranslation();
   const { createOrganization } = useOrganization();
   const [step, setStep] = useState(1);

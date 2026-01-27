@@ -87,8 +87,21 @@ export const OrganizationProvider = ({ children }) => {
     }
 
     // Reload organizations to include the new one
-    await loadOrganizations();
+    // This also fetches the default org, but we want to ensure
+    // we switch to the newly created one
+    const { data: orgs } = await organizationService.getAll();
+    setOrganizations(orgs || []);
     
+    // Find and switch to the newly created organization
+    if (data?.id) {
+      const newOrg = orgs?.find(o => o.id === data.id);
+      if (newOrg) {
+        setCurrentOrganization(newOrg);
+        await organizationService.setDefault(data.id);
+      }
+    }
+    
+    setLoading(false);
     return { data, error: null };
   };
 

@@ -400,9 +400,13 @@
   "organization": {
     "title": "Organization",
     "create": "Create Organization",
+    "createNew": "Create New Organization",
+    "selectOrganization": "Select Organization",
     "edit": "Edit Organization",
     "settings": "Organization Settings",
     "switch": "Switch Organization",
+    "switchTo": "Switch to {{name}}",
+    "current": "Current Organization",
     "name": "Company Name",
     "organizationNumber": "Organization Number",
     "vatNumber": "VAT Registration Number",
