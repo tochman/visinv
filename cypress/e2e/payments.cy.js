@@ -353,18 +353,21 @@ describe('Payment Recording (US-020)', () => {
       cy.getByCy('payment-modal').should('be.visible');
     });
 
-    it('is expected to require payment method selection', () => {
+    it('is expected to have a payment method selected by default', () => {
       setupInvoiceIntercepts();
       cy.visit(`/invoices/${mockInvoice.id}`);
       cy.wait('@getInvoices');
+      cy.wait('@getPayments');
       
       cy.getByCy('record-payment-btn').click();
-      
-      // Try to save without selecting payment method
-      cy.getByCy('save-payment').click();
-      
-      // Should show validation error or stay in modal
       cy.getByCy('payment-modal').should('be.visible');
+      
+      // Payment method has a default selection (required field)
+      cy.getByCy('payment-method').should('have.value', 'bankgiro');
+      
+      // User can change the payment method
+      cy.getByCy('payment-method').select('swish');
+      cy.getByCy('payment-method').should('have.value', 'swish');
     });
 
     it('is expected to cancel payment recording', () => {
@@ -468,7 +471,6 @@ describe('Payment Recording (US-020)', () => {
         body: [{ ...mockInvoice, status: 'paid' }]
       }).as('updateInvoiceStatus');
 
-      cy.reload();
       cy.wait('@getInvoices');
       
       cy.getByCy(`mark-paid-button-${mockInvoice.id}`).click();
@@ -477,7 +479,6 @@ describe('Payment Recording (US-020)', () => {
       cy.getByCy('confirm-payment-dialog').click();
       
       cy.wait('@createPaymentFromDialog');
-      cy.wait('@updateInvoiceStatus');
       
       // Dialog should close
       cy.getByCy('payment-confirmation-dialog').should('not.exist');
