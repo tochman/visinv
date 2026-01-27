@@ -84,7 +84,7 @@ export default function Settings() {
         {activeTab === TABS.SETTINGS && <OrganizationSettings />}
         {activeTab === TABS.MEMBERS && <OrganizationMembers />}
         {activeTab === TABS.PRIVACY && (
-          <div className="bg-white dark:bg-gray-800 rounded-lg shadow-md p-6">
+          <div className="bg-white dark:bg-gray-800 rounded-sm shadow-md p-6">
             <h2 className="text-xl font-semibold text-gray-900 dark:text-white mb-4">Privacy Settings</h2>
             <div className="space-y-4">
               <div className="border-b border-gray-200 dark:border-gray-700 pb-4">

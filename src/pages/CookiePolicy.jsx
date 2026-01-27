@@ -32,7 +32,7 @@ export default function CookiePolicy() {
             {t('common.back')}
           </button>
         </div>
-        <div className="bg-white dark:bg-gray-800 rounded-lg shadow-md p-8">
+        <div className="bg-white dark:bg-gray-800 rounded-sm shadow-md p-8">
           {/* Header */}
           <div className="mb-8" data-cy="cookie-policy-header">
             <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-2">

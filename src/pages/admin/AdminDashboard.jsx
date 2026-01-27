@@ -64,7 +64,7 @@ export default function AdminDashboard() {
         </div>
       </div>
       
-      <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-6 animate-fade-in-up animate-delay-200">
+      <div className="bg-white dark:bg-gray-800 rounded-sm shadow-sm border border-gray-200 dark:border-gray-700 p-6 animate-fade-in-up animate-delay-200">
         <h2 className="text-lg font-medium text-gray-900 dark:text-white mb-4">Common Actions</h2>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           <Link to="/admin/users" data-cy="admin-users-link" className="p-4 border rounded-sm hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors">

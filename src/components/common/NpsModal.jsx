@@ -84,7 +84,7 @@ export default function NpsModal() {
       {/* Modal */}
       <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
         <div
-          className="bg-white dark:bg-gray-800 rounded-lg shadow-2xl max-w-2xl w-full overflow-hidden"
+          className="bg-white dark:bg-gray-800 rounded-sm shadow-2xl max-w-2xl w-full overflow-hidden"
           data-cy="nps-modal"
         >
           {/* Header */}

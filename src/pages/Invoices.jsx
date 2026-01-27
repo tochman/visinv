@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
+import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { ArrowPathIcon, LockClosedIcon, DocumentDuplicateIcon, EyeIcon } from '@heroicons/react/24/outline';
 import { useToast } from '../context/ToastContext';
@@ -16,6 +17,7 @@ import { Payment } from '../services/resources';
 export default function Invoices() {
   const { t } = useTranslation();
   const dispatch = useDispatch();
+  const navigate = useNavigate();
   const toast = useToast();
   const { items: invoices, loading, error } = useSelector((state) => state.invoices);
   const { items: templates } = useSelector((state) => state.invoiceTemplates);
@@ -60,9 +62,7 @@ export default function Invoices() {
   };
 
   const handleView = (invoice) => {
-    setSelectedInvoice(invoice);
-    setViewOnly(true);
-    setIsModalOpen(true);
+    navigate(`/invoices/${invoice.id}`);
   };
 
   const handleCopy = async (invoice) => {

@@ -105,6 +105,16 @@
     "modern": "Modern",
     "classic": "Klassisk"
   },  "invoices": {
+    "invoice": "Faktura",
+    "status": "Status",
+    "status_draft": "Utkast",
+    "status_sent": "Skickad",
+    "status_paid": "Betald",
+    "status_overdue": "Förfallen",
+    "status_cancelled": "Avbruten",
+    "issueDate": "Fakturadatum",
+    "dueDate": "Förfallodatum",
+    "totalAmount": "Totalt belopp",
     "create": "Skapa faktura",
     "edit": "Redigera faktura",
     "search": "Sök fakturor...",

@@ -116,6 +116,16 @@
     "classic": "Classic"
   },
   "invoices": {
+    "invoice": "Invoice",
+    "status": "Status",
+    "status_draft": "Draft",
+    "status_sent": "Sent",
+    "status_paid": "Paid",
+    "status_overdue": "Overdue",
+    "status_cancelled": "Cancelled",
+    "issueDate": "Issue Date",
+    "dueDate": "Due Date",
+    "totalAmount": "Total Amount",
     "create": "Create Invoice",
     "edit": "Edit Invoice",
     "search": "Search invoices...",
