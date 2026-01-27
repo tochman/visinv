@@ -370,7 +370,7 @@ These additions position VisInv as a comprehensive solution for:
   - Validation: Both require same field validation
   - Email: sendInvoice() triggers email notification to client (if US-027 implemented)
 
-**US-022-B: Edit Lock for Sent Invoices**
+**US-022-B: Edit Lock for Sent Invoices** ✅
 - As a **user**, in order to **maintain invoice integrity and compliance**, I would like to **prevent editing or deleting invoices once they are sent**.
 - **Compliance Rationale:** 
   - Swedish Bokföringslagen requires maintaining original invoice records
