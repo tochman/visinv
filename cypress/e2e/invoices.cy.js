@@ -356,7 +356,7 @@ describe("Invoice Management", () => {
 
     it('is expected to show "Mark as Paid" button for sent invoices', () => {
       cy.getByCy("mark-paid-button-inv-1").should("not.exist");
-      cy.getByCy("mark-paid-button-inv-2").should("be.visible");
+      cy.getByCy("mark-paid-button-inv-2").scrollIntoView().should("be.visible");
     });
 
     it("is expected to mark invoice as sent", () => {
