@@ -1,6 +1,7 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
-import { useSelector } from 'react-redux';
+import { useSelector, useDispatch } from 'react-redux';
 import organizationService from '../services/organizationService';
+import { setCurrentOrganization as setReduxOrganization } from '../features/organizations/organizationsSlice';
 
 const OrganizationContext = createContext();
 
@@ -13,11 +14,17 @@ export const useOrganization = () => {
 };
 
 export const OrganizationProvider = ({ children }) => {
+  const dispatch = useDispatch();
   const { user } = useSelector((state) => state.auth);
   const [currentOrganization, setCurrentOrganization] = useState(null);
   const [organizations, setOrganizations] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+
+  // Sync to Redux whenever currentOrganization changes
+  useEffect(() => {
+    dispatch(setReduxOrganization(currentOrganization));
+  }, [currentOrganization, dispatch]);
 
   // Load organizations when user logs in
   useEffect(() => {

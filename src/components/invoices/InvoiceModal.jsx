@@ -184,11 +184,12 @@ export default function InvoiceModal({ isOpen, onClose, invoice = null, viewOnly
     setSavingPrice(prev => ({ ...prev, [index]: true }));
 
     try {
-      const { data, error } = await ProductPrice.create({
-        product_id: row.product_id,
-        currency: formData.currency,
-        price: price
-      });
+      // Use setPrice which does an upsert (insert or update)
+      const { data, error } = await ProductPrice.setPrice(
+        row.product_id,
+        formData.currency,
+        price
+      );
 
       if (error) {
         toast.error(t('invoices.priceSaveFailed'));
