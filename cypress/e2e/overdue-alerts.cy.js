@@ -174,7 +174,13 @@ describe('Overdue Invoice Alerts (US-026-A)', () => {
       
       cy.getByCy(`send-reminder-button-${overdueInvoice.id}`).click();
       
-      cy.wait('@updateInvoice');
+      // Alert confirms action
+      cy.on('window:alert', (text) => {
+        expect(text).to.include(`Reminder marked as sent for invoice ${overdueInvoice.invoice_number}`);
+      });
+      
+      // Wait for the invoice list to refresh after the reminder
+      cy.wait('@getInvoices');
       
       // Should show reminder badge with count
       cy.getByCy(`reminder-badge-${overdueInvoice.id}`)
@@ -195,20 +201,6 @@ describe('Overdue Invoice Alerts (US-026-A)', () => {
       cy.getByCy(`reminder-badge-${overdueInvoice.id}`)
         .should('contain', '1');
       
-      // Set up intercepts BEFORE clicking to ensure they catch the requests
-      const updatedInvoice = { ...overdueInvoice, reminder_count: 2, reminder_sent_at: new Date().toISOString() };
-      
-      cy.intercept('PATCH', `**/rest/v1/invoices?id=eq.${overdueInvoice.id}*`, {
-        statusCode: 200,
-        body: [updatedInvoice]
-      }).as('updateInvoice2');
-      
-      // Mock the refresh GET - this will be called by fetchInvoices()
-      cy.intercept('GET', '**/rest/v1/invoices?*', {
-        statusCode: 200,
-        body: [updatedInvoice, veryOverdueInvoice, notDueInvoice]
-      }).as('getInvoicesRefresh');
-      
       // Set up alert stub before clicking
       cy.window().then((win) => {
         cy.stub(win, 'alert').as('alertStub');
@@ -219,11 +211,11 @@ describe('Overdue Invoice Alerts (US-026-A)', () => {
         .scrollIntoView()
         .click();
       
-      cy.wait('@updateInvoice2');
-      cy.wait('@getInvoicesRefresh');
-      
       // Wait for alert to be called
       cy.get('@alertStub').should('have.been.called');
+      
+      // Wait for invoice list refresh
+      cy.wait('@getInvoices');
       
       // Should now show count of 2
       cy.getByCy(`reminder-badge-${overdueInvoice.id}`)

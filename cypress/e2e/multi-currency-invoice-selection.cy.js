@@ -342,7 +342,7 @@ describe('Multi-Currency Invoice Product Selection', () => {
       cy.getByCy('currency-mismatch-warning-0').should('not.exist');
       
       // Submit
-      cy.getByCy('submit-button').click();
+      cy.getByCy('save-draft-button').click();
       cy.wait('@createInvoice');
       
       cy.getByCy('invoice-modal').should('not.exist');
@@ -379,7 +379,7 @@ describe('Multi-Currency Invoice Product Selection', () => {
       cy.getByCy('quantity-input-0').should('have.value', '1');
       
       // Submit
-      cy.getByCy('submit-button').click();
+      cy.getByCy('save-draft-button').click();
       cy.wait('@createInvoice');
       
       cy.getByCy('invoice-modal').should('not.exist');
