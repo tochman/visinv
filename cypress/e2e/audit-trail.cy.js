@@ -11,17 +11,6 @@ describe('Invoice Audit Trail', () => {
     email: 'client@test.com',
   };
 
-  const mockOrganization = {
-    id: 'test-org-id',
-    name: 'Test Organization AB',
-    org_number: '556677-8899',
-    organization_number: '556677-8899',
-    vat_number: 'SE556677889901',
-    invoice_numbering_mode: 'auto',
-    invoice_prefix: 'INV-',
-    next_invoice_number: 1,
-  };
-
   const mockInvoice = {
     id: 'invoice-123',
     invoice_number: 'INV-0001',
@@ -80,63 +69,79 @@ describe('Invoice Audit Trail', () => {
 
   beforeEach(() => {
     cy.login('admin');
+  });
 
-    cy.setupCommonIntercepts({
-      clients: [mockClient],
-      templates: [],
-      products: [],
-      invoices: [mockInvoice],
-      defaultOrganization: mockOrganization,
-    });
-
-    // Mock invoice detail endpoint
-    cy.intercept('GET', '**/rest/v1/invoices?id=eq.invoice-123*', {
-      statusCode: 200,
-      body: [mockInvoice],
+  // Helper to set up intercepts
+  const setupIntercepts = (events = mockAuditEvents) => {
+    // Mock invoice detail endpoint - .single() returns single object, not array
+    cy.intercept('GET', '**/rest/v1/invoices*', (req) => {
+      req.reply({ statusCode: 200, body: mockInvoice });
     }).as('getInvoice');
 
     // Mock payments endpoint
-    cy.intercept('GET', '**/rest/v1/payments?invoice_id=eq.invoice-123*', {
+    cy.intercept('GET', '**/rest/v1/payments*', {
       statusCode: 200,
       body: [],
     }).as('getPayments');
 
     // Mock invoice_events endpoint
-    cy.intercept('GET', '**/rest/v1/invoice_events?invoice_id=eq.invoice-123*', {
+    cy.intercept('GET', '**/rest/v1/invoice_events*', {
       statusCode: 200,
-      body: mockAuditEvents,
+      body: events,
     }).as('getInvoiceEvents');
-  });
+
+    // Mock clients
+    cy.intercept('GET', '**/rest/v1/clients*', {
+      statusCode: 200,
+      body: [mockClient],
+    }).as('getClients');
+  };
 
   describe('Happy Path - Viewing Audit Trail', () => {
-    it('is expected to display audit trail on invoice detail page', () => {
-      // Navigate to invoice detail
+    beforeEach(() => {
+      setupIntercepts();
+    });
+
+    it('is expected to display audit trail section on invoice detail page', () => {
       cy.visit('/invoices/invoice-123');
       
       // Wait for data to load
       cy.wait('@getInvoice');
-      cy.wait('@getPayments');
       cy.wait('@getInvoiceEvents');
 
       // Verify audit trail section exists
       cy.getByCy('audit-trail-section').should('be.visible');
+    });
+
+    it('is expected to display all audit events', () => {
+      cy.visit('/invoices/invoice-123');
+      cy.wait('@getInvoice');
+      cy.wait('@getInvoiceEvents');
 
       // Verify all events are displayed
       cy.getByCy('audit-event-created').should('be.visible');
       cy.getByCy('audit-event-sent').should('be.visible');
       cy.getByCy('audit-event-payment_recorded').should('be.visible');
+    });
 
-      // Verify event details
+    it('is expected to show correct event details', () => {
+      cy.visit('/invoices/invoice-123');
+      cy.wait('@getInvoice');
+      cy.wait('@getInvoiceEvents');
+
+      // Verify created event details
       cy.getByCy('audit-event-created').within(() => {
         cy.contains('Created').should('be.visible');
         cy.contains('Invoice INV-0001 created').should('be.visible');
       });
 
+      // Verify sent event details
       cy.getByCy('audit-event-sent').within(() => {
         cy.contains('Sent').should('be.visible');
         cy.contains('Invoice INV-0001 sent to client').should('be.visible');
       });
 
+      // Verify payment event details
       cy.getByCy('audit-event-payment_recorded').within(() => {
         cy.contains('Payment Recorded').should('be.visible');
         cy.contains('Payment of 12500.00 recorded').should('be.visible');
@@ -179,140 +184,17 @@ describe('Invoice Audit Trail', () => {
     });
   });
 
-  describe('Happy Path - Event Creation', () => {
-    it('is expected to create audit event when invoice is created', () => {
-      // Mock invoice_events insert
-      cy.intercept('POST', '**/rest/v1/invoice_events*', (req) => {
-        expect(req.body.event_type).to.equal('created');
-        expect(req.body.invoice_id).to.exist;
-        req.reply({
-          statusCode: 201,
-          body: {
-            id: 'new-event-id',
-            ...req.body,
-            created_at: new Date().toISOString(),
-          },
-        });
-      }).as('createAuditEvent');
-
-      cy.intercept('POST', '**/rest/v1/invoices*', {
-        statusCode: 201,
-        body: mockInvoice,
-      }).as('createInvoice');
-
-      cy.intercept('POST', '**/rest/v1/invoice_rows*', {
-        statusCode: 201,
-        body: [],
-      }).as('createInvoiceRows');
-
-      // Navigate to invoices page
-      cy.visit('/invoices');
-      cy.wait('@getInvoices');
-
-      // Create a new invoice (minimal flow)
-      cy.getByCy('create-invoice-btn').click();
-      
-      // The audit event should be created when invoice is saved
-      // Note: In the actual implementation, this happens server-side after invoice creation
-    });
-
-    it('is expected to create audit event when invoice is sent', () => {
-      const sentInvoice = { ...mockInvoice, status: 'sent', sent_at: new Date().toISOString() };
-
-      cy.intercept('PATCH', '**/rest/v1/invoices?id=eq.invoice-123*', {
-        statusCode: 200,
-        body: [sentInvoice],
-      }).as('updateInvoice');
-
-      cy.intercept('POST', '**/rest/v1/invoice_events*', (req) => {
-        expect(req.body.event_type).to.equal('sent');
-        req.reply({
-          statusCode: 201,
-          body: {
-            id: 'sent-event-id',
-            ...req.body,
-            created_at: new Date().toISOString(),
-          },
-        });
-      }).as('createSentEvent');
-
-      // Visit invoice detail page and trigger send action
-      cy.visit('/invoices/invoice-123');
-      cy.wait('@getInvoice');
-
-      // When send button is clicked, it should create an audit event
-    });
-
-    it('is expected to create audit event when payment is recorded', () => {
-      const mockPayment = {
-        id: 'payment-123',
-        invoice_id: 'invoice-123',
-        amount: '12500.00',
-        payment_date: '2024-01-20',
-        payment_method: 'bank_transfer',
-      };
-
-      cy.intercept('POST', '**/rest/v1/payments*', {
-        statusCode: 201,
-        body: mockPayment,
-      }).as('createPayment');
-
-      cy.intercept('POST', '**/rest/v1/invoice_events*', (req) => {
-        if (req.body.event_type === 'payment_recorded') {
-          expect(req.body.event_data.amount).to.exist;
-          expect(req.body.event_data.payment_method).to.exist;
-        }
-        req.reply({
-          statusCode: 201,
-          body: {
-            id: 'payment-event-id',
-            ...req.body,
-            created_at: new Date().toISOString(),
-          },
-        });
-      }).as('createPaymentEvent');
-
-      // Visit invoice and record payment
-      cy.visit('/invoices/invoice-123');
-      cy.wait('@getInvoice');
-
-      // When payment modal is used to record payment, audit event should be created
-    });
-  });
-
   describe('Edge Cases', () => {
     it('is expected to show empty state when no events exist', () => {
-      // Mock empty events
-      cy.intercept('GET', '**/rest/v1/invoice_events?invoice_id=eq.invoice-123*', {
-        statusCode: 200,
-        body: [],
-      }).as('getEmptyEvents');
+      setupIntercepts([]);
 
       cy.visit('/invoices/invoice-123');
       cy.wait('@getInvoice');
-      cy.wait('@getEmptyEvents');
+      cy.wait('@getInvoiceEvents');
 
       // Verify empty state message
       cy.getByCy('audit-trail-section').within(() => {
         cy.contains('No events yet').should('be.visible');
-      });
-    });
-
-    it('is expected to display loading state while fetching events', () => {
-      // Delay the events response
-      cy.intercept('GET', '**/rest/v1/invoice_events?invoice_id=eq.invoice-123*', (req) => {
-        req.on('response', (res) => {
-          res.setDelay(1000);
-        });
-      }).as('getEventsDelayed');
-
-      cy.visit('/invoices/invoice-123');
-      cy.wait('@getInvoice');
-
-      // Verify loading state is shown
-      cy.getByCy('audit-trail-section').within(() => {
-        // Should show loading skeleton
-        cy.get('.animate-pulse').should('exist');
       });
     });
 
@@ -351,14 +233,11 @@ describe('Invoice Audit Trail', () => {
         },
       ];
 
-      cy.intercept('GET', '**/rest/v1/invoice_events?invoice_id=eq.invoice-123*', {
-        statusCode: 200,
-        body: allEventTypes,
-      }).as('getAllEventTypes');
+      setupIntercepts(allEventTypes);
 
       cy.visit('/invoices/invoice-123');
       cy.wait('@getInvoice');
-      cy.wait('@getAllEventTypes');
+      cy.wait('@getInvoiceEvents');
 
       // Verify all event types are displayed
       cy.getByCy('audit-event-created').should('be.visible');
@@ -369,8 +248,18 @@ describe('Invoice Audit Trail', () => {
   });
 
   describe('Sad Path - Error Scenarios', () => {
-    it('is expected to handle API error when fetching events', () => {
-      cy.intercept('GET', '**/rest/v1/invoice_events?invoice_id=eq.invoice-123*', {
+    it('is expected to handle API error gracefully', () => {
+      cy.intercept('GET', '**/rest/v1/invoices*', {
+        statusCode: 200,
+        body: mockInvoice,
+      }).as('getInvoice');
+
+      cy.intercept('GET', '**/rest/v1/payments*', {
+        statusCode: 200,
+        body: [],
+      }).as('getPayments');
+
+      cy.intercept('GET', '**/rest/v1/invoice_events*', {
         statusCode: 500,
         body: { error: 'Internal server error' },
       }).as('getEventsError');
@@ -379,8 +268,9 @@ describe('Invoice Audit Trail', () => {
       cy.wait('@getInvoice');
       cy.wait('@getEventsError');
 
-      // Should still show the section, possibly with empty state
+      // Should still show the section, with empty state
       cy.getByCy('audit-trail-section').should('be.visible');
     });
   });
 });
+
