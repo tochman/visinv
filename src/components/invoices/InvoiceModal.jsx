@@ -80,9 +80,10 @@ export default function InvoiceModal({ isOpen, onClose, invoice = null }) {
   };
 
   // Reset form when modal opens or when switching between invoices
+  // Use id for editing, copiedFrom for copied invoices, or null for new invoices
   useEffect(() => {
-    const currentInvoiceId = invoice?.id;
-    if (isOpen && prevInvoiceIdRef.current !== currentInvoiceId) {
+    const currentInvoiceKey = invoice?.id || invoice?.copiedFrom || null;
+    if (isOpen && prevInvoiceIdRef.current !== currentInvoiceKey) {
       setFormData({
         client_id: invoice?.client_id || '',
         invoice_template_id: invoice?.invoice_template_id || '',
@@ -110,7 +111,7 @@ export default function InvoiceModal({ isOpen, onClose, invoice = null }) {
       
       setError(null);
       setInvoiceNumberError(null);
-      prevInvoiceIdRef.current = currentInvoiceId;
+      prevInvoiceIdRef.current = currentInvoiceKey;
     }
   }, [isOpen, invoice]);
 
