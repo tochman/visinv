@@ -473,8 +473,9 @@ These additions position VisInv as a comprehensive solution for:
   - Read-only modal variant for viewing sent invoices
   - Tooltip on disabled edit button explaining why
 
-**US-022-E: Audit Trail for Invoice Lifecycle**
+**US-022-E: Audit Trail for Invoice Lifecycle** ✅
 - As a **user**, in order to **track invoice history**, I would like to **see an audit trail of all status changes and key events**.
+- **Status:** ✅ Complete - Implemented with invoice_events table, InvoiceEvent resource, AuditTrail component, and comprehensive E2E tests
 - **Tracked Events:**
   - Invoice created (draft)
   - Invoice sent (with timestamp and user)
@@ -498,7 +499,7 @@ These additions position VisInv as a comprehensive solution for:
   - Database: invoice_events table (invoice_id, event_type, event_data JSON, user_id, created_at)
   - Resource: InvoiceEvent.js for CRUD operations
   - Hook: useInvoiceAuditTrail(invoiceId) to fetch timeline
-  - Component: InvoiceTimeline.jsx to display events
+  - Component: AuditTrail.jsx to display events
 - **Future Enhancement:** Link to US-040 (full audit logs system)
 
 **US-023: Tax/VAT Calculations** ✅
