@@ -405,7 +405,7 @@ These additions position VisInv as a comprehensive solution for:
   - Database: Add CHECK constraint to prevent updates on sent invoices (optional)
   - Error handling: Return 403 Forbidden with clear error message
 
-**US-022-C: Copy Invoice**
+**US-022-C: Copy Invoice** ✅
 - As a **user**, in order to **quickly create similar invoices**, I would like to **copy an existing invoice with the same client and line items**.
 - **Use Cases:**
   - Recurring work for same client (monthly retainer, ongoing services)

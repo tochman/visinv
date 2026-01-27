@@ -96,6 +96,37 @@ export const markInvoiceAsPaid = createAsyncThunk(
   }
 );
 
+export const copyInvoice = createAsyncThunk(
+  'invoices/copyInvoice',
+  async (invoiceId, { rejectWithValue }) => {
+    // Fetch the invoice to copy
+    const { data: originalInvoice, error } = await Invoice.show(invoiceId);
+    if (error) return rejectWithValue(error.message);
+    if (!originalInvoice) return rejectWithValue('Invoice not found');
+
+    // Return the invoice data for the modal to open with
+    // The actual creation will happen when user saves in the modal
+    return {
+      client_id: originalInvoice.client_id,
+      invoice_template_id: originalInvoice.invoice_template_id,
+      currency: originalInvoice.currency,
+      tax_rate: originalInvoice.tax_rate,
+      notes: originalInvoice.notes,
+      terms: originalInvoice.terms,
+      issue_date: new Date().toISOString().split('T')[0],
+      due_date: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
+      invoice_rows: originalInvoice.invoice_rows?.map(row => ({
+        description: row.description,
+        quantity: row.quantity,
+        unit_price: row.unit_price,
+        unit: row.unit,
+        tax_rate: row.tax_rate,
+      })) || [],
+      copiedFrom: originalInvoice.invoice_number, // Flag to show banner in modal
+    };
+  }
+);
+
 const invoicesSlice = createSlice({
   name: 'invoices',
   initialState: {

@@ -58,7 +58,13 @@
       "paid": "Betald",
       "overdue": "Förfallen",
       "cancelled": "Avbruten"
-    }
+    },
+    "copy": "Kopiera",
+    "copyInvoice": "Kopiera faktura",
+    "basedOn": "Baserad på {{invoiceNumber}}",
+    "copyDescription": "Detta är en kopia av faktura {{invoiceNumber}}. Ändra efter behov innan du sparar.",
+    "invoiceCopied": "Faktura kopierad",
+    "preview": "Förhandsgranska"
   },
   "currencies": {
     "SEK": "Svenska kronor",

@@ -17,7 +17,7 @@ export default function InvoiceModal({ isOpen, onClose, invoice = null }) {
   const dispatch = useDispatch();
   const toast = useToast();
   const triggerNps = useNpsTrigger();
-  const isEditing = !!invoice;
+  const isEditing = !!(invoice?.id); // Only editing if invoice has an id
   const { hasPremiumAccess } = usePremiumAccess();
   
   const clients = useSelector(state => state.clients.items);
@@ -345,7 +345,12 @@ export default function InvoiceModal({ isOpen, onClose, invoice = null }) {
         <div data-cy="invoice-modal-content" className="relative bg-white dark:bg-gray-800 rounded-sm shadow-xl w-full max-w-4xl max-h-[90vh] overflow-y-auto">
           <div className="sticky top-0 bg-white dark:bg-gray-800 px-6 py-4 border-b border-gray-200 dark:border-gray-700 z-10">
             <h2 data-cy="invoice-modal-title" className="text-xl font-bold text-gray-900 dark:text-white">
-              {isEditing ? t('invoices.edit') : t('invoices.create')}
+              {invoice?.copiedFrom ? t('invoice.copyInvoice') : (isEditing ? t('invoices.edit') : t('invoices.create'))}
+              {invoice?.copiedFrom && (
+                <span className="ml-2 text-sm font-normal text-gray-600 dark:text-gray-400">
+                  - {t('invoice.basedOn', { invoiceNumber: invoice.copiedFrom })}
+                </span>
+              )}
             </h2>
             <button
               onClick={onClose}
@@ -359,6 +364,14 @@ export default function InvoiceModal({ isOpen, onClose, invoice = null }) {
           </div>
 
           <form onSubmit={handleSubmit} data-cy="invoice-form" className="p-6 space-y-6" noValidate>
+            {invoice?.copiedFrom && (
+              <div data-cy="copy-info-banner" className="p-3 bg-blue-50 dark:bg-blue-900/30 border border-blue-200 dark:border-blue-800 rounded-sm">
+                <p className="text-blue-800 dark:text-blue-300 text-sm">
+                  {t('invoice.copyDescription', { invoiceNumber: invoice.copiedFrom })}
+                </p>
+              </div>
+            )}
+            
             {error && (
               <div data-cy="invoice-form-error" className="p-3 bg-red-50 dark:bg-red-900/30 border border-red-200 dark:border-red-800 rounded-sm">
                 <p className="text-red-600 dark:text-red-400 text-sm">{error}</p>
