@@ -1,4 +1,5 @@
 import { BaseResource } from './BaseResource';
+import { InvoiceEvent } from './InvoiceEvent';
 
 /**
  * Payment Resource
@@ -41,10 +42,10 @@ class PaymentResource extends BaseResource {
       return { data: null, error: authError || new Error('Not authenticated') };
     }
 
-    // Get invoice to retrieve organization_id
+    // Get invoice to retrieve organization_id and invoice_number
     const { data: invoice, error: invoiceError } = await this.supabase
       .from('invoices')
-      .select('organization_id, total_amount')
+      .select('organization_id, total_amount, invoice_number')
       .eq('id', paymentData.invoice_id)
       .single();
 
@@ -73,6 +74,15 @@ class PaymentResource extends BaseResource {
       })
       .select()
       .single();
+
+    // Log payment event for audit trail (US-022-E)
+    if (data) {
+      await InvoiceEvent.logPayment(paymentData.invoice_id, invoice.invoice_number, {
+        amount: paymentData.amount,
+        payment_method: paymentData.payment_method,
+        payment_date: paymentData.payment_date,
+      });
+    }
 
     return { data, error };
   }

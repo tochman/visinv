@@ -202,6 +202,32 @@
       "paused": "Pausad",
       "completed": "Slutförd",
       "cancelled": "Avbruten"
+    },
+    "auditTrail": {
+      "title": "Revisionsspår",
+      "noEvents": "Inga händelser ännu",
+      "eventTypes": {
+        "created": "Skapad",
+        "sent": "Skickad",
+        "viewed": "Visad",
+        "payment_recorded": "Betalning registrerad",
+        "status_changed": "Status ändrad",
+        "reminder_sent": "Påminnelse skickad",
+        "credit_created": "Kreditfaktura skapad",
+        "copied": "Kopierad",
+        "updated": "Uppdaterad"
+      },
+      "descriptions": {
+        "created": "Faktura skapad som utkast",
+        "sent": "Faktura skickad till kund",
+        "viewed": "Faktura visad av kund",
+        "payment_recorded": "Betalning på {{amount}} registrerad",
+        "status_changed": "Status ändrad från {{oldStatus}} till {{newStatus}}",
+        "reminder_sent": "Påminnelse #{{count}} skickad",
+        "credit_created": "Kreditfaktura {{creditNumber}} skapad",
+        "copied": "Faktura kopierad till {{newNumber}}",
+        "updated": "Faktura uppdaterad"
+      }
     }
   },
   "payment": {
