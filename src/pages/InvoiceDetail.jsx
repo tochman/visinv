@@ -3,6 +3,8 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { Invoice, Payment } from '../services/resources';
 import PaymentModal from '../components/invoices/PaymentModal';
+import AuditTrail from '../components/invoices/AuditTrail';
+import { useInvoiceAuditTrail } from '../hooks/useInvoiceAuditTrail';
 import { formatCurrency } from '../config/currencies';
 
 export default function InvoiceDetail() {
@@ -16,6 +18,9 @@ export default function InvoiceDetail() {
   const [error, setError] = useState(null);
   const [showPaymentModal, setShowPaymentModal] = useState(false);
   const [remainingBalance, setRemainingBalance] = useState(0);
+
+  // Fetch audit trail events (US-022-E)
+  const { events: auditEvents, loading: eventsLoading, refetch: refetchEvents } = useInvoiceAuditTrail(id);
 
   useEffect(() => {
     loadInvoiceData();
@@ -58,8 +63,9 @@ export default function InvoiceDetail() {
   };
 
   const handlePaymentRecorded = async (payment) => {
-    // Reload invoice and payments
+    // Reload invoice, payments, and audit trail events
     await loadInvoiceData();
+    refetchEvents();
   };
 
   if (loading) {
@@ -240,6 +246,11 @@ export default function InvoiceDetail() {
           </div>
         </div>
       )}
+
+      {/* Audit Trail (US-022-E) */}
+      <div className="bg-white dark:bg-gray-800 rounded-sm shadow dark:shadow-gray-900/20 p-6" data-cy="audit-trail-section">
+        <AuditTrail events={auditEvents} loading={eventsLoading} />
+      </div>
 
       {/* Payment Modal */}
       <PaymentModal

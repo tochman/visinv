@@ -213,6 +213,32 @@
       "paused": "Paused",
       "completed": "Completed",
       "cancelled": "Cancelled"
+    },
+    "auditTrail": {
+      "title": "Audit Trail",
+      "noEvents": "No events yet",
+      "eventTypes": {
+        "created": "Created",
+        "sent": "Sent",
+        "viewed": "Viewed",
+        "payment_recorded": "Payment Recorded",
+        "status_changed": "Status Changed",
+        "reminder_sent": "Reminder Sent",
+        "credit_created": "Credit Created",
+        "copied": "Copied",
+        "updated": "Updated"
+      },
+      "descriptions": {
+        "created": "Invoice created as draft",
+        "sent": "Invoice sent to client",
+        "viewed": "Invoice viewed by client",
+        "payment_recorded": "Payment of {{amount}} recorded",
+        "status_changed": "Status changed from {{oldStatus}} to {{newStatus}}",
+        "reminder_sent": "Reminder #{{count}} sent",
+        "credit_created": "Credit invoice {{creditNumber}} created",
+        "copied": "Invoice copied to {{newNumber}}",
+        "updated": "Invoice updated"
+      }
     }
   },
   "payment": {

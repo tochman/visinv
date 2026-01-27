@@ -1,5 +1,6 @@
 import { BaseResource } from './BaseResource';
 import { Organization } from './Organization';
+import { InvoiceEvent } from './InvoiceEvent';
 import { getCurrency, getExchangeRate } from '../../config/currencies';
 
 /**
@@ -207,6 +208,9 @@ class InvoiceResource extends BaseResource {
         return { data: null, error: rowsError };
       }
     }
+
+    // Log creation event for audit trail (US-022-E)
+    await InvoiceEvent.logCreated(invoice.id, invoice.invoice_number);
 
     // Fetch complete invoice with relations
     return this.show(invoice.id);
@@ -419,10 +423,17 @@ class InvoiceResource extends BaseResource {
    * @returns {Promise<{data: Object|null, error: Error|null}>}
    */
   async markAsSent(id) {
-    return this.update(id, {
+    const result = await this.update(id, {
       status: 'sent',
       sent_at: new Date().toISOString(),
     }, { bypassDraftCheck: true });
+
+    // Log sent event for audit trail (US-022-E)
+    if (result.data) {
+      await InvoiceEvent.logSent(id, result.data.invoice_number);
+    }
+
+    return result;
   }
 
   /**
@@ -431,10 +442,10 @@ class InvoiceResource extends BaseResource {
    * @returns {Promise<{data: Object|null, error: Error|null}>}
    */
   async markReminderSent(id) {
-    // Get current reminder count
+    // Get current reminder count and invoice number
     const { data: invoice, error: fetchError } = await this.supabase
       .from(this.tableName)
-      .select('reminder_count')
+      .select('reminder_count, invoice_number')
       .eq('id', id)
       .single();
 
@@ -442,10 +453,19 @@ class InvoiceResource extends BaseResource {
       return { data: null, error: fetchError || new Error('Invoice not found') };
     }
 
-    return this.update(id, {
+    const newReminderCount = (invoice.reminder_count || 0) + 1;
+
+    const result = await this.update(id, {
       reminder_sent_at: new Date().toISOString(),
-      reminder_count: (invoice.reminder_count || 0) + 1,
+      reminder_count: newReminderCount,
     }, { bypassDraftCheck: true });
+
+    // Log reminder event for audit trail (US-022-E)
+    if (result.data) {
+      await InvoiceEvent.logReminderSent(id, invoice.invoice_number, newReminderCount);
+    }
+
+    return result;
   }
 
   /**
@@ -455,10 +475,17 @@ class InvoiceResource extends BaseResource {
    * @returns {Promise<{data: Object|null, error: Error|null}>}
    */
   async markAsPaid(id, paidAt = null) {
-    return this.update(id, {
+    const result = await this.update(id, {
       status: 'paid',
       paid_at: paidAt || new Date().toISOString(),
     }, { bypassDraftCheck: true });
+
+    // Log status change event for audit trail (US-022-E)
+    if (result.data) {
+      await InvoiceEvent.logStatusChange(id, result.data.invoice_number, 'sent', 'paid');
+    }
+
+    return result;
   }
 
   /**
@@ -508,7 +535,19 @@ class InvoiceResource extends BaseResource {
     }
 
     // Create the credit invoice
-    return this.create(creditInvoiceData);
+    const result = await this.create(creditInvoiceData);
+
+    // Log credit created event for audit trail (US-022-E)
+    if (result.data) {
+      await InvoiceEvent.logCreditCreated(
+        originalInvoiceId,
+        originalInvoice.invoice_number,
+        result.data.id,
+        result.data.invoice_number
+      );
+    }
+
+    return result;
   }
 
   /**
