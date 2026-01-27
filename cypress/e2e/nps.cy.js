@@ -182,7 +182,7 @@ describe('NPS Survey System', () => {
       cy.getByCy('quantity-input-0').clear().type('1');
       cy.getByCy('unit-price-input-0').clear().type('100');
 
-      cy.getByCy('submit-button').click();
+      cy.getByCy('save-draft-button').click();
       cy.wait('@createInvoice');
 
       // NPS modal SHOULD appear (give it time)
@@ -498,7 +498,7 @@ describe('NPS Survey System', () => {
         body: [],
       });
 
-      cy.getByCy('submit-button').click();
+      cy.getByCy('save-draft-button').click();
       cy.wait('@recordNpsShown');
     });
 
