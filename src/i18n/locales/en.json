@@ -73,7 +73,11 @@
     "basedOn": "Based on {{invoiceNumber}}",
     "copyDescription": "This is a copy of invoice {{invoiceNumber}}. Modify as needed before saving.",
     "invoiceCopied": "Invoice copied successfully",
-    "preview": "Preview"
+    "preview": "Preview",
+    "viewInvoice": "View Invoice",
+    "viewOnlyBanner": "This invoice has been sent and cannot be edited. You can create a copy to make changes.",
+    "cannotEditSent": "This invoice cannot be edited because it has been sent",
+    "invoiceIsReadOnly": "This invoice is locked and cannot be edited"
   },
   "currencies": {
     "SEK": "Swedish Krona",

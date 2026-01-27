@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { useTranslation } from 'react-i18next';
-import { CubeIcon, ChevronDownIcon, ExclamationTriangleIcon } from '@heroicons/react/24/outline';
+import { CubeIcon, ChevronDownIcon, ExclamationTriangleIcon, LockClosedIcon, DocumentDuplicateIcon } from '@heroicons/react/24/outline';
 import { createInvoice, updateInvoice, checkInvoiceNumberExists } from '../../features/invoices/invoicesSlice';
 import { fetchClients } from '../../features/clients/clientsSlice';
 import { fetchProducts } from '../../features/products/productsSlice';
@@ -12,7 +12,7 @@ import { useToast } from '../../context/ToastContext';
 import { ProductPrice } from '../../services/resources';
 import { useNpsTrigger } from '../../hooks/useNpsTrigger';
 
-export default function InvoiceModal({ isOpen, onClose, invoice = null }) {
+export default function InvoiceModal({ isOpen, onClose, invoice = null, viewOnly = false, onCopy = null }) {
   const { t } = useTranslation();
   const dispatch = useDispatch();
   const toast = useToast();
@@ -346,10 +346,15 @@ export default function InvoiceModal({ isOpen, onClose, invoice = null }) {
         <div data-cy="invoice-modal-content" className="relative bg-white dark:bg-gray-800 rounded-sm shadow-xl w-full max-w-4xl max-h-[90vh] overflow-y-auto">
           <div className="sticky top-0 bg-white dark:bg-gray-800 px-6 py-4 border-b border-gray-200 dark:border-gray-700 z-10">
             <h2 data-cy="invoice-modal-title" className="text-xl font-bold text-gray-900 dark:text-white">
-              {invoice?.copiedFrom ? t('invoice.copyInvoice') : (isEditing ? t('invoices.edit') : t('invoices.create'))}
-              {invoice?.copiedFrom && (
+              {viewOnly ? t('invoice.viewInvoice') : (invoice?.copiedFrom ? t('invoice.copyInvoice') : (isEditing ? t('invoices.edit') : t('invoices.create')))}
+              {invoice?.copiedFrom && !viewOnly && (
                 <span className="ml-2 text-sm font-normal text-gray-600 dark:text-gray-400">
                   - {t('invoice.basedOn', { invoiceNumber: invoice.copiedFrom })}
+                </span>
+              )}
+              {viewOnly && invoice?.invoice_number && (
+                <span className="ml-2 text-sm font-normal text-gray-600 dark:text-gray-400">
+                  - {invoice.invoice_number}
                 </span>
               )}
             </h2>
@@ -365,7 +370,28 @@ export default function InvoiceModal({ isOpen, onClose, invoice = null }) {
           </div>
 
           <form onSubmit={handleSubmit} data-cy="invoice-form" className="p-6 space-y-6" noValidate>
-            {invoice?.copiedFrom && (
+            {viewOnly && (
+              <div data-cy="view-only-banner" className="p-3 bg-amber-50 dark:bg-amber-900/30 border border-amber-200 dark:border-amber-800 rounded-sm flex items-center gap-3">
+                <LockClosedIcon className="w-5 h-5 text-amber-600 dark:text-amber-400 flex-shrink-0" />
+                <div className="flex-1">
+                  <p className="text-amber-800 dark:text-amber-300 text-sm">
+                    {t('invoice.viewOnlyBanner')}
+                  </p>
+                </div>
+                {onCopy && (
+                  <button
+                    type="button"
+                    onClick={onCopy}
+                    data-cy="copy-from-view-button"
+                    className="flex items-center gap-1 px-3 py-1 text-sm text-indigo-600 dark:text-indigo-400 hover:text-indigo-800 dark:hover:text-indigo-300 border border-indigo-300 dark:border-indigo-600 rounded-sm hover:bg-indigo-50 dark:hover:bg-indigo-900/30 transition-colors"
+                  >
+                    <DocumentDuplicateIcon className="w-4 h-4" />
+                    {t('invoice.copyInvoice')}
+                  </button>
+                )}
+              </div>
+            )}
+            {invoice?.copiedFrom && !viewOnly && (
               <div data-cy="copy-info-banner" className="p-3 bg-blue-50 dark:bg-blue-900/30 border border-blue-200 dark:border-blue-800 rounded-sm">
                 <p className="text-blue-800 dark:text-blue-300 text-sm">
                   {t('invoice.copyDescription', { invoiceNumber: invoice.copiedFrom })}
@@ -379,6 +405,8 @@ export default function InvoiceModal({ isOpen, onClose, invoice = null }) {
               </div>
             )}
 
+            {/* Wrap editable content in fieldset to disable when viewOnly */}
+            <fieldset disabled={viewOnly} className="space-y-6">
             {/* Invoice Details */}
             <div>
               <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
@@ -1012,51 +1040,65 @@ export default function InvoiceModal({ isOpen, onClose, invoice = null }) {
                   onChange={handleChange}
                   data-cy="terms-textarea"
                   rows="3"
-                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:opacity-60 disabled:cursor-not-allowed"
                 />
               </div>
             </div>
+            </fieldset>
 
             {/* Actions */}
             <div className="flex justify-end gap-3 pt-4 border-t border-gray-200 dark:border-gray-700">
-              <button
-                type="button"
-                onClick={onClose}
-                data-cy="cancel-button"
-                disabled={loading}
-                className="px-4 py-2 text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-sm hover:bg-gray-50 dark:hover:bg-gray-600 transition-colors disabled:opacity-50"
-              >
-                {t('common.cancel')}
-              </button>
-              {isEditing ? (
+              {viewOnly ? (
                 <button
-                  type="submit"
-                  data-cy="submit-button"
-                  disabled={loading}
-                  className="px-4 py-2 bg-blue-600 text-white rounded-sm hover:bg-blue-700 transition-colors disabled:opacity-50"
+                  type="button"
+                  onClick={onClose}
+                  data-cy="close-button"
+                  className="px-4 py-2 bg-gray-600 text-white rounded-sm hover:bg-gray-700 transition-colors"
                 >
-                  {loading ? t('common.saving') : t('common.save')}
+                  {t('common.close')}
                 </button>
               ) : (
                 <>
                   <button
                     type="button"
-                    onClick={handleSaveAsDraft}
-                    data-cy="save-draft-button"
+                    onClick={onClose}
+                    data-cy="cancel-button"
                     disabled={loading}
                     className="px-4 py-2 text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-sm hover:bg-gray-50 dark:hover:bg-gray-600 transition-colors disabled:opacity-50"
                   >
-                    {loading ? t('common.saving') : t('invoices.saveAsDraft')}
+                    {t('common.cancel')}
                   </button>
-                  <button
-                    type="button"
-                    onClick={handleSendInvoice}
-                    data-cy="send-invoice-button"
-                    disabled={loading}
-                    className="px-4 py-2 bg-blue-600 text-white rounded-sm hover:bg-blue-700 transition-colors disabled:opacity-50"
-                  >
-                    {loading ? t('common.sending') : t('invoices.sendInvoice')}
-                  </button>
+                  {isEditing ? (
+                    <button
+                      type="submit"
+                      data-cy="submit-button"
+                      disabled={loading}
+                      className="px-4 py-2 bg-blue-600 text-white rounded-sm hover:bg-blue-700 transition-colors disabled:opacity-50"
+                    >
+                      {loading ? t('common.saving') : t('common.save')}
+                    </button>
+                  ) : (
+                    <>
+                      <button
+                        type="button"
+                        onClick={handleSaveAsDraft}
+                        data-cy="save-draft-button"
+                        disabled={loading}
+                        className="px-4 py-2 text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-sm hover:bg-gray-50 dark:hover:bg-gray-600 transition-colors disabled:opacity-50"
+                      >
+                        {loading ? t('common.saving') : t('invoices.saveAsDraft')}
+                      </button>
+                      <button
+                        type="button"
+                        onClick={handleSendInvoice}
+                        data-cy="send-invoice-button"
+                        disabled={loading}
+                        className="px-4 py-2 bg-blue-600 text-white rounded-sm hover:bg-blue-700 transition-colors disabled:opacity-50"
+                      >
+                        {loading ? t('common.sending') : t('invoices.sendInvoice')}
+                      </button>
+                    </>
+                  )}
                 </>
               )}
             </div>

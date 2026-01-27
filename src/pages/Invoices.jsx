@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { useTranslation } from 'react-i18next';
-import { ArrowPathIcon, LockClosedIcon, DocumentDuplicateIcon } from '@heroicons/react/24/outline';
+import { ArrowPathIcon, LockClosedIcon, DocumentDuplicateIcon, EyeIcon } from '@heroicons/react/24/outline';
 import { useToast } from '../context/ToastContext';
 import { fetchInvoices, deleteInvoice, markInvoiceAsSent, markInvoiceAsPaid, updateInvoiceTemplate, copyInvoice } from '../features/invoices/invoicesSlice';
 import { fetchTemplates } from '../features/invoiceTemplates/invoiceTemplatesSlice';
@@ -24,6 +24,7 @@ export default function Invoices() {
 
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedInvoice, setSelectedInvoice] = useState(null);
+  const [viewOnly, setViewOnly] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState('all');
   const [deleteConfirm, setDeleteConfirm] = useState(null);
@@ -40,6 +41,7 @@ export default function Invoices() {
 
   const handleCreate = () => {
     setSelectedInvoice(null);
+    setViewOnly(false);
     setIsModalOpen(true);
   };
 
@@ -53,6 +55,13 @@ export default function Invoices() {
       return;
     }
     setSelectedInvoice(invoice);
+    setViewOnly(false);
+    setIsModalOpen(true);
+  };
+
+  const handleView = (invoice) => {
+    setSelectedInvoice(invoice);
+    setViewOnly(true);
     setIsModalOpen(true);
   };
 
@@ -60,6 +69,7 @@ export default function Invoices() {
     const result = await dispatch(copyInvoice(invoice.id));
     if (copyInvoice.fulfilled.match(result)) {
       setSelectedInvoice(result.payload);
+      setViewOnly(false);
       setIsModalOpen(true);
       toast.success(t('invoice.invoiceCopied'));
     } else {
@@ -189,6 +199,7 @@ export default function Invoices() {
   const handleCloseModal = () => {
     setIsModalOpen(false);
     setSelectedInvoice(null);
+    setViewOnly(false);
   };
 
   const filteredInvoices = invoices.filter((invoice) => {
@@ -557,13 +568,14 @@ export default function Invoices() {
                           </button>
                         )}
                         {!isInvoiceEditable(invoice) && (
-                          <div 
-                            className="text-gray-400 dark:text-gray-600"
-                            title={t('invoice.invoiceIsReadOnly')}
-                            data-cy={`lock-icon-${invoice.id}`}
+                          <button
+                            onClick={() => handleView(invoice)}
+                            data-cy={`view-invoice-button-${invoice.id}`}
+                            className="text-gray-600 hover:text-gray-900 dark:text-gray-400 dark:hover:text-gray-200"
+                            title={t('invoice.viewInvoice')}
                           >
-                            <LockClosedIcon className="w-5 h-5" />
-                          </div>
+                            <EyeIcon className="w-5 h-5" />
+                          </button>
                         )}
                         {isInvoiceEditable(invoice) && (
                           <button
@@ -645,6 +657,11 @@ export default function Invoices() {
         isOpen={isModalOpen}
         onClose={handleCloseModal}
         invoice={selectedInvoice}
+        viewOnly={viewOnly}
+        onCopy={viewOnly && selectedInvoice ? () => {
+          setIsModalOpen(false);
+          handleCopy(selectedInvoice);
+        } : null}
       />
 
       {/* Payment Confirmation Dialog */}

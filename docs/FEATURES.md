@@ -445,7 +445,7 @@ These additions position VisInv as a comprehensive solution for:
   - Generate new invoice number on save
   - Validation: Ensure all copied data is valid
 
-**US-022-D: Draft-Only Edit Mode**
+**US-022-D: Draft-Only Edit Mode** ✅
 - As a **user**, in order to **have clarity on what can be changed**, I would like to **only see edit functionality for draft invoices**.
 - **Current Problem:** Edit action may be visible/available for all invoices, causing confusion
 - **Proposed Solution:** 

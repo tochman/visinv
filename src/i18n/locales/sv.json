@@ -64,7 +64,11 @@
     "basedOn": "Baserad på {{invoiceNumber}}",
     "copyDescription": "Detta är en kopia av faktura {{invoiceNumber}}. Ändra efter behov innan du sparar.",
     "invoiceCopied": "Faktura kopierad",
-    "preview": "Förhandsgranska"
+    "preview": "Förhandsgranska",
+    "viewInvoice": "Visa faktura",
+    "viewOnlyBanner": "Denna faktura har skickats och kan inte redigeras. Du kan skapa en kopia för att göra ändringar.",
+    "cannotEditSent": "Denna faktura kan inte redigeras eftersom den har skickats",
+    "invoiceIsReadOnly": "Denna faktura är låst och kan inte redigeras"
   },
   "currencies": {
     "SEK": "Svenska kronor",
