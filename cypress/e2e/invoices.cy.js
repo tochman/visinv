@@ -782,16 +782,24 @@ describe("Invoice Management", () => {
       };
 
       beforeEach(() => {
+        // Override the default organization intercept with manual mode
+        cy.intercept('GET', '**/rest/v1/organization_members*is_default=eq.true*', {
+          statusCode: 200,
+          body: { organizations: manualOrganization }
+        }).as('getDefaultOrganization');
+
         // Dispatch organization with manual mode to Redux
         cy.window().its("store").invoke("dispatch", {
           type: "organizations/setCurrentOrganization",
           payload: manualOrganization,
         });
 
-        // Navigate to invoices page and open modal
-        cy.wait("@getInvoices");
-        cy.wait("@getTemplates");
+        // Navigate to the invoices page
         cy.getByCy("sidebar-nav-invoices").click();
+        cy.url().should("include", "/invoices");
+        cy.wait("@getInvoices");
+
+        // Open the create invoice modal
         cy.getByCy("create-invoice-button").should("be.visible").click();
         cy.getByCy("invoice-modal").should("be.visible");
 
@@ -911,7 +919,7 @@ describe("Invoice Management", () => {
         cy.getByCy("invoice-modal").should("exist");
         cy.getByCy("invoice-form-error")
           .should("exist")
-          .and("contain", "Invoice number is required");
+          .and("contain", "Invoice number is required in manual mode");
       });
 
       it("is expected to show error on blur when invoice number already exists", () => {
@@ -935,13 +943,15 @@ describe("Invoice Management", () => {
           },
         ).as("checkDuplicate");
 
-        // Type invoice number and blur to trigger validation
+        // Type invoice number - break the chain to avoid detached element issue
         cy.getByCy("invoice-number-input")
           .should("be.visible")
-          .type("EXISTING-001")
-          .blur();
+          .type("EXISTING-001");
+        
+        // Blur by clicking on the modal title (reliable way to trigger blur)
+        cy.getByCy("invoice-modal-title").click();
 
-        // Assert - Error should appear immediately after blur
+        // Assert - Error should appear after blur
         cy.getByCy("invoice-number-error")
           .should("be.visible")
           .and("contain", "already exists");
@@ -979,13 +989,15 @@ describe("Invoice Management", () => {
           },
         ).as("checkDuplicate");
 
-        // Type duplicate invoice number and blur to trigger validation
+        // Type duplicate invoice number - break the chain to avoid detached element issue
         cy.getByCy("invoice-number-input")
           .should("be.visible")
-          .type("DUPLICATE-001")
-          .blur();
+          .type("DUPLICATE-001");
 
-        // Assert - Error should appear immediately after blur
+        // Blur by clicking on the modal title (reliable way to trigger blur)
+        cy.getByCy("invoice-modal-title").click();
+
+        // Assert - Error should appear after blur
         cy.getByCy("invoice-number-error")
           .should("be.visible")
           .and("contain", "already exists");

@@ -192,49 +192,102 @@ describe("Invoice Edit Lock (US-022-B)", () => {
   });
 
   describe("View Mode (US-022-D)", () => {
-    it("is expected to open invoice in view mode when clicking view button on sent invoice", () => {
-      cy.getByCy("view-invoice-button-sent-invoice-1").click();
-      cy.getByCy("invoice-modal").should("be.visible");
-      cy.getByCy("view-only-banner").should("be.visible");
+    const sentInvoice = {
+      id: "sent-invoice-1",
+      invoice_number: "SENT-001",
+      client_id: "client-1",
+      status: "sent",
+      total_amount: 2000,
+      currency: "SEK",
+      exchange_rate: 1.0,
+      issue_date: "2024-01-10",
+      due_date: "2024-02-10",
+      created_at: "2024-01-10T10:00:00Z",
+      sent_at: "2024-01-10T10:00:00Z",
+      client: {
+        id: "client-1",
+        name: "Test Client AB",
+        email: "test@client.com",
+      },
+      invoice_rows: [
+        {
+          id: "row-2",
+          description: "Service 2",
+          quantity: 2,
+          unit_price: 1000,
+          amount: 2000,
+        },
+      ],
+    };
+
+    beforeEach(() => {
+      // Mock the invoice detail API call - uses .single() so returns object directly
+      cy.intercept("GET", "**/rest/v1/invoices?*id=eq.sent-invoice-1*", {
+        statusCode: 200,
+        body: sentInvoice,
+      }).as("getInvoiceDetail");
+
+      // Mock payments for the invoice
+      cy.intercept("GET", "**/rest/v1/payments?*invoice_id=eq.sent-invoice-1*", {
+        statusCode: 200,
+        body: [],
+      }).as("getPayments");
+
+      // Mock invoice events for audit trail
+      cy.intercept("GET", "**/rest/v1/invoice_events?*invoice_id=eq.sent-invoice-1*", {
+        statusCode: 200,
+        body: [],
+      }).as("getInvoiceEvents");
     });
 
-    it("is expected to show view-only banner with lock icon and message", () => {
+    it("is expected to navigate to invoice detail page when clicking view button on sent invoice", () => {
       cy.getByCy("view-invoice-button-sent-invoice-1").click();
-      cy.getByCy("view-only-banner").within(() => {
-        cy.get("svg").should("exist"); // Lock icon
-        cy.contains("has been sent and cannot be edited").should("be.visible");
-      });
+      cy.url().should("include", "/invoices/sent-invoice-1");
     });
 
-    it("is expected to show copy button in view-only banner", () => {
+    it("is expected to show invoice details on the detail page", () => {
       cy.getByCy("view-invoice-button-sent-invoice-1").click();
-      cy.getByCy("copy-from-view-button").should("be.visible");
+      cy.url().should("include", "/invoices/sent-invoice-1");
+      cy.wait("@getInvoiceDetail");
+      cy.contains("SENT-001").should("be.visible");
     });
 
-    it("is expected to disable all form inputs in view mode", () => {
+    it("is expected to show back button on invoice detail page", () => {
       cy.getByCy("view-invoice-button-sent-invoice-1").click();
-      cy.getByCy("client-select").should("be.disabled");
-      cy.getByCy("issue-date-input").should("be.disabled");
-      cy.getByCy("due-date-input").should("be.disabled");
+      cy.url().should("include", "/invoices/sent-invoice-1");
+      cy.wait("@getInvoiceDetail");
+      cy.contains("button", "Back").should("be.visible");
     });
 
-    it("is expected to show Close button instead of save buttons in view mode", () => {
+    it("is expected to show invoice status on detail page", () => {
       cy.getByCy("view-invoice-button-sent-invoice-1").click();
-      cy.getByCy("close-button").scrollIntoView().should("be.visible");
-      cy.getByCy("save-draft-button").should("not.exist");
-      cy.getByCy("send-invoice-button").should("not.exist");
-      cy.getByCy("submit-button").should("not.exist");
+      cy.url().should("include", "/invoices/sent-invoice-1");
+      cy.wait("@getInvoiceDetail");
+      // Status badge should show "sent"
+      cy.contains("Sent").should("be.visible");
     });
 
-    it("is expected to close modal when clicking Close button", () => {
+    it("is expected to show record payment button for sent invoices", () => {
       cy.getByCy("view-invoice-button-sent-invoice-1").click();
-      cy.getByCy("close-button").scrollIntoView().click();
-      cy.getByCy("invoice-modal").should("not.exist");
+      cy.url().should("include", "/invoices/sent-invoice-1");
+      cy.wait("@getInvoiceDetail");
+      cy.getByCy("record-payment-btn").should("be.visible");
     });
 
-    it("is expected to display correct invoice number in view mode title", () => {
+    it("is expected to navigate back to invoices list when clicking Back button", () => {
       cy.getByCy("view-invoice-button-sent-invoice-1").click();
-      cy.getByCy("invoice-modal-title").should("contain", "SENT-001");
+      cy.url().should("include", "/invoices/sent-invoice-1");
+      cy.wait("@getInvoiceDetail");
+      cy.contains("button", "Back").click();
+      cy.url().should("include", "/invoices");
+      cy.url().should("not.include", "/invoices/sent-invoice-1");
+    });
+
+    it("is expected to display correct invoice number in page title", () => {
+      cy.getByCy("view-invoice-button-sent-invoice-1").click();
+      cy.url().should("include", "/invoices/sent-invoice-1");
+      cy.wait("@getInvoiceDetail");
+      cy.contains("h1", "SENT-001").should("be.visible");
     });
   });
 });
