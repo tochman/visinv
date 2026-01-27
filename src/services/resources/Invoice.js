@@ -106,9 +106,13 @@ class InvoiceResource extends BaseResource {
       recurring_frequency, 
       recurring_end_date, 
       recurring_max_invoices,
+      recurring_max_count, // Extract to handle separately (form uses this name)
       organization, // Extract to not include in invoiceFields
       ...invoiceFields 
     } = invoiceData;
+
+    // Use recurring_max_count from form or recurring_max_invoices (legacy support)
+    const maxInvoices = recurring_max_count || recurring_max_invoices;
 
     // Handle invoice numbering based on organization settings
     const isManualMode = currentOrg.invoice_numbering_mode === 'manual';
@@ -170,7 +174,7 @@ class InvoiceResource extends BaseResource {
         invoiceFields.recurring_start_date,
         recurring_frequency
       );
-      invoiceFields.recurring_max_count = recurring_max_invoices ? parseInt(recurring_max_invoices, 10) : null;
+      invoiceFields.recurring_max_count = maxInvoices ? parseInt(maxInvoices, 10) : null;
       invoiceFields.recurring_current_count = 0;
       invoiceFields.recurring_status = 'active';
     }
@@ -272,7 +276,12 @@ class InvoiceResource extends BaseResource {
       }
     }
 
-    const { rows, ...invoiceFields } = updates;
+    const { rows, recurring_max_count, ...invoiceFields } = updates;
+
+    // Convert empty recurring_max_count to null for INTEGER field
+    if (recurring_max_count !== undefined) {
+      invoiceFields.recurring_max_count = recurring_max_count ? parseInt(recurring_max_count, 10) : null;
+    }
 
     // Recalculate totals if rows are provided
     if (rows) {
