@@ -81,7 +81,7 @@ describe('Credit Invoices (US-063)', () => {
     cy.getByCy('quantity-input-0').clear().type('1');
     cy.getByCy('unit-price-input-0').clear().type('1000');
     
-    cy.getByCy('submit-button').scrollIntoView().click();
+    cy.getByCy('save-draft-button').scrollIntoView().click();
     
     // Assert
     cy.wait('@createInvoice');
@@ -127,7 +127,7 @@ describe('Credit Invoices (US-063)', () => {
     cy.getByCy('quantity-input-0').clear().type('-1');
     cy.getByCy('unit-price-input-0').clear().type('1000');
     
-    cy.getByCy('submit-button').scrollIntoView().click();
+    cy.getByCy('save-draft-button').scrollIntoView().click();
     
     // Assert
     cy.wait('@createInvoice');
@@ -243,7 +243,7 @@ describe('Credit Invoices (US-063)', () => {
     cy.getByCy('quantity-input-0').clear().type('-1');
     cy.getByCy('unit-price-input-0').clear().type('100');
     
-    cy.getByCy('submit-button').scrollIntoView().click();
+    cy.getByCy('save-draft-button').scrollIntoView().click();
     
     // Assert
     cy.wait('@createInvoice');
