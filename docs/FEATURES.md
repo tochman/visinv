@@ -4,33 +4,6 @@
 
 This document provides a comprehensive list of user stories for the VisInv invoicing platform. The features are organized into logical categories and prioritized into development phases to guide implementation from MVP to a fully-featured enterprise invoicing system.
 
-### Recent Additions (Phase 4-7 Planning)
-
-To transform VisInv into a **fully featured invoicing system** competitive with industry leaders like FreshBooks and QuickBooks, the following feature categories have been added:
-
-- **Estimates & Quotes** (US-065 to US-067): Pre-invoice proposals with quote-to-invoice conversion
-- **Time & Expense Tracking** (US-068 to US-071): Billable hours, expense recording, receipt scanning, project management
-- **Client Portal & Self-Service** (US-072 to US-074): Client login, payment portal, account statements
-- **Advanced Payment Features** (US-075 to US-079): Installment plans, deposits, late fees, payment gateways, bank reconciliation
-- **Bulk Operations & Automation** (US-080 to US-083): Batch actions, CSV import, workflow automation
-- **Document Management** (US-084 to US-086): File attachments, internal notes, document archiving
-- **Advanced Reporting** (US-087 to US-092): P&L statements, tax reports, cash flow forecasting, aging reports, custom report builder
-- **Integrations & Ecosystem** (US-093 to US-097): Accounting software, CRM, API/webhooks, Zapier, email integration
-- **Inventory Management** (US-098 to US-100): Stock tracking, purchase orders, COGS for product-based businesses
-- **Mobile & Accessibility** (US-101 to US-103): Native mobile apps, PWA, WCAG compliance
-- **Security & Compliance** (US-104 to US-109, US-119): 2FA, SSO, audit trails, GDPR tools, encryption, backup/recovery, cookie consent
-- **White Label & Multi-Tenancy** (US-110 to US-112): Enterprise branding, multi-tenant architecture, reseller program
-- **Support & Growth** (US-113 to US-118): In-app help, live chat, support tickets, referrals, email marketing, client feedback
-- **Swedish Accounting Integration** (US-121 to US-122): SIE file export/import for seamless accounting software integration
-
-These additions position VisInv as a comprehensive solution for:
-- **Freelancers & Solopreneurs**: Simple invoicing, time tracking, expense management
-- **Small Businesses**: Client management, quotes, payments, basic reporting
-- **Growing Companies**: Team collaboration, advanced reporting, automation, integrations
-- **Agencies & Service Providers**: Project management, time tracking, client portal
-- **Product-Based Businesses**: Inventory management, purchase orders, COGS tracking
-- **Enterprise Clients**: White label, SSO, multi-tenant, API access, dedicated support
-
 ---
 
 ## User Stories
