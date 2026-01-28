@@ -99,6 +99,61 @@ export const deleteJournalEntry = createAsyncThunk(
   }
 );
 
+/**
+ * Fetch ledger data for a specific account
+ * US-220: General Ledger View
+ * @param {Object} params - Query parameters
+ * @param {string} params.organizationId - Organization ID (required)
+ * @param {string} params.accountId - Account ID (required)
+ * @param {string} params.fiscalYearId - Fiscal year ID (optional)
+ * @param {string} params.startDate - Start date filter (optional)
+ * @param {string} params.endDate - End date filter (optional)
+ */
+export const fetchLedgerData = createAsyncThunk(
+  'journalEntries/fetchLedgerData',
+  async ({ organizationId, accountId, fiscalYearId, startDate, endDate }, { rejectWithValue }) => {
+    if (!organizationId || !accountId) {
+      return rejectWithValue('Organization ID and Account ID are required');
+    }
+
+    // Get opening balance if we have a start date filter
+    let openingBalance = 0;
+    if (startDate) {
+      const { data: balance, error: balanceError } = await JournalEntry.getOpeningBalance({
+        organizationId,
+        accountId,
+        fiscalYearId,
+        beforeDate: startDate,
+      });
+      if (balanceError) return rejectWithValue(balanceError.message);
+      openingBalance = balance;
+    }
+
+    // Get ledger entries
+    const { data, error } = await JournalEntry.getLedgerData({
+      organizationId,
+      accountId,
+      fiscalYearId,
+      startDate,
+      endDate,
+    });
+
+    if (error) return rejectWithValue(error.message);
+
+    // Adjust running balances to include opening balance
+    const adjustedData = (data || []).map((entry) => ({
+      ...entry,
+      balance: Math.round((entry.balance + openingBalance) * 100) / 100,
+    }));
+
+    return {
+      entries: adjustedData,
+      openingBalance,
+      accountId,
+    };
+  }
+);
+
 const initialState = {
   items: [],
   currentEntry: null,
@@ -109,6 +164,14 @@ const initialState = {
     fiscalYearId: null,
     status: null,
     searchQuery: '',
+  },
+  // General Ledger state (US-220)
+  ledger: {
+    entries: [],
+    openingBalance: 0,
+    accountId: null,
+    loading: false,
+    error: null,
   },
 };
 
@@ -139,6 +202,15 @@ const journalEntriesSlice = createSlice({
     },
     clearError: (state) => {
       state.error = null;
+    },
+    clearLedger: (state) => {
+      state.ledger = {
+        entries: [],
+        openingBalance: 0,
+        accountId: null,
+        loading: false,
+        error: null,
+      };
     },
   },
   extraReducers: (builder) => {
@@ -251,6 +323,21 @@ const journalEntriesSlice = createSlice({
       .addCase(deleteJournalEntry.rejected, (state, action) => {
         state.submitting = false;
         state.error = action.payload;
+      })
+      // fetchLedgerData (US-220)
+      .addCase(fetchLedgerData.pending, (state) => {
+        state.ledger.loading = true;
+        state.ledger.error = null;
+      })
+      .addCase(fetchLedgerData.fulfilled, (state, action) => {
+        state.ledger.loading = false;
+        state.ledger.entries = action.payload.entries;
+        state.ledger.openingBalance = action.payload.openingBalance;
+        state.ledger.accountId = action.payload.accountId;
+      })
+      .addCase(fetchLedgerData.rejected, (state, action) => {
+        state.ledger.loading = false;
+        state.ledger.error = action.payload;
       });
   },
 });
@@ -262,6 +349,7 @@ export const {
   setFilters,
   clearFilters,
   clearError,
+  clearLedger,
 } = journalEntriesSlice.actions;
 
 // Selectors
@@ -271,6 +359,32 @@ export const selectJournalEntriesLoading = (state) => state.journalEntries.loadi
 export const selectJournalEntriesSubmitting = (state) => state.journalEntries.submitting;
 export const selectJournalEntriesError = (state) => state.journalEntries.error;
 export const selectJournalEntriesFilters = (state) => state.journalEntries.filters;
+
+// Ledger selectors (US-220)
+export const selectLedgerEntries = (state) => state.journalEntries.ledger.entries;
+export const selectLedgerOpeningBalance = (state) => state.journalEntries.ledger.openingBalance;
+export const selectLedgerAccountId = (state) => state.journalEntries.ledger.accountId;
+export const selectLedgerLoading = (state) => state.journalEntries.ledger.loading;
+export const selectLedgerError = (state) => state.journalEntries.ledger.error;
+
+// Ledger totals selector
+export const selectLedgerTotals = (state) => {
+  const entries = state.journalEntries.ledger.entries;
+  const openingBalance = state.journalEntries.ledger.openingBalance;
+  
+  const totalDebit = entries.reduce((sum, e) => sum + e.debit, 0);
+  const totalCredit = entries.reduce((sum, e) => sum + e.credit, 0);
+  const closingBalance = entries.length > 0 
+    ? entries[entries.length - 1].balance 
+    : openingBalance;
+  
+  return {
+    openingBalance: Math.round(openingBalance * 100) / 100,
+    totalDebit: Math.round(totalDebit * 100) / 100,
+    totalCredit: Math.round(totalCredit * 100) / 100,
+    closingBalance: Math.round(closingBalance * 100) / 100,
+  };
+};
 
 // Filtered selectors
 export const selectDraftEntries = (state) => 

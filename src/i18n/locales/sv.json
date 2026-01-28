@@ -11,6 +11,7 @@
     "products": "Produkter",
     "accounts": "Kontoplan",
     "journalEntries": "Verifikationer",
+    "generalLedger": "Huvudbok",
     "sieImport": "SIE-import",
     "templates": "Mallar",
     "teams": "Team",
@@ -697,6 +698,32 @@
       "nameRequired": "Mallnamn krävs",
       "minimumTwoLines": "Mallen måste ha minst två kontorader"
     }
+  },
+  "generalLedger": {
+    "title": "Huvudbok",
+    "description": "Visa alla transaktioner för ett specifikt konto med löpande saldon",
+    "selectAccount": "Konto",
+    "searchAccountPlaceholder": "Sök på kontonummer eller namn...",
+    "fiscalYear": "Räkenskapsår",
+    "allPeriods": "Alla perioder",
+    "startDate": "Från",
+    "endDate": "Till",
+    "noAccountSelected": "Inget konto valt",
+    "selectAccountPrompt": "Sök och välj ett konto för att visa dess huvudbok",
+    "date": "Datum",
+    "verificationNo": "Ver. nr",
+    "description": "Beskrivning",
+    "debit": "Debet",
+    "credit": "Kredit",
+    "balance": "Saldo",
+    "openingBalance": "Ingående saldo",
+    "closingBalance": "Utgående saldo",
+    "noTransactions": "Inga transaktioner hittades för detta konto under vald period",
+    "totals": "Totalt",
+    "periodSummary": "Periodsammanfattning",
+    "periodDebits": "Periodens debet",
+    "periodCredits": "Periodens kredit",
+    "transactionCount": "{{count}} transaktioner"
   },
   "validation": {
     "required": "{{field}} är obligatoriskt"

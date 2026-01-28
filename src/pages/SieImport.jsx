@@ -373,7 +373,7 @@ export default function SieImport() {
               onDrop={handleDrop}
               onDragOver={(e) => e.preventDefault()}
               data-cy="sie-drop-zone"
-              className={`border-2 border-dashed rounded-lg p-12 text-center transition-colors ${
+              className={`border-2 border-dashed rounded-sm p-12 text-center transition-colors ${
                 file
                   ? 'border-green-500 bg-green-50 dark:bg-green-900/20'
                   : 'border-gray-300 dark:border-gray-600 hover:border-blue-500'
@@ -472,7 +472,7 @@ export default function SieImport() {
             {/* Validation Status */}
             <div
               data-cy="validation-status"
-              className={`p-4 rounded-lg mb-6 ${
+              className={`p-4 rounded-sm mb-6 ${
                 validation.isValid
                   ? 'bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800'
                   : 'bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800'
@@ -510,25 +510,25 @@ export default function SieImport() {
 
             {/* Summary */}
             <div className="grid grid-cols-2 gap-4 mb-6">
-              <div className="p-4 bg-gray-50 dark:bg-gray-900/50 rounded-lg">
+              <div className="p-4 bg-gray-50 dark:bg-gray-900/50 rounded-sm">
                 <p className="text-sm text-gray-500 dark:text-gray-400">{t('sieImport.format')}</p>
                 <p className="text-lg font-medium text-gray-900 dark:text-white">
                   {validation.summary.format}
                 </p>
               </div>
-              <div className="p-4 bg-gray-50 dark:bg-gray-900/50 rounded-lg">
+              <div className="p-4 bg-gray-50 dark:bg-gray-900/50 rounded-sm">
                 <p className="text-sm text-gray-500 dark:text-gray-400">{t('sieImport.company')}</p>
                 <p className="text-lg font-medium text-gray-900 dark:text-white">
                   {validation.summary.company || '-'}
                 </p>
               </div>
-              <div className="p-4 bg-gray-50 dark:bg-gray-900/50 rounded-lg">
+              <div className="p-4 bg-gray-50 dark:bg-gray-900/50 rounded-sm">
                 <p className="text-sm text-gray-500 dark:text-gray-400">{t('sieImport.accountCount')}</p>
                 <p data-cy="account-count" className="text-lg font-medium text-gray-900 dark:text-white">
                   {validation.summary.accountCount}
                 </p>
               </div>
-              <div className="p-4 bg-gray-50 dark:bg-gray-900/50 rounded-lg">
+              <div className="p-4 bg-gray-50 dark:bg-gray-900/50 rounded-sm">
                 <p className="text-sm text-gray-500 dark:text-gray-400">{t('sieImport.voucherCount')}</p>
                 <p className="text-lg font-medium text-gray-900 dark:text-white">
                   {validation.summary.voucherCount}
@@ -594,7 +594,7 @@ export default function SieImport() {
             {/* Warning Banner */}
             <div
               data-cy="org-mismatch-warning"
-              className="mb-6 p-4 bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 rounded-lg"
+              className="mb-6 p-4 bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 rounded-sm"
             >
               <div className="flex items-start">
                 <svg className="w-6 h-6 text-yellow-600 mr-3 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -614,7 +614,7 @@ export default function SieImport() {
             {/* Comparison Table */}
             <div className="mb-6 grid grid-cols-2 gap-4">
               {/* SIE File Organization */}
-              <div className="p-4 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg">
+              <div className="p-4 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-sm">
                 <h3 className="text-sm font-medium text-blue-800 dark:text-blue-300 mb-3">
                   {t('sieImport.orgMismatch.sieFileOrg')}
                 </h3>
@@ -635,7 +635,7 @@ export default function SieImport() {
               </div>
 
               {/* Current Organization */}
-              <div className="p-4 bg-gray-50 dark:bg-gray-900/50 border border-gray-200 dark:border-gray-700 rounded-lg">
+              <div className="p-4 bg-gray-50 dark:bg-gray-900/50 border border-gray-200 dark:border-gray-700 rounded-sm">
                 <h3 className="text-sm font-medium text-gray-800 dark:text-gray-300 mb-3">
                   {t('sieImport.orgMismatch.currentOrg')}
                 </h3>
@@ -713,7 +713,7 @@ export default function SieImport() {
             </h2>
 
             {/* Import Options */}
-            <div className="mb-6 p-4 bg-gray-50 dark:bg-gray-900/50 rounded-lg">
+            <div className="mb-6 p-4 bg-gray-50 dark:bg-gray-900/50 rounded-sm">
               <h3 className="text-sm font-medium text-gray-900 dark:text-white mb-3">
                 {t('sieImport.importOptions')}
               </h3>
@@ -755,7 +755,7 @@ export default function SieImport() {
                 <h3 className="text-sm font-medium text-gray-900 dark:text-white mb-3">
                   {t('sieImport.accountsPreview')}
                 </h3>
-                <div className="max-h-64 overflow-y-auto border border-gray-200 dark:border-gray-700 rounded-lg">
+                <div className="max-h-64 overflow-y-auto border border-gray-200 dark:border-gray-700 rounded-sm">
                   <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
                     <thead className="bg-gray-50 dark:bg-gray-900/50 sticky top-0">
                       <tr>

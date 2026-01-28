@@ -1586,16 +1586,22 @@ Swedish accounting follows **Bokföringslagen** (BFL) and **Årsredovisningslage
 
 #### Account Ledger Views
 
-**US-220: General Ledger View**
+**US-220: General Ledger View** ✅
 - As a **bookkeeper**, in order to **see all transactions for an account**, I would like to **view the general ledger with running balances**.
 - **Acceptance Criteria:**
-  - Select account to view
-  - Show all transactions affecting account
-  - Running balance after each transaction
-  - Date range filter
-  - Drill-down to journal entry
-  - Export to PDF/Excel
-- **Status:** Not Started
+  - Select account to view ✅
+  - Show all transactions affecting account ✅
+  - Running balance after each transaction ✅
+  - Date range filter ✅
+  - Drill-down to journal entry ✅
+  - Export to PDF/Excel (future enhancement)
+- **Status:** Complete
+- **Implementation:**
+  - Page: `GeneralLedger.jsx` with account search, fiscal year/date filters, ledger table
+  - Resource: `JournalEntry.getLedgerData()` and `getOpeningBalance()` methods
+  - Redux: `fetchLedgerData` thunk with opening balance calculation
+  - Features: Running balance, opening/closing balance, period summary, drill-down navigation
+  - Tests: `cypress/e2e/general-ledger.cy.js` (28 tests)
 
 **US-221: Trial Balance**
 - As a **bookkeeper**, in order to **verify that books are balanced**, I would like to **generate a trial balance report showing all account balances**.

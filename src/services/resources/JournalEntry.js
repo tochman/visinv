@@ -407,6 +407,144 @@ class JournalEntryResource extends BaseResource {
   }
 
   /**
+   * Get ledger data for an account with optional date range filter
+   * US-220: General Ledger View
+   * @param {Object} options - Query options
+   * @param {string} options.organizationId - Organization ID (required)
+   * @param {string} options.accountId - Account ID (required)
+   * @param {string} options.fiscalYearId - Fiscal year ID (optional)
+   * @param {string} options.startDate - Start date filter YYYY-MM-DD (optional)
+   * @param {string} options.endDate - End date filter YYYY-MM-DD (optional)
+   * @returns {Promise<{data: Array|null, error: Error|null}>}
+   */
+  async getLedgerData({ organizationId, accountId, fiscalYearId = null, startDate = null, endDate = null }) {
+    if (!organizationId || !accountId) {
+      return { data: null, error: new Error('Organization ID and Account ID are required') };
+    }
+
+    let query = this.supabase
+      .from('journal_entry_lines')
+      .select(`
+        id,
+        account_id,
+        debit_amount,
+        credit_amount,
+        description,
+        journal_entry:journal_entries!inner(
+          id,
+          organization_id,
+          fiscal_year_id,
+          verification_number,
+          entry_date,
+          description,
+          status
+        )
+      `)
+      .eq('account_id', accountId)
+      .eq('journal_entry.organization_id', organizationId)
+      .eq('journal_entry.status', 'posted')
+      .order('journal_entry(entry_date)', { ascending: true })
+      .order('journal_entry(verification_number)', { ascending: true });
+
+    if (fiscalYearId) {
+      query = query.eq('journal_entry.fiscal_year_id', fiscalYearId);
+    }
+
+    if (startDate) {
+      query = query.gte('journal_entry.entry_date', startDate);
+    }
+
+    if (endDate) {
+      query = query.lte('journal_entry.entry_date', endDate);
+    }
+
+    const { data, error } = await query;
+
+    if (error) {
+      return { data: null, error };
+    }
+
+    // Calculate running balance for each transaction
+    // For balance sheet accounts (assets, liabilities, equity): Debit increases, Credit decreases for assets; opposite for liabilities/equity
+    // For income statement accounts (revenue, expenses): Revenue credits, Expenses debits
+    // Simple approach: running balance = sum of (debit - credit) for each line
+    let runningBalance = 0;
+    const ledgerEntries = (data || []).map((line) => {
+      const debit = parseFloat(line.debit_amount) || 0;
+      const credit = parseFloat(line.credit_amount) || 0;
+      runningBalance += debit - credit;
+
+      return {
+        id: line.id,
+        journalEntryId: line.journal_entry.id,
+        verificationNumber: line.journal_entry.verification_number,
+        entryDate: line.journal_entry.entry_date,
+        entryDescription: line.journal_entry.description,
+        lineDescription: line.description,
+        debit,
+        credit,
+        balance: Math.round(runningBalance * 100) / 100,
+      };
+    });
+
+    return { data: ledgerEntries, error: null };
+  }
+
+  /**
+   * Get opening balance for an account before a given date
+   * @param {Object} options - Query options
+   * @param {string} options.organizationId - Organization ID (required)
+   * @param {string} options.accountId - Account ID (required)
+   * @param {string} options.fiscalYearId - Fiscal year ID (optional)
+   * @param {string} options.beforeDate - Date to calculate opening balance before
+   * @returns {Promise<{data: number, error: Error|null}>}
+   */
+  async getOpeningBalance({ organizationId, accountId, fiscalYearId = null, beforeDate }) {
+    if (!organizationId || !accountId) {
+      return { data: 0, error: new Error('Organization ID and Account ID are required') };
+    }
+
+    let query = this.supabase
+      .from('journal_entry_lines')
+      .select(`
+        debit_amount,
+        credit_amount,
+        journal_entry:journal_entries!inner(
+          organization_id,
+          fiscal_year_id,
+          entry_date,
+          status
+        )
+      `)
+      .eq('account_id', accountId)
+      .eq('journal_entry.organization_id', organizationId)
+      .eq('journal_entry.status', 'posted');
+
+    if (fiscalYearId) {
+      query = query.eq('journal_entry.fiscal_year_id', fiscalYearId);
+    }
+
+    if (beforeDate) {
+      query = query.lt('journal_entry.entry_date', beforeDate);
+    }
+
+    const { data, error } = await query;
+
+    if (error) {
+      return { data: 0, error };
+    }
+
+    // Sum all debits - credits to get opening balance
+    const balance = (data || []).reduce((sum, line) => {
+      const debit = parseFloat(line.debit_amount) || 0;
+      const credit = parseFloat(line.credit_amount) || 0;
+      return sum + debit - credit;
+    }, 0);
+
+    return { data: Math.round(balance * 100) / 100, error: null };
+  }
+
+  /**
    * Calculate totals for journal entry lines
    * @param {Array} lines - Array of line items
    * @returns {{totalDebit: number, totalCredit: number, difference: number}}
