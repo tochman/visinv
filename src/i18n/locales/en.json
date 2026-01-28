@@ -9,6 +9,7 @@
     "recurringInvoices": "Recurring Invoices",
     "clients": "Clients",
     "products": "Products",
+    "accounts": "Chart of Accounts",
     "templates": "Templates",
     "teams": "Teams",
     "settings": "Settings",
@@ -528,7 +529,48 @@
     "status": "Status",
     "more": "more",
     "close": "Close",
-    "submitting": "Submitting..."
+    "submitting": "Submitting...",
+    "all": "All"
+  },
+  "accounts": {
+    "title": "Chart of Accounts",
+    "search": "Search accounts by number or name...",
+    "empty": "No accounts yet",
+    "emptyDescription": "Set up your chart of accounts to start tracking your business finances with Swedish BAS 2024 standard.",
+    "seedBAS": "Initialize BAS 2024 Accounts",
+    "seeding": "Setting up accounts...",
+    "noResults": "No matching accounts",
+    "tryDifferentFilter": "Try a different search term or filter.",
+    "showing": "Showing {{count}} of {{total}} accounts",
+    "accountNumber": "Account",
+    "accountName": "Name",
+    "class": "Class",
+    "type": "Type",
+    "status": "Status",
+    "active": "Active",
+    "inactive": "Inactive",
+    "system": "System",
+    "includeInactive": "Show inactive accounts",
+    "activate": "Activate",
+    "deactivate": "Deactivate",
+    "activateConfirm": "Activate Account?",
+    "deactivateConfirm": "Deactivate Account?",
+    "activateWarning": "This account will be available for bookings.",
+    "deactivateWarning": "This account will no longer be available for new bookings.",
+    "classes": {
+      "assets": "Assets",
+      "liabilities": "Liabilities",
+      "equity": "Equity",
+      "revenue": "Revenue",
+      "expenses": "Expenses",
+      "financial": "Financial",
+      "yearEnd": "Year-End"
+    },
+    "types": {
+      "header": "Header",
+      "detail": "Detail",
+      "total": "Total"
+    }
   },
   "nps": {
     "title": "We'd love your feedback!",

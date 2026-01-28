@@ -1,7 +1,10 @@
 // Export all resources
+export { Account } from './Account';
 export { Client } from './Client';
 export { Invoice } from './Invoice';
-export { Product } from './Product';export { ProductPrice } from './ProductPrice';export { default as InvoiceTemplate } from './InvoiceTemplate';
+export { Product } from './Product';
+export { ProductPrice } from './ProductPrice';
+export { default as InvoiceTemplate } from './InvoiceTemplate';
 export { User } from './User';
 export { Organization } from './Organization';
 export { Invite } from './Invite';

@@ -9,6 +9,7 @@
     "recurringInvoices": "Återkommande fakturor",
     "clients": "Kunder",
     "products": "Produkter",
+    "accounts": "Kontoplan",
     "templates": "Mallar",
     "teams": "Team",
     "settings": "Inställningar",
@@ -516,7 +517,48 @@
     "status": "Status",
     "more": "till",
     "close": "Stäng",
-    "submitting": "Skickar..."
+    "submitting": "Skickar...",
+    "all": "Alla"
+  },
+  "accounts": {
+    "title": "Kontoplan",
+    "search": "Sök konton efter nummer eller namn...",
+    "empty": "Inga konton ännu",
+    "emptyDescription": "Ställ in din kontoplan för att börja följa dina affärer enligt svensk BAS 2024 standard.",
+    "seedBAS": "Initiera BAS 2024 konton",
+    "seeding": "Skapar konton...",
+    "noResults": "Inga matchande konton",
+    "tryDifferentFilter": "Prova ett annat sökord eller filter.",
+    "showing": "Visar {{count}} av {{total}} konton",
+    "accountNumber": "Konto",
+    "accountName": "Namn",
+    "class": "Klass",
+    "type": "Typ",
+    "status": "Status",
+    "active": "Aktiv",
+    "inactive": "Inaktiv",
+    "system": "System",
+    "includeInactive": "Visa inaktiva konton",
+    "activate": "Aktivera",
+    "deactivate": "Inaktivera",
+    "activateConfirm": "Aktivera konto?",
+    "deactivateConfirm": "Inaktivera konto?",
+    "activateWarning": "Detta konto kommer att vara tillgängligt för bokföringar.",
+    "deactivateWarning": "Detta konto kommer inte längre vara tillgängligt för nya bokföringar.",
+    "classes": {
+      "assets": "Tillgångar",
+      "liabilities": "Skulder",
+      "equity": "Eget kapital",
+      "revenue": "Intäkter",
+      "expenses": "Kostnader",
+      "financial": "Finansiellt",
+      "yearEnd": "Bokslut"
+    },
+    "types": {
+      "header": "Rubrik",
+      "detail": "Detalj",
+      "total": "Summa"
+    }
   },
   "validation": {
     "required": "{{field}} är obligatoriskt"

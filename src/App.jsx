@@ -21,6 +21,7 @@ import Invoices from './pages/Invoices';
 import InvoiceDetail from './pages/InvoiceDetail';
 import Clients from './pages/Clients';
 import Products from './pages/Products';
+import Accounts from './pages/Accounts';
 import Templates from './pages/Templates';
 import TemplateEditor from './pages/TemplateEditor';
 import Teams from './pages/Teams';
@@ -99,6 +100,7 @@ function App() {
             <Route path="/invoices/:id" element={<InvoiceDetail />} />
             <Route path="/clients" element={<Clients />} />
             <Route path="/products" element={<Products />} />
+            <Route path="/accounts" element={<Accounts />} />
             <Route path="/templates" element={<Templates />} />
             <Route path="/templates/new" element={<TemplateEditor />} />
             <Route path="/templates/edit/:id" element={<TemplateEditor />} />

@@ -10,6 +10,7 @@ import {
   UserGroupIcon,
   Cog6ToothIcon,
   ShieldCheckIcon,
+  CalculatorIcon,
 } from '@heroicons/react/24/outline';
 import { OrganizationSwitcher } from '../organization';
 import CollapsibleNavSection from './CollapsibleNavSection';
@@ -40,6 +41,11 @@ export default function Sidebar() {
   const adminItems = [
     { path: '/settings', label: t('nav.settings'), icon: Cog6ToothIcon },
     { path: '/teams', label: t('nav.teams'), icon: UserGroupIcon, premium: true },
+  ];
+
+  // Accounting module items
+  const accountingItems = [
+    { path: '/accounts', label: t('nav.accounts'), icon: CalculatorIcon },
   ];
 
   // Add admin panel if user is admin
@@ -98,14 +104,13 @@ export default function Sidebar() {
           hasPremiumAccess={hasPremiumAccess}
         />
 
-        {/* Accounting Module - Coming Soon */}
+        {/* Accounting Module */}
         <CollapsibleNavSection
           title={t('nav.sections.accounting')}
           sectionKey="accounting"
-          items={[]}
+          items={accountingItems}
           defaultExpanded={false}
           hasPremiumAccess={hasPremiumAccess}
-          comingSoon={t('nav.comingSoon')}
         />
 
         {/* Time & Projects Module - Coming Soon */}
