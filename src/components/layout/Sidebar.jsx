@@ -12,6 +12,7 @@ import {
   ShieldCheckIcon,
   CalculatorIcon,
   ArrowUpTrayIcon,
+  ClipboardDocumentListIcon,
 } from '@heroicons/react/24/outline';
 import { OrganizationSwitcher } from '../organization';
 import CollapsibleNavSection from './CollapsibleNavSection';
@@ -47,6 +48,7 @@ export default function Sidebar() {
   // Accounting module items
   const accountingItems = [
     { path: '/accounts', label: t('nav.accounts'), icon: CalculatorIcon },
+    { path: '/journal-entries', label: t('nav.journalEntries'), icon: ClipboardDocumentListIcon },
     { path: '/import/sie', label: t('nav.sieImport'), icon: ArrowUpTrayIcon },
   ];
 

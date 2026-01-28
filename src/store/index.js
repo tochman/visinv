@@ -1,7 +1,9 @@
 import { configureStore } from '@reduxjs/toolkit';
 import authReducer from '../features/auth/authSlice';
 import accountsReducer from '../features/accounts/accountsSlice';
+import fiscalYearsReducer from '../features/fiscalYears/fiscalYearsSlice';
 import invoicesReducer from '../features/invoices/invoicesSlice';
+import journalEntriesReducer from '../features/journalEntries/journalEntriesSlice';
 import clientsReducer from '../features/clients/clientsSlice';
 import productsReducer from '../features/products/productsSlice';
 import templatesReducer from '../features/templates/templatesSlice';
@@ -17,7 +19,9 @@ export const store = configureStore({
   reducer: {
     auth: authReducer,
     accounts: accountsReducer,
+    fiscalYears: fiscalYearsReducer,
     invoices: invoicesReducer,
+    journalEntries: journalEntriesReducer,
     clients: clientsReducer,
     products: productsReducer,
     templates: templatesReducer,

@@ -22,6 +22,7 @@ import InvoiceDetail from './pages/InvoiceDetail';
 import Clients from './pages/Clients';
 import Products from './pages/Products';
 import Accounts from './pages/Accounts';
+import JournalEntries from './pages/JournalEntries';
 import SieImport from './pages/SieImport';
 import Templates from './pages/Templates';
 import TemplateEditor from './pages/TemplateEditor';
@@ -102,6 +103,7 @@ function App() {
             <Route path="/clients" element={<Clients />} />
             <Route path="/products" element={<Products />} />
             <Route path="/accounts" element={<Accounts />} />
+            <Route path="/journal-entries" element={<JournalEntries />} />
             <Route path="/import/sie" element={<SieImport />} />
             <Route path="/templates" element={<Templates />} />
             <Route path="/templates/new" element={<TemplateEditor />} />

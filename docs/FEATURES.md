@@ -1513,16 +1513,22 @@ Swedish accounting follows **Bokföringslagen** (BFL) and **Årsredovisningslage
 
 #### Journal Entries (Verifikationer)
 
-**US-210: Manual Journal Entry**
+**US-210: Manual Journal Entry** ✅
 - As a **bookkeeper**, in order to **record financial transactions**, I would like to **create journal entries with multiple debit and credit lines**.
 - **Acceptance Criteria:**
-  - Entry date, verification number (auto or manual), description
-  - Multiple lines: account, debit amount, credit amount, optional line description
-  - Total debits must equal total credits (balanced entry)
-  - Attach supporting documents (PDF, images)
-  - Sequential verification numbering per fiscal year
-  - Draft mode before posting
-- **Status:** Not Started
+  - ✅ Entry date, verification number (auto), description
+  - ✅ Multiple lines: account, debit amount, credit amount, optional line description
+  - ✅ Total debits must equal total credits (balanced entry)
+  - ⏸️ Attach supporting documents (PDF, images) - Future enhancement
+  - ✅ Sequential verification numbering per fiscal year
+  - ✅ Draft mode before posting
+- **Implementation:**
+  - Database: `fiscal_years`, `journal_entries`, `journal_entry_lines` tables with RLS
+  - Resources: `FiscalYear`, `JournalEntry` with balance validation
+  - Redux: `fiscalYearsSlice`, `journalEntriesSlice`
+  - UI: `JournalEntries` page, `JournalEntryModal`, `FiscalYearModal`
+  - Cypress E2E tests: 38 tests covering all functionality
+- **Status:** ✅ Complete
 
 **US-211: Journal Entry from Invoice**
 - As a **system**, in order to **maintain accurate books**, I would like to **automatically create journal entries when invoices are created/sent/paid**.
