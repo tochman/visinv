@@ -128,7 +128,7 @@ These additions position VisInv as a comprehensive solution for:
 - As an **organization owner**, in order to **control access**, I would like to **view all organization members, manage their roles (owner/associate), and remove users**.
 - **Status:** Implemented - OrganizationMembers component with role management, member removal, 55 Cypress tests
 
-**US-058: Multi-Organization Support** 🚧
+**US-058: Multi-Organization Support** ✅
 - As a **user**, in order to **work with multiple companies**, I would like to **belong to multiple organizations and switch between them**.
 - As a **premium user**, in order to **manage multiple businesses**, I would like to **create additional organizations beyond my first one**.
 - **Acceptance Criteria:**
@@ -138,8 +138,7 @@ These additions position VisInv as a comprehensive solution for:
   - **Data Isolation:** When switching organizations, users only see data (invoices, clients, products) for the currently selected organization
   - Newly created organizations automatically become the current organization
   - Each organization membership has a role (owner/associate)
-- **Status:** Partially implemented - OrganizationSwitcher component, multi-org context support
-- **TODO:** E2E tests for data isolation when switching organizations
+- **Status:** Implemented - OrganizationSwitcher component, multi-org context, 23 Cypress E2E tests including 8 data isolation tests
 
 **US-059: Team/Department Management**
 - As an **organization owner**, in order to **organize users by department**, I would like to **create teams within my organization and assign members to teams**.
