@@ -41,8 +41,8 @@ export default function Invoices() {
 
   // Re-fetch data when user or organization changes
   useEffect(() => {
-    if (user && currentOrganization) {
-      dispatch(fetchInvoices());
+    if (user && currentOrganization?.id) {
+      dispatch(fetchInvoices(currentOrganization.id));
       dispatch(fetchTemplates());
       dispatch(fetchSubscription(user.id));
       dispatch(fetchInvoiceCount(user.id));
@@ -127,7 +127,7 @@ export default function Invoices() {
       await dispatch(markInvoiceAsPaid({ id: paymentDialogInvoice.id }));
       
       // Refresh invoices to show updated status
-      dispatch(fetchInvoices());
+      dispatch(fetchInvoices(currentOrganization?.id));
       
       setShowPaymentDialog(false);
       setPaymentDialogInvoice(null);
@@ -142,7 +142,7 @@ export default function Invoices() {
       const { Invoice } = await import('../services/resources');
       await Invoice.markReminderSent(invoice.id);
       // Refresh invoices to show updated reminder status
-      dispatch(fetchInvoices());
+      dispatch(fetchInvoices(currentOrganization?.id));
       // TODO: In future, this would trigger email sending
       alert(`Reminder marked as sent for invoice ${invoice.invoice_number}`);
     } catch (error) {

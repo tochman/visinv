@@ -20,8 +20,8 @@ export default function Dashboard() {
 
   // Re-fetch invoices when organization changes
   useEffect(() => {
-    if (currentOrganization) {
-      dispatch(fetchInvoices());
+    if (currentOrganization?.id) {
+      dispatch(fetchInvoices(currentOrganization.id));
     }
   }, [dispatch, currentOrganization?.id]);
 

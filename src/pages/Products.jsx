@@ -20,8 +20,8 @@ export default function Products() {
 
   // Re-fetch data when user or organization changes
   useEffect(() => {
-    if (user && currentOrganization) {
-      dispatch(fetchProducts());
+    if (user && currentOrganization?.id) {
+      dispatch(fetchProducts(currentOrganization.id));
     }
   }, [dispatch, user, currentOrganization?.id]);
 

@@ -3,8 +3,12 @@ import { Client } from '../../services/resources/Client';
 
 export const fetchClients = createAsyncThunk(
   'clients/fetchClients',
-  async (_, { rejectWithValue }) => {
-    const { data, error } = await Client.index();
+  async (organizationId, { rejectWithValue }) => {
+    if (!organizationId) {
+      return rejectWithValue('No organization selected');
+    }
+    
+    const { data, error } = await Client.index({ organizationId });
     if (error) return rejectWithValue(error.message);
     return data;
   }

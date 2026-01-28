@@ -6,8 +6,12 @@ import { RecurringInvoice } from '../../services/resources/RecurringInvoice';
  */
 export const fetchRecurringInvoices = createAsyncThunk(
   'recurringInvoices/fetchRecurringInvoices',
-  async (_, { rejectWithValue }) => {
-    const { data, error } = await RecurringInvoice.index();
+  async (organizationId, { rejectWithValue }) => {
+    if (!organizationId) {
+      return rejectWithValue('No organization selected');
+    }
+    
+    const { data, error } = await RecurringInvoice.index({ organizationId });
     if (error) return rejectWithValue(error.message);
     return data;
   }
@@ -30,8 +34,12 @@ export const fetchRecurringInvoice = createAsyncThunk(
  */
 export const createRecurringInvoice = createAsyncThunk(
   'recurringInvoices/createRecurringInvoice',
-  async (data, { rejectWithValue }) => {
-    const { data: created, error } = await RecurringInvoice.create(data);
+  async ({ organizationId, ...data }, { rejectWithValue }) => {
+    if (!organizationId) {
+      return rejectWithValue('No organization selected');
+    }
+    
+    const { data: created, error } = await RecurringInvoice.create({ ...data, organizationId });
     if (error) return rejectWithValue(error.message);
     return created;
   }

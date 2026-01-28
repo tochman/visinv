@@ -1,5 +1,4 @@
 import { BaseResource } from './BaseResource';
-import { Organization } from './Organization';
 import { Invoice } from './Invoice';
 
 /**
@@ -34,13 +33,14 @@ class RecurringInvoiceResource extends BaseResource {
 
   /**
    * Get all recurring invoices for the current organization
-   * @param {Object} options - Query options
+   * @param {Object} options - Query options (must include organizationId)
    * @returns {Promise<{data: Array|null, error: Error|null}>}
    */
   async index(options = {}) {
-    const { data: currentOrg, error: orgError } = await Organization.getDefault();
-    if (orgError || !currentOrg) {
-      return { data: null, error: orgError || new Error('No organization found') };
+    const { organizationId, ...restOptions } = options;
+    
+    if (!organizationId) {
+      return { data: null, error: new Error('Organization ID is required') };
     }
 
     return super.index({
@@ -49,10 +49,10 @@ class RecurringInvoiceResource extends BaseResource {
         client:clients(id, name, email),
         invoice_template:invoice_templates(id, name)
       `,
-      filters: [{ column: 'organization_id', value: currentOrg.id }],
+      filters: [{ column: 'organization_id', value: organizationId }],
       order: 'created_at',
       ascending: false,
-      ...options,
+      ...restOptions,
     });
   }
 
@@ -77,7 +77,7 @@ class RecurringInvoiceResource extends BaseResource {
 
   /**
    * Create a new recurring invoice schedule
-   * @param {Object} data - Recurring invoice data
+   * @param {Object} data - Recurring invoice data (must include organizationId)
    * @returns {Promise<{data: Object|null, error: Error|null}>}
    */
   async create(data) {
@@ -86,23 +86,24 @@ class RecurringInvoiceResource extends BaseResource {
       return { data: null, error: authError || new Error('Not authenticated') };
     }
 
-    const { data: currentOrg, error: orgError } = await Organization.getDefault();
-    if (orgError || !currentOrg) {
-      return { data: null, error: orgError || new Error('No organization found') };
+    const { organizationId, ...restData } = data;
+    
+    if (!organizationId) {
+      return { data: null, error: new Error('Organization ID is required') };
     }
 
     // Calculate initial next_invoice_date from start_date
-    const startDate = new Date(data.start_date);
-    const nextInvoiceDate = data.next_invoice_date || data.start_date;
+    const startDate = new Date(restData.start_date);
+    const nextInvoiceDate = restData.next_invoice_date || restData.start_date;
 
     const recurringData = {
-      ...data,
+      ...restData,
       user_id: user.id,
-      organization_id: currentOrg.id,
+      organization_id: organizationId,
       next_invoice_date: nextInvoiceDate,
       invoice_count: 0,
-      status: data.status || 'active',
-      rows_template: JSON.stringify(data.rows_template || []),
+      status: restData.status || 'active',
+      rows_template: JSON.stringify(restData.rows_template || []),
     };
 
     const { data: created, error } = await this.supabase

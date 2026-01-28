@@ -1,5 +1,4 @@
 import { BaseResource } from './BaseResource';
-import { Organization } from './Organization';
 
 /**
  * Client Resource
@@ -11,23 +10,25 @@ class ClientResource extends BaseResource {
   }
 
   /**
-   * Get all clients for the current organization
+   * Get all clients for the specified organization
    * @param {Object} options - Query options
+   * @param {string} options.organizationId - Organization ID to filter by (required)
    * @returns {Promise<{data: Array|null, error: Error|null}>}
    */
   async index(options = {}) {
-    // Get current organization to filter by
-    const { data: currentOrg, error: orgError } = await Organization.getDefault();
-    if (orgError || !currentOrg) {
-      return { data: null, error: orgError || new Error('No organization found') };
+    const { organizationId, ...restOptions } = options;
+    
+    // organizationId is required - caller must provide it from Redux state
+    if (!organizationId) {
+      return { data: null, error: new Error('Organization ID is required') };
     }
 
     return super.index({
       select: '*',
-      filters: [{ column: 'organization_id', value: currentOrg.id }],
+      filters: [{ column: 'organization_id', value: organizationId }],
       order: 'name',
       ascending: true,
-      ...options,
+      ...restOptions,
     });
   }
 

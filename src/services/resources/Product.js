@@ -1,6 +1,5 @@
 import { BaseResource } from './BaseResource';
 import { ProductPrice } from './ProductPrice';
-import { Organization } from './Organization';
 
 /**
  * Product Resource
@@ -12,16 +11,18 @@ class ProductResource extends BaseResource {
   }
 
   /**
-   * Get all products for the current organization
+   * Get all products for the specified organization
    * Includes prices for all currencies
    * @param {Object} options - Query options
+   * @param {string} options.organizationId - Organization ID to filter by (required)
    * @returns {Promise<{data: Array|null, error: Error|null}>}
    */
   async index(options = {}) {
-    // Get current organization to filter by
-    const { data: currentOrg, error: orgError } = await Organization.getDefault();
-    if (orgError || !currentOrg) {
-      return { data: null, error: orgError || new Error('No organization found') };
+    const { organizationId } = options;
+    
+    // organizationId is required - caller must provide it from Redux state
+    if (!organizationId) {
+      return { data: null, error: new Error('Organization ID is required') };
     }
 
     const { data, error } = await this.supabase
@@ -30,7 +31,7 @@ class ProductResource extends BaseResource {
         *,
         prices:product_prices(currency, price)
       `)
-      .eq('organization_id', currentOrg.id)
+      .eq('organization_id', organizationId)
       .eq('is_active', true)
       .order('name');
 

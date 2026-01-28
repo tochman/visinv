@@ -3,8 +3,12 @@ import { Product } from '../../services/resources';
 
 export const fetchProducts = createAsyncThunk(
   'products/fetchProducts',
-  async (_, { rejectWithValue }) => {
-    const { data, error } = await Product.index();
+  async (organizationId, { rejectWithValue }) => {
+    if (!organizationId) {
+      return rejectWithValue('No organization selected');
+    }
+    
+    const { data, error } = await Product.index({ organizationId });
     if (error) return rejectWithValue(error.message);
     return data;
   }

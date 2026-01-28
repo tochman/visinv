@@ -3,8 +3,12 @@ import { Invoice } from '../../services/resources';
 
 export const fetchInvoices = createAsyncThunk(
   'invoices/fetchInvoices',
-  async (_, { rejectWithValue }) => {
-    const { data, error } = await Invoice.index();
+  async (organizationId, { rejectWithValue }) => {
+    if (!organizationId) {
+      return rejectWithValue('No organization selected');
+    }
+    
+    const { data, error } = await Invoice.index({ organizationId });
     if (error) return rejectWithValue(error.message);
     return data;
   }

@@ -19,8 +19,8 @@ export default function Clients() {
 
   // Re-fetch data when user or organization changes
   useEffect(() => {
-    if (user && currentOrganization) {
-      dispatch(fetchClients());
+    if (user && currentOrganization?.id) {
+      dispatch(fetchClients(currentOrganization.id));
     }
   }, [dispatch, user, currentOrganization?.id]);
 

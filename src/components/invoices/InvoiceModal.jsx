@@ -116,16 +116,16 @@ export default function InvoiceModal({ isOpen, onClose, invoice = null, viewOnly
   }, [isOpen, invoice]);
 
   useEffect(() => {
-    if (isOpen && clients.length === 0) {
-      dispatch(fetchClients());
+    if (isOpen && clients.length === 0 && currentOrganization?.id) {
+      dispatch(fetchClients(currentOrganization.id));
     }
-    if (isOpen && products.length === 0) {
-      dispatch(fetchProducts());
+    if (isOpen && products.length === 0 && currentOrganization?.id) {
+      dispatch(fetchProducts(currentOrganization.id));
     }
     if (isOpen && templates.length === 0) {
       dispatch(fetchTemplates());
     }
-  }, [isOpen, clients.length, products.length, templates.length, dispatch]);
+  }, [isOpen, clients.length, products.length, templates.length, dispatch, currentOrganization?.id]);
 
   // Separate templates into system and user templates
   const systemTemplates = templates.filter(t => t.is_system);
@@ -202,7 +202,7 @@ export default function InvoiceModal({ isOpen, onClose, invoice = null, viewOnly
         });
         
         // Refresh products to get updated data
-        await dispatch(fetchProducts());
+        await dispatch(fetchProducts(currentOrganization?.id));
         
         toast.success(t('invoices.priceSavedSuccess'));
       }
