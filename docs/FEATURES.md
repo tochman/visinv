@@ -1,8 +1,14 @@
-# Invoice SaaS - Feature Documentation
+# VisInv - Feature Documentation
 
 ## Overview
 
-This document provides a comprehensive list of user stories for the VisInv invoicing platform. The features are organized into logical categories and prioritized into development phases to guide implementation from MVP to a fully-featured enterprise invoicing system.
+This document provides a comprehensive list of user stories for the VisInv platform - a **full-featured Swedish accounting and invoicing solution**. The platform is organized into three major modules:
+
+1. **Invoicing (Fakturering)** - Invoice creation, templates, payments, clients, products
+2. **Accounting (Bokföring)** - General ledger, journal entries, financial reports, Swedish compliance
+3. **Time & Projects (Tid & Projekt)** - Time tracking, expenses, project management (planned)
+
+Features are organized into logical categories and prioritized into development phases to guide implementation from the current invoicing MVP to a fully-featured enterprise accounting system.
 
 ---
 
@@ -1422,104 +1428,410 @@ This document provides a comprehensive list of user stories for the VisInv invoi
 
 ---
 
-### Swedish Accounting Integration
+### Navigation & UI Architecture
+
+**US-401: Hierarchical Sidebar Navigation**
+- As a **user**, in order to **navigate the expanded application**, I would like to **use a hierarchical sidebar with collapsible module sections**.
+- **Acceptance Criteria:**
+  - Three main sections: Accounting, Invoicing, Time & Projects
+  - Sections are collapsible/expandable
+  - Remember expanded state per user
+  - Active item highlighting with breadcrumb context
+  - Keyboard navigation support
+  - Mobile responsive (hamburger menu)
+- **Status:** Not Started
+
+**US-402: Module-Based Dashboard**
+- As a **user**, in order to **see relevant information at a glance**, I would like to **have a customizable dashboard with module-specific widgets**.
+- **Acceptance Criteria:**
+  - Dashboard widgets per module:
+    - Accounting: Account balances, cash position, recent transactions
+    - Invoicing: Outstanding invoices, overdue amount, recent activity
+    - Time: Today's timer, weekly hours, unbilled time value
+  - Drag-and-drop widget arrangement
+  - Widget settings (date range, accounts to show)
+  - Role-based default layouts
+- **Status:** Not Started
+
+**US-403: Global Search**
+- As a **user**, in order to **quickly find anything**, I would like to **search across all modules from a global search bar**.
+- **Acceptance Criteria:**
+  - Search bar in header (Cmd/Ctrl+K shortcut)
+  - Search across: invoices, clients, transactions, projects, accounts
+  - Type-ahead suggestions
+  - Grouped results by type
+  - Recent searches
+- **Status:** Not Started
+
+**US-404: Quick Actions Menu**
+- As a **user**, in order to **perform common tasks quickly**, I would like to **access a quick actions menu from anywhere in the app**.
+- **Acceptance Criteria:**
+  - Floating action button or keyboard shortcut
+  - Quick actions: New Invoice, New Client, New Time Entry, New Expense, New Journal Entry
+  - Recently used actions
+  - Context-aware suggestions
+- **Status:** Not Started
+
+---
+
+### Accounting Module (Bokföring)
+
+Swedish accounting follows **Bokföringslagen** (BFL) and **Årsredovisningslagen** (ÅRL). The accounting module provides full Swedish-compliant bookkeeping capabilities.
+
+#### Chart of Accounts
+
+**US-201: BAS Chart of Accounts Setup**
+- As an **organization owner**, in order to **start accounting according to Swedish standards**, I would like to **initialize my chart of accounts with the BAS standard account plan**.
+- **Acceptance Criteria:**
+  - Option to import standard BAS chart of accounts (BAS 2024)
+  - Account structure: 4-digit codes (1xxx Assets, 2xxx Liabilities, 3xxx Revenue, etc.)
+  - Support for account groups and subaccounts
+  - Each account has: number, name, type (asset/liability/equity/revenue/expense), VAT code
+  - SRU codes for tax reporting linkage
+- **Status:** Not Started
+
+**US-202: Custom Account Management**
+- As a **bookkeeper**, in order to **adapt the chart of accounts to my business**, I would like to **add, edit, and deactivate accounts**.
+- **Acceptance Criteria:**
+  - Create new accounts with proper validation (unique number, correct range for type)
+  - Edit account name and settings (not number after use)
+  - Deactivate accounts (soft delete, keep for historical data)
+  - Cannot delete accounts with transactions
+  - Show account balance and transaction count
+- **Status:** Not Started
+
+**US-203: Account Groups and Hierarchy**
+- As a **bookkeeper**, in order to **organize accounts for reporting**, I would like to **group accounts into logical categories and subcategories**.
+- **Acceptance Criteria:**
+  - Hierarchical account structure (groups → subgroups → accounts)
+  - Collapsible/expandable account tree view
+  - Summary rows show totals for groups
+  - Support standard BAS groupings
+- **Status:** Not Started
+
+#### Journal Entries (Verifikationer)
+
+**US-210: Manual Journal Entry**
+- As a **bookkeeper**, in order to **record financial transactions**, I would like to **create journal entries with multiple debit and credit lines**.
+- **Acceptance Criteria:**
+  - Entry date, verification number (auto or manual), description
+  - Multiple lines: account, debit amount, credit amount, optional line description
+  - Total debits must equal total credits (balanced entry)
+  - Attach supporting documents (PDF, images)
+  - Sequential verification numbering per fiscal year
+  - Draft mode before posting
+- **Status:** Not Started
+
+**US-211: Journal Entry from Invoice**
+- As a **system**, in order to **maintain accurate books**, I would like to **automatically create journal entries when invoices are created/sent/paid**.
+- **Acceptance Criteria:**
+  - Invoice sent → Debit: Accounts Receivable (1510), Credit: Revenue (3xxx) + VAT (26xx)
+  - Payment received → Debit: Bank (19xx), Credit: Accounts Receivable (1510)
+  - Configurable default accounts per organization
+  - Link between invoice and journal entries visible
+- **Status:** Not Started
+
+**US-212: Recurring Journal Entries**
+- As a **bookkeeper**, in order to **handle regular transactions**, I would like to **set up recurring journal entries (e.g., monthly rent, depreciation)**.
+- **Acceptance Criteria:**
+  - Create template journal entry
+  - Set recurrence: monthly, quarterly, yearly
+  - Auto-generate entries on schedule (or prompt to create)
+  - Option to adjust amounts before posting
+- **Status:** Not Started
+
+**US-213: Journal Entry Templates**
+- As a **bookkeeper**, in order to **speed up common entries**, I would like to **save journal entry templates for frequently used transactions**.
+- **Acceptance Criteria:**
+  - Save entry as template with name
+  - Templates list for quick access
+  - Create new entry from template
+  - Edit template definitions
+- **Status:** Not Started
+
+**US-214: Journal Entry Search and Filter**
+- As a **bookkeeper**, in order to **find specific transactions**, I would like to **search and filter journal entries by date, account, amount, description, or verification number**.
+- **Acceptance Criteria:**
+  - Date range filter
+  - Account filter (single or multiple)
+  - Amount range filter
+  - Text search in description
+  - Verification number search
+  - Export filtered results
+- **Status:** Not Started
+
+**US-215: Verification Number Management**
+- As an **organization**, in order to **comply with Swedish accounting law**, I would like to **have unbroken verification number sequences per fiscal year**.
+- **Acceptance Criteria:**
+  - Verification numbers restart each fiscal year (or continue, configurable)
+  - Prefix support (e.g., "VER-" or custom)
+  - Gap detection and warnings
+  - Cannot reuse or delete verification numbers
+- **Status:** Not Started
+
+#### Account Ledger Views
+
+**US-220: General Ledger View**
+- As a **bookkeeper**, in order to **see all transactions for an account**, I would like to **view the general ledger with running balances**.
+- **Acceptance Criteria:**
+  - Select account to view
+  - Show all transactions affecting account
+  - Running balance after each transaction
+  - Date range filter
+  - Drill-down to journal entry
+  - Export to PDF/Excel
+- **Status:** Not Started
+
+**US-221: Trial Balance**
+- As a **bookkeeper**, in order to **verify that books are balanced**, I would like to **generate a trial balance report showing all account balances**.
+- **Acceptance Criteria:**
+  - As of date selection
+  - Show all accounts with balances
+  - Debit and credit columns
+  - Total debits = total credits check
+  - Filter by account range or type
+  - Include zero-balance accounts option
+- **Status:** Not Started
+
+**US-222: Account Balance Inquiry**
+- As a **bookkeeper**, in order to **quickly check an account balance**, I would like to **view current balance and period movements for any account**.
+- **Acceptance Criteria:**
+  - Quick account lookup
+  - Show: opening balance, period debits, period credits, closing balance
+  - Period selection (month, quarter, year, custom)
+  - Link to detailed transactions
+- **Status:** Not Started
+
+#### Financial Reports
+
+**US-230: Balance Sheet (Balansräkning)**
+- As an **organization owner**, in order to **understand my financial position**, I would like to **generate a balance sheet report**.
+- **Acceptance Criteria:**
+  - As of date selection
+  - Standard Swedish format per ÅRL
+  - Assets (Tillgångar): Fixed assets, current assets
+  - Equity & Liabilities (Eget kapital och skulder)
+  - Comparative period (previous year)
+  - Export to PDF/Excel
+- **Status:** Not Started
+
+**US-231: Income Statement (Resultaträkning)**
+- As an **organization owner**, in order to **see profit and loss**, I would like to **generate an income statement report**.
+- **Acceptance Criteria:**
+  - Period selection (month, quarter, year, custom)
+  - Standard Swedish format per ÅRL
+  - Revenue, costs, operating profit, financial items, net profit
+  - Comparative period
+  - Budget comparison (if budgets exist)
+  - Export to PDF/Excel
+- **Status:** Not Started
+
+**US-232: Cash Flow Statement (Kassaflödesanalys)**
+- As an **organization owner**, in order to **understand cash movements**, I would like to **generate a cash flow statement**.
+- **Acceptance Criteria:**
+  - Period selection
+  - Operating activities, investing activities, financing activities
+  - Indirect method (from net income)
+  - Comparative period
+  - Export to PDF/Excel
+- **Status:** Not Started
+
+**US-233: VAT Report (Momsrapport)**
+- As a **bookkeeper**, in order to **file VAT returns**, I would like to **generate a VAT report for the reporting period**.
+- **Acceptance Criteria:**
+  - Period selection (monthly, quarterly, yearly based on org settings)
+  - Show: Output VAT (sales), Input VAT (purchases), Net VAT payable/receivable
+  - Breakdown by VAT rate (25%, 12%, 6%, 0%)
+  - Format compatible with Skatteverket requirements
+  - Drilldown to underlying transactions
+  - Export for filing
+- **Status:** Not Started
+
+**US-234: Aged Receivables Report (Kundreskontra)**
+- As a **bookkeeper**, in order to **manage outstanding invoices**, I would like to **generate an aged receivables report showing overdue amounts by client**.
+- **Acceptance Criteria:**
+  - As of date
+  - Aging buckets: Current, 1-30 days, 31-60 days, 61-90 days, 90+ days
+  - By client with totals
+  - Drilldown to individual invoices
+  - Export to PDF/Excel
+- **Status:** Not Started
+
+**US-235: Aged Payables Report (Leverantörsreskontra)**
+- As a **bookkeeper**, in order to **manage bills to pay**, I would like to **generate an aged payables report showing amounts owed to suppliers**.
+- **Acceptance Criteria:**
+  - As of date
+  - Aging buckets: Current, 1-30 days, 31-60 days, 61-90 days, 90+ days
+  - By supplier with totals
+  - Drilldown to individual bills
+  - Export to PDF/Excel
+- **Status:** Not Started
+
+#### Bank & Reconciliation
+
+**US-240: Bank Account Setup**
+- As a **bookkeeper**, in order to **track bank transactions**, I would like to **register bank accounts and link them to ledger accounts**.
+- **Acceptance Criteria:**
+  - Add bank account: name, account number, bank name, currency
+  - Link to chart of accounts (19xx accounts)
+  - Multiple bank accounts per organization
+  - Set opening balance and date
+- **Status:** Not Started
+
+**US-241: Bank Transaction Import**
+- As a **bookkeeper**, in order to **record bank transactions**, I would like to **import bank statements in common formats (CSV, OFX, ISO 20022)**.
+- **Acceptance Criteria:**
+  - Upload bank statement file
+  - Parse transactions: date, description, amount, reference
+  - Preview before import
+  - Duplicate detection
+  - Store imported transactions for reconciliation
+- **Status:** Not Started
+
+**US-242: Bank Reconciliation**
+- As a **bookkeeper**, in order to **ensure bank records match my books**, I would like to **reconcile bank transactions with journal entries**.
+- **Acceptance Criteria:**
+  - Select bank account and statement period
+  - Show unreconciled bank transactions
+  - Show unreconciled book transactions
+  - Match transactions (auto-suggest and manual)
+  - Create adjusting entries for differences
+  - Mark as reconciled
+  - Reconciliation report
+- **Status:** Not Started
+
+**US-243: Open Banking Integration (PSD2)**
+- As a **user**, in order to **automatically sync bank transactions**, I would like to **connect my bank account via Open Banking APIs**.
+- **Acceptance Criteria:**
+  - Support Swedish banks via aggregator (Tink, Plaid, etc.)
+  - Secure OAuth connection flow
+  - Automatic daily sync of transactions
+  - Categorization suggestions based on description
+- **Status:** Not Started
+
+#### Fiscal Year Management
+
+**US-250: Fiscal Year Setup**
+- As an **organization owner**, in order to **organize accounting by periods**, I would like to **define fiscal years with start and end dates**.
+- **Acceptance Criteria:**
+  - Create fiscal year: name, start date, end date
+  - Support non-calendar fiscal years (e.g., July-June)
+  - Multiple fiscal years visible
+  - Current/active fiscal year indicator
+  - Cannot overlap fiscal years
+- **Status:** Not Started
+
+**US-251: Fiscal Year Closing**
+- As a **bookkeeper**, in order to **finalize the accounting period**, I would like to **close a fiscal year, transfer result to equity, and lock transactions**.
+- **Acceptance Criteria:**
+  - Year-end closing process wizard
+  - Calculate net result
+  - Create closing entries (result to equity account 2099)
+  - Generate opening balances for new year
+  - Lock closed year (prevent modifications)
+  - Audit trail of closing
+- **Status:** Not Started
+
+**US-252: Period Locking**
+- As an **organization owner**, in order to **prevent accidental changes to finalized periods**, I would like to **lock accounting periods (months, quarters)**.
+- **Acceptance Criteria:**
+  - Lock individual months or quarters
+  - Locked periods: no new entries, no edits
+  - Admin override with reason logging
+  - Visual indicator of locked periods
+- **Status:** Not Started
+
+#### SIE Integration
 
 **US-121: SIE File Export**
-- As a **user with accounting needs**, in order to **transfer my invoice and transaction data to my accounting software**, I would like to **export data in SIE format (Standard Import Export)**.
-- **User Story:** Export accounting data in SIE5 (XML) format compatible with Swedish accounting software (Fortnox, Visma, etc.)
-- **Export Capabilities:**
-  - **Full Export:** Complete accounting data including chart of accounts, customers, invoices, and transactions for a fiscal year
-  - **Filtered Export:** Export specific date ranges, invoice statuses, or customer segments
-  - **Incremental Export:** Export only changes since last export (delta export)
-- **SIE Format Support:**
-  - SIE5 (XML format) - Primary implementation
-  - Include company metadata (organization number, VAT number, fiscal year)
-  - Chart of accounts with account types (asset, liability, revenue, expense)
-  - Customer register with organization numbers
-  - Invoice transactions with proper accounting entries
-  - VAT codes and rates according to Swedish standards
-- **Export Options:**
-  - Select fiscal year or custom date range
-  - Include/exclude draft invoices
-  - Include/exclude deleted invoices
-  - Encoding: UTF-8 with BOM for Excel compatibility
+- As a **user with accounting needs**, in order to **transfer data to external accounting software**, I would like to **export data in SIE4/SIE5 format**.
+- **Acceptance Criteria:**
+  - SIE4 (text format) - Wide compatibility
+  - SIE5 (XML format) - Modern format
+  - Export options: chart of accounts, balances, transactions, complete
+  - Date range selection
+  - Schema validation
+  - Compatible with Fortnox, Visma, Björn Lundén, etc.
 - **Data Mapping:**
   - Invoices → Vouchers (Verifikationer)
   - Clients → Customer register (Kunder)
   - Products → Article register (Artiklar) - if applicable
   - VAT amounts → VAT transactions (Momstransaktioner)
   - Payment records → Payment transactions (Betalningar)
-- **File Generation:**
-  - Server-side XML generation (to handle large datasets)
-  - Schema validation against sie5.xsd
-  - Downloadable file: `[OrgName]_SIE5_[DateRange].xml`
-- **Implementation:**
-  - Backend: SIE export service with XML generation
-  - Frontend: Export dialog with options and progress indicator
-  - Validation: Schema validation before download
-  - Error handling: Invalid data warnings, missing required fields
-- **Acceptance Criteria:**
-  - Exported SIE5 file passes schema validation (sie5.xsd)
-  - File can be imported into standard Swedish accounting software (Fortnox, Visma, etc.)
-  - All invoice data correctly mapped to accounting entries
-  - VAT calculations match Swedish requirements
-  - Company metadata complete and accurate
-- **Tests:** TBD - Cypress tests for export dialog, file generation, schema validation
 - **Status:** Not Started
 
 **US-122: SIE File Import**
-- As a **user migrating from another accounting system**, in order to **bring my existing data into VisInv**, I would like to **import accounting data from SIE format files**.
-- **User Story:** Import chart of accounts, customers, and transactions from SIE5 (XML) files
-- **Import Capabilities:**
-  - **Chart of Accounts:** Import account structure with account types and names
-  - **Customer Register:** Import customer data with organization numbers and contact info
-  - **Initial Balances:** Import opening balances for accounts
-  - **Transaction History:** Import historical vouchers/transactions (optional)
-- **SIE Format Support:**
-  - SIE5 (XML format) - Primary implementation
-  - Schema validation against sie5.xsd before processing
-  - Support for both full SIE files and SIE Entry files (simpler format)
-- **Import Process:**
-  - **Step 1: Upload** - Drag & drop or file select for .xml/.sie file
-  - **Step 2: Validate** - Schema validation and data integrity checks
-  - **Step 3: Preview** - Show what will be imported (accounts, customers, transactions count)
-  - **Step 4: Map** - Map SIE accounts to VisInv categories if needed
-  - **Step 5: Import** - Execute import with progress indicator
-  - **Step 6: Review** - Summary of imported items, any errors/warnings
-- **Data Mapping:**
-  - SIE Accounts → Chart of Accounts (create if not exists)
-  - SIE Customers → Clients table
-  - SIE Vouchers → Invoice/transaction creation (if applicable)
-  - Organization metadata → Organization settings validation/update
-- **Conflict Resolution:**
-  - Duplicate detection by organization number (for customers)
-  - Duplicate detection by account ID (for accounts)
-  - User choice: Skip, Update, or Create New
-  - Dry-run mode to preview without committing changes
-- **Validation Rules:**
-  - File must be valid SIE5 XML
-  - Organization number must match current organization (or create new org)
-  - Required fields must be present (company name, org number, fiscal year)
-  - Account IDs must be numeric 4-digit codes
-  - VAT rates must be valid Swedish rates (0%, 6%, 12%, 25%)
-- **Error Handling:**
-  - Clear error messages for invalid XML
-  - Line-by-line error reporting for data issues
-  - Rollback capability if import fails mid-process
-  - Import log with warnings and skipped items
-- **Implementation:**
-  - Backend: SIE import parser service (XML to JSON)
-  - Frontend: Multi-step import wizard component
-  - Database: Transaction support for rollback capability
-  - Validation: Schema validation + business rule validation
+- As a **user migrating to VisInv**, in order to **bring existing accounting data**, I would like to **import SIE files from other accounting software**.
 - **Acceptance Criteria:**
-  - Can import valid SIE5 files without errors
-  - Duplicate customers are detected and user can choose resolution
-  - Chart of accounts correctly imported with proper account types
-  - Import process can be safely rolled back if user cancels
-  - Clear progress indication during large imports
-  - Import log downloadable for audit trail
-- **Tests:** TBD - Cypress tests for upload, validation, preview, import flow
+  - Support SIE4 and SIE5 formats
+  - Import wizard: upload → validate → preview → map → import
+  - Import chart of accounts
+  - Import opening balances
+  - Import historical transactions (optional)
+  - Conflict resolution for duplicates
+- **Status:** Not Started
+
+#### Supplier Management (Leverantörer)
+
+**US-260: Supplier Invoice Registration**
+- As a **bookkeeper**, in order to **track business expenses**, I would like to **register supplier invoices/bills**.
+- **Acceptance Criteria:**
+  - Supplier selection (from supplier register)
+  - Invoice details: number, date, due date, amount, VAT
+  - Line items with account coding
+  - Attach PDF of invoice
+  - Auto-create journal entry
+- **Status:** Not Started
+
+**US-261: Supplier Management**
+- As a **bookkeeper**, in order to **manage vendors**, I would like to **maintain a supplier register**.
+- **Acceptance Criteria:**
+  - CRUD operations for suppliers
+  - Fields: name, org number, VAT number, address, bank details
+  - Default accounts for supplier
+  - Supplier transaction history
+- **Status:** Not Started
+
+**US-262: Purchase Invoice Approval Workflow**
+- As an **organization**, in order to **control spending**, I would like to **route supplier invoices through an approval workflow before payment**.
+- **Acceptance Criteria:**
+  - Submit invoice for approval
+  - Approval routing based on amount or department
+  - Approve/reject with comments
+  - Approved invoices ready for payment
+  - Audit trail of approvals
+- **Status:** Not Started
+
+#### Invoicing & Accounting Integration
+
+**US-280: Invoice Accounting Integration**
+- As a **bookkeeper**, in order to **have invoices automatically recorded**, I would like to **invoices to generate proper journal entries based on configured accounts**.
+- **Acceptance Criteria:**
+  - Configure default revenue accounts per product category
+  - Configure accounts receivable account
+  - Configure VAT accounts per rate
+  - Invoice creation → journal entry created (or on send)
+  - Payment recording → journal entry created
+  - View linked journal entries from invoice
+- **Status:** Not Started
+
+**US-281: Invoice Payment Matching**
+- As a **bookkeeper**, in order to **reconcile payments**, I would like to **match bank transactions to invoice payments**.
+- **Acceptance Criteria:**
+  - Suggest matches based on amount and reference
+  - Manual matching for unclear cases
+  - Partial payment handling
+  - Overpayment handling
+  - Update invoice status on match
+- **Status:** Not Started
+
+**US-282: Credit Note Accounting**
+- As a **bookkeeper**, in order to **properly account for credit notes**, I would like to **credit notes to generate reversing journal entries**.
+- **Acceptance Criteria:**
+  - Credit note creates negative revenue entry
+  - Proper VAT reversal
+  - Link to original invoice
+  - Accounts receivable reduction
 - **Status:** Not Started
 
 ---
@@ -1574,6 +1886,158 @@ This document provides a comprehensive list of user stories for the VisInv invoi
 20. **Transactions** - Bank transactions for matching to payments
 21. **Purchase Orders** - Supplier orders and inventory receiving
 22. **Inventory** - Stock levels and product inventory tracking
+
+### Accounting Module Entities
+23. **Accounts** - Chart of accounts (BAS standard, 4-digit codes)
+24. **Journal Entries** - Verifikationer with verification numbers
+25. **Journal Entry Lines** - Debit/credit lines for each entry
+26. **Fiscal Years** - Accounting periods with open/closed status
+27. **Bank Accounts** - Linked to ledger accounts for reconciliation
+28. **Bank Transactions** - Imported transactions for matching
+29. **Suppliers** - Vendor register with payment details
+30. **Supplier Invoices** - Bills payable with approval workflow
+
+### Database Schema - Accounting Module
+
+```sql
+-- Chart of Accounts
+CREATE TABLE accounts (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  organization_id UUID NOT NULL REFERENCES organizations(id),
+  account_number VARCHAR(10) NOT NULL,  -- 4-digit BAS code
+  name VARCHAR(255) NOT NULL,
+  name_sv VARCHAR(255),
+  account_type VARCHAR(50) NOT NULL,  -- asset, liability, equity, revenue, expense
+  account_group VARCHAR(50),
+  parent_account_id UUID REFERENCES accounts(id),
+  vat_code VARCHAR(10),
+  sru_code VARCHAR(10),  -- Swedish tax reporting code
+  is_active BOOLEAN DEFAULT true,
+  is_system BOOLEAN DEFAULT false,
+  created_at TIMESTAMPTZ DEFAULT NOW(),
+  updated_at TIMESTAMPTZ DEFAULT NOW(),
+  UNIQUE(organization_id, account_number)
+);
+
+-- Fiscal Years
+CREATE TABLE fiscal_years (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  organization_id UUID NOT NULL REFERENCES organizations(id),
+  name VARCHAR(100) NOT NULL,
+  start_date DATE NOT NULL,
+  end_date DATE NOT NULL,
+  is_closed BOOLEAN DEFAULT false,
+  closed_at TIMESTAMPTZ,
+  closed_by UUID REFERENCES auth.users(id),
+  created_at TIMESTAMPTZ DEFAULT NOW(),
+  UNIQUE(organization_id, start_date)
+);
+
+-- Journal Entries (Verifikationer)
+CREATE TABLE journal_entries (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  organization_id UUID NOT NULL REFERENCES organizations(id),
+  fiscal_year_id UUID NOT NULL REFERENCES fiscal_years(id),
+  verification_number INTEGER NOT NULL,
+  entry_date DATE NOT NULL,
+  description TEXT,
+  status VARCHAR(20) DEFAULT 'draft',  -- draft, posted, voided
+  source_type VARCHAR(50),  -- manual, invoice, payment, bank_import
+  source_id UUID,  -- ID of related entity
+  created_by UUID REFERENCES auth.users(id),
+  posted_at TIMESTAMPTZ,
+  created_at TIMESTAMPTZ DEFAULT NOW(),
+  updated_at TIMESTAMPTZ DEFAULT NOW(),
+  UNIQUE(organization_id, fiscal_year_id, verification_number)
+);
+
+-- Journal Entry Lines
+CREATE TABLE journal_entry_lines (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  journal_entry_id UUID NOT NULL REFERENCES journal_entries(id) ON DELETE CASCADE,
+  account_id UUID NOT NULL REFERENCES accounts(id),
+  description TEXT,
+  debit_amount DECIMAL(15,2) DEFAULT 0,
+  credit_amount DECIMAL(15,2) DEFAULT 0,
+  vat_code VARCHAR(10),
+  vat_amount DECIMAL(15,2),
+  cost_center VARCHAR(50),
+  line_order INTEGER DEFAULT 0,
+  created_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+-- Bank Accounts (for accounting)
+CREATE TABLE bank_accounts (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  organization_id UUID NOT NULL REFERENCES organizations(id),
+  account_id UUID REFERENCES accounts(id),  -- Link to chart of accounts
+  bank_name VARCHAR(255),
+  account_number VARCHAR(50),
+  iban VARCHAR(50),
+  bic VARCHAR(20),
+  currency VARCHAR(3) DEFAULT 'SEK',
+  opening_balance DECIMAL(15,2) DEFAULT 0,
+  opening_date DATE,
+  is_active BOOLEAN DEFAULT true,
+  created_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+-- Bank Transactions (imported)
+CREATE TABLE bank_transactions (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  bank_account_id UUID NOT NULL REFERENCES bank_accounts(id),
+  transaction_date DATE NOT NULL,
+  value_date DATE,
+  description TEXT,
+  amount DECIMAL(15,2) NOT NULL,
+  reference VARCHAR(100),
+  counterparty VARCHAR(255),
+  is_reconciled BOOLEAN DEFAULT false,
+  reconciled_with UUID REFERENCES journal_entry_lines(id),
+  imported_at TIMESTAMPTZ DEFAULT NOW(),
+  raw_data JSONB  -- Original import data
+);
+
+-- Suppliers
+CREATE TABLE suppliers (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  organization_id UUID NOT NULL REFERENCES organizations(id),
+  name VARCHAR(255) NOT NULL,
+  organization_number VARCHAR(20),
+  vat_number VARCHAR(30),
+  email VARCHAR(255),
+  phone VARCHAR(50),
+  address_line1 VARCHAR(255),
+  address_line2 VARCHAR(255),
+  postal_code VARCHAR(20),
+  city VARCHAR(100),
+  country VARCHAR(2) DEFAULT 'SE',
+  bank_account VARCHAR(50),
+  default_expense_account_id UUID REFERENCES accounts(id),
+  payment_terms INTEGER DEFAULT 30,
+  notes TEXT,
+  is_active BOOLEAN DEFAULT true,
+  created_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+-- Supplier Invoices
+CREATE TABLE supplier_invoices (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  organization_id UUID NOT NULL REFERENCES organizations(id),
+  supplier_id UUID NOT NULL REFERENCES suppliers(id),
+  invoice_number VARCHAR(50),
+  invoice_date DATE NOT NULL,
+  due_date DATE NOT NULL,
+  total_amount DECIMAL(15,2) NOT NULL,
+  vat_amount DECIMAL(15,2),
+  currency VARCHAR(3) DEFAULT 'SEK',
+  status VARCHAR(20) DEFAULT 'pending',  -- pending, approved, paid, cancelled
+  journal_entry_id UUID REFERENCES journal_entries(id),
+  paid_at TIMESTAMPTZ,
+  notes TEXT,
+  created_at TIMESTAMPTZ DEFAULT NOW()
+);
+```
 
 ---
 
@@ -1674,12 +2138,30 @@ This document provides a comprehensive list of user stories for the VisInv invoi
 - US-084, US-085, US-086 (Document management)
 - US-093, US-094, US-095, US-096, US-097 (Integrations & ecosystem)
 - US-104, US-105, US-106, US-107, US-108, US-109, US-119 (Enhanced security & compliance)
-- US-121, US-122 (SIE file export/import for Swedish accounting integration)
 
-### Phase 6 (Inventory & Product Businesses)
+### Phase 6 (Accounting Module - Foundation)
+- US-401, US-402, US-403, US-404 (Navigation & UI architecture)
+- US-201, US-202, US-203 (Chart of accounts)
+- US-250 (Fiscal year setup)
+- US-210, US-213, US-214, US-215 (Manual journal entries & templates)
+
+### Phase 7 (Accounting Module - Core)
+- US-211, US-212 (Auto journal entries & recurring)
+- US-220, US-221, US-222 (Ledger views & trial balance)
+- US-230, US-231, US-232, US-233 (Financial reports)
+- US-121, US-122 (SIE import/export)
+
+### Phase 8 (Accounting Module - Advanced)
+- US-240, US-241, US-242, US-243 (Bank accounts & reconciliation)
+- US-234, US-235 (Aged receivables/payables)
+- US-251, US-252 (Fiscal year closing & period locking)
+- US-260, US-261, US-262 (Supplier management)
+- US-280, US-281, US-282 (Invoice accounting integration)
+
+### Phase 9 (Inventory & Product Businesses)
 - US-098, US-099, US-100 (Inventory & COGS tracking)
 
-### Phase 7 (Mobile & Enterprise)
+### Phase 10 (Mobile & Enterprise)
 - US-101, US-102, US-103 (Mobile apps & accessibility)
 - US-110, US-111, US-112 (White label & multi-tenancy)
 - US-113, US-114, US-115 (Support systems)
@@ -1714,6 +2196,16 @@ This document provides a comprehensive list of user stories for the VisInv invoi
 | **Security & Data Management** | 3 | 0 | 0 | 3 |
 | **Integration & Webhooks** | 2 | 0 | 0 | 2 |
 | **Developer & Operations** | 3 | 0 | 0 | 3 |
+| **Navigation & UI Architecture** | 4 | 0 | 0 | 4 |
+| **Accounting - Chart of Accounts** | 3 | 0 | 0 | 3 |
+| **Accounting - Journal Entries** | 6 | 0 | 0 | 6 |
+| **Accounting - Ledger Views** | 3 | 0 | 0 | 3 |
+| **Accounting - Financial Reports** | 6 | 0 | 0 | 6 |
+| **Accounting - Bank & Reconciliation** | 4 | 0 | 0 | 4 |
+| **Accounting - Fiscal Year Management** | 3 | 0 | 0 | 3 |
+| **Accounting - SIE Integration** | 2 | 0 | 0 | 2 |
+| **Accounting - Supplier Management** | 3 | 0 | 0 | 3 |
+| **Accounting - Invoice Integration** | 3 | 0 | 0 | 3 |
 | **Estimates & Quotes** | 3 | 0 | 0 | 3 |
 | **Time & Expense Tracking** | 4 | 0 | 0 | 4 |
 | **Client Portal** | 3 | 0 | 0 | 3 |
@@ -1727,7 +2219,7 @@ This document provides a comprehensive list of user stories for the VisInv invoi
 | **Security Enhancements** | 6 | 1 | 0 | 5 |
 | **White Label** | 3 | 0 | 0 | 3 |
 | **Support & Growth** | 6 | 1 | 0 | 5 |
-| **TOTAL** | **118** | **31** | **2** | **85** |
+| **TOTAL** | **155** | **31** | **2** | **122** |
 
 ### Quick Reference: User Stories by Number
 
@@ -1758,6 +2250,23 @@ This document provides a comprehensive list of user stories for the VisInv invoi
 - US-104 to US-109, US-119: Security & Compliance
 - US-110 to US-112: White Label & Multi-tenancy
 - US-113 to US-118: Support & Growth
+- US-121 to US-122: SIE Integration
+
+**Accounting Module (US-201 to US-282)**: Full Swedish-compliant bookkeeping
+- US-201 to US-203: Chart of Accounts (BAS standard)
+- US-210 to US-215: Journal Entries (Verifikationer)
+- US-220 to US-222: Account Ledger Views
+- US-230 to US-235: Financial Reports (Balance Sheet, Income Statement, VAT, etc.)
+- US-240 to US-243: Bank Accounts & Reconciliation
+- US-250 to US-252: Fiscal Year Management
+- US-260 to US-262: Supplier Management (Leverantörer)
+- US-280 to US-282: Invoice & Accounting Integration
+
+**Navigation & UI (US-401 to US-404)**: Application architecture
+- US-401: Hierarchical Sidebar Navigation
+- US-402: Module-Based Dashboard
+- US-403: Global Search
+- US-404: Quick Actions Menu
 
 ---
 
@@ -1765,27 +2274,33 @@ This document provides a comprehensive list of user stories for the VisInv invoi
 
 ### How VisInv Compares to Industry Leaders
 
-| Feature Category | FreshBooks | QuickBooks | VisInv (Planned) |
-|------------------|------------|------------|------------------|
-| **Basic Invoicing** | ✅ | ✅ | ✅ Implemented |
-| **Custom Templates** | ✅ | ✅ | ✅ Implemented |
-| **Time Tracking** | ✅ | ⚠️ Add-on | 📋 US-068 |
-| **Expense Tracking** | ✅ | ✅ | 📋 US-069 |
-| **Estimates/Quotes** | ✅ | ✅ | 📋 US-065 |
-| **Client Portal** | ✅ | ✅ | 📋 US-072 |
-| **Recurring Invoices** | ✅ | ✅ | 📋 US-025 |
-| **Multi-Currency** | ✅ | ✅ | 📋 US-024 |
-| **Payment Processing** | ✅ | ✅ | 🔶 US-078 |
-| **Mobile Apps** | ✅ | ✅ | 📋 US-101 |
-| **Project Management** | ✅ | ⚠️ Limited | 📋 US-071 |
-| **Inventory** | ❌ | ✅ | 📋 US-098 |
-| **Payroll** | ⚠️ 3rd party | ✅ | ⏸️ Future |
-| **Double-Entry Accounting** | ❌ | ✅ | ⏸️ Future |
-| **Bank Reconciliation** | ⚠️ Limited | ✅ | 📋 US-079 |
-| **Team Collaboration** | ✅ | ✅ | ✅ Implemented |
-| **API & Integrations** | ✅ | ✅ | 📋 US-095 |
-| **White Label** | ❌ | ❌ | 📋 US-110 |
-| **Swedish Compliance** | ⚠️ Generic | ⚠️ Generic | ✅ Built-in |
+| Feature Category | FreshBooks | QuickBooks | Fortnox | VisInv (Planned) |
+|------------------|------------|------------|---------|------------------|
+| **Basic Invoicing** | ✅ | ✅ | ✅ | ✅ Implemented |
+| **Custom Templates** | ✅ | ✅ | ⚠️ Limited | ✅ Implemented |
+| **Time Tracking** | ✅ | ⚠️ Add-on | ✅ | 📋 US-068 |
+| **Expense Tracking** | ✅ | ✅ | ✅ | 📋 US-069 |
+| **Estimates/Quotes** | ✅ | ✅ | ✅ | 📋 US-065 |
+| **Client Portal** | ✅ | ✅ | ⚠️ Limited | 📋 US-072 |
+| **Recurring Invoices** | ✅ | ✅ | ✅ | 📋 US-025 |
+| **Multi-Currency** | ✅ | ✅ | ✅ | ✅ Implemented |
+| **Payment Processing** | ✅ | ✅ | ✅ | 🔶 US-078 |
+| **Mobile Apps** | ✅ | ✅ | ✅ | 📋 US-101 |
+| **Project Management** | ✅ | ⚠️ Limited | ⚠️ Limited | 📋 US-071 |
+| **Inventory** | ❌ | ✅ | ✅ | 📋 US-098 |
+| **Payroll** | ⚠️ 3rd party | ✅ | ✅ | ⏸️ Future |
+| **Double-Entry Accounting** | ❌ | ✅ | ✅ | 📋 US-210+ |
+| **Chart of Accounts (BAS)** | ❌ | ❌ | ✅ | 📋 US-201 |
+| **Journal Entries** | ❌ | ✅ | ✅ | 📋 US-210 |
+| **Financial Reports** | ⚠️ Basic | ✅ | ✅ | 📋 US-230+ |
+| **VAT Reporting** | ⚠️ Generic | ⚠️ Generic | ✅ | 📋 US-233 |
+| **Bank Reconciliation** | ⚠️ Limited | ✅ | ✅ | 📋 US-242 |
+| **SIE Import/Export** | ❌ | ❌ | ✅ | 📋 US-121/122 |
+| **Supplier Invoices** | ❌ | ✅ | ✅ | 📋 US-260+ |
+| **Team Collaboration** | ✅ | ✅ | ✅ | ✅ Implemented |
+| **API & Integrations** | ✅ | ✅ | ✅ | 📋 US-095 |
+| **White Label** | ❌ | ❌ | ❌ | 📋 US-110 |
+| **Swedish Compliance** | ⚠️ Generic | ⚠️ Generic | ✅ Native | ✅ Built-in |
 
 **Legend:**
 - ✅ = Available
@@ -1843,25 +2358,37 @@ This document provides a comprehensive list of user stories for the VisInv invoi
 - Client portal (US-072 to US-074)
 - Bulk operations (US-080 to US-083)
 - Workflow automation
-- Bank reconciliation (US-079)
 - Enhanced reporting (US-087 to US-092)
 
 ### 2025 Q4: Integrations & Ecosystem
-- Accounting software exports (US-093)
 - CRM integrations (US-094)
 - API & webhooks (US-095)
 - Zapier & email integrations (US-096, US-097)
 - Mobile-optimized web (US-102)
 
-### 2026 Q1-Q2: Mobile & Enterprise
+### 2026 Q1-Q2: Accounting Module - Foundation
+- Hierarchical navigation (US-401 to US-404)
+- Chart of Accounts with BAS standard (US-201 to US-203)
+- Fiscal year setup (US-250)
+- Manual journal entries & templates (US-210 to US-215)
+- Database migrations for accounting tables
+
+### 2026 Q3: Accounting Module - Core
+- Auto journal entries from invoices (US-211, US-280 to US-282)
+- Ledger views & trial balance (US-220 to US-222)
+- Financial reports: Balance Sheet, Income Statement, VAT (US-230 to US-233)
+- SIE import/export (US-121, US-122)
+
+### 2026 Q4: Accounting Module - Advanced
+- Bank accounts & reconciliation (US-240 to US-243)
+- Aged receivables/payables reports (US-234, US-235)
+- Fiscal year closing & period locking (US-251, US-252)
+- Supplier management & invoices (US-260 to US-262)
+
+### 2027 Q1-Q2: Mobile & Enterprise
 - Native mobile apps (US-101)
 - Inventory management (US-098 to US-100)
 - SSO & advanced security (US-104 to US-109)
 - Accessibility (WCAG) compliance (US-103)
 
-### 2026 Q3+: Scale & Growth
-- White label & multi-tenant (US-110 to US-112)
-- Enhanced support systems (US-113 to US-115)
-- Marketing & growth features (US-116 to US-118)
-- Performance optimization
-- Global expansion features
+### 2027 Q3+: Scale & Growth
