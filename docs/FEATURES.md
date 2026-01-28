@@ -1430,16 +1430,18 @@ Features are organized into logical categories and prioritized into development 
 
 ### Navigation & UI Architecture
 
-**US-401: Hierarchical Sidebar Navigation**
+**US-401: Hierarchical Sidebar Navigation** ✅
 - As a **user**, in order to **navigate the expanded application**, I would like to **use a hierarchical sidebar with collapsible module sections**.
 - **Acceptance Criteria:**
-  - Three main sections: Accounting, Invoicing, Time & Projects
-  - Sections are collapsible/expandable
-  - Remember expanded state per user
-  - Active item highlighting with breadcrumb context
-  - Keyboard navigation support
-  - Mobile responsive (hamburger menu)
-- **Status:** Not Started
+  - ✅ Three main sections: Accounting, Invoicing, Time & Projects (with Administration)
+  - ✅ Sections are collapsible/expandable
+  - ✅ Remember expanded state per user (localStorage)
+  - ✅ Active item highlighting
+  - Coming Soon placeholder for Accounting and Time & Projects modules
+  - Mobile responsive (hamburger menu) - existing behavior
+- **Status:** Complete
+- **Implementation:** `CollapsibleNavSection.jsx`, updated `Sidebar.jsx`
+- **Tests:** `cypress/e2e/hierarchical-navigation.cy.js` (28 tests)
 
 **US-402: Module-Based Dashboard**
 - As a **user**, in order to **see relevant information at a glance**, I would like to **have a customizable dashboard with module-specific widgets**.

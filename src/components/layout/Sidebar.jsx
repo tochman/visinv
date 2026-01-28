@@ -9,10 +9,10 @@ import {
   SwatchIcon,
   UserGroupIcon,
   Cog6ToothIcon,
-  WrenchScrewdriverIcon,
   ShieldCheckIcon,
 } from '@heroicons/react/24/outline';
 import { OrganizationSwitcher } from '../organization';
+import CollapsibleNavSection from './CollapsibleNavSection';
 
 export default function Sidebar() {
   const { t } = useTranslation();
@@ -20,27 +20,36 @@ export default function Sidebar() {
   const { isAdmin } = useSelector((state) => state.auth);
   const { isPremium } = useSelector((state) => state.subscriptions);
 
-  const navItems = [
-    { path: '/', label: t('nav.dashboard'), icon: HomeIcon },
+  // Admins have access to all premium features
+  const hasPremiumAccess = isPremium || isAdmin;
+
+  const isActive = (path) => location.pathname === path;
+
+  // Overview section - just Dashboard (rendered separately, not collapsible)
+  const dashboardItem = { path: '/', label: t('nav.dashboard'), icon: HomeIcon };
+
+  // Invoicing module items
+  const invoicingItems = [
     { path: '/invoices', label: t('nav.invoices'), icon: DocumentTextIcon },
     { path: '/clients', label: t('nav.clients'), icon: UsersIcon },
     { path: '/products', label: t('nav.products'), icon: CubeIcon },
     { path: '/templates', label: t('nav.templates'), icon: SwatchIcon, premium: true },
-    { path: '/teams', label: t('nav.teams'), icon: UserGroupIcon, premium: true },
-    { path: '/settings', label: t('nav.settings'), icon: Cog6ToothIcon },
   ];
 
+  // Administration items
+  const adminItems = [
+    { path: '/settings', label: t('nav.settings'), icon: Cog6ToothIcon },
+    { path: '/teams', label: t('nav.teams'), icon: UserGroupIcon, premium: true },
+  ];
+
+  // Add admin panel if user is admin
   if (isAdmin) {
-    navItems.push({ path: '/admin', label: t('nav.admin'), icon: ShieldCheckIcon });
+    adminItems.push({ path: '/admin', label: t('nav.admin'), icon: ShieldCheckIcon });
   }
-
-  const isActive = (path) => location.pathname === path;
-
-  // Admins have access to all premium features
-  const hasPremiumAccess = isPremium || isAdmin;
 
   return (
     <div className="w-64 bg-white dark:bg-gray-800 shadow-lg dark:shadow-gray-900/20 flex flex-col h-full">
+      {/* Logo and Plan Badge */}
       <div className="p-6">
         <img src="/svethna_logo.svg" alt="VisInv" className="h-10 w-auto dark:invert-0 invert" />
         {isAdmin && (
@@ -62,35 +71,61 @@ export default function Sidebar() {
         )}
       </div>
 
-      <nav className="px-4 space-y-1 flex-1">
-        {navItems.map((item) => {
-          const disabled = item.premium && !hasPremiumAccess;
-          const Icon = item.icon;
-          
-          return (
-            <Link
-              key={item.path}
-              to={disabled ? '#' : item.path}
-              data-cy={`sidebar-nav-${item.path.replace('/', '') || 'dashboard'}`}
-              className={`flex items-center px-4 py-3 rounded-sm transition-colors ${
-                isActive(item.path)
-                  ? 'bg-blue-600 text-white'
-                  : disabled
-                  ? 'text-gray-400 dark:text-gray-600 cursor-not-allowed'
-                  : 'text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700'
-              }`}
-              onClick={(e) => disabled && e.preventDefault()}
-            >
-              <Icon className="h-5 w-5 mr-3" />
-              <span className="flex-1">{item.label}</span>
-              {item.premium && !hasPremiumAccess && (
-                <span className="text-xs bg-yellow-400 dark:bg-yellow-500 text-gray-900 px-2 py-1 rounded">
-                  PRO
-                </span>
-              )}
-            </Link>
-          );
-        })}
+      {/* Navigation */}
+      <nav className="px-2 flex-1 overflow-y-auto" data-cy="sidebar-nav">
+        {/* Dashboard - standalone item at top */}
+        <div className="mb-4 px-2">
+          <Link
+            to={dashboardItem.path}
+            data-cy="sidebar-nav-dashboard"
+            className={`flex items-center px-4 py-3 rounded-sm transition-colors ${
+              isActive(dashboardItem.path)
+                ? 'bg-blue-600 text-white'
+                : 'text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700'
+            }`}
+          >
+            <HomeIcon className="h-5 w-5 mr-3" />
+            <span>{dashboardItem.label}</span>
+          </Link>
+        </div>
+
+        {/* Invoicing Module */}
+        <CollapsibleNavSection
+          title={t('nav.sections.invoicing')}
+          sectionKey="invoicing"
+          items={invoicingItems}
+          defaultExpanded={true}
+          hasPremiumAccess={hasPremiumAccess}
+        />
+
+        {/* Accounting Module - Coming Soon */}
+        <CollapsibleNavSection
+          title={t('nav.sections.accounting')}
+          sectionKey="accounting"
+          items={[]}
+          defaultExpanded={false}
+          hasPremiumAccess={hasPremiumAccess}
+          comingSoon={t('nav.comingSoon')}
+        />
+
+        {/* Time & Projects Module - Coming Soon */}
+        <CollapsibleNavSection
+          title={t('nav.sections.timeProjects')}
+          sectionKey="time-projects"
+          items={[]}
+          defaultExpanded={false}
+          hasPremiumAccess={hasPremiumAccess}
+          comingSoon={t('nav.comingSoon')}
+        />
+
+        {/* Administration */}
+        <CollapsibleNavSection
+          title={t('nav.sections.administration')}
+          sectionKey="administration"
+          items={adminItems}
+          defaultExpanded={true}
+          hasPremiumAccess={hasPremiumAccess}
+        />
       </nav>
 
       {/* Organization Switcher */}

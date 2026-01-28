@@ -140,8 +140,7 @@ All features must have corresponding Cypress E2E tests in `cypress/e2e/`.
 describe('Feature Name', () => {
   beforeEach(() => {
     cy.setupCommonIntercepts({ clients: [], products: [] })
-    cy.login('admin')
-    cy.visit('/page')
+    cy.login('admin')  // Already visits '/' - do NOT call cy.visit() after this
     cy.wait('@getClients')
   })
 
@@ -158,6 +157,8 @@ describe('Feature Name', () => {
   })
 })
 ```
+
+**IMPORTANT:** Never call `cy.visit()` after `cy.login()`. The login command already visits the page and sets up Redux state (including premium status). Calling `cy.visit()` again will reset the application state.
 
 **Running Tests:**
 - `npm run cy:open` - Interactive mode (development)

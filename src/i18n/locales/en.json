@@ -12,7 +12,14 @@
     "templates": "Templates",
     "teams": "Teams",
     "settings": "Settings",
-    "admin": "Admin"
+    "admin": "Admin",
+    "sections": {
+      "invoicing": "Invoicing",
+      "accounting": "Accounting",
+      "timeProjects": "Time & Projects",
+      "administration": "Administration"
+    },
+    "comingSoon": "Coming Soon"
   },
   "adminUsers": {
     "title": "Users",

@@ -12,7 +12,14 @@
     "templates": "Mallar",
     "teams": "Team",
     "settings": "Inställningar",
-    "admin": "Admin"
+    "admin": "Admin",
+    "sections": {
+      "invoicing": "Fakturering",
+      "accounting": "Bokföring",
+      "timeProjects": "Tid & Projekt",
+      "administration": "Administration"
+    },
+    "comingSoon": "Kommer snart"
   },
   "auth": {
     "signIn": "Logga in",
