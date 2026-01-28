@@ -857,7 +857,7 @@ describe("Invoice Management", () => {
           body: createdInvoice,
         }).as("createManualInvoice");
 
-        // Mock GET invoices after creation - returns list with new invoice
+        // Update the GET invoices intercept to include the new invoice after creation
         cy.intercept(
           "GET",
           "**/rest/v1/invoices?select=*%2Cclient%3Aclients*",
@@ -865,7 +865,7 @@ describe("Invoice Management", () => {
             statusCode: 200,
             body: [createdInvoice],
           },
-        ).as("getInvoicesAfterCreate");
+        ).as("getInvoicesWithNew");
 
         // Select client - wait for it to be visible first
         cy.getByCy("client-select")
@@ -893,14 +893,11 @@ describe("Invoice Management", () => {
         cy.wait("@createManualInvoice");
         cy.getByCy("invoice-modal").should("not.exist");
 
-        // Wait for the invoice list to reload with the new invoice
-        cy.wait("@getInvoicesAfterCreate", { timeout: 15000 });
-
-        // Small delay to ensure table renders
-        cy.wait(500);
+        // Wait for Redux store to update with new invoice
+        cy.window().its('store').invoke('getState').its('invoices').its('items').should('have.length.greaterThan', 0);
 
         // Verify invoice appears in the list with manual number
-        cy.contains("tr", "MANUAL-1001", { timeout: 15000 }).should("exist");
+        cy.contains("tr", "MANUAL-1001", { timeout: 10000 }).should("exist");
       });
 
       it("is expected to prevent creating invoice without number in manual mode", () => {
