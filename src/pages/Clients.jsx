@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { useTranslation } from 'react-i18next';
 import { fetchClients, deleteClient } from '../features/clients/clientsSlice';
+import { useOrganization } from '../contexts/OrganizationContext';
 import ClientModal from '../components/clients/ClientModal';
 
 export default function Clients() {
@@ -9,17 +10,19 @@ export default function Clients() {
   const dispatch = useDispatch();
   const { items: clients, loading, error } = useSelector((state) => state.clients);
   const { user } = useSelector((state) => state.auth);
+  const { currentOrganization } = useOrganization();
 
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedClient, setSelectedClient] = useState(null);
   const [searchTerm, setSearchTerm] = useState('');
   const [deleteConfirm, setDeleteConfirm] = useState(null);
 
+  // Re-fetch data when user or organization changes
   useEffect(() => {
-    if (user) {
+    if (user && currentOrganization) {
       dispatch(fetchClients());
     }
-  }, [dispatch, user]);
+  }, [dispatch, user, currentOrganization?.id]);
 
   const handleCreate = () => {
     setSelectedClient(null);

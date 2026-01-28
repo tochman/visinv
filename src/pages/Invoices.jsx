@@ -39,14 +39,15 @@ export default function Invoices() {
   const [paymentDialogInvoice, setPaymentDialogInvoice] = useState(null);
   const [showUpgradeModal, setShowUpgradeModal] = useState(false);
 
+  // Re-fetch data when user or organization changes
   useEffect(() => {
-    if (user) {
+    if (user && currentOrganization) {
       dispatch(fetchInvoices());
       dispatch(fetchTemplates());
       dispatch(fetchSubscription(user.id));
       dispatch(fetchInvoiceCount(user.id));
     }
-  }, [dispatch, user]);
+  }, [dispatch, user, currentOrganization?.id]);
 
   const handleCreate = () => {
     // Check free tier limit

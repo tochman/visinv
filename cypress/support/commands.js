@@ -134,17 +134,32 @@ Cypress.Commands.add('login', (userType = 'user', options = {}) => {
     const organizationToUse = options.customOrganization || userData.organization || defaultOrganization
     const roleToUse = options.customOrganization?.role || 'owner'
 
-    cy.intercept('GET', '**/rest/v1/organization_members*', {
+    const orgMemberData = {
+      id: 'test-org-member-id',
+      user_id: userData.id,
+      organization_id: organizationToUse.id,
+      role: roleToUse,
+      is_default: true,
+      joined_at: new Date().toISOString(),
+      organizations: organizationToUse
+    }
+
+    // Intercept for Organization.getDefault() which uses .single() - needs single object response
+    cy.intercept('GET', '**/rest/v1/organization_members?*is_default=eq.true*', {
       statusCode: 200,
-      body: [{
-        id: 'test-org-member-id',
-        user_id: userData.id,
-        organization_id: organizationToUse.id,
-        role: roleToUse,
-        is_default: true,
-        joined_at: new Date().toISOString(),
-        organizations: organizationToUse
-      }]
+      body: orgMemberData
+    }).as('getDefaultOrg')
+
+    // Intercept for general organization_members queries (returns array)
+    cy.intercept('GET', '**/rest/v1/organization_members*', (req) => {
+      // Skip if this is the is_default query (already handled above)
+      if (req.url.includes('is_default=eq.true')) {
+        return
+      }
+      req.reply({
+        statusCode: 200,
+        body: [orgMemberData]
+      })
     }).as('getOrganizations')
     
     // Store organization to dispatch it after page load

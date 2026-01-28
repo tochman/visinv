@@ -485,7 +485,7 @@ describe('Multi-Organization Support (US-058)', () => {
     describe('Clients Page Data Isolation', () => {
       it('is expected to show only Organization 1 clients initially', () => {
         setupInterceptsForOrg('org-1-id');
-        cy.visit('/clients');
+        cy.getByCy('sidebar-nav-clients').click();
         cy.wait('@getClients');
 
         // Should see Org1 clients
@@ -500,7 +500,7 @@ describe('Multi-Organization Support (US-058)', () => {
       it('is expected to show only Organization 2 clients after switching', () => {
         // Start with Org1 data
         setupInterceptsForOrg('org-1-id');
-        cy.visit('/clients');
+        cy.getByCy('sidebar-nav-clients').click();
         cy.wait('@getClients');
 
         // Verify Org1 clients are shown initially
@@ -513,8 +513,7 @@ describe('Multi-Organization Support (US-058)', () => {
         cy.getByCy('organization-option').contains('Beta Corp').click();
         cy.wait('@setDefaultOrg');
         
-        // Trigger reload of clients (the app should refetch on org switch)
-        cy.visit('/clients');
+        // App should automatically refetch on org switch - no cy.visit() needed
         cy.wait('@getClients');
 
         // Should now see Org2 clients
@@ -530,7 +529,7 @@ describe('Multi-Organization Support (US-058)', () => {
     describe('Products Page Data Isolation', () => {
       it('is expected to show only Organization 1 products initially', () => {
         setupInterceptsForOrg('org-1-id');
-        cy.visit('/products');
+        cy.getByCy('sidebar-nav-products').click();
         cy.wait('@getProducts');
 
         // Should see Org1 products
@@ -545,7 +544,7 @@ describe('Multi-Organization Support (US-058)', () => {
       it('is expected to show only Organization 2 products after switching', () => {
         // Start with Org1 data
         setupInterceptsForOrg('org-1-id');
-        cy.visit('/products');
+        cy.getByCy('sidebar-nav-products').click();
         cy.wait('@getProducts');
 
         // Verify Org1 products are shown initially
@@ -558,8 +557,7 @@ describe('Multi-Organization Support (US-058)', () => {
         cy.getByCy('organization-option').contains('Beta Corp').click();
         cy.wait('@setDefaultOrg');
         
-        // Trigger reload of products
-        cy.visit('/products');
+        // App should automatically refetch on org switch - no cy.visit() needed
         cy.wait('@getProducts');
 
         // Should now see Org2 products
@@ -575,7 +573,7 @@ describe('Multi-Organization Support (US-058)', () => {
     describe('Invoices Page Data Isolation', () => {
       it('is expected to show only Organization 1 invoices initially', () => {
         setupInterceptsForOrg('org-1-id');
-        cy.visit('/invoices');
+        cy.getByCy('sidebar-nav-invoices').click();
         cy.wait('@getInvoices');
 
         // Should see Org1 invoice
@@ -588,7 +586,7 @@ describe('Multi-Organization Support (US-058)', () => {
       it('is expected to show only Organization 2 invoices after switching', () => {
         // Start with Org1 data
         setupInterceptsForOrg('org-1-id');
-        cy.visit('/invoices');
+        cy.getByCy('sidebar-nav-invoices').click();
         cy.wait('@getInvoices');
 
         // Verify Org1 invoice is shown initially
@@ -601,8 +599,7 @@ describe('Multi-Organization Support (US-058)', () => {
         cy.getByCy('organization-option').contains('Beta Corp').click();
         cy.wait('@setDefaultOrg');
         
-        // Trigger reload of invoices
-        cy.visit('/invoices');
+        // App should automatically refetch on org switch - no cy.visit() needed
         cy.wait('@getInvoices');
 
         // Should now see Org2 invoice
@@ -617,7 +614,7 @@ describe('Multi-Organization Support (US-058)', () => {
       it('is expected to never show data from wrong organization', () => {
         // Start at clients page with Org1
         setupInterceptsForOrg('org-1-id');
-        cy.visit('/clients');
+        cy.getByCy('sidebar-nav-clients').click();
         cy.wait('@getClients');
         cy.contains('Acme Client Alpha').should('be.visible');
 
@@ -627,7 +624,7 @@ describe('Multi-Organization Support (US-058)', () => {
         cy.getByCy('organization-option').contains('Beta Corp').click();
         cy.wait('@setDefaultOrg');
         
-        cy.visit('/products');
+        cy.getByCy('sidebar-nav-products').click();
         cy.wait('@getProducts');
 
         // Should see Org2 products
@@ -637,23 +634,25 @@ describe('Multi-Organization Support (US-058)', () => {
       });
 
       it('is expected to maintain isolation when navigating between pages', () => {
-        // Set up for Org2
+        // Set up for Org2 by switching first
         setupInterceptsForOrg('org-2-id');
-        cy.visit('/clients');
+        
+        // Start from dashboard (already there after login)
+        cy.getByCy('sidebar-nav-clients').click();
         cy.wait('@getClients');
 
         cy.contains('Beta Client Gamma').should('be.visible');
         cy.contains('Acme Client Alpha').should('not.exist');
 
         // Navigate to products
-        cy.visit('/products');
+        cy.getByCy('sidebar-nav-products').click();
         cy.wait('@getProducts');
 
         cy.contains('Beta Product First').should('be.visible');
         cy.contains('Acme Product').should('not.exist');
 
         // Navigate to invoices
-        cy.visit('/invoices');
+        cy.getByCy('sidebar-nav-invoices').click();
         cy.wait('@getInvoices');
 
         cy.contains('BETA-001').should('be.visible');

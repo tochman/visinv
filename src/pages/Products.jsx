@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { useTranslation } from 'react-i18next';
 import { fetchProducts, deleteProduct } from '../features/products/productsSlice';
+import { useOrganization } from '../contexts/OrganizationContext';
 import ProductModal from '../components/products/ProductModal';
 
 export default function Products() {
@@ -9,6 +10,7 @@ export default function Products() {
   const dispatch = useDispatch();
   const { items: products, loading, error } = useSelector((state) => state.products);
   const { user } = useSelector((state) => state.auth);
+  const { currentOrganization } = useOrganization();
 
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedProduct, setSelectedProduct] = useState(null);
@@ -16,11 +18,12 @@ export default function Products() {
   const [deleteConfirm, setDeleteConfirm] = useState(null);
   const [pricePopover, setPricePopover] = useState(null);
 
+  // Re-fetch data when user or organization changes
   useEffect(() => {
-    if (user) {
+    if (user && currentOrganization) {
       dispatch(fetchProducts());
     }
-  }, [dispatch, user]);
+  }, [dispatch, user, currentOrganization?.id]);
 
   const handleCreate = () => {
     setSelectedProduct(null);

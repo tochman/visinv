@@ -18,10 +18,12 @@ export default function Dashboard() {
   const { currentOrganization, loading } = useOrganization();
   const [showWizard, setShowWizard] = useState(false);
 
-  // Fetch invoices on mount
+  // Re-fetch invoices when organization changes
   useEffect(() => {
-    dispatch(fetchInvoices());
-  }, [dispatch]);
+    if (currentOrganization) {
+      dispatch(fetchInvoices());
+    }
+  }, [dispatch, currentOrganization?.id]);
 
   // Show wizard if no organization exists
   const shouldShowWizard = !loading && !currentOrganization;

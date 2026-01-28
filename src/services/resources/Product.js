@@ -1,5 +1,6 @@
 import { BaseResource } from './BaseResource';
 import { ProductPrice } from './ProductPrice';
+import { Organization } from './Organization';
 
 /**
  * Product Resource
@@ -11,18 +12,25 @@ class ProductResource extends BaseResource {
   }
 
   /**
-   * Get all products for the current user
+   * Get all products for the current organization
    * Includes prices for all currencies
    * @param {Object} options - Query options
    * @returns {Promise<{data: Array|null, error: Error|null}>}
    */
   async index(options = {}) {
+    // Get current organization to filter by
+    const { data: currentOrg, error: orgError } = await Organization.getDefault();
+    if (orgError || !currentOrg) {
+      return { data: null, error: orgError || new Error('No organization found') };
+    }
+
     const { data, error } = await this.supabase
       .from(this.tableName)
       .select(`
         *,
         prices:product_prices(currency, price)
       `)
+      .eq('organization_id', currentOrg.id)
       .eq('is_active', true)
       .order('name');
 
