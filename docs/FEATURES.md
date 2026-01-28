@@ -1762,16 +1762,32 @@ Swedish accounting follows **Bokföringslagen** (BFL) and **Årsredovisningslage
   - Payment records → Payment transactions (Betalningar)
 - **Status:** Not Started
 
-**US-122: SIE File Import**
+**US-122: SIE File Import** ✅
 - As a **user migrating to VisInv**, in order to **bring existing accounting data**, I would like to **import SIE files from other accounting software**.
 - **Acceptance Criteria:**
-  - Support SIE4 and SIE5 formats
-  - Import wizard: upload → validate → preview → map → import
-  - Import chart of accounts
-  - Import opening balances
-  - Import historical transactions (optional)
+  - Support SIE4 (.se text format) and SIE5 (.sie XML format)
+  - Import wizard: upload → validate → preview → import → complete
+  - Import chart of accounts with BAS account class mapping
+  - Skip existing accounts option (enabled by default)
+  - Organization mismatch handling (see below)
   - Conflict resolution for duplicates
-- **Status:** Not Started
+- **Organization Mismatch Handling:**
+  - Extract organization details from SIE file (company name, organization number)
+  - Compare with current organization's details
+  - If mismatch detected, show dialog with options:
+    1. **Create new organization** - Create a new organization using details from SIE file, then import to that organization
+    2. **Use current organization** - Ignore mismatch and import to current organization anyway
+  - Dialog shows both sets of details for comparison (SIE file vs current org)
+  - Creating new organization switches context to that organization before import
+- **Implementation:**
+  - Parser: `sieParser.js` supporting SIE4/SIE5 with auto-detection
+  - Resource: `Account.js` with `bulkImport()` method
+  - Redux: `accountsSlice.js` with `importAccounts` thunk
+  - Page: `SieImport.jsx` with wizard interface and org mismatch dialog
+  - Route: `/import/sie`
+  - i18n: Full English/Swedish translations
+- **Tests:** Cypress test suite (`sie-import.cy.js`) with 20 tests
+- **Status:** ✅ Complete
 
 #### Supplier Management (Leverantörer)
 

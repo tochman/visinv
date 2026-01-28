@@ -615,6 +615,19 @@
       "preview": "Preview",
       "import": "Import",
       "complete": "Done"
+    },
+    "orgMismatch": {
+      "title": "Organization Mismatch",
+      "warning": "The organization in the SIE file does not match your current organization.",
+      "description": "The imported file contains data for a different organization. You can create a new organization with the file's details or import into your current organization.",
+      "sieFileOrg": "Organization in SIE File",
+      "currentOrg": "Current Organization",
+      "name": "Name",
+      "orgNumber": "Organization Number",
+      "createNew": "Create New Organization",
+      "creating": "Creating organization...",
+      "useCurrent": "Use Current Organization Anyway",
+      "createError": "Failed to create organization: {{message}}"
     }
   },
   "nps": {

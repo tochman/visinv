@@ -1,14 +1,13 @@
 /// <reference types="cypress" />
 
 describe('SIE File Import (US-122)', () => {
-  // Sample SIE4 file content
+  // Sample SIE4 file content - matches the default test organization
   const sampleSIE4 = `#FLAGGA 0
 #FORMAT PC8
 #SIETYP 4
 #PROGRAM "Test Program" 1.0
 #GEN 20240101
-#FNAMN "Test Company AB"
-#ORGNR 556123-4567
+#FNAMN "Test Organization"
 #RAR 0 20240101 20241231
 #KPTYP EUBAS97
 #KONTO 1510 "Kundfordringar"
@@ -25,12 +24,12 @@ describe('SIE File Import (US-122)', () => {
 #UB 0 1510 150000
 `;
 
-  // Sample SIE5 XML file content
+  // Sample SIE5 XML file content - matches the default test organization
   const sampleSIE5 = `<?xml version="1.0" encoding="utf-8"?>
 <Sie xmlns="http://www.sie.se/sie5">
   <FileInfo>
     <SoftwareProduct name="Test Software" version="2.0" />
-    <Company organizationId="556789-0123" name="XML Company AB" />
+    <Company name="Test Organization" />
     <FiscalYears>
       <FiscalYear start="2024-01" end="2024-12" primary="true" />
     </FiscalYears>
@@ -298,6 +297,192 @@ INVALID CONTENT HERE
       // Wait for the import to complete by checking for the "Import Another File" button
       cy.contains('button', 'Import Another File').should('be.visible').click()
       cy.getByCy('sie-drop-zone').should('be.visible')
+    })
+  })
+
+  describe('Organization Mismatch Handling', () => {
+    // SIE file with org number that doesn't match current org
+    const sieMismatchOrgNumber = `#FLAGGA 0
+#FORMAT PC8
+#SIETYP 4
+#PROGRAM "Test Program" 1.0
+#GEN 20240101
+#FNAMN "Different Company AB"
+#ORGNR 999888-7777
+#RAR 0 20240101 20241231
+#KONTO 1510 "Kundfordringar"
+#KONTO 1930 "Företagskonto"
+`;
+
+    // SIE file with name mismatch but no org number (for future tests)
+    const _sieMismatchName = `#FLAGGA 0
+#FORMAT PC8
+#SIETYP 4
+#PROGRAM "Test Program" 1.0
+#GEN 20240101
+#FNAMN "Completely Different Company"
+#RAR 0 20240101 20241231
+#KONTO 1510 "Kundfordringar"
+`;
+
+    // No beforeEach here - we inherit from parent (login + setupCommonIntercepts)
+    // Then navigate to the SIE import page in each test using sidebar
+
+    it('is expected to show organization mismatch warning when org numbers differ', () => {
+      // Navigate to SIE import via sidebar
+      cy.getByCy('sidebar-nav').contains('Accounting').click()
+      cy.getByCy('sidebar-nav').contains('SIE Import').click()
+      
+      uploadSIEFile(sieMismatchOrgNumber, 'mismatch.se')
+      cy.getByCy('parse-file-button').should('not.be.disabled').click()
+      cy.getByCy('proceed-to-preview-button').click()
+
+      // Should show org mismatch screen
+      cy.getByCy('org-mismatch-warning').should('be.visible')
+      cy.contains('Organization Mismatch').should('be.visible')
+      
+      // Should display both organizations
+      cy.getByCy('sie-org-name').should('contain', 'Different Company AB')
+      cy.getByCy('sie-org-number').should('contain', '999888-7777')
+      cy.getByCy('current-org-name').should('be.visible')
+    })
+
+    it('is expected to allow creating new organization from SIE data', () => {
+      // Navigate to SIE import via sidebar
+      cy.getByCy('sidebar-nav').contains('Accounting').click()
+      cy.getByCy('sidebar-nav').contains('SIE Import').click()
+
+      uploadSIEFile(sieMismatchOrgNumber, 'mismatch.se')
+      cy.getByCy('parse-file-button').should('not.be.disabled').click()
+      cy.getByCy('proceed-to-preview-button').click()
+
+      // Should be on org mismatch step
+      cy.getByCy('org-mismatch-warning').should('be.visible')
+
+      // Set up intercepts for org creation BEFORE clicking button
+      cy.intercept('POST', '**/rest/v1/organizations*', (req) => {
+        req.reply({
+          statusCode: 201,
+          body: {
+            id: 'new-org-id',
+            name: req.body.name,
+            organization_number: req.body.organization_number
+          }
+        })
+      }).as('createOrganization')
+
+      // The OrganizationContext will reload organizations after creation
+      cy.intercept('GET', '**/rest/v1/organization_members*', {
+        statusCode: 200,
+        body: [{
+          role: 'owner',
+          is_default: true,
+          joined_at: new Date().toISOString(),
+          organizations: {
+            id: 'new-org-id',
+            name: 'Different Company AB',
+            organization_number: '999888-7777'
+          }
+        }]
+      }).as('getOrganizationsAfterCreate')
+
+      cy.intercept('PATCH', '**/rest/v1/organization_members*', {
+        statusCode: 200,
+        body: {}
+      }).as('setDefaultOrg')
+
+      // Click create new organization button
+      cy.getByCy('create-new-org-button').click()
+
+      // Should proceed to preview step after org created
+      cy.contains('Import Preview').should('be.visible')
+      cy.getByCy('import-accounts-checkbox').should('be.visible')
+    })
+
+    it('is expected to allow using current organization despite mismatch', () => {
+      // Navigate to SIE import via sidebar
+      cy.getByCy('sidebar-nav').contains('Accounting').click()
+      cy.getByCy('sidebar-nav').contains('SIE Import').click()
+
+      uploadSIEFile(sieMismatchOrgNumber, 'mismatch.se')
+      cy.getByCy('parse-file-button').should('not.be.disabled').click()
+      cy.getByCy('proceed-to-preview-button').click()
+
+      // Should be on org mismatch step
+      cy.getByCy('org-mismatch-warning').should('be.visible')
+
+      // Click use current org button
+      cy.getByCy('use-current-org-button').click()
+
+      // Should proceed to preview step
+      cy.contains('Import Preview').should('be.visible')
+      cy.getByCy('import-accounts-checkbox').should('be.visible')
+    })
+
+    it('is expected to allow canceling from org mismatch screen', () => {
+      // Navigate to SIE import via sidebar
+      cy.getByCy('sidebar-nav').contains('Accounting').click()
+      cy.getByCy('sidebar-nav').contains('SIE Import').click()
+
+      uploadSIEFile(sieMismatchOrgNumber, 'mismatch.se')
+      cy.getByCy('parse-file-button').should('not.be.disabled').click()
+      cy.getByCy('proceed-to-preview-button').click()
+
+      // Should be on org mismatch step
+      cy.getByCy('org-mismatch-warning').should('be.visible')
+
+      // Click cancel
+      cy.contains('button', 'Cancel').click()
+
+      // Should go back to upload step
+      cy.getByCy('sie-drop-zone').should('be.visible')
+    })
+
+    it('is expected to skip mismatch dialog when organizations match', () => {
+      // SIE file that matches the current org
+      const sieMatchingOrg = `#FLAGGA 0
+#FORMAT PC8
+#SIETYP 4
+#PROGRAM "Test Program" 1.0
+#GEN 20240101
+#FNAMN "Test Organization"
+#ORGNR 556123-4567
+#RAR 0 20240101 20241231
+#KONTO 1510 "Kundfordringar"
+`;
+
+      // Navigate to SIE import via sidebar
+      cy.getByCy('sidebar-nav').contains('Accounting').click()
+      cy.getByCy('sidebar-nav').contains('SIE Import').click()
+      
+      uploadSIEFile(sieMatchingOrg, 'matching.se')
+      cy.getByCy('parse-file-button').should('not.be.disabled').click()
+      cy.getByCy('proceed-to-preview-button').click()
+
+      // Should go directly to preview (no mismatch)
+      cy.contains('Import Preview').should('be.visible')
+      cy.getByCy('org-mismatch-warning').should('not.exist')
+    })
+
+    it('is expected to handle org creation error gracefully', () => {
+      cy.intercept('POST', '**/rest/v1/organizations*', {
+        statusCode: 400,
+        body: { message: 'Organization number already exists' }
+      }).as('createOrgError')
+
+      // Navigate to SIE import via sidebar
+      cy.getByCy('sidebar-nav').contains('Accounting').click()
+      cy.getByCy('sidebar-nav').contains('SIE Import').click()
+
+      uploadSIEFile(sieMismatchOrgNumber, 'mismatch.se')
+      cy.getByCy('parse-file-button').should('not.be.disabled').click()
+      cy.getByCy('proceed-to-preview-button').click()
+
+      cy.getByCy('create-new-org-button').click()
+
+      // Should show error message
+      cy.getByCy('sie-import-error').should('be.visible')
+      cy.getByCy('sie-import-error').should('contain', 'Failed to create organization')
     })
   })
 })

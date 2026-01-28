@@ -10,6 +10,7 @@ import { useOrganization } from '../contexts/OrganizationContext';
 const STEPS = {
   UPLOAD: 'upload',
   VALIDATE: 'validate',
+  ORG_MISMATCH: 'org_mismatch',
   PREVIEW: 'preview',
   IMPORT: 'import',
   COMPLETE: 'complete',
@@ -19,7 +20,7 @@ export default function SieImport() {
   const { t } = useTranslation();
   const dispatch = useDispatch();
   const navigate = useNavigate();
-  const { currentOrganization } = useOrganization();
+  const { currentOrganization, createOrganization } = useOrganization();
   const loading = useSelector(selectAccountsLoading);
 
   const [step, setStep] = useState(STEPS.UPLOAD);
@@ -32,6 +33,8 @@ export default function SieImport() {
   });
   const [importResult, setImportResult] = useState(null);
   const [error, setError] = useState(null);
+  const [orgMismatch, setOrgMismatch] = useState(null);
+  const [creatingOrg, setCreatingOrg] = useState(false);
 
   // Handle file selection
   const handleFileSelect = useCallback((e) => {
@@ -85,8 +88,110 @@ export default function SieImport() {
     }
   };
 
-  // Proceed to preview
+  // Check for organization mismatch
+  const checkOrgMismatch = useCallback(() => {
+    if (!parsedData?.company || !currentOrganization) {
+      return null;
+    }
+
+    const sieOrgName = parsedData.company.name?.trim().toLowerCase();
+    const sieOrgNumber = parsedData.company.organizationNumber?.trim();
+    const currentOrgName = currentOrganization.name?.trim().toLowerCase();
+    const currentOrgNumber = currentOrganization.organization_number?.trim();
+
+    // No mismatch if SIE file has no org info
+    if (!sieOrgName && !sieOrgNumber) {
+      return null;
+    }
+
+    // Check for mismatch by org number first (most reliable)
+    if (sieOrgNumber && currentOrgNumber && sieOrgNumber !== currentOrgNumber) {
+      return {
+        type: 'org_number',
+        sieName: parsedData.company.name,
+        sieOrgNumber: parsedData.company.organizationNumber,
+        currentName: currentOrganization.name,
+        currentOrgNumber: currentOrganization.organization_number,
+      };
+    }
+
+    // Check for mismatch by name if no org numbers
+    if (!currentOrgNumber && sieOrgName && currentOrgName && sieOrgName !== currentOrgName) {
+      return {
+        type: 'name',
+        sieName: parsedData.company.name,
+        sieOrgNumber: parsedData.company.organizationNumber,
+        currentName: currentOrganization.name,
+        currentOrgNumber: currentOrganization.organization_number,
+      };
+    }
+
+    return null;
+  }, [parsedData, currentOrganization]);
+
+  // Proceed to preview (or org mismatch step)
   const handleProceedToPreview = () => {
+    const mismatch = checkOrgMismatch();
+    if (mismatch) {
+      setOrgMismatch(mismatch);
+      setStep(STEPS.ORG_MISMATCH);
+    } else {
+      setStep(STEPS.PREVIEW);
+    }
+  };
+
+  // Handle creating new organization from SIE data
+  const handleCreateOrgFromSie = async () => {
+    if (!parsedData?.company) return;
+
+    setCreatingOrg(true);
+    setError(null);
+
+    try {
+      const newOrgData = {
+        name: parsedData.company.name || 'Imported Organization',
+        organization_number: parsedData.company.organizationNumber || null,
+      };
+
+      // Add address if available from SIE
+      if (parsedData.company.address && parsedData.company.address.length > 0) {
+        const [_contactName, street, postalCity] = parsedData.company.address;
+        if (street) {
+          newOrgData.address = street;
+        }
+        if (postalCity) {
+          // Try to parse "POSTAL_CODE CITY" format
+          const postalMatch = postalCity.match(/^(\d{3}\s?\d{2})\s+(.+)$/);
+          if (postalMatch) {
+            newOrgData.postal_code = postalMatch[1];
+            newOrgData.city = postalMatch[2];
+          } else {
+            newOrgData.city = postalCity;
+          }
+        }
+      }
+
+      const { error: createError } = await createOrganization(newOrgData);
+
+      if (createError) {
+        setError(t('sieImport.orgMismatch.createError', { message: createError.message }));
+        setCreatingOrg(false);
+        return;
+      }
+
+      // Organization created and context automatically switched to it
+      setOrgMismatch(null);
+      setCreatingOrg(false);
+      setStep(STEPS.PREVIEW);
+    } catch (err) {
+      setError(t('sieImport.orgMismatch.createError', { message: err.message }));
+      setCreatingOrg(false);
+    }
+  };
+
+  // Handle using current organization despite mismatch
+  const handleUseCurrent = () => {
+    setOrgMismatch(null);
     setStep(STEPS.PREVIEW);
   };
 
@@ -130,6 +235,8 @@ export default function SieImport() {
     setValidation(null);
     setImportResult(null);
     setError(null);
+    setOrgMismatch(null);
+    setCreatingOrg(false);
   };
 
   // Go to accounts page
@@ -150,51 +257,60 @@ export default function SieImport() {
         <p className="text-gray-600 dark:text-gray-400">{t('sieImport.description')}</p>
       </div>
 
-      {/* Progress Steps */}
+      {/* Progress Steps - only show main steps (not org_mismatch) */}
       <div className="mb-8">
-        <div className="flex items-center justify-between">
-          {Object.values(STEPS).map((s, index) => (
-            <div key={s} className="flex items-center">
-              <div
-                className={`flex items-center justify-center w-8 h-8 rounded-full text-sm font-medium ${
-                  step === s
-                    ? 'bg-blue-600 text-white'
-                    : Object.values(STEPS).indexOf(step) > index
-                    ? 'bg-green-600 text-white'
-                    : 'bg-gray-200 text-gray-600 dark:bg-gray-700 dark:text-gray-400'
-                }`}
-              >
-                {Object.values(STEPS).indexOf(step) > index ? (
-                  <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
-                    <path
-                      fillRule="evenodd"
-                      d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
-                      clipRule="evenodd"
-                    />
-                  </svg>
-                ) : (
-                  index + 1
-                )}
+        {(() => {
+          const visibleSteps = [STEPS.UPLOAD, STEPS.VALIDATE, STEPS.PREVIEW, STEPS.IMPORT, STEPS.COMPLETE];
+          // Map current step to visible step for progress calculation
+          const currentVisibleStep = step === STEPS.ORG_MISMATCH ? STEPS.VALIDATE : step;
+          const currentIndex = visibleSteps.indexOf(currentVisibleStep);
+
+          return (
+            <>
+              <div className="flex items-center justify-between">
+                {visibleSteps.map((s, index) => (
+                  <div key={s} className="flex items-center">
+                    <div
+                      className={`flex items-center justify-center w-8 h-8 rounded-full text-sm font-medium ${
+                        s === currentVisibleStep
+                          ? 'bg-blue-600 text-white'
+                          : currentIndex > index
+                          ? 'bg-green-600 text-white'
+                          : 'bg-gray-200 text-gray-600 dark:bg-gray-700 dark:text-gray-400'
+                      }`}
+                    >
+                      {currentIndex > index ? (
+                        <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+                          <path
+                            fillRule="evenodd"
+                            d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
+                            clipRule="evenodd"
+                          />
+                        </svg>
+                      ) : (
+                        index + 1
+                      )}
+                    </div>
+                    {index < visibleSteps.length - 1 && (
+                      <div
+                        className={`w-16 h-1 mx-2 ${
+                          currentIndex > index ? 'bg-green-600' : 'bg-gray-200 dark:bg-gray-700'
+                        }`}
+                      />
+                    )}
+                  </div>
+                ))}
               </div>
-              {index < Object.values(STEPS).length - 1 && (
-                <div
-                  className={`w-16 h-1 mx-2 ${
-                    Object.values(STEPS).indexOf(step) > index
-                      ? 'bg-green-600'
-                      : 'bg-gray-200 dark:bg-gray-700'
-                  }`}
-                />
-              )}
-            </div>
-          ))}
-        </div>
-        <div className="flex justify-between mt-2 text-xs text-gray-500 dark:text-gray-400">
-          <span>{t('sieImport.steps.upload')}</span>
-          <span>{t('sieImport.steps.validate')}</span>
-          <span>{t('sieImport.steps.preview')}</span>
-          <span>{t('sieImport.steps.import')}</span>
-          <span>{t('sieImport.steps.complete')}</span>
-        </div>
+              <div className="flex justify-between mt-2 text-xs text-gray-500 dark:text-gray-400">
+                <span>{t('sieImport.steps.upload')}</span>
+                <span>{t('sieImport.steps.validate')}</span>
+                <span>{t('sieImport.steps.preview')}</span>
+                <span>{t('sieImport.steps.import')}</span>
+                <span>{t('sieImport.steps.complete')}</span>
+              </div>
+            </>
+          );
+        })()}
       </div>
 
       {/* Error Display */}
@@ -427,6 +543,127 @@ export default function SieImport() {
                 className="px-6 py-2 bg-blue-600 text-white rounded-sm hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 {t('common.next')}
+              </button>
+            </div>
+          </div>
+        )}
+
+        {/* ORG_MISMATCH Step */}
+        {step === STEPS.ORG_MISMATCH && orgMismatch && (
+          <div>
+            <h2 className="text-xl font-semibold text-gray-900 dark:text-white mb-4">
+              {t('sieImport.orgMismatch.title')}
+            </h2>
+
+            {/* Warning Banner */}
+            <div
+              data-cy="org-mismatch-warning"
+              className="mb-6 p-4 bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 rounded-lg"
+            >
+              <div className="flex items-start">
+                <svg className="w-6 h-6 text-yellow-600 mr-3 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                </svg>
+                <div>
+                  <p className="text-yellow-800 dark:text-yellow-300 font-medium">
+                    {t('sieImport.orgMismatch.warning')}
+                  </p>
+                  <p className="text-sm text-yellow-700 dark:text-yellow-400 mt-1">
+                    {t('sieImport.orgMismatch.description')}
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            {/* Comparison Table */}
+            <div className="mb-6 grid grid-cols-2 gap-4">
+              {/* SIE File Organization */}
+              <div className="p-4 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg">
+                <h3 className="text-sm font-medium text-blue-800 dark:text-blue-300 mb-3">
+                  {t('sieImport.orgMismatch.sieFileOrg')}
+                </h3>
+                <dl className="space-y-2">
+                  <div>
+                    <dt className="text-xs text-gray-500 dark:text-gray-400">{t('sieImport.orgMismatch.name')}</dt>
+                    <dd data-cy="sie-org-name" className="text-gray-900 dark:text-white font-medium">
+                      {orgMismatch.sieName || '-'}
+                    </dd>
+                  </div>
+                  <div>
+                    <dt className="text-xs text-gray-500 dark:text-gray-400">{t('sieImport.orgMismatch.orgNumber')}</dt>
+                    <dd data-cy="sie-org-number" className="text-gray-900 dark:text-white font-medium">
+                      {orgMismatch.sieOrgNumber || '-'}
+                    </dd>
+                  </div>
+                </dl>
+              </div>
+
+              {/* Current Organization */}
+              <div className="p-4 bg-gray-50 dark:bg-gray-900/50 border border-gray-200 dark:border-gray-700 rounded-lg">
+                <h3 className="text-sm font-medium text-gray-800 dark:text-gray-300 mb-3">
+                  {t('sieImport.orgMismatch.currentOrg')}
+                </h3>
+                <dl className="space-y-2">
+                  <div>
+                    <dt className="text-xs text-gray-500 dark:text-gray-400">{t('sieImport.orgMismatch.name')}</dt>
+                    <dd data-cy="current-org-name" className="text-gray-900 dark:text-white font-medium">
+                      {orgMismatch.currentName || '-'}
+                    </dd>
+                  </div>
+                  <div>
+                    <dt className="text-xs text-gray-500 dark:text-gray-400">{t('sieImport.orgMismatch.orgNumber')}</dt>
+                    <dd data-cy="current-org-number" className="text-gray-900 dark:text-white font-medium">
+                      {orgMismatch.currentOrgNumber || '-'}
+                    </dd>
+                  </div>
+                </dl>
+              </div>
+            </div>
+
+            {/* Action Buttons */}
+            <div className="space-y-3">
+              <button
+                onClick={handleCreateOrgFromSie}
+                disabled={creatingOrg}
+                data-cy="create-new-org-button"
+                className="w-full flex items-center justify-center px-6 py-3 bg-blue-600 text-white rounded-sm hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                {creatingOrg ? (
+                  <>
+                    <svg className="animate-spin w-5 h-5 mr-2" fill="none" viewBox="0 0 24 24">
+                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
+                    </svg>
+                    {t('sieImport.orgMismatch.creating')}
+                  </>
+                ) : (
+                  <>
+                    <svg className="w-5 h-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+                    </svg>
+                    {t('sieImport.orgMismatch.createNew')}
+                  </>
+                )}
+              </button>
+
+              <button
+                onClick={handleUseCurrent}
+                disabled={creatingOrg}
+                data-cy="use-current-org-button"
+                className="w-full flex items-center justify-center px-6 py-3 border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 rounded-sm hover:bg-gray-50 dark:hover:bg-gray-700 disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                <svg className="w-5 h-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7l5 5m0 0l-5 5m5-5H6" />
+                </svg>
+                {t('sieImport.orgMismatch.useCurrent')}
+              </button>
+
+              <button
+                onClick={handleReset}
+                disabled={creatingOrg}
+                className="w-full px-6 py-2 text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300"
+              >
+                {t('common.cancel')}
               </button>
             </div>
           </div>

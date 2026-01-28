@@ -603,6 +603,19 @@
       "preview": "Granska",
       "import": "Importera",
       "complete": "Klart"
+    },
+    "orgMismatch": {
+      "title": "Organisationen matchar inte",
+      "warning": "Organisationen i SIE-filen matchar inte din nuvarande organisation.",
+      "description": "Den importerade filen innehåller data för en annan organisation. Du kan skapa en ny organisation med filens uppgifter eller importera till din nuvarande organisation.",
+      "sieFileOrg": "Organisation i SIE-filen",
+      "currentOrg": "Nuvarande organisation",
+      "name": "Namn",
+      "orgNumber": "Organisationsnummer",
+      "createNew": "Skapa ny organisation",
+      "creating": "Skapar organisation...",
+      "useCurrent": "Använd nuvarande organisation ändå",
+      "createError": "Kunde inte skapa organisation: {{message}}"
     }
   },
   "validation": {
