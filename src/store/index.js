@@ -4,6 +4,7 @@ import accountsReducer from '../features/accounts/accountsSlice';
 import fiscalYearsReducer from '../features/fiscalYears/fiscalYearsSlice';
 import invoicesReducer from '../features/invoices/invoicesSlice';
 import journalEntriesReducer from '../features/journalEntries/journalEntriesSlice';
+import journalEntryTemplatesReducer from '../features/journalEntryTemplates/journalEntryTemplatesSlice';
 import clientsReducer from '../features/clients/clientsSlice';
 import productsReducer from '../features/products/productsSlice';
 import templatesReducer from '../features/templates/templatesSlice';
@@ -22,6 +23,7 @@ export const store = configureStore({
     fiscalYears: fiscalYearsReducer,
     invoices: invoicesReducer,
     journalEntries: journalEntriesReducer,
+    journalEntryTemplates: journalEntryTemplatesReducer,
     clients: clientsReducer,
     products: productsReducer,
     templates: templatesReducer,

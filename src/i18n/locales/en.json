@@ -683,6 +683,33 @@
       "notBalanced": "Entry is not balanced. Debit ({{debit}}) does not equal Credit ({{credit}})"
     }
   },
+  "journalEntryTemplates": {
+    "title": "Journal Entry Templates",
+    "saveAsTemplate": "Save as Template",
+    "loadFromTemplate": "Load from Template",
+    "selectTemplate": "Select Template",
+    "name": "Template Name",
+    "namePlaceholder": "e.g., Monthly Rent Payment",
+    "description": "Description",
+    "descriptionPlaceholder": "Optional notes about this template",
+    "includeAmounts": "Include amounts in template",
+    "linesSummary": "Template will include {{count}} account lines",
+    "noTemplates": "No templates yet",
+    "noMatchingTemplates": "No matching templates found",
+    "searchPlaceholder": "Search templates...",
+    "linesCount": "{{count}} lines",
+    "usedCount": "Used {{count}} times",
+    "use": "Use",
+    "moreLines": "more lines",
+    "confirmDelete": "Delete Template",
+    "confirmDeleteMessage": "Are you sure you want to delete the template \"{{name}}\"? This action cannot be undone.",
+    "templateCreated": "Template created successfully",
+    "templateDeleted": "Template deleted",
+    "errors": {
+      "nameRequired": "Template name is required",
+      "minimumTwoLines": "Template must have at least two account lines"
+    }
+  },
   "nps": {
     "title": "We'd love your feedback!",
     "question": "How likely are you to recommend VisInv to a friend or colleague?",

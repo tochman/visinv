@@ -1548,14 +1548,21 @@ Swedish accounting follows **Bokföringslagen** (BFL) and **Årsredovisningslage
   - Option to adjust amounts before posting
 - **Status:** Not Started
 
-**US-213: Journal Entry Templates**
+**US-213: Journal Entry Templates** ✅
 - As a **bookkeeper**, in order to **speed up common entries**, I would like to **save journal entry templates for frequently used transactions**.
 - **Acceptance Criteria:**
-  - Save entry as template with name
-  - Templates list for quick access
-  - Create new entry from template
-  - Edit template definitions
-- **Status:** Not Started
+  - Save entry as template with name ✅
+  - Templates list for quick access ✅
+  - Create new entry from template ✅
+  - Edit template definitions (future enhancement - delete only)
+- **Status:** Complete
+- **Implementation:**
+  - Database: `journal_entry_templates` and `journal_entry_template_lines` tables with RLS
+  - Resource: `JournalEntryTemplate.js` with CRUD, usage tracking, and `toJournalEntry()` conversion
+  - Redux: `journalEntryTemplatesSlice.js` with fetch, create, delete, and use thunks
+  - Components: `SaveAsTemplateModal.jsx`, `TemplateListModal.jsx` integrated into `JournalEntryModal.jsx`
+  - Features: Search/filter templates, usage count tracking, include/exclude amounts option
+  - Tests: `cypress/e2e/journal-entry-templates.cy.js` (18 tests)
 
 **US-214: Journal Entry Search and Filter**
 - As a **bookkeeper**, in order to **find specific transactions**, I would like to **search and filter journal entries by date, account, amount, description, or verification number**.

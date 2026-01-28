@@ -671,6 +671,33 @@
       "notBalanced": "Verifikationen är inte balanserad. Debet ({{debit}}) är inte lika med Kredit ({{credit}})"
     }
   },
+  "journalEntryTemplates": {
+    "title": "Verifikationsmallar",
+    "saveAsTemplate": "Spara som mall",
+    "loadFromTemplate": "Ladda från mall",
+    "selectTemplate": "Välj mall",
+    "name": "Mallnamn",
+    "namePlaceholder": "t.ex. Månatlig hyra",
+    "description": "Beskrivning",
+    "descriptionPlaceholder": "Valfria anteckningar om denna mall",
+    "includeAmounts": "Inkludera belopp i mallen",
+    "linesSummary": "Mallen kommer att inkludera {{count}} kontorader",
+    "noTemplates": "Inga mallar ännu",
+    "noMatchingTemplates": "Inga matchande mallar hittades",
+    "searchPlaceholder": "Sök mallar...",
+    "linesCount": "{{count}} rader",
+    "usedCount": "Använd {{count}} gånger",
+    "use": "Använd",
+    "moreLines": "fler rader",
+    "confirmDelete": "Ta bort mall",
+    "confirmDeleteMessage": "Är du säker på att du vill ta bort mallen \"{{name}}\"? Denna åtgärd kan inte ångras.",
+    "templateCreated": "Mall skapad",
+    "templateDeleted": "Mall borttagen",
+    "errors": {
+      "nameRequired": "Mallnamn krävs",
+      "minimumTwoLines": "Mallen måste ha minst två kontorader"
+    }
+  },
   "validation": {
     "required": "{{field}} är obligatoriskt"
   },

@@ -7,6 +7,7 @@ export { InvoiceEvent } from './InvoiceEvent';
 export { default as InvoiceTemplate } from './InvoiceTemplate';
 export { Invite } from './Invite';
 export { JournalEntry } from './JournalEntry';
+export { JournalEntryTemplate } from './JournalEntryTemplate';
 export { Organization } from './Organization';
 export { Payment } from './Payment';
 export { Product } from './Product';

@@ -9,6 +9,8 @@ import {
   fetchAccounts,
   selectAccounts,
 } from '../../features/accounts/accountsSlice';
+import SaveAsTemplateModal from './SaveAsTemplateModal';
+import TemplateListModal from './TemplateListModal';
 
 // Empty line template
 const EMPTY_LINE = {
@@ -46,6 +48,8 @@ export default function JournalEntryModal({ entry, fiscalYear, organizationId, o
   const [error, setError] = useState(null);
   const [accountSearch, setAccountSearch] = useState('');
   const [activeLineIndex, setActiveLineIndex] = useState(null);
+  const [showTemplateList, setShowTemplateList] = useState(false);
+  const [showSaveAsTemplate, setShowSaveAsTemplate] = useState(false);
 
   // Load accounts if not already loaded
   useEffect(() => {
@@ -117,6 +121,34 @@ export default function JournalEntryModal({ entry, fiscalYear, organizationId, o
   const removeLine = (index) => {
     if (lines.length <= 2) return; // Minimum 2 lines required
     setLines((prev) => prev.filter((_, i) => i !== index));
+  };
+
+  // Load from template
+  const loadFromTemplate = (template) => {
+    if (!template) return;
+
+    // Set description from template
+    if (template.default_description) {
+      setFormData((prev) => ({
+        ...prev,
+        description: template.default_description,
+      }));
+    }
+
+    // Set lines from template
+    if (template.lines && template.lines.length > 0) {
+      const templateLines = template.lines.map((line) => ({
+        account_id: line.account_id,
+        debit_amount: line.debit_amount > 0 ? line.debit_amount.toString() : '',
+        credit_amount: line.credit_amount > 0 ? line.credit_amount.toString() : '',
+        description: line.description || '',
+      }));
+      // Ensure at least 2 lines
+      while (templateLines.length < 2) {
+        templateLines.push({ ...EMPTY_LINE });
+      }
+      setLines(templateLines);
+    }
   };
 
   // Select account for a line
@@ -205,18 +237,34 @@ export default function JournalEntryModal({ entry, fiscalYear, organizationId, o
       >
         {/* Header */}
         <div className="flex items-center justify-between p-4 border-b border-gray-200 dark:border-gray-700">
-          <div>
-            <h2 className="text-xl font-semibold text-gray-900 dark:text-white">
-              {isViewOnly
-                ? t('journalEntries.viewEntry')
-                : isEditing
-                ? t('journalEntries.editEntry')
-                : t('journalEntries.createEntry')}
-            </h2>
-            {entry?.verification_number && (
-              <p className="text-sm text-gray-500 dark:text-gray-400">
-                #{entry.verification_number}
-              </p>
+          <div className="flex items-center gap-4">
+            <div>
+              <h2 className="text-xl font-semibold text-gray-900 dark:text-white">
+                {isViewOnly
+                  ? t('journalEntries.viewEntry')
+                  : isEditing
+                  ? t('journalEntries.editEntry')
+                  : t('journalEntries.createEntry')}
+              </h2>
+              {entry?.verification_number && (
+                <p className="text-sm text-gray-500 dark:text-gray-400">
+                  #{entry.verification_number}
+                </p>
+              )}
+            </div>
+            {/* Load from Template button - only for new entries */}
+            {!isEditing && !isViewOnly && (
+              <button
+                type="button"
+                onClick={() => setShowTemplateList(true)}
+                data-cy="load-from-template-button"
+                className="px-3 py-1.5 text-sm border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 rounded-sm hover:bg-gray-50 dark:hover:bg-gray-700 flex items-center gap-1"
+              >
+                <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                </svg>
+                {t('journalEntryTemplates.loadFromTemplate')}
+              </button>
             )}
           </div>
           <button
@@ -466,36 +514,56 @@ export default function JournalEntryModal({ entry, fiscalYear, organizationId, o
           </div>
 
           {/* Actions */}
-          <div className="flex justify-end gap-3 pt-4 border-t border-gray-200 dark:border-gray-700">
-            <button
-              type="button"
-              onClick={() => onClose(false)}
-              data-cy="cancel-entry"
-              className="px-4 py-2 text-gray-700 dark:text-gray-300 border border-gray-300 dark:border-gray-600 rounded-sm hover:bg-gray-50 dark:hover:bg-gray-700"
-            >
-              {isViewOnly ? t('common.close') : t('common.cancel')}
-            </button>
-            {!isViewOnly && (
-              <>
-                <button
-                  type="submit"
-                  disabled={submitting}
-                  data-cy="save-draft"
-                  className="px-4 py-2 border border-blue-600 text-blue-600 dark:text-blue-400 dark:border-blue-400 rounded-sm hover:bg-blue-50 dark:hover:bg-blue-900/20 disabled:opacity-50 disabled:cursor-not-allowed"
-                >
-                  {submitting ? t('common.saving') : t('journalEntries.saveDraft')}
-                </button>
+          <div className="flex justify-between pt-4 border-t border-gray-200 dark:border-gray-700">
+            {/* Left side - Save as Template */}
+            <div>
+              {!isViewOnly && lines.filter((l) => l.account_id).length >= 2 && (
                 <button
                   type="button"
-                  onClick={(e) => handleSubmit(e, false)}
-                  disabled={submitting || !totals.isBalanced}
-                  data-cy="save-and-post"
-                  className="px-4 py-2 bg-green-600 text-white rounded-sm hover:bg-green-700 disabled:opacity-50 disabled:cursor-not-allowed"
+                  onClick={() => setShowSaveAsTemplate(true)}
+                  data-cy="save-as-template-button"
+                  className="px-3 py-2 text-sm text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-200 flex items-center gap-1"
                 >
-                  {t('journalEntries.saveAndPost')}
+                  <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-3m-1 4l-3 3m0 0l-3-3m3 3V4" />
+                  </svg>
+                  {t('journalEntryTemplates.saveAsTemplate')}
                 </button>
-              </>
-            )}
+              )}
+            </div>
+
+            {/* Right side - Cancel, Save, Post */}
+            <div className="flex gap-3">
+              <button
+                type="button"
+                onClick={() => onClose(false)}
+                data-cy="cancel-entry"
+                className="px-4 py-2 text-gray-700 dark:text-gray-300 border border-gray-300 dark:border-gray-600 rounded-sm hover:bg-gray-50 dark:hover:bg-gray-700"
+              >
+                {isViewOnly ? t('common.close') : t('common.cancel')}
+              </button>
+              {!isViewOnly && (
+                <>
+                  <button
+                    type="submit"
+                    disabled={submitting}
+                    data-cy="save-draft"
+                    className="px-4 py-2 border border-blue-600 text-blue-600 dark:text-blue-400 dark:border-blue-400 rounded-sm hover:bg-blue-50 dark:hover:bg-blue-900/20 disabled:opacity-50 disabled:cursor-not-allowed"
+                  >
+                    {submitting ? t('common.saving') : t('journalEntries.saveDraft')}
+                  </button>
+                  <button
+                    type="button"
+                    onClick={(e) => handleSubmit(e, false)}
+                    disabled={submitting || !totals.isBalanced}
+                    data-cy="save-and-post"
+                    className="px-4 py-2 bg-green-600 text-white rounded-sm hover:bg-green-700 disabled:opacity-50 disabled:cursor-not-allowed"
+                  >
+                    {t('journalEntries.saveAndPost')}
+                  </button>
+                </>
+              )}
+            </div>
           </div>
         </form>
       </div>
@@ -507,6 +575,27 @@ export default function JournalEntryModal({ entry, fiscalYear, organizationId, o
           onClick={() => {
             setActiveLineIndex(null);
             setAccountSearch('');
+          }}
+        />
+      )}
+
+      {/* Template List Modal */}
+      {showTemplateList && (
+        <TemplateListModal
+          organizationId={organizationId}
+          onSelect={loadFromTemplate}
+          onClose={() => setShowTemplateList(false)}
+        />
+      )}
+
+      {/* Save as Template Modal */}
+      {showSaveAsTemplate && (
+        <SaveAsTemplateModal
+          lines={lines}
+          description={formData.description}
+          organizationId={organizationId}
+          onClose={(saved) => {
+            setShowSaveAsTemplate(false);
           }}
         />
       )}
