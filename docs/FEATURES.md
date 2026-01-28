@@ -21,6 +21,7 @@ To transform VisInv into a **fully featured invoicing system** competitive with 
 - **Security & Compliance** (US-104 to US-109, US-119): 2FA, SSO, audit trails, GDPR tools, encryption, backup/recovery, cookie consent
 - **White Label & Multi-Tenancy** (US-110 to US-112): Enterprise branding, multi-tenant architecture, reseller program
 - **Support & Growth** (US-113 to US-118): In-app help, live chat, support tickets, referrals, email marketing, client feedback
+- **Swedish Accounting Integration** (US-121 to US-122): SIE file export/import for seamless accounting software integration
 
 These additions position VisInv as a comprehensive solution for:
 - **Freelancers & Solopreneurs**: Simple invoicing, time tracking, expense management
@@ -1440,6 +1441,108 @@ These additions position VisInv as a comprehensive solution for:
 
 ---
 
+### Swedish Accounting Integration
+
+**US-121: SIE File Export**
+- As a **user with accounting needs**, in order to **transfer my invoice and transaction data to my accounting software**, I would like to **export data in SIE format (Standard Import Export)**.
+- **User Story:** Export accounting data in SIE5 (XML) format compatible with Swedish accounting software (Fortnox, Visma, etc.)
+- **Export Capabilities:**
+  - **Full Export:** Complete accounting data including chart of accounts, customers, invoices, and transactions for a fiscal year
+  - **Filtered Export:** Export specific date ranges, invoice statuses, or customer segments
+  - **Incremental Export:** Export only changes since last export (delta export)
+- **SIE Format Support:**
+  - SIE5 (XML format) - Primary implementation
+  - Include company metadata (organization number, VAT number, fiscal year)
+  - Chart of accounts with account types (asset, liability, revenue, expense)
+  - Customer register with organization numbers
+  - Invoice transactions with proper accounting entries
+  - VAT codes and rates according to Swedish standards
+- **Export Options:**
+  - Select fiscal year or custom date range
+  - Include/exclude draft invoices
+  - Include/exclude deleted invoices
+  - Encoding: UTF-8 with BOM for Excel compatibility
+- **Data Mapping:**
+  - Invoices → Vouchers (Verifikationer)
+  - Clients → Customer register (Kunder)
+  - Products → Article register (Artiklar) - if applicable
+  - VAT amounts → VAT transactions (Momstransaktioner)
+  - Payment records → Payment transactions (Betalningar)
+- **File Generation:**
+  - Server-side XML generation (to handle large datasets)
+  - Schema validation against sie5.xsd
+  - Downloadable file: `[OrgName]_SIE5_[DateRange].xml`
+- **Implementation:**
+  - Backend: SIE export service with XML generation
+  - Frontend: Export dialog with options and progress indicator
+  - Validation: Schema validation before download
+  - Error handling: Invalid data warnings, missing required fields
+- **Acceptance Criteria:**
+  - Exported SIE5 file passes schema validation (sie5.xsd)
+  - File can be imported into standard Swedish accounting software (Fortnox, Visma, etc.)
+  - All invoice data correctly mapped to accounting entries
+  - VAT calculations match Swedish requirements
+  - Company metadata complete and accurate
+- **Tests:** TBD - Cypress tests for export dialog, file generation, schema validation
+- **Status:** Not Started
+
+**US-122: SIE File Import**
+- As a **user migrating from another accounting system**, in order to **bring my existing data into VisInv**, I would like to **import accounting data from SIE format files**.
+- **User Story:** Import chart of accounts, customers, and transactions from SIE5 (XML) files
+- **Import Capabilities:**
+  - **Chart of Accounts:** Import account structure with account types and names
+  - **Customer Register:** Import customer data with organization numbers and contact info
+  - **Initial Balances:** Import opening balances for accounts
+  - **Transaction History:** Import historical vouchers/transactions (optional)
+- **SIE Format Support:**
+  - SIE5 (XML format) - Primary implementation
+  - Schema validation against sie5.xsd before processing
+  - Support for both full SIE files and SIE Entry files (simpler format)
+- **Import Process:**
+  - **Step 1: Upload** - Drag & drop or file select for .xml/.sie file
+  - **Step 2: Validate** - Schema validation and data integrity checks
+  - **Step 3: Preview** - Show what will be imported (accounts, customers, transactions count)
+  - **Step 4: Map** - Map SIE accounts to VisInv categories if needed
+  - **Step 5: Import** - Execute import with progress indicator
+  - **Step 6: Review** - Summary of imported items, any errors/warnings
+- **Data Mapping:**
+  - SIE Accounts → Chart of Accounts (create if not exists)
+  - SIE Customers → Clients table
+  - SIE Vouchers → Invoice/transaction creation (if applicable)
+  - Organization metadata → Organization settings validation/update
+- **Conflict Resolution:**
+  - Duplicate detection by organization number (for customers)
+  - Duplicate detection by account ID (for accounts)
+  - User choice: Skip, Update, or Create New
+  - Dry-run mode to preview without committing changes
+- **Validation Rules:**
+  - File must be valid SIE5 XML
+  - Organization number must match current organization (or create new org)
+  - Required fields must be present (company name, org number, fiscal year)
+  - Account IDs must be numeric 4-digit codes
+  - VAT rates must be valid Swedish rates (0%, 6%, 12%, 25%)
+- **Error Handling:**
+  - Clear error messages for invalid XML
+  - Line-by-line error reporting for data issues
+  - Rollback capability if import fails mid-process
+  - Import log with warnings and skipped items
+- **Implementation:**
+  - Backend: SIE import parser service (XML to JSON)
+  - Frontend: Multi-step import wizard component
+  - Database: Transaction support for rollback capability
+  - Validation: Schema validation + business rule validation
+- **Acceptance Criteria:**
+  - Can import valid SIE5 files without errors
+  - Duplicate customers are detected and user can choose resolution
+  - Chart of accounts correctly imported with proper account types
+  - Import process can be safely rolled back if user cancels
+  - Clear progress indication during large imports
+  - Import log downloadable for audit trail
+- **Tests:** TBD - Cypress tests for upload, validation, preview, import flow
+- **Status:** Not Started
+
+---
+
 ## Technical Stack
 
 ### Frontend
@@ -1590,6 +1693,7 @@ These additions position VisInv as a comprehensive solution for:
 - US-084, US-085, US-086 (Document management)
 - US-093, US-094, US-095, US-096, US-097 (Integrations & ecosystem)
 - US-104, US-105, US-106, US-107, US-108, US-109, US-119 (Enhanced security & compliance)
+- US-121, US-122 (SIE file export/import for Swedish accounting integration)
 
 ### Phase 6 (Inventory & Product Businesses)
 - US-098, US-099, US-100 (Inventory & COGS tracking)
