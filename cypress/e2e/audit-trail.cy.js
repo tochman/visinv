@@ -73,16 +73,6 @@ describe('Invoice Audit Trail', () => {
     },
   ];
 
-  // Mock organization used by all tests
-  const mockOrganization = {
-    id: 'test-org-id',
-    name: 'Test Organization AB',
-    organization_number: '556677-8899',
-    invoice_numbering_mode: 'auto',
-    invoice_prefix: 'INV-',
-    next_invoice_number: 1,
-  };
-
   describe('Happy Path - Viewing Audit Trail', () => {
     beforeEach(() => {
       cy.login('admin');

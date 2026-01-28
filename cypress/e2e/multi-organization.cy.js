@@ -45,15 +45,6 @@ describe('Multi-Organization Support (US-058)', () => {
     updated_at: '2024-02-01T00:00:00.000Z'
   };
 
-  const mockMember = {
-    id: 'member-1',
-    organization_id: mockOrganization1.id,
-    user_id: 'test-admin-id',
-    role: 'owner',
-    is_default: true,
-    joined_at: '2024-01-01T00:00:00.000Z'
-  };
-
   // Helper to set up multi-org intercepts
   const setupMultiOrgIntercepts = (orgs = [mockOrganization1]) => {
     // Organization members query (used by OrganizationContext to get user's orgs)

@@ -24,8 +24,6 @@ describe('US-004: Free Invoice Limit', () => {
     invoice_counter: 1,
   };
 
-  const mockFreeSubscription = null; // Free users have no subscription
-
   const mockPremiumSubscription = {
     id: 'premium-sub-id',
     user_id: mockUser.id,

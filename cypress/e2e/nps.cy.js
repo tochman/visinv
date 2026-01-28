@@ -26,20 +26,6 @@ describe('NPS Survey System', () => {
     country: 'Sweden',
   };
 
-  const mockProduct = {
-    id: 'product-1',
-    name: 'Test Product',
-    description: 'Test Description',
-    unit: 'pcs',
-    tax_rate: 25,
-    is_active: true,
-  };
-
-  const mockProductWithPrices = {
-    ...mockProduct,
-    prices: [{ currency: 'SEK', price: 100 }],
-  };
-
   beforeEach(() => {
     cy.login('admin');
     cy.setupCommonIntercepts({
