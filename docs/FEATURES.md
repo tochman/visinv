@@ -125,8 +125,16 @@ This document provides a comprehensive list of user stories for the VisInv invoi
 
 ### Free Tier Features
 
-**US-004: Free Invoice Limit**
+**US-004: Free Invoice Limit** ✅
 - As a **free user**, in order to **try the platform before committing**, I would like to **create and send up to 10 invoices for free**.
+- **Status:** Implemented - Enforces 10 invoice limit for free users, shows upgrade modal when limit reached, premium users have unlimited invoices
+- **Technical:** 
+  - `appConfig.freeInvoiceLimit: 10` constant
+  - `subscriptionsSlice` tracks `invoiceCount` and `isPremium` status
+  - `Invoices.jsx` checks limit in `handleCreate()` before opening modal
+  - `UpgradeModal` component displays upgrade prompt
+  - Auto-increments count after successful invoice creation
+  - 5 Cypress tests covering free user below limit, at limit (upgrade modal), and premium unlimited
 
 **US-005: Client Management** ✅
 - As a **free user**, in order to **organize my customer information**, I would like to **create, edit, and manage client profiles with contact details**.

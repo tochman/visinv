@@ -385,6 +385,12 @@
     "manage": "Hantera prenumeration",
     "invoicesRemaining": "{{count}} fakturor kvar"
   },
+  "upgrade": {
+    "limitReached": "Gräns för gratisversion nådd",
+    "freeInvoiceLimit": "Du har skapat {{limit}} fakturor, vilket är maximum för gratisanvändare.",
+    "upgradePrompt": "Uppgradera till Premium för obegränsade fakturor och tillgång till alla funktioner.",
+    "viewPlans": "Visa planer"
+  },
   "organization": {
     "title": "Organisation",
     "create": "Skapa organisation",

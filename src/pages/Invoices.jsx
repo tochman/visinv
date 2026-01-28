@@ -6,13 +6,16 @@ import { ArrowPathIcon, LockClosedIcon, DocumentDuplicateIcon, EyeIcon } from '@
 import { useToast } from '../context/ToastContext';
 import { fetchInvoices, deleteInvoice, markInvoiceAsSent, markInvoiceAsPaid, updateInvoiceTemplate, copyInvoice } from '../features/invoices/invoicesSlice';
 import { fetchTemplates } from '../features/invoiceTemplates/invoiceTemplatesSlice';
+import { fetchSubscription, fetchInvoiceCount } from '../features/subscriptions/subscriptionsSlice';
 import InvoiceModal from '../components/invoices/InvoiceModal';
 import PaymentConfirmationDialog from '../components/invoices/PaymentConfirmationDialog';
+import UpgradeModal from '../components/common/UpgradeModal';
 import { generateInvoicePDF, buildInvoiceContext } from '../services/invoicePdfService';
 import { renderTemplate } from '../services/templateService';
 import { useOrganization } from '../contexts/OrganizationContext';
 import { formatCurrency } from '../config/currencies';
 import { Payment } from '../services/resources';
+import { appConfig } from '../config/constants';
 
 export default function Invoices() {
   const { t } = useTranslation();
@@ -23,6 +26,7 @@ export default function Invoices() {
   const { items: templates } = useSelector((state) => state.invoiceTemplates);
   const { user } = useSelector((state) => state.auth);
   const { currentOrganization } = useOrganization();
+  const { invoiceCount, isPremium } = useSelector((state) => state.subscriptions);
 
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedInvoice, setSelectedInvoice] = useState(null);
@@ -33,15 +37,23 @@ export default function Invoices() {
   const [generatingPDF, setGeneratingPDF] = useState(null);
   const [showPaymentDialog, setShowPaymentDialog] = useState(false);
   const [paymentDialogInvoice, setPaymentDialogInvoice] = useState(null);
+  const [showUpgradeModal, setShowUpgradeModal] = useState(false);
 
   useEffect(() => {
     if (user) {
       dispatch(fetchInvoices());
       dispatch(fetchTemplates());
+      dispatch(fetchSubscription(user.id));
+      dispatch(fetchInvoiceCount(user.id));
     }
   }, [dispatch, user]);
 
   const handleCreate = () => {
+    // Check free tier limit
+    if (invoiceCount >= appConfig.freeInvoiceLimit && !isPremium) {
+      setShowUpgradeModal(true);
+      return;
+    }
     setSelectedInvoice(null);
     setViewOnly(false);
     setIsModalOpen(true);
@@ -673,6 +685,12 @@ export default function Invoices() {
         }}
         invoice={paymentDialogInvoice}
         onConfirm={handleConfirmPayment}
+      />
+
+      {/* Upgrade Modal */}
+      <UpgradeModal
+        isOpen={showUpgradeModal}
+        onClose={() => setShowUpgradeModal(false)}
       />
     </div>
   );

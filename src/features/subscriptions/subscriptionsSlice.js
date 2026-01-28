@@ -1,5 +1,6 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
 import { supabase } from '../../services/supabase';
+import { createInvoice } from '../invoices/invoicesSlice';
 
 export const fetchSubscription = createAsyncThunk(
   'subscriptions/fetchSubscription',
@@ -64,6 +65,9 @@ const subscriptionsSlice = createSlice({
       })
       .addCase(fetchInvoiceCount.fulfilled, (state, action) => {
         state.invoiceCount = action.payload;
+      })
+      .addCase(createInvoice.fulfilled, (state) => {
+        state.invoiceCount += 1;
       });
   },
 });

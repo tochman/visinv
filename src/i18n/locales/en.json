@@ -397,6 +397,12 @@
     "manage": "Manage Subscription",
     "invoicesRemaining": "{{count}} invoices remaining"
   },
+  "upgrade": {
+    "limitReached": "Free Tier Limit Reached",
+    "freeInvoiceLimit": "You've created {{limit}} invoices, which is the maximum for free users.",
+    "upgradePrompt": "Upgrade to Premium for unlimited invoices and access to all features.",
+    "viewPlans": "View Plans"
+  },
   "organization": {
     "title": "Organization",
     "create": "Create Organization",
