@@ -92,8 +92,7 @@ describe('Chart of Accounts (Kontoplan)', () => {
 
   describe('Happy Path - Viewing Accounts', () => {
     beforeEach(() => {
-      cy.getByCy('sidebar-nav').contains('Accounting').click()
-      cy.getByCy('sidebar-nav').contains('Chart of Accounts').click()
+      cy.getByCy('sidebar-nav-accounts').click()
       cy.wait('@getAccounts')
     })
 
@@ -139,8 +138,7 @@ describe('Chart of Accounts (Kontoplan)', () => {
 
   describe('Happy Path - Search and Filter', () => {
     beforeEach(() => {
-      cy.getByCy('sidebar-nav').contains('Accounting').click()
-      cy.getByCy('sidebar-nav').contains('Chart of Accounts').click()
+      cy.getByCy('sidebar-nav-accounts').click()
       cy.wait('@getAccounts')
     })
 
@@ -194,8 +192,7 @@ describe('Chart of Accounts (Kontoplan)', () => {
         accounts: sampleAccounts.filter(a => a.is_active)
       })
       
-      cy.getByCy('sidebar-nav').contains('Accounting').click()
-      cy.getByCy('sidebar-nav').contains('Chart of Accounts').click()
+      cy.getByCy('sidebar-nav-accounts').click()
       cy.wait('@getAccounts')
 
       // Initially inactive account should not be visible
@@ -220,8 +217,7 @@ describe('Chart of Accounts (Kontoplan)', () => {
 
   describe('Happy Path - Deactivate Account', () => {
     beforeEach(() => {
-      cy.getByCy('sidebar-nav').contains('Accounting').click()
-      cy.getByCy('sidebar-nav').contains('Chart of Accounts').click()
+      cy.getByCy('sidebar-nav-accounts').click()
       cy.wait('@getAccounts')
     })
 
@@ -272,8 +268,7 @@ describe('Chart of Accounts (Kontoplan)', () => {
         accounts: sampleAccounts.filter(a => a.is_active)
       })
       
-      cy.getByCy('sidebar-nav').contains('Accounting').click()
-      cy.getByCy('sidebar-nav').contains('Chart of Accounts').click()
+      cy.getByCy('sidebar-nav-accounts').click()
       cy.wait('@getAccounts')
       
       // Return all accounts including inactive when checkbox checked
@@ -295,8 +290,7 @@ describe('Chart of Accounts (Kontoplan)', () => {
         accounts: sampleAccounts.filter(a => a.is_active)
       })
       
-      cy.getByCy('sidebar-nav').contains('Accounting').click()
-      cy.getByCy('sidebar-nav').contains('Chart of Accounts').click()
+      cy.getByCy('sidebar-nav-accounts').click()
       cy.wait('@getAccounts')
       
       // Return all accounts including inactive when checkbox checked
@@ -329,8 +323,7 @@ describe('Chart of Accounts (Kontoplan)', () => {
       cy.setupCommonIntercepts({
         accounts: []
       })
-      cy.getByCy('sidebar-nav').contains('Accounting').click()
-      cy.getByCy('sidebar-nav').contains('Chart of Accounts').click()
+      cy.getByCy('sidebar-nav-accounts').click()
       cy.wait('@getAccounts')
     })
 
@@ -368,8 +361,7 @@ describe('Chart of Accounts (Kontoplan)', () => {
         body: { message: 'Internal server error' }
       }).as('getAccountsError')
 
-      cy.getByCy('sidebar-nav').contains('Accounting').click()
-      cy.getByCy('sidebar-nav').contains('Chart of Accounts').click()
+      cy.getByCy('sidebar-nav-accounts').click()
       cy.wait('@getAccountsError')
 
       cy.getByCy('accounts-error').should('be.visible')
@@ -380,8 +372,7 @@ describe('Chart of Accounts (Kontoplan)', () => {
         accounts: []
       })
 
-      cy.getByCy('sidebar-nav').contains('Accounting').click()
-      cy.getByCy('sidebar-nav').contains('Chart of Accounts').click()
+      cy.getByCy('sidebar-nav-accounts').click()
       cy.wait('@getAccounts')
 
       cy.intercept('POST', '**/rest/v1/accounts*', {
@@ -397,14 +388,11 @@ describe('Chart of Accounts (Kontoplan)', () => {
 
   describe('Navigation', () => {
     it('is expected to have Accounts link in Accounting section of sidebar', () => {
-      cy.getByCy('sidebar-nav').contains('Accounting').should('be.visible')
-      cy.getByCy('sidebar-nav').contains('Accounting').click()
-      cy.getByCy('sidebar-nav').contains('Chart of Accounts').should('be.visible')
+      cy.getByCy('sidebar-nav-accounts').should('be.visible')
     })
 
     it('is expected to navigate to /accounts route', () => {
-      cy.getByCy('sidebar-nav').contains('Accounting').click()
-      cy.getByCy('sidebar-nav').contains('Chart of Accounts').click()
+      cy.getByCy('sidebar-nav-accounts').click()
       cy.url().should('include', '/accounts')
     })
   })
