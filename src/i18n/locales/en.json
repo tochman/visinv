@@ -592,12 +592,17 @@
     "format": "Format",
     "company": "Company",
     "accountCount": "Accounts",
+    "fiscalYearCount": "Fiscal Years",
     "voucherCount": "Vouchers",
+    "transactionCount": "Transactions",
     "errors": "Errors",
     "warnings": "Warnings",
     "previewTitle": "Import Preview",
     "importOptions": "Import Options",
     "importAccountsOption": "Import {{count}} accounts",
+    "importFiscalYearsOption": "Import {{count}} fiscal years",
+    "importJournalEntriesOption": "Import {{voucherCount}} vouchers ({{transactionCount}} transactions)",
+    "importOpeningBalancesOption": "Import {{count}} opening balances",
     "skipExistingOption": "Skip accounts that already exist",
     "accountsPreview": "Accounts to Import",
     "andMoreAccounts": "...and {{count}} more accounts",
@@ -608,6 +613,8 @@
     "importComplete": "Import Complete!",
     "importedCount": "{{count}} accounts imported successfully.",
     "skippedCount": "{{count}} accounts skipped (already exist).",
+    "fiscalYearsImported": "{{count}} fiscal years imported.",
+    "journalEntriesImported": "{{count}} journal entries imported.",
     "importAnother": "Import Another File",
     "viewAccounts": "View Chart of Accounts",
     "importError": "An error occurred during import. Please try again.",
@@ -630,6 +637,14 @@
       "creating": "Creating organization...",
       "useCurrent": "Use Current Organization Anyway",
       "createError": "Failed to create organization: {{message}}"
+    },
+    "missingFiscalYears": {
+      "warning": "Missing Fiscal Years",
+      "description": "The journal entries in this file require fiscal years that don't exist in your system yet.",
+      "canCreate": "can be created from file",
+      "notInFile": "not defined in file",
+      "createOption": "Create missing fiscal years automatically",
+      "skipWarning": "Journal entries for {{count}} year(s) will be skipped because the fiscal years won't be created."
     }
   },
   "journalEntries": {
@@ -735,7 +750,14 @@
     "periodSummary": "Period Summary",
     "periodDebits": "Period Debits",
     "periodCredits": "Period Credits",
-    "transactionCount": "{{count}} transactions"
+    "transactionCount": "{{count}} transactions",
+    "allAccounts": "All Accounts",
+    "showAllWithTransactions": "Show all accounts with transactions",
+    "noAccountsWithTransactions": "No accounts with transactions found in the selected period",
+    "accountsWithTransactionsCount": "{{count}} accounts with transactions",
+    "expandAll": "Expand All",
+    "collapseAll": "Collapse All",
+    "transactions": "Transactions"
   },
   "nps": {
     "title": "We'd love your feedback!",

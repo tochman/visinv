@@ -84,6 +84,19 @@ export const reopenFiscalYear = createAsyncThunk(
   }
 );
 
+/**
+ * Import fiscal years from SIE file
+ * US-123: SIE Import Fiscal Years and Transactions
+ */
+export const importFiscalYears = createAsyncThunk(
+  'fiscalYears/importFiscalYears',
+  async ({ fiscalYears, skipExisting = true }, { rejectWithValue }) => {
+    const { data, error } = await FiscalYear.bulkImport(fiscalYears, { skipExisting });
+    if (error) return rejectWithValue(error.message);
+    return data;
+  }
+);
+
 const initialState = {
   items: [],
   currentFiscalYear: null,
@@ -206,6 +219,24 @@ const fiscalYearsSlice = createSlice({
         }
       })
       .addCase(reopenFiscalYear.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload;
+      })
+      // importFiscalYears
+      .addCase(importFiscalYears.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(importFiscalYears.fulfilled, (state, action) => {
+        state.loading = false;
+        // Add imported fiscal years to the list
+        if (action.payload?.items) {
+          state.items = [...action.payload.items, ...state.items];
+          // Sort by start_date descending
+          state.items.sort((a, b) => (b.start_date || '').localeCompare(a.start_date || ''));
+        }
+      })
+      .addCase(importFiscalYears.rejected, (state, action) => {
         state.loading = false;
         state.error = action.payload;
       });

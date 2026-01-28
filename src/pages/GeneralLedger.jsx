@@ -4,11 +4,16 @@ import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
 import {
   fetchLedgerData,
+  fetchAllAccountsLedger,
   clearLedger,
+  clearAllAccountsLedger,
   selectLedgerEntries,
   selectLedgerLoading,
   selectLedgerError,
   selectLedgerTotals,
+  selectAllAccountsLedger,
+  selectAllAccountsLedgerLoading,
+  selectAllAccountsLedgerError,
 } from '../features/journalEntries/journalEntriesSlice';
 import {
   fetchFiscalYears,
@@ -26,6 +31,7 @@ import { useOrganization } from '../contexts/OrganizationContext';
 /**
  * General Ledger View - US-220
  * Shows all transactions for a selected account with running balances
+ * Defaults to showing all accounts with transactions
  */
 export default function GeneralLedger() {
   const { t, i18n } = useTranslation();
@@ -33,22 +39,29 @@ export default function GeneralLedger() {
   const navigate = useNavigate();
   const { currentOrganization } = useOrganization();
 
-  // Redux state
+  // Redux state - Single account view
   const entries = useSelector(selectLedgerEntries);
   const loading = useSelector(selectLedgerLoading);
   const error = useSelector(selectLedgerError);
   const totals = useSelector(selectLedgerTotals);
+  
+  // Redux state - All accounts view
+  const allAccountsLedger = useSelector(selectAllAccountsLedger);
+  const allAccountsLoading = useSelector(selectAllAccountsLedgerLoading);
+  const allAccountsError = useSelector(selectAllAccountsLedgerError);
+  
   const fiscalYears = useSelector(selectFiscalYears);
   const selectedFiscalYearId = useSelector(selectSelectedFiscalYearId);
   const accounts = useSelector(selectAccounts);
   const accountsLoading = useSelector(selectAccountsLoading);
 
-  // Local state
-  const [selectedAccountId, setSelectedAccountId] = useState('');
+  // Local state - 'all' means show all accounts, otherwise it's an account ID
+  const [selectedAccountId, setSelectedAccountId] = useState('all');
   const [startDate, setStartDate] = useState('');
   const [endDate, setEndDate] = useState('');
   const [accountSearch, setAccountSearch] = useState('');
   const [showAccountDropdown, setShowAccountDropdown] = useState(false);
+  const [expandedAccounts, setExpandedAccounts] = useState(new Set());
 
   // Load fiscal years and accounts on mount
   useEffect(() => {
@@ -62,6 +75,7 @@ export default function GeneralLedger() {
   useEffect(() => {
     return () => {
       dispatch(clearLedger());
+      dispatch(clearAllAccountsLedger());
     };
   }, [dispatch]);
 
@@ -78,16 +92,29 @@ export default function GeneralLedger() {
 
   // Fetch ledger data when account or filters change
   useEffect(() => {
-    if (currentOrganization?.id && selectedAccountId) {
-      dispatch(
-        fetchLedgerData({
-          organizationId: currentOrganization.id,
-          accountId: selectedAccountId,
-          fiscalYearId: selectedFiscalYearId,
-          startDate: startDate || null,
-          endDate: endDate || null,
-        })
-      );
+    if (currentOrganization?.id) {
+      if (selectedAccountId === 'all') {
+        // Fetch all accounts ledger
+        dispatch(
+          fetchAllAccountsLedger({
+            organizationId: currentOrganization.id,
+            fiscalYearId: selectedFiscalYearId,
+            startDate: startDate || null,
+            endDate: endDate || null,
+          })
+        );
+      } else if (selectedAccountId) {
+        // Fetch single account ledger
+        dispatch(
+          fetchLedgerData({
+            organizationId: currentOrganization.id,
+            accountId: selectedAccountId,
+            fiscalYearId: selectedFiscalYearId,
+            startDate: startDate || null,
+            endDate: endDate || null,
+          })
+        );
+      }
     }
   }, [dispatch, currentOrganization?.id, selectedAccountId, selectedFiscalYearId, startDate, endDate]);
 
@@ -105,6 +132,7 @@ export default function GeneralLedger() {
 
   // Get selected account details
   const selectedAccount = useMemo(() => {
+    if (selectedAccountId === 'all') return null;
     return accounts.find((a) => a.id === selectedAccountId);
   }, [accounts, selectedAccountId]);
 
@@ -118,9 +146,36 @@ export default function GeneralLedger() {
 
   // Handle account selection
   const handleSelectAccount = (account) => {
-    setSelectedAccountId(account.id);
+    if (account === 'all') {
+      setSelectedAccountId('all');
+    } else {
+      setSelectedAccountId(account.id);
+    }
     setAccountSearch('');
     setShowAccountDropdown(false);
+  };
+
+  // Toggle expanded state for an account in all-accounts view
+  const toggleAccountExpanded = (accountId) => {
+    setExpandedAccounts((prev) => {
+      const newSet = new Set(prev);
+      if (newSet.has(accountId)) {
+        newSet.delete(accountId);
+      } else {
+        newSet.add(accountId);
+      }
+      return newSet;
+    });
+  };
+
+  // Expand all accounts
+  const expandAll = () => {
+    setExpandedAccounts(new Set(allAccountsLedger.map((a) => a.account.id)));
+  };
+
+  // Collapse all accounts
+  const collapseAll = () => {
+    setExpandedAccounts(new Set());
   };
 
   // Navigate to journal entry
@@ -162,12 +217,12 @@ export default function GeneralLedger() {
           {/* Account Selection */}
           <div className="relative lg:col-span-2">
             <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-              {t('generalLedger.selectAccount')} *
+              {t('generalLedger.selectAccount')}
             </label>
             <div className="relative">
               <input
                 type="text"
-                value={selectedAccount ? `${selectedAccount.account_number} - ${getAccountName(selectedAccount)}` : accountSearch}
+                value={selectedAccountId === 'all' ? t('generalLedger.allAccounts') : (selectedAccount ? `${selectedAccount.account_number} - ${getAccountName(selectedAccount)}` : accountSearch)}
                 onChange={(e) => {
                   setAccountSearch(e.target.value);
                   setSelectedAccountId('');
@@ -178,11 +233,25 @@ export default function GeneralLedger() {
                 data-cy="account-search"
                 className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
               />
-              {showAccountDropdown && filteredAccounts.length > 0 && (
+              {showAccountDropdown && (
                 <div
                   className="absolute z-10 mt-1 w-full bg-white dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-sm shadow-lg max-h-60 overflow-auto"
                   data-cy="account-dropdown"
                 >
+                  {/* All accounts option */}
+                  <button
+                    type="button"
+                    onClick={() => handleSelectAccount('all')}
+                    data-cy="account-option-all"
+                    className="w-full px-3 py-2 text-left hover:bg-gray-100 dark:hover:bg-gray-600 text-sm border-b border-gray-200 dark:border-gray-600"
+                  >
+                    <span className="font-medium text-blue-600 dark:text-blue-400">
+                      {t('generalLedger.allAccounts')}
+                    </span>
+                    <span className="text-gray-500 dark:text-gray-400 ml-2 text-xs">
+                      {t('generalLedger.showAllWithTransactions')}
+                    </span>
+                  </button>
                   {filteredAccounts.map((account) => (
                     <button
                       key={account.id}
@@ -262,220 +331,402 @@ export default function GeneralLedger() {
         />
       )}
 
-      {/* Results */}
-      {!selectedAccountId ? (
-        <div className="bg-white dark:bg-gray-800 rounded-sm shadow-sm p-8 text-center">
-          <svg
-            className="mx-auto h-12 w-12 text-gray-400"
-            fill="none"
-            viewBox="0 0 24 24"
-            stroke="currentColor"
-          >
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              strokeWidth={1.5}
-              d="M9 7h6m0 10v-3m-3 3h.01M9 17h.01M9 14h.01M12 14h.01M15 11h.01M12 11h.01M9 11h.01M7 21h10a2 2 0 002-2V5a2 2 0 00-2-2H7a2 2 0 00-2 2v14a2 2 0 002 2z"
-            />
-          </svg>
-          <h3 className="mt-4 text-lg font-medium text-gray-900 dark:text-white">
-            {t('generalLedger.noAccountSelected')}
-          </h3>
-          <p className="mt-2 text-sm text-gray-500 dark:text-gray-400">
-            {t('generalLedger.selectAccountPrompt')}
-          </p>
-        </div>
-      ) : loading || accountsLoading ? (
-        <div className="bg-white dark:bg-gray-800 rounded-sm shadow-sm p-8 text-center">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto"></div>
-          <p className="mt-4 text-gray-500 dark:text-gray-400">{t('common.loading')}</p>
-        </div>
-      ) : error ? (
-        <div className="bg-red-50 dark:bg-red-900/30 border border-red-200 dark:border-red-800 rounded-sm p-4">
-          <p className="text-red-600 dark:text-red-400">{error}</p>
-        </div>
-      ) : (
+      {/* Results - All Accounts View */}
+      {selectedAccountId === 'all' && (
         <>
-          {/* Account Header */}
-          {selectedAccount && (
-            <div className="bg-white dark:bg-gray-800 rounded-sm shadow-sm p-4">
-              <div className="flex items-center justify-between">
-                <div>
-                  <h2 className="text-lg font-semibold text-gray-900 dark:text-white" data-cy="selected-account-name">
-                    {selectedAccount.account_number} - {getAccountName(selectedAccount)}
-                  </h2>
-                  <p className="text-sm text-gray-500 dark:text-gray-400">
-                    {t(`accounts.classes.${selectedAccount.account_class}`)}
-                  </p>
-                </div>
-                <div className="text-right">
-                  <p className="text-sm text-gray-500 dark:text-gray-400">
-                    {t('generalLedger.closingBalance')}
-                  </p>
-                  <p
-                    className={`text-xl font-semibold ${
-                      totals.closingBalance >= 0
-                        ? 'text-gray-900 dark:text-white'
-                        : 'text-red-600 dark:text-red-400'
-                    }`}
-                    data-cy="closing-balance"
-                  >
-                    {formatAmount(totals.closingBalance)}
-                  </p>
-                </div>
-              </div>
+          {allAccountsLoading || accountsLoading ? (
+            <div className="bg-white dark:bg-gray-800 rounded-sm shadow-sm p-8 text-center">
+              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto"></div>
+              <p className="mt-4 text-gray-500 dark:text-gray-400">{t('common.loading')}</p>
             </div>
-          )}
-
-          {/* Ledger Table */}
-          <div className="bg-white dark:bg-gray-800 rounded-sm shadow-sm overflow-hidden">
-            <div className="overflow-x-auto">
-              <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700" data-cy="ledger-table">
-                <thead className="bg-gray-50 dark:bg-gray-900/50">
-                  <tr>
-                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-                      {t('generalLedger.date')}
-                    </th>
-                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-                      {t('generalLedger.verificationNo')}
-                    </th>
-                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-                      {t('generalLedger.description')}
-                    </th>
-                    <th className="px-4 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-                      {t('generalLedger.debit')}
-                    </th>
-                    <th className="px-4 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-                      {t('generalLedger.credit')}
-                    </th>
-                    <th className="px-4 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-                      {t('generalLedger.balance')}
-                    </th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-gray-200 dark:divide-gray-700">
-                  {/* Opening Balance Row */}
-                  {totals.openingBalance !== 0 && (
-                    <tr className="bg-gray-50 dark:bg-gray-900/30" data-cy="opening-balance-row">
-                      <td className="px-4 py-3 text-sm text-gray-500 dark:text-gray-400" colSpan="3">
-                        <em>{t('generalLedger.openingBalance')}</em>
-                      </td>
-                      <td className="px-4 py-3 text-sm text-right text-gray-500 dark:text-gray-400">-</td>
-                      <td className="px-4 py-3 text-sm text-right text-gray-500 dark:text-gray-400">-</td>
-                      <td className="px-4 py-3 text-sm text-right font-medium text-gray-900 dark:text-white" data-cy="opening-balance-value">
-                        {formatAmount(totals.openingBalance)}
-                      </td>
-                    </tr>
-                  )}
-
-                  {/* Transaction Rows */}
-                  {entries.length === 0 ? (
-                    <tr>
-                      <td colSpan="6" className="px-4 py-8 text-center text-gray-500 dark:text-gray-400">
-                        {t('generalLedger.noTransactions')}
-                      </td>
-                    </tr>
-                  ) : (
-                    entries.map((entry, index) => (
-                      <tr
-                        key={entry.id}
-                        className="hover:bg-gray-50 dark:hover:bg-gray-700/50 cursor-pointer"
-                        onClick={() => handleDrillDown(entry.journalEntryId)}
-                        data-cy={`ledger-row-${index}`}
-                      >
-                        <td className="px-4 py-3 text-sm text-gray-900 dark:text-white whitespace-nowrap">
-                          {formatDate(entry.entryDate)}
-                        </td>
-                        <td className="px-4 py-3 text-sm text-gray-900 dark:text-white whitespace-nowrap">
-                          <span className="font-mono" data-cy="verification-number">
-                            {entry.verificationNumber}
-                          </span>
-                        </td>
-                        <td className="px-4 py-3 text-sm text-gray-600 dark:text-gray-300 max-w-xs truncate">
-                          {entry.lineDescription || entry.entryDescription || '-'}
-                        </td>
-                        <td className="px-4 py-3 text-sm text-right font-medium text-gray-900 dark:text-white whitespace-nowrap">
-                          {entry.debit > 0 ? formatAmount(entry.debit) : '-'}
-                        </td>
-                        <td className="px-4 py-3 text-sm text-right font-medium text-gray-900 dark:text-white whitespace-nowrap">
-                          {entry.credit > 0 ? formatAmount(entry.credit) : '-'}
-                        </td>
-                        <td
-                          className={`px-4 py-3 text-sm text-right font-medium whitespace-nowrap ${
-                            entry.balance >= 0
-                              ? 'text-gray-900 dark:text-white'
-                              : 'text-red-600 dark:text-red-400'
-                          }`}
-                          data-cy="running-balance"
-                        >
-                          {formatAmount(entry.balance)}
-                        </td>
-                      </tr>
-                    ))
-                  )}
-
-                  {/* Totals Row */}
-                  {entries.length > 0 && (
-                    <tr className="bg-gray-100 dark:bg-gray-900/50 font-medium" data-cy="totals-row">
-                      <td className="px-4 py-3 text-sm text-gray-900 dark:text-white" colSpan="3">
-                        {t('generalLedger.totals')}
-                      </td>
-                      <td className="px-4 py-3 text-sm text-right text-gray-900 dark:text-white" data-cy="total-debit">
-                        {formatAmount(totals.totalDebit)}
-                      </td>
-                      <td className="px-4 py-3 text-sm text-right text-gray-900 dark:text-white" data-cy="total-credit">
-                        {formatAmount(totals.totalCredit)}
-                      </td>
-                      <td className="px-4 py-3 text-sm text-right text-gray-900 dark:text-white" data-cy="final-balance">
-                        {formatAmount(totals.closingBalance)}
-                      </td>
-                    </tr>
-                  )}
-                </tbody>
-              </table>
+          ) : allAccountsError ? (
+            <div className="bg-red-50 dark:bg-red-900/30 border border-red-200 dark:border-red-800 rounded-sm p-4">
+              <p className="text-red-600 dark:text-red-400">{allAccountsError}</p>
             </div>
-          </div>
-
-          {/* Summary Card */}
-          {entries.length > 0 && (
-            <div className="bg-white dark:bg-gray-800 rounded-sm shadow-sm p-4">
-              <h3 className="text-sm font-medium text-gray-500 dark:text-gray-400 mb-3">
-                {t('generalLedger.periodSummary')}
+          ) : allAccountsLedger.length === 0 ? (
+            <div className="bg-white dark:bg-gray-800 rounded-sm shadow-sm p-8 text-center">
+              <svg
+                className="mx-auto h-12 w-12 text-gray-400"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={1.5}
+                  d="M9 7h6m0 10v-3m-3 3h.01M9 17h.01M9 14h.01M12 14h.01M15 11h.01M12 11h.01M9 11h.01M7 21h10a2 2 0 002-2V5a2 2 0 00-2-2H7a2 2 0 00-2 2v14a2 2 0 002 2z"
+                />
+              </svg>
+              <h3 className="mt-4 text-lg font-medium text-gray-900 dark:text-white">
+                {t('generalLedger.noTransactions')}
               </h3>
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                <div>
-                  <p className="text-xs text-gray-500 dark:text-gray-400">{t('generalLedger.openingBalance')}</p>
-                  <p className="text-lg font-semibold text-gray-900 dark:text-white">
-                    {formatAmount(totals.openingBalance)}
-                  </p>
-                </div>
-                <div>
-                  <p className="text-xs text-gray-500 dark:text-gray-400">{t('generalLedger.periodDebits')}</p>
-                  <p className="text-lg font-semibold text-green-600 dark:text-green-400">
-                    {formatAmount(totals.totalDebit)}
-                  </p>
-                </div>
-                <div>
-                  <p className="text-xs text-gray-500 dark:text-gray-400">{t('generalLedger.periodCredits')}</p>
-                  <p className="text-lg font-semibold text-red-600 dark:text-red-400">
-                    {formatAmount(totals.totalCredit)}
-                  </p>
-                </div>
-                <div>
-                  <p className="text-xs text-gray-500 dark:text-gray-400">{t('generalLedger.closingBalance')}</p>
-                  <p className={`text-lg font-semibold ${
-                    totals.closingBalance >= 0 
-                      ? 'text-gray-900 dark:text-white' 
-                      : 'text-red-600 dark:text-red-400'
-                  }`}>
-                    {formatAmount(totals.closingBalance)}
-                  </p>
-                </div>
-              </div>
-              <p className="mt-3 text-xs text-gray-500 dark:text-gray-400">
-                {t('generalLedger.transactionCount', { count: entries.length })}
+              <p className="mt-2 text-sm text-gray-500 dark:text-gray-400">
+                {t('generalLedger.noAccountsWithTransactions')}
               </p>
             </div>
+          ) : (
+            <>
+              {/* Expand/Collapse Controls */}
+              <div className="flex items-center justify-between bg-white dark:bg-gray-800 rounded-sm shadow-sm p-4">
+                <div>
+                  <h2 className="text-lg font-semibold text-gray-900 dark:text-white">
+                    {t('generalLedger.allAccounts')}
+                  </h2>
+                  <p className="text-sm text-gray-500 dark:text-gray-400">
+                    {t('generalLedger.accountsWithTransactionsCount', { count: allAccountsLedger.length })}
+                  </p>
+                </div>
+                <div className="flex gap-2">
+                  <button
+                    type="button"
+                    onClick={expandAll}
+                    className="px-3 py-1.5 text-sm text-blue-600 dark:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/30 rounded-sm"
+                    data-cy="expand-all-btn"
+                  >
+                    {t('generalLedger.expandAll')}
+                  </button>
+                  <button
+                    type="button"
+                    onClick={collapseAll}
+                    className="px-3 py-1.5 text-sm text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-sm"
+                    data-cy="collapse-all-btn"
+                  >
+                    {t('generalLedger.collapseAll')}
+                  </button>
+                </div>
+              </div>
+
+              {/* Account Groups */}
+              <div className="space-y-4">
+                {allAccountsLedger.map((accountData) => (
+                  <div
+                    key={accountData.account.id}
+                    className="bg-white dark:bg-gray-800 rounded-sm shadow-sm overflow-hidden"
+                    data-cy={`account-group-${accountData.account.account_number}`}
+                  >
+                    {/* Account Header - Clickable */}
+                    <button
+                      type="button"
+                      onClick={() => toggleAccountExpanded(accountData.account.id)}
+                      className="w-full p-4 flex items-center justify-between hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors"
+                    >
+                      <div className="flex items-center gap-3">
+                        <svg
+                          className={`w-4 h-4 text-gray-500 transition-transform ${
+                            expandedAccounts.has(accountData.account.id) ? 'rotate-90' : ''
+                          }`}
+                          fill="none"
+                          viewBox="0 0 24 24"
+                          stroke="currentColor"
+                        >
+                          <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            strokeWidth={2}
+                            d="M9 5l7 7-7 7"
+                          />
+                        </svg>
+                        <div className="text-left">
+                          <h3 className="font-semibold text-gray-900 dark:text-white">
+                            {accountData.account.account_number} - {getAccountName(accountData.account)}
+                          </h3>
+                          <p className="text-xs text-gray-500 dark:text-gray-400">
+                            {accountData.entries.length} {t('generalLedger.transactions').toLowerCase()}
+                          </p>
+                        </div>
+                      </div>
+                      <div className="flex items-center gap-6 text-sm">
+                        <div className="text-right">
+                          <p className="text-xs text-gray-500 dark:text-gray-400">{t('generalLedger.debit')}</p>
+                          <p className="font-medium text-gray-900 dark:text-white">
+                            {formatAmount(accountData.totalDebit)}
+                          </p>
+                        </div>
+                        <div className="text-right">
+                          <p className="text-xs text-gray-500 dark:text-gray-400">{t('generalLedger.credit')}</p>
+                          <p className="font-medium text-gray-900 dark:text-white">
+                            {formatAmount(accountData.totalCredit)}
+                          </p>
+                        </div>
+                        <div className="text-right min-w-[100px]">
+                          <p className="text-xs text-gray-500 dark:text-gray-400">{t('generalLedger.balance')}</p>
+                          <p className={`font-semibold ${
+                            accountData.closingBalance >= 0
+                              ? 'text-gray-900 dark:text-white'
+                              : 'text-red-600 dark:text-red-400'
+                          }`}>
+                            {formatAmount(accountData.closingBalance)}
+                          </p>
+                        </div>
+                      </div>
+                    </button>
+
+                    {/* Expanded Transactions */}
+                    {expandedAccounts.has(accountData.account.id) && (
+                      <div className="border-t border-gray-200 dark:border-gray-700">
+                        <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
+                          <thead className="bg-gray-50 dark:bg-gray-900/50">
+                            <tr>
+                              <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">
+                                {t('generalLedger.date')}
+                              </th>
+                              <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">
+                                {t('generalLedger.verificationNo')}
+                              </th>
+                              <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">
+                                {t('generalLedger.description')}
+                              </th>
+                              <th className="px-4 py-2 text-right text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">
+                                {t('generalLedger.debit')}
+                              </th>
+                              <th className="px-4 py-2 text-right text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">
+                                {t('generalLedger.credit')}
+                              </th>
+                              <th className="px-4 py-2 text-right text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">
+                                {t('generalLedger.balance')}
+                              </th>
+                            </tr>
+                          </thead>
+                          <tbody className="divide-y divide-gray-200 dark:divide-gray-700">
+                            {accountData.entries.map((entry, index) => (
+                              <tr
+                                key={entry.id}
+                                className="hover:bg-gray-50 dark:hover:bg-gray-700/50 cursor-pointer"
+                                onClick={() => handleDrillDown(entry.journalEntryId)}
+                              >
+                                <td className="px-4 py-2 text-sm text-gray-900 dark:text-white whitespace-nowrap">
+                                  {formatDate(entry.entryDate)}
+                                </td>
+                                <td className="px-4 py-2 text-sm text-gray-900 dark:text-white whitespace-nowrap">
+                                  <span className="font-mono">{entry.verificationNumber}</span>
+                                </td>
+                                <td className="px-4 py-2 text-sm text-gray-600 dark:text-gray-300 max-w-xs truncate">
+                                  {entry.lineDescription || entry.entryDescription || '-'}
+                                </td>
+                                <td className="px-4 py-2 text-sm text-right font-medium text-gray-900 dark:text-white whitespace-nowrap">
+                                  {entry.debit > 0 ? formatAmount(entry.debit) : '-'}
+                                </td>
+                                <td className="px-4 py-2 text-sm text-right font-medium text-gray-900 dark:text-white whitespace-nowrap">
+                                  {entry.credit > 0 ? formatAmount(entry.credit) : '-'}
+                                </td>
+                                <td className={`px-4 py-2 text-sm text-right font-medium whitespace-nowrap ${
+                                  entry.balance >= 0
+                                    ? 'text-gray-900 dark:text-white'
+                                    : 'text-red-600 dark:text-red-400'
+                                }`}>
+                                  {formatAmount(entry.balance)}
+                                </td>
+                              </tr>
+                            ))}
+                          </tbody>
+                        </table>
+                      </div>
+                    )}
+                  </div>
+                ))}
+              </div>
+            </>
+          )}
+        </>
+      )}
+
+      {/* Results - Single Account View */}
+      {selectedAccountId && selectedAccountId !== 'all' && (
+        <>
+          {loading || accountsLoading ? (
+            <div className="bg-white dark:bg-gray-800 rounded-sm shadow-sm p-8 text-center">
+              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto"></div>
+              <p className="mt-4 text-gray-500 dark:text-gray-400">{t('common.loading')}</p>
+            </div>
+          ) : error ? (
+            <div className="bg-red-50 dark:bg-red-900/30 border border-red-200 dark:border-red-800 rounded-sm p-4">
+              <p className="text-red-600 dark:text-red-400">{error}</p>
+            </div>
+          ) : (
+            <>
+              {/* Account Header */}
+              {selectedAccount && (
+                <div className="bg-white dark:bg-gray-800 rounded-sm shadow-sm p-4">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <h2 className="text-lg font-semibold text-gray-900 dark:text-white" data-cy="selected-account-name">
+                        {selectedAccount.account_number} - {getAccountName(selectedAccount)}
+                      </h2>
+                      <p className="text-sm text-gray-500 dark:text-gray-400">
+                        {t(`accounts.classes.${selectedAccount.account_class}`)}
+                      </p>
+                    </div>
+                    <div className="text-right">
+                      <p className="text-sm text-gray-500 dark:text-gray-400">
+                        {t('generalLedger.closingBalance')}
+                      </p>
+                      <p
+                        className={`text-xl font-semibold ${
+                          totals.closingBalance >= 0
+                            ? 'text-gray-900 dark:text-white'
+                            : 'text-red-600 dark:text-red-400'
+                        }`}
+                        data-cy="closing-balance"
+                      >
+                        {formatAmount(totals.closingBalance)}
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {/* Ledger Table */}
+              <div className="bg-white dark:bg-gray-800 rounded-sm shadow-sm overflow-hidden">
+                <div className="overflow-x-auto">
+                  <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700" data-cy="ledger-table">
+                    <thead className="bg-gray-50 dark:bg-gray-900/50">
+                      <tr>
+                        <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                          {t('generalLedger.date')}
+                        </th>
+                        <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                          {t('generalLedger.verificationNo')}
+                        </th>
+                        <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                          {t('generalLedger.description')}
+                        </th>
+                        <th className="px-4 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                          {t('generalLedger.debit')}
+                        </th>
+                        <th className="px-4 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                          {t('generalLedger.credit')}
+                        </th>
+                        <th className="px-4 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                          {t('generalLedger.balance')}
+                        </th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-gray-200 dark:divide-gray-700">
+                      {/* Opening Balance Row */}
+                      {totals.openingBalance !== 0 && (
+                        <tr className="bg-gray-50 dark:bg-gray-900/30" data-cy="opening-balance-row">
+                          <td className="px-4 py-3 text-sm text-gray-500 dark:text-gray-400" colSpan="3">
+                            <em>{t('generalLedger.openingBalance')}</em>
+                          </td>
+                          <td className="px-4 py-3 text-sm text-right text-gray-500 dark:text-gray-400">-</td>
+                          <td className="px-4 py-3 text-sm text-right text-gray-500 dark:text-gray-400">-</td>
+                          <td className="px-4 py-3 text-sm text-right font-medium text-gray-900 dark:text-white" data-cy="opening-balance-value">
+                            {formatAmount(totals.openingBalance)}
+                          </td>
+                        </tr>
+                      )}
+
+                      {/* Transaction Rows */}
+                      {entries.length === 0 ? (
+                        <tr>
+                          <td colSpan="6" className="px-4 py-8 text-center text-gray-500 dark:text-gray-400">
+                            {t('generalLedger.noTransactions')}
+                          </td>
+                        </tr>
+                      ) : (
+                        entries.map((entry, index) => (
+                          <tr
+                            key={entry.id}
+                            className="hover:bg-gray-50 dark:hover:bg-gray-700/50 cursor-pointer"
+                            onClick={() => handleDrillDown(entry.journalEntryId)}
+                            data-cy={`ledger-row-${index}`}
+                          >
+                            <td className="px-4 py-3 text-sm text-gray-900 dark:text-white whitespace-nowrap">
+                              {formatDate(entry.entryDate)}
+                            </td>
+                            <td className="px-4 py-3 text-sm text-gray-900 dark:text-white whitespace-nowrap">
+                              <span className="font-mono" data-cy="verification-number">
+                                {entry.verificationNumber}
+                              </span>
+                            </td>
+                            <td className="px-4 py-3 text-sm text-gray-600 dark:text-gray-300 max-w-xs truncate">
+                              {entry.lineDescription || entry.entryDescription || '-'}
+                            </td>
+                            <td className="px-4 py-3 text-sm text-right font-medium text-gray-900 dark:text-white whitespace-nowrap">
+                              {entry.debit > 0 ? formatAmount(entry.debit) : '-'}
+                            </td>
+                            <td className="px-4 py-3 text-sm text-right font-medium text-gray-900 dark:text-white whitespace-nowrap">
+                              {entry.credit > 0 ? formatAmount(entry.credit) : '-'}
+                            </td>
+                            <td
+                              className={`px-4 py-3 text-sm text-right font-medium whitespace-nowrap ${
+                                entry.balance >= 0
+                                  ? 'text-gray-900 dark:text-white'
+                                  : 'text-red-600 dark:text-red-400'
+                              }`}
+                              data-cy="running-balance"
+                            >
+                              {formatAmount(entry.balance)}
+                            </td>
+                          </tr>
+                        ))
+                      )}
+
+                      {/* Totals Row */}
+                      {entries.length > 0 && (
+                        <tr className="bg-gray-100 dark:bg-gray-900/50 font-medium" data-cy="totals-row">
+                          <td className="px-4 py-3 text-sm text-gray-900 dark:text-white" colSpan="3">
+                            {t('generalLedger.totals')}
+                          </td>
+                          <td className="px-4 py-3 text-sm text-right text-gray-900 dark:text-white" data-cy="total-debit">
+                            {formatAmount(totals.totalDebit)}
+                          </td>
+                          <td className="px-4 py-3 text-sm text-right text-gray-900 dark:text-white" data-cy="total-credit">
+                            {formatAmount(totals.totalCredit)}
+                          </td>
+                          <td className="px-4 py-3 text-sm text-right text-gray-900 dark:text-white" data-cy="final-balance">
+                            {formatAmount(totals.closingBalance)}
+                          </td>
+                        </tr>
+                      )}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+
+              {/* Summary Card */}
+              {entries.length > 0 && (
+                <div className="bg-white dark:bg-gray-800 rounded-sm shadow-sm p-4">
+                  <h3 className="text-sm font-medium text-gray-500 dark:text-gray-400 mb-3">
+                    {t('generalLedger.periodSummary')}
+                  </h3>
+                  <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                    <div>
+                      <p className="text-xs text-gray-500 dark:text-gray-400">{t('generalLedger.openingBalance')}</p>
+                      <p className="text-lg font-semibold text-gray-900 dark:text-white">
+                        {formatAmount(totals.openingBalance)}
+                      </p>
+                    </div>
+                    <div>
+                      <p className="text-xs text-gray-500 dark:text-gray-400">{t('generalLedger.periodDebits')}</p>
+                      <p className="text-lg font-semibold text-green-600 dark:text-green-400">
+                        {formatAmount(totals.totalDebit)}
+                      </p>
+                    </div>
+                    <div>
+                      <p className="text-xs text-gray-500 dark:text-gray-400">{t('generalLedger.periodCredits')}</p>
+                      <p className="text-lg font-semibold text-red-600 dark:text-red-400">
+                        {formatAmount(totals.totalCredit)}
+                      </p>
+                    </div>
+                    <div>
+                      <p className="text-xs text-gray-500 dark:text-gray-400">{t('generalLedger.closingBalance')}</p>
+                      <p className={`text-lg font-semibold ${
+                        totals.closingBalance >= 0 
+                          ? 'text-gray-900 dark:text-white' 
+                          : 'text-red-600 dark:text-red-400'
+                      }`}>
+                        {formatAmount(totals.closingBalance)}
+                      </p>
+                    </div>
+                  </div>
+                  <p className="mt-3 text-xs text-gray-500 dark:text-gray-400">
+                    {t('generalLedger.transactionCount', { count: entries.length })}
+                  </p>
+                </div>
+              )}
+            </>
           )}
         </>
       )}

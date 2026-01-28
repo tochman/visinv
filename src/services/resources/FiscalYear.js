@@ -131,6 +131,100 @@ class FiscalYearResource extends BaseResource {
 
     return { data, error };
   }
+
+  /**
+   * Bulk import fiscal years from SIE file
+   * @param {Array} fiscalYears - Array of fiscal year objects to import
+   * @param {Object} options - Import options
+   * @param {boolean} options.skipExisting - Skip years that already exist (by date range)
+   * @returns {Promise<{data: Object, error: Error|null}>}
+   */
+  async bulkImport(fiscalYears, options = { skipExisting: true }) {
+    if (!fiscalYears || fiscalYears.length === 0) {
+      return { data: { imported: 0, skipped: 0, items: [] }, error: null };
+    }
+
+    const organizationId = fiscalYears[0].organization_id;
+    
+    // Get existing fiscal years for this organization
+    const { data: existing, error: fetchError } = await this.index(organizationId);
+    if (fetchError) {
+      return { data: null, error: fetchError };
+    }
+
+    const existingDates = new Set(
+      (existing || []).map((fy) => `${fy.start_date}|${fy.end_date}`)
+    );
+
+    const toImport = [];
+    let skipped = 0;
+
+    for (const fy of fiscalYears) {
+      const dateKey = `${fy.start_date}|${fy.end_date}`;
+      
+      if (options.skipExisting && existingDates.has(dateKey)) {
+        skipped++;
+        continue;
+      }
+
+      // Remove sie_index as it's not a database column
+      const { sie_index, ...fiscalYearData } = fy;
+      toImport.push(fiscalYearData);
+    }
+
+    if (toImport.length === 0) {
+      return {
+        data: { imported: 0, skipped, items: [] },
+        error: null,
+      };
+    }
+
+    // Insert fiscal years
+    const { data: inserted, error: insertError } = await this.supabase
+      .from(this.tableName)
+      .insert(toImport)
+      .select();
+
+    if (insertError) {
+      return { data: null, error: insertError };
+    }
+
+    // Create a map from sie_index to created fiscal year ID for use in journal entry import
+    const importedWithIndex = inserted.map((fy, idx) => ({
+      ...fy,
+      sie_index: fiscalYears.find(
+        (orig) => orig.start_date === fy.start_date && orig.end_date === fy.end_date
+      )?.sie_index,
+    }));
+
+    return {
+      data: {
+        imported: inserted.length,
+        skipped,
+        items: importedWithIndex,
+      },
+      error: null,
+    };
+  }
+
+  /**
+   * Get fiscal year by date range
+   * @param {string} organizationId - Organization ID
+   * @param {string} startDate - Start date (YYYY-MM-DD)
+   * @param {string} endDate - End date (YYYY-MM-DD)
+   * @returns {Promise<{data: Object|null, error: Error|null}>}
+   */
+  async getByDateRange(organizationId, startDate, endDate) {
+    const { data, error } = await this.supabase
+      .from(this.tableName)
+      .select('*')
+      .eq('organization_id', organizationId)
+      .eq('start_date', startDate)
+      .eq('end_date', endDate)
+      .single();
+
+    return { data, error };
+  }
 }
 
 export const FiscalYear = new FiscalYearResource();

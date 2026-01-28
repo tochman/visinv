@@ -1808,6 +1808,64 @@ Swedish accounting follows **Bokföringslagen** (BFL) and **Årsredovisningslage
 - **Tests:** Cypress test suite (`sie-import.cy.js`) with 20 tests
 - **Status:** ✅ Complete
 
+**US-123: SIE Import Fiscal Years and Transactions**
+- As a **user migrating to VisInv**, in order to **import complete accounting history**, I would like to **import fiscal years, balances, and journal entries from SIE files**.
+- **SIE4 Format Records:**
+  - `#RAR` - Fiscal year periods: `#RAR 0 20160101 20161231` (year index 0 = current, -1 = previous)
+  - `#IB` - Opening balance (Ingående balans): `#IB 0 1510 432056` (year index, account, amount)
+  - `#UB` - Closing balance (Utgående balans): `#UB 0 1510 550231`
+  - `#RES` - Result/Income statement balance: `#RES 0 3041 -16000.00` (revenue/expense accounts)
+  - `#VER` - Verification/Journal entry header: `#VER A 1 20160101 "Kostnad"` (series, number, date, description)
+  - `#TRANS` - Transaction line within VER: `#TRANS 2440 {} -311.00 20160101 "Kostnad"` (account, dim, amount, date, text)
+- **Acceptance Criteria:**
+  - **Fiscal Year Import:**
+    - Parse `#RAR` records to identify fiscal years (start_date, end_date)
+    - Create fiscal years for the organization with proper naming (e.g., "2016")
+    - Handle multiple years (current year index 0, previous years -1, -2, etc.)
+    - Skip fiscal years that already exist (match by date range)
+  - **Balance Import:**
+    - Parse `#IB` (opening balances) and `#UB` (closing balances) for balance sheet accounts
+    - Parse `#RES` for income statement accounts
+    - Create opening balance journal entries at fiscal year start
+    - Map account numbers to existing accounts in the system
+  - **Journal Entry Import:**
+    - Parse `#VER` records with nested `#TRANS` lines
+    - Create journal entries with:
+      - Verification series (e.g., "A")
+      - Verification number (sequential within series)
+      - Entry date from VER record
+      - Description from VER record
+    - Create journal entry lines from `#TRANS`:
+      - Map account number to system account
+      - Positive amounts → debit, negative amounts → credit
+      - Include transaction description
+    - Auto-post imported entries (status: 'posted', source_type: 'sie_import')
+  - **Import Options in Wizard:**
+    - Checkbox: Import fiscal years (enabled by default if `#RAR` records exist)
+    - Checkbox: Import balances (enabled by default if `#IB`/`#UB`/`#RES` records exist)
+    - Checkbox: Import journal entries (enabled by default if `#VER` records exist)
+    - Option to select which years to import (if multiple)
+  - **Validation:**
+    - Verify all account numbers in transactions exist in system
+    - Verify journal entries are balanced (sum of debits = sum of credits)
+    - Warn if accounts are missing (offer to import accounts first)
+    - Show summary: X fiscal years, Y journal entries, Z transactions
+  - **Preview Step:**
+    - Show fiscal years to be created with date ranges
+    - Show journal entry count per fiscal year
+    - Show balance import summary
+- **Implementation:**
+  - Enhance `sieParser.js` with improved VER/TRANS parsing
+  - Add `prepareFiscalYearsForImport()` function to sieParser
+  - Add `prepareJournalEntriesForImport()` function to sieParser
+  - Add `FiscalYear.bulkImport()` method for fiscal year creation
+  - Add `JournalEntry.bulkImport()` method for journal entry creation with lines
+  - Update `SieImport.jsx` with additional import options
+  - Add Redux thunks for fiscal year and journal entry import
+  - i18n: Add translations for new import options
+- **Tests:** Extend `sie-import.cy.js` with fiscal year and journal entry import tests
+- **Status:** Not Started
+
 #### Supplier Management (Leverantörer)
 
 **US-260: Supplier Invoice Registration**

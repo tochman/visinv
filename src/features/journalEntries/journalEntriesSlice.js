@@ -100,6 +100,19 @@ export const deleteJournalEntry = createAsyncThunk(
 );
 
 /**
+ * Import journal entries from SIE file
+ * US-123: SIE Import Fiscal Years and Transactions
+ */
+export const importJournalEntries = createAsyncThunk(
+  'journalEntries/importJournalEntries',
+  async ({ entries, skipExisting = true }, { rejectWithValue }) => {
+    const { data, error } = await JournalEntry.bulkImport(entries, { skipExisting });
+    if (error) return rejectWithValue(error.message);
+    return data;
+  }
+);
+
+/**
  * Fetch ledger data for a specific account
  * US-220: General Ledger View
  * @param {Object} params - Query parameters
@@ -154,6 +167,29 @@ export const fetchLedgerData = createAsyncThunk(
   }
 );
 
+// Fetch ledger data for all accounts with transactions (US-220)
+export const fetchAllAccountsLedger = createAsyncThunk(
+  'journalEntries/fetchAllAccountsLedger',
+  async ({ organizationId, fiscalYearId, startDate, endDate }, { rejectWithValue }) => {
+    if (!organizationId) {
+      return rejectWithValue('Organization ID is required');
+    }
+
+    const { data, error } = await JournalEntry.getAllAccountsLedger({
+      organizationId,
+      fiscalYearId,
+      startDate,
+      endDate,
+    });
+
+    if (error) return rejectWithValue(error.message);
+
+    return {
+      accountsWithLedger: data || [],
+    };
+  }
+);
+
 const initialState = {
   items: [],
   currentEntry: null,
@@ -170,6 +206,12 @@ const initialState = {
     entries: [],
     openingBalance: 0,
     accountId: null,
+    loading: false,
+    error: null,
+  },
+  // All accounts ledger state (US-220 - show all accounts by default)
+  allAccountsLedger: {
+    accounts: [],
     loading: false,
     error: null,
   },
@@ -208,6 +250,13 @@ const journalEntriesSlice = createSlice({
         entries: [],
         openingBalance: 0,
         accountId: null,
+        loading: false,
+        error: null,
+      };
+    },
+    clearAllAccountsLedger: (state) => {
+      state.allAccountsLedger = {
+        accounts: [],
         loading: false,
         error: null,
       };
@@ -338,6 +387,33 @@ const journalEntriesSlice = createSlice({
       .addCase(fetchLedgerData.rejected, (state, action) => {
         state.ledger.loading = false;
         state.ledger.error = action.payload;
+      })
+      // fetchAllAccountsLedger (US-220 - show all accounts by default)
+      .addCase(fetchAllAccountsLedger.pending, (state) => {
+        state.allAccountsLedger.loading = true;
+        state.allAccountsLedger.error = null;
+      })
+      .addCase(fetchAllAccountsLedger.fulfilled, (state, action) => {
+        state.allAccountsLedger.loading = false;
+        state.allAccountsLedger.accounts = action.payload.accountsWithLedger;
+      })
+      .addCase(fetchAllAccountsLedger.rejected, (state, action) => {
+        state.allAccountsLedger.loading = false;
+        state.allAccountsLedger.error = action.payload;
+      })
+      // importJournalEntries (US-123)
+      .addCase(importJournalEntries.pending, (state) => {
+        state.submitting = true;
+        state.error = null;
+      })
+      .addCase(importJournalEntries.fulfilled, (state, action) => {
+        state.submitting = false;
+        // The import result contains counts, not items
+        // Items will be fetched separately if needed
+      })
+      .addCase(importJournalEntries.rejected, (state, action) => {
+        state.submitting = false;
+        state.error = action.payload;
       });
   },
 });
@@ -350,6 +426,7 @@ export const {
   clearFilters,
   clearError,
   clearLedger,
+  clearAllAccountsLedger,
 } = journalEntriesSlice.actions;
 
 // Selectors
@@ -385,6 +462,11 @@ export const selectLedgerTotals = (state) => {
     closingBalance: Math.round(closingBalance * 100) / 100,
   };
 };
+
+// All accounts ledger selectors (US-220 - show all accounts by default)
+export const selectAllAccountsLedger = (state) => state.journalEntries.allAccountsLedger.accounts;
+export const selectAllAccountsLedgerLoading = (state) => state.journalEntries.allAccountsLedger.loading;
+export const selectAllAccountsLedgerError = (state) => state.journalEntries.allAccountsLedger.error;
 
 // Filtered selectors
 export const selectDraftEntries = (state) => 

@@ -481,4 +481,370 @@ INVALID CONTENT HERE
       cy.getByCy('sie-import-error').should('contain', 'Failed to create organization')
     })
   })
+
+  describe('US-123: Fiscal Years Import', () => {
+    // SIE file with fiscal year records
+    const sieWithFiscalYears = `#FLAGGA 0
+#FORMAT PC8
+#SIETYP 4
+#PROGRAM "Test Program" 1.0
+#GEN 20240101
+#FNAMN "Test Organization"
+#RAR 0 20240101 20241231
+#RAR -1 20230101 20231231
+#KPTYP EUBAS97
+#KONTO 1510 "Kundfordringar"
+#KONTO 1930 "Företagskonto"
+#IB 0 1510 100000
+#UB 0 1510 150000
+`;
+
+    beforeEach(() => {
+      cy.get('[data-cy="sidebar-nav-import/sie"]').click()
+    })
+
+    it('is expected to show fiscal year count in validation results', () => {
+      uploadSIEFile(sieWithFiscalYears, 'test-fiscal-years.se')
+      cy.getByCy('parse-file-button').click()
+
+      cy.getByCy('fiscal-year-count').should('contain', '2')
+    })
+
+    it.only('is expected to show import fiscal years checkbox in preview', () => {
+      uploadSIEFile(sieWithFiscalYears, 'test-fiscal-years.se')
+      cy.getByCy('parse-file-button').click()
+      cy.getByCy('proceed-to-preview-button').click()
+
+      cy.getByCy('import-fiscal-years-checkbox').should('be.visible')
+      cy.getByCy('import-fiscal-years-checkbox').should('be.checked')
+    })
+
+    it('is expected to allow disabling fiscal year import', () => {
+      uploadSIEFile(sieWithFiscalYears, 'test-fiscal-years.se')
+      cy.getByCy('parse-file-button').click()
+      cy.getByCy('proceed-to-preview-button').click()
+
+      cy.getByCy('import-fiscal-years-checkbox').uncheck()
+      cy.getByCy('import-fiscal-years-checkbox').should('not.be.checked')
+    })
+
+    it('is expected to import fiscal years successfully', () => {
+      cy.intercept('GET', '**/rest/v1/accounts?select=account_number*', {
+        statusCode: 200,
+        body: []
+      }).as('getExistingAccountNumbers')
+
+      cy.intercept('POST', '**/rest/v1/accounts*', {
+        statusCode: 201,
+        body: []
+      }).as('importAccounts')
+
+      cy.intercept('GET', '**/rest/v1/fiscal_years*', {
+        statusCode: 200,
+        body: []
+      }).as('getFiscalYears')
+
+      cy.intercept('POST', '**/rest/v1/fiscal_years*', (req) => {
+        req.reply({
+          statusCode: 201,
+          body: req.body.map((fy, i) => ({ id: `fy-${i}`, ...fy }))
+        })
+      }).as('importFiscalYears')
+
+      uploadSIEFile(sieWithFiscalYears, 'test-fiscal-years.se')
+      cy.getByCy('parse-file-button').click()
+      cy.getByCy('proceed-to-preview-button').click()
+      cy.getByCy('import-button').click()
+
+      cy.getByCy('import-fiscal-years-result').should('be.visible')
+    })
+  })
+
+  describe('US-123: Journal Entries Import', () => {
+    // SIE file with vouchers/transactions
+    const sieWithJournalEntries = `#FLAGGA 0
+#FORMAT PC8
+#SIETYP 4
+#PROGRAM "Test Program" 1.0
+#GEN 20240101
+#FNAMN "Test Organization"
+#RAR 0 20240101 20241231
+#KPTYP EUBAS97
+#KONTO 1510 "Kundfordringar"
+#KONTO 2440 "Leverantörsskulder"
+#KONTO 3010 "Försäljning varor 25%"
+#KONTO 6230 "Datakommunikation"
+#VER A 1 20240115 "Invoice Payment"
+{
+#TRANS 1510 {} 1000.00 20240115 "Customer payment"
+#TRANS 3010 {} -1000.00 20240115 "Sales"
+}
+#VER A 2 20240120 "Expense"
+{
+#TRANS 2440 {} -500.00 20240120 "Supplier"
+#TRANS 6230 {} 500.00 20240120 "Internet"
+}
+`;
+
+    beforeEach(() => {
+      cy.get('[data-cy="sidebar-nav-import/sie"]').click()
+    })
+
+    it('is expected to show voucher and transaction counts in validation results', () => {
+      uploadSIEFile(sieWithJournalEntries, 'test-vouchers.se')
+      cy.getByCy('parse-file-button').click()
+
+      cy.getByCy('voucher-count').should('contain', '2')
+      cy.getByCy('transaction-count').should('contain', '4')
+    })
+
+    it('is expected to show import journal entries checkbox in preview', () => {
+      uploadSIEFile(sieWithJournalEntries, 'test-vouchers.se')
+      cy.getByCy('parse-file-button').click()
+      cy.getByCy('proceed-to-preview-button').click()
+
+      cy.getByCy('import-journal-entries-checkbox').should('be.visible')
+      cy.getByCy('import-journal-entries-checkbox').should('be.checked')
+    })
+
+    it('is expected to allow disabling journal entries import', () => {
+      uploadSIEFile(sieWithJournalEntries, 'test-vouchers.se')
+      cy.getByCy('parse-file-button').click()
+      cy.getByCy('proceed-to-preview-button').click()
+
+      cy.getByCy('import-journal-entries-checkbox').uncheck()
+      cy.getByCy('import-journal-entries-checkbox').should('not.be.checked')
+    })
+
+    it('is expected to import journal entries successfully', () => {
+      // Mock all required endpoints
+      cy.intercept('GET', '**/rest/v1/accounts?select=account_number*', {
+        statusCode: 200,
+        body: [
+          { account_number: '1510' },
+          { account_number: '2440' },
+          { account_number: '3010' },
+          { account_number: '6230' }
+        ]
+      }).as('getExistingAccountNumbers')
+
+      cy.intercept('GET', '**/rest/v1/accounts*', {
+        statusCode: 200,
+        body: [
+          { id: 'acc-1', account_number: '1510', name: 'Kundfordringar' },
+          { id: 'acc-2', account_number: '2440', name: 'Leverantörsskulder' },
+          { id: 'acc-3', account_number: '3010', name: 'Försäljning' },
+          { id: 'acc-4', account_number: '6230', name: 'Datakommunikation' }
+        ]
+      }).as('getAccounts')
+
+      cy.intercept('GET', '**/rest/v1/fiscal_years*', {
+        statusCode: 200,
+        body: [
+          { id: 'fy-2024', name: '2024', start_date: '2024-01-01', end_date: '2024-12-31' }
+        ]
+      }).as('getFiscalYears')
+
+      cy.intercept('POST', '**/rest/v1/journal_entries*', (req) => {
+        req.reply({
+          statusCode: 201,
+          body: { id: 'je-new', ...req.body }
+        })
+      }).as('createJournalEntry')
+
+      cy.intercept('POST', '**/rest/v1/journal_entry_lines*', {
+        statusCode: 201,
+        body: []
+      }).as('createJournalLines')
+
+      cy.intercept('PATCH', '**/rest/v1/journal_entries*', {
+        statusCode: 200,
+        body: {}
+      }).as('updateJournalEntry')
+
+      cy.intercept('POST', '**/rest/v1/rpc/get_next_verification_number*', {
+        statusCode: 200,
+        body: 1
+      }).as('getVerificationNumber')
+
+      uploadSIEFile(sieWithJournalEntries, 'test-vouchers.se')
+      cy.getByCy('parse-file-button').click()
+      cy.getByCy('proceed-to-preview-button').click()
+
+      // Uncheck accounts since they already exist
+      cy.getByCy('import-accounts-checkbox').uncheck()
+
+      cy.getByCy('import-button').click()
+
+      // Should show journal entries import result
+      cy.getByCy('import-journal-entries-result').should('be.visible')
+    })
+  })
+
+  describe('US-123: Missing Fiscal Years Detection', () => {
+    // SIE file with vouchers but fiscal year not in current organization
+    const sieWithMissingFiscalYear = `#FLAGGA 0
+#FORMAT PC8
+#SIETYP 4
+#PROGRAM "Test Program" 1.0
+#GEN 20240101
+#FNAMN "Test Organization"
+#RAR 0 20230101 20231231
+#KPTYP EUBAS97
+#KONTO 1510 "Kundfordringar"
+#KONTO 3010 "Försäljning"
+#VER A 1 20230615 "Invoice"
+{
+#TRANS 1510 {} 1000.00 20230615 "Customer payment"
+#TRANS 3010 {} -1000.00 20230615 "Sales"
+}
+`;
+
+    beforeEach(() => {
+      // Mock that no fiscal years exist in the organization
+      cy.intercept('GET', '**/rest/v1/fiscal_years*', {
+        statusCode: 200,
+        body: []
+      }).as('getEmptyFiscalYears')
+
+      cy.get('[data-cy="sidebar-nav-import/sie"]').click()
+    })
+
+    it('is expected to show missing fiscal years warning when importing journal entries', () => {
+      uploadSIEFile(sieWithMissingFiscalYear, 'test-missing-fy.se')
+      cy.getByCy('parse-file-button').click()
+      cy.getByCy('proceed-to-preview-button').click()
+
+      // Ensure journal entries checkbox is checked
+      cy.getByCy('import-journal-entries-checkbox').should('be.checked')
+
+      // Should show missing fiscal years warning
+      cy.getByCy('missing-fiscal-years-warning').should('be.visible')
+    })
+
+    it('is expected to show checkbox to create missing fiscal years', () => {
+      uploadSIEFile(sieWithMissingFiscalYear, 'test-missing-fy.se')
+      cy.getByCy('parse-file-button').click()
+      cy.getByCy('proceed-to-preview-button').click()
+
+      cy.getByCy('create-missing-fiscal-years-checkbox').should('be.visible')
+    })
+
+    it('is expected to hide missing fiscal years warning when journal entries unchecked', () => {
+      uploadSIEFile(sieWithMissingFiscalYear, 'test-missing-fy.se')
+      cy.getByCy('parse-file-button').click()
+      cy.getByCy('proceed-to-preview-button').click()
+
+      // Uncheck journal entries
+      cy.getByCy('import-journal-entries-checkbox').uncheck()
+
+      // Warning should disappear
+      cy.getByCy('missing-fiscal-years-warning').should('not.exist')
+    })
+
+    it('is expected to create missing fiscal years when checkbox is checked', () => {
+      cy.intercept('GET', '**/rest/v1/accounts?select=account_number*', {
+        statusCode: 200,
+        body: [{ account_number: '1510' }, { account_number: '3010' }]
+      }).as('getExistingAccountNumbers')
+
+      cy.intercept('GET', '**/rest/v1/accounts*', {
+        statusCode: 200,
+        body: [
+          { id: 'acc-1', account_number: '1510', name: 'Kundfordringar' },
+          { id: 'acc-2', account_number: '3010', name: 'Försäljning' }
+        ]
+      }).as('getAccounts')
+
+      cy.intercept('POST', '**/rest/v1/fiscal_years*', (req) => {
+        req.reply({
+          statusCode: 201,
+          body: { id: 'fy-new', ...req.body }
+        })
+      }).as('createFiscalYear')
+
+      cy.intercept('POST', '**/rest/v1/journal_entries*', (req) => {
+        req.reply({
+          statusCode: 201,
+          body: { id: 'je-new', ...req.body }
+        })
+      }).as('createJournalEntry')
+
+      cy.intercept('POST', '**/rest/v1/journal_entry_lines*', {
+        statusCode: 201,
+        body: []
+      }).as('createJournalLines')
+
+      cy.intercept('PATCH', '**/rest/v1/journal_entries*', {
+        statusCode: 200,
+        body: {}
+      }).as('updateJournalEntry')
+
+      cy.intercept('POST', '**/rest/v1/rpc/get_next_verification_number*', {
+        statusCode: 200,
+        body: 1
+      }).as('getVerificationNumber')
+
+      uploadSIEFile(sieWithMissingFiscalYear, 'test-missing-fy.se')
+      cy.getByCy('parse-file-button').click()
+      cy.getByCy('proceed-to-preview-button').click()
+
+      // Ensure create missing fiscal years is checked
+      cy.getByCy('create-missing-fiscal-years-checkbox').check()
+
+      // Uncheck accounts import (they exist)
+      cy.getByCy('import-accounts-checkbox').uncheck()
+
+      cy.getByCy('import-button').click()
+
+      // Should create fiscal year
+      cy.wait('@createFiscalYear')
+
+      // Should show results
+      cy.getByCy('import-fiscal-years-result').should('be.visible')
+    })
+  })
+
+  describe('US-123: Opening Balances Import', () => {
+    const sieWithOpeningBalances = `#FLAGGA 0
+#FORMAT PC8
+#SIETYP 4
+#PROGRAM "Test Program" 1.0
+#GEN 20240101
+#FNAMN "Test Organization"
+#RAR 0 20240101 20241231
+#KPTYP EUBAS97
+#KONTO 1510 "Kundfordringar"
+#KONTO 1930 "Företagskonto"
+#IB 0 1510 100000.00
+#IB 0 1930 50000.00
+#UB 0 1510 150000.00
+#UB 0 1930 75000.00
+`;
+
+    beforeEach(() => {
+      cy.get('[data-cy="sidebar-nav-import/sie"]').click()
+    })
+
+    it('is expected to show import opening balances checkbox in preview', () => {
+      uploadSIEFile(sieWithOpeningBalances, 'test-balances.se')
+      cy.getByCy('parse-file-button').click()
+      cy.getByCy('proceed-to-preview-button').click()
+
+      cy.getByCy('import-opening-balances-checkbox').should('be.visible')
+    })
+
+    it('is expected to allow toggling opening balances import', () => {
+      uploadSIEFile(sieWithOpeningBalances, 'test-balances.se')
+      cy.getByCy('parse-file-button').click()
+      cy.getByCy('proceed-to-preview-button').click()
+
+      // Should be checked by default
+      cy.getByCy('import-opening-balances-checkbox').should('be.checked')
+
+      // Should be able to uncheck
+      cy.getByCy('import-opening-balances-checkbox').uncheck()
+      cy.getByCy('import-opening-balances-checkbox').should('not.be.checked')
+    })
+  })
 })

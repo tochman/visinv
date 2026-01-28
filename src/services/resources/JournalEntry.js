@@ -545,6 +545,129 @@ class JournalEntryResource extends BaseResource {
   }
 
   /**
+   * Get all accounts with transactions (for showing all accounts in General Ledger)
+   * US-220: General Ledger View - Show all accounts by default
+   * @param {Object} options - Query options
+   * @param {string} options.organizationId - Organization ID (required)
+   * @param {string} options.fiscalYearId - Fiscal year ID (optional)
+   * @param {string} options.startDate - Start date filter YYYY-MM-DD (optional)
+   * @param {string} options.endDate - End date filter YYYY-MM-DD (optional)
+   * @returns {Promise<{data: Array|null, error: Error|null}>} - Array of accounts with their transactions grouped
+   */
+  async getAllAccountsLedger({ organizationId, fiscalYearId = null, startDate = null, endDate = null }) {
+    if (!organizationId) {
+      return { data: null, error: new Error('Organization ID is required') };
+    }
+
+    let query = this.supabase
+      .from('journal_entry_lines')
+      .select(`
+        id,
+        account_id,
+        debit_amount,
+        credit_amount,
+        description,
+        account:accounts!inner(
+          id,
+          account_number,
+          name,
+          name_en,
+          account_class
+        ),
+        journal_entry:journal_entries!inner(
+          id,
+          organization_id,
+          fiscal_year_id,
+          verification_number,
+          entry_date,
+          description,
+          status
+        )
+      `)
+      .eq('journal_entry.organization_id', organizationId)
+      .eq('journal_entry.status', 'posted')
+      .order('account(account_number)', { ascending: true })
+      .order('journal_entry(entry_date)', { ascending: true })
+      .order('journal_entry(verification_number)', { ascending: true });
+
+    if (fiscalYearId) {
+      query = query.eq('journal_entry.fiscal_year_id', fiscalYearId);
+    }
+
+    if (startDate) {
+      query = query.gte('journal_entry.entry_date', startDate);
+    }
+
+    if (endDate) {
+      query = query.lte('journal_entry.entry_date', endDate);
+    }
+
+    const { data, error } = await query;
+
+    if (error) {
+      return { data: null, error };
+    }
+
+    // Group transactions by account and calculate running balances
+    const accountsMap = new Map();
+
+    (data || []).forEach((line) => {
+      const accountId = line.account_id;
+      const debit = parseFloat(line.debit_amount) || 0;
+      const credit = parseFloat(line.credit_amount) || 0;
+
+      if (!accountsMap.has(accountId)) {
+        accountsMap.set(accountId, {
+          account: {
+            id: line.account.id,
+            account_number: line.account.account_number,
+            name: line.account.name,
+            name_en: line.account.name_en,
+            account_class: line.account.account_class,
+          },
+          entries: [],
+          totalDebit: 0,
+          totalCredit: 0,
+          closingBalance: 0,
+          runningBalance: 0,
+        });
+      }
+
+      const accountData = accountsMap.get(accountId);
+      accountData.runningBalance += debit - credit;
+      accountData.totalDebit += debit;
+      accountData.totalCredit += credit;
+
+      accountData.entries.push({
+        id: line.id,
+        journalEntryId: line.journal_entry.id,
+        verificationNumber: line.journal_entry.verification_number,
+        entryDate: line.journal_entry.entry_date,
+        entryDescription: line.journal_entry.description,
+        lineDescription: line.description,
+        debit,
+        credit,
+        balance: Math.round(accountData.runningBalance * 100) / 100,
+      });
+    });
+
+    // Convert map to array and finalize
+    const accountsWithLedger = Array.from(accountsMap.values()).map((acc) => ({
+      ...acc,
+      closingBalance: Math.round(acc.runningBalance * 100) / 100,
+      totalDebit: Math.round(acc.totalDebit * 100) / 100,
+      totalCredit: Math.round(acc.totalCredit * 100) / 100,
+    }));
+
+    // Sort by account number
+    accountsWithLedger.sort((a, b) => 
+      a.account.account_number.localeCompare(b.account.account_number)
+    );
+
+    return { data: accountsWithLedger, error: null };
+  }
+
+  /**
    * Calculate totals for journal entry lines
    * @param {Array} lines - Array of line items
    * @returns {{totalDebit: number, totalCredit: number, difference: number}}
@@ -576,6 +699,193 @@ class JournalEntryResource extends BaseResource {
     }
 
     return null;
+  }
+
+  /**
+   * Bulk import journal entries from SIE file
+   * US-123: SIE Import Fiscal Years and Transactions
+   * @param {Array} entries - Array of journal entry objects with lines
+   * @param {Object} options - Import options
+   * @param {boolean} options.skipExisting - Skip entries with same source_reference
+   * @returns {Promise<{data: Object, error: Error|null}>}
+   */
+  async bulkImport(entries, options = { skipExisting: true }) {
+    if (!entries || entries.length === 0) {
+      return { data: { imported: 0, skipped: 0, errors: [] }, error: null };
+    }
+
+    const { user, error: authError } = await this.getCurrentUser();
+    if (authError || !user) {
+      return { data: null, error: authError || new Error('Not authenticated') };
+    }
+
+    const organizationId = entries[0].organization_id;
+    const importErrors = [];
+    let imported = 0;
+    let skipped = 0;
+
+    // Get existing entries with sie_import source type
+    // Use description to track duplicates since source_reference column doesn't exist
+    const { data: existing, error: fetchError } = await this.supabase
+      .from(this.tableName)
+      .select('description')
+      .eq('organization_id', organizationId)
+      .eq('source_type', 'sie_import');
+
+    if (fetchError) {
+      return { data: null, error: fetchError };
+    }
+
+    // Build set of existing SIE references (stored in description as "SIE Import A1" etc)
+    const existingRefs = new Set(
+      (existing || [])
+        .map((e) => {
+          // Extract SIE reference from description like "SIE Import A1" -> "A1"
+          const match = e.description?.match(/^SIE Import (.+)$/);
+          return match ? match[1] : null;
+        })
+        .filter(Boolean)
+    );
+
+    // Group entries by fiscal year for verification number assignment
+    const entriesByFiscalYear = new Map();
+    entries.forEach((entry) => {
+      if (!entriesByFiscalYear.has(entry.fiscal_year_id)) {
+        entriesByFiscalYear.set(entry.fiscal_year_id, []);
+      }
+      entriesByFiscalYear.get(entry.fiscal_year_id).push(entry);
+    });
+
+    // Process each fiscal year's entries
+    for (const [fiscalYearId, yearEntries] of entriesByFiscalYear) {
+      // Sort entries by date and original SIE number
+      yearEntries.sort((a, b) => {
+        const dateCompare = (a.entry_date || '').localeCompare(b.entry_date || '');
+        if (dateCompare !== 0) return dateCompare;
+        return (a.sie_number || 0) - (b.sie_number || 0);
+      });
+
+      for (const entry of yearEntries) {
+        // Extract the SIE reference (e.g., "A1" from "SIE Import A1")
+        const sieRef = entry.source_reference || `${entry.sie_series || ''}${entry.sie_number || ''}`;
+        
+        // Skip if already imported
+        if (options.skipExisting && existingRefs.has(sieRef)) {
+          skipped++;
+          continue;
+        }
+
+        // Remove non-database fields from entry
+        const { lines, sie_series, sie_number, is_opening_balance, source_reference, ...entryData } = entry;
+
+        try {
+          // Get the next verification number
+          const { data: verificationNumber, error: verNumError } = await this.supabase.rpc(
+            'get_next_verification_number',
+            {
+              p_organization_id: organizationId,
+              p_fiscal_year_id: fiscalYearId,
+            }
+          );
+
+          if (verNumError) {
+            importErrors.push({
+              entry: sieRef,
+              error: `Failed to get verification number: ${verNumError.message}`,
+            });
+            continue;
+          }
+
+          // Create the journal entry as draft first (RLS requires draft status for line inserts)
+          const shouldBePosted = entry.status === 'posted';
+          const { data: createdEntry, error: createError } = await this.supabase
+            .from(this.tableName)
+            .insert({
+              ...entryData,
+              verification_number: verificationNumber,
+              created_by: user.id,
+              status: 'draft', // Always create as draft first to allow line inserts
+              posted_at: null,
+              posted_by: null,
+            })
+            .select()
+            .single();
+
+          if (createError) {
+            importErrors.push({
+              entry: sieRef,
+              error: `Failed to create entry: ${createError.message}`,
+            });
+            continue;
+          }
+
+          // Create the lines
+          if (lines && lines.length > 0) {
+            const linesWithEntryId = lines.map((line, index) => ({
+              journal_entry_id: createdEntry.id,
+              account_id: line.account_id,
+              debit_amount: line.debit_amount || 0,
+              credit_amount: line.credit_amount || 0,
+              description: line.description || null,
+              vat_code: line.vat_code || null,
+              vat_amount: line.vat_amount || null,
+              cost_center: line.cost_center || null,
+              line_order: line.line_order ?? index,
+            }));
+
+            const { error: linesError } = await this.supabase
+              .from('journal_entry_lines')
+              .insert(linesWithEntryId);
+
+            if (linesError) {
+              // Rollback: delete the created entry
+              await this.delete(createdEntry.id);
+              importErrors.push({
+                entry: sieRef,
+                error: `Failed to create lines: ${linesError.message}`,
+              });
+              continue;
+            }
+          }
+
+          // Now update the entry to posted status if needed
+          if (shouldBePosted) {
+            const { error: postError } = await this.supabase
+              .from(this.tableName)
+              .update({
+                status: 'posted',
+                posted_at: new Date().toISOString(),
+                posted_by: user.id,
+              })
+              .eq('id', createdEntry.id);
+
+            if (postError) {
+              // Entry and lines were created, but posting failed - log warning but count as imported
+              importErrors.push({
+                entry: sieRef,
+                error: `Entry imported but failed to post: ${postError.message}`,
+              });
+            }
+          }
+
+          imported++;
+        } catch (err) {
+          importErrors.push({
+            entry: sieRef,
+            error: err.message,
+          });
+        }
+      }
+    }
+
+    return {
+      data: {
+        imported,
+        skipped,
+        errors: importErrors,
+      },
+      error: null,
+    };
   }
 }
 

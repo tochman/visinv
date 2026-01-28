@@ -580,12 +580,17 @@
     "format": "Format",
     "company": "Företag",
     "accountCount": "Konton",
+    "fiscalYearCount": "Räkenskapsår",
     "voucherCount": "Verifikationer",
+    "transactionCount": "Transaktioner",
     "errors": "Fel",
     "warnings": "Varningar",
     "previewTitle": "Förhandsgranskning",
     "importOptions": "Importalternativ",
     "importAccountsOption": "Importera {{count}} konton",
+    "importFiscalYearsOption": "Importera {{count}} räkenskapsår",
+    "importJournalEntriesOption": "Importera {{voucherCount}} verifikationer ({{transactionCount}} transaktioner)",
+    "importOpeningBalancesOption": "Importera {{count}} ingående balanser",
     "skipExistingOption": "Hoppa över konton som redan finns",
     "accountsPreview": "Konton att importera",
     "andMoreAccounts": "...och {{count}} fler konton",
@@ -596,6 +601,8 @@
     "importComplete": "Import klar!",
     "importedCount": "{{count}} konton importerades.",
     "skippedCount": "{{count}} konton hoppades över (finns redan).",
+    "fiscalYearsImported": "{{count}} räkenskapsår importerades.",
+    "journalEntriesImported": "{{count}} verifikationer importerades.",
     "importAnother": "Importera en till fil",
     "viewAccounts": "Visa kontoplan",
     "importError": "Ett fel uppstod vid import. Försök igen.",
@@ -618,6 +625,14 @@
       "creating": "Skapar organisation...",
       "useCurrent": "Använd nuvarande organisation ändå",
       "createError": "Kunde inte skapa organisation: {{message}}"
+    },
+    "missingFiscalYears": {
+      "warning": "Saknade räkenskapsår",
+      "description": "Verifikationerna i denna fil kräver räkenskapsår som inte finns i ditt system ännu.",
+      "canCreate": "kan skapas från filen",
+      "notInFile": "inte definierat i filen",
+      "createOption": "Skapa saknade räkenskapsår automatiskt",
+      "skipWarning": "Verifikationer för {{count}} år kommer att hoppas över eftersom räkenskapsåren inte skapas."
     }
   },
   "journalEntries": {
@@ -723,7 +738,14 @@
     "periodSummary": "Periodsammanfattning",
     "periodDebits": "Periodens debet",
     "periodCredits": "Periodens kredit",
-    "transactionCount": "{{count}} transaktioner"
+    "transactionCount": "{{count}} transaktioner",
+    "allAccounts": "Alla konton",
+    "showAllWithTransactions": "Visa alla konton med transaktioner",
+    "noAccountsWithTransactions": "Inga konton med transaktioner hittades för vald period",
+    "accountsWithTransactionsCount": "{{count}} konton med transaktioner",
+    "expandAll": "Expandera alla",
+    "collapseAll": "Minimera alla",
+    "transactions": "Transaktioner"
   },
   "validation": {
     "required": "{{field}} är obligatoriskt"

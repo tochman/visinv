@@ -188,12 +188,13 @@ function parseSIE4(content) {
         }
 
         case 'VER': {
-          // Voucher header: #VER "A" 1 20140102 "Text" 20140103
-          const verMatch = rest.match(/^"([^"]*)"\s*(\d+)\s*(\d+)\s*"([^"]*)"/);
+          // Voucher header: #VER A 1 20140102 "Text" or #VER "A" 1 20140102 "Text"
+          // SIE4 can have series with or without quotes
+          const verMatch = rest.match(/^"?([A-Za-z]*)"?\s*(\d+)\s+(\d{8})\s+"([^"]*)"/);
           if (verMatch) {
             const [, series, number, date, text] = verMatch;
             currentVoucher = {
-              series,
+              series: series || 'A', // Default to 'A' if no series
               number: parseInt(number, 10),
               date: parseDate(date),
               text,
@@ -206,13 +207,17 @@ function parseSIE4(content) {
 
         case 'TRANS': {
           // Transaction line: #TRANS 1510 {} 100.00 20140102 "Text"
+          // Format: #TRANS account {dimensions} amount [date] ["text"]
           if (currentVoucher) {
-            const transMatch = rest.match(/^(\d+)\s*\{[^}]*\}\s*([\d.-]+)/);
+            // Match: account, {dimensions}, amount, optional date, optional text
+            const transMatch = rest.match(/^(\d+)\s*\{([^}]*)\}\s*([\d.-]+)(?:\s+(\d{8}))?(?:\s+"([^"]*)")?/);
             if (transMatch) {
-              const [, account, amount] = transMatch;
+              const [, account, _dimensions, amount, date, text] = transMatch;
               currentVoucher.transactions.push({
                 account_number: account,
                 amount: parseFloat(amount),
+                date: date ? parseDate(date) : currentVoucher.date, // Use voucher date if not specified
+                text: text || currentVoucher.text, // Use voucher text if not specified
               });
             }
           }
@@ -471,7 +476,7 @@ export function validateSIE(data) {
 
   // Check for accounts
   if (!data.accounts || data.accounts.length === 0) {
-    errors.push('No accounts found in file');
+    warnings.push('No accounts found in file');
   }
 
   // Check for duplicate account numbers
@@ -490,6 +495,16 @@ export function validateSIE(data) {
     }
   });
 
+  // Validate vouchers are balanced
+  data.vouchers?.forEach((voucher) => {
+    if (voucher.transactions && voucher.transactions.length > 0) {
+      const totalAmount = voucher.transactions.reduce((sum, t) => sum + (t.amount || 0), 0);
+      if (Math.abs(totalAmount) > 0.01) {
+        warnings.push(`Voucher ${voucher.series}${voucher.number} is not balanced (off by ${totalAmount.toFixed(2)})`);
+      }
+    }
+  });
+
   return {
     isValid: errors.length === 0,
     errors,
@@ -498,9 +513,15 @@ export function validateSIE(data) {
       format: data.format,
       company: data.company?.name,
       accountCount: data.accounts?.length || 0,
+      fiscalYearCount: data.fiscalYears?.length || 0,
       voucherCount: data.vouchers?.length || 0,
+      transactionCount: data.vouchers?.reduce((sum, v) => sum + (v.transactions?.length || 0), 0) || 0,
+      openingBalanceCount: data.openingBalances?.length || 0,
+      closingBalanceCount: data.closingBalances?.length || 0,
       hasOpeningBalances: (data.openingBalances?.length || 0) > 0,
       hasClosingBalances: (data.closingBalances?.length || 0) > 0,
+      hasFiscalYears: (data.fiscalYears?.length || 0) > 0,
+      hasVouchers: (data.vouchers?.length || 0) > 0,
     },
   };
 }
@@ -525,9 +546,390 @@ export function prepareAccountsForImport(accounts, organizationId) {
   }));
 }
 
+/**
+ * Convert parsed fiscal years to format ready for import
+ * @param {Array} fiscalYears - Parsed fiscal years from SIE (#RAR records)
+ * @param {string} organizationId - Target organization ID
+ * @returns {Array} Fiscal years ready for database import
+ */
+export function prepareFiscalYearsForImport(fiscalYears, organizationId) {
+  return fiscalYears.map((fy) => {
+    // Extract year from start date for name
+    const startYear = fy.start ? fy.start.substring(0, 4) : '';
+    const endYear = fy.end ? fy.end.substring(0, 4) : '';
+    
+    // Create name: "2016" or "2015/2016" for split years
+    const name = startYear === endYear ? startYear : `${startYear}/${endYear}`;
+    
+    return {
+      organization_id: organizationId,
+      name: name,
+      start_date: fy.start,
+      end_date: fy.end,
+      is_closed: fy.closed || fy.index < 0, // Previous years (negative index) are typically closed
+      sie_index: fy.index, // Keep track of original SIE index for mapping
+    };
+  });
+}
+
+/**
+ * Convert parsed vouchers to journal entries format ready for import
+ * @param {Array} vouchers - Parsed vouchers from SIE (#VER with #TRANS)
+ * @param {string} organizationId - Target organization ID
+ * @param {Map} accountMap - Map of account_number to account_id
+ * @param {Map} fiscalYearMap - Map of year (e.g., "2016") to fiscal_year_id
+ * @returns {Object} { entries: Array, errors: Array }
+ */
+export function prepareJournalEntriesForImport(vouchers, organizationId, accountMap, fiscalYearMap) {
+  const entries = [];
+  const errors = [];
+
+  vouchers.forEach((voucher, index) => {
+    // Validate that the voucher has transactions
+    if (!voucher.transactions || voucher.transactions.length === 0) {
+      errors.push({
+        voucher: `${voucher.series}${voucher.number}`,
+        error: 'Voucher has no transactions',
+      });
+      return;
+    }
+
+    // Determine fiscal year from voucher date
+    const voucherYear = voucher.date ? voucher.date.substring(0, 4) : null;
+    const fiscalYearId = voucherYear ? fiscalYearMap.get(voucherYear) : null;
+
+    if (!fiscalYearId) {
+      errors.push({
+        voucher: `${voucher.series}${voucher.number}`,
+        date: voucher.date,
+        error: `No fiscal year found for date ${voucher.date}`,
+      });
+      return;
+    }
+
+    // Prepare journal entry lines
+    const lines = [];
+    let hasAccountError = false;
+
+    voucher.transactions.forEach((trans, lineIndex) => {
+      const accountId = accountMap.get(trans.account_number);
+      
+      if (!accountId) {
+        errors.push({
+          voucher: `${voucher.series}${voucher.number}`,
+          account: trans.account_number,
+          error: `Account ${trans.account_number} not found in system`,
+        });
+        hasAccountError = true;
+        return;
+      }
+
+      // In SIE, positive amounts are debits, negative amounts are credits
+      const amount = trans.amount;
+      const debitAmount = amount > 0 ? Math.abs(amount) : 0;
+      const creditAmount = amount < 0 ? Math.abs(amount) : 0;
+
+      lines.push({
+        account_id: accountId,
+        debit_amount: debitAmount,
+        credit_amount: creditAmount,
+        description: trans.text || voucher.text || null,
+        line_order: lineIndex,
+      });
+    });
+
+    // Skip entry if there were account errors
+    if (hasAccountError) {
+      return;
+    }
+
+    // Validate balance (sum of debits should equal sum of credits)
+    const totalDebit = lines.reduce((sum, line) => sum + line.debit_amount, 0);
+    const totalCredit = lines.reduce((sum, line) => sum + line.credit_amount, 0);
+
+    if (Math.abs(totalDebit - totalCredit) > 0.01) {
+      errors.push({
+        voucher: `${voucher.series}${voucher.number}`,
+        totalDebit,
+        totalCredit,
+        error: `Voucher is not balanced: debit ${totalDebit.toFixed(2)} != credit ${totalCredit.toFixed(2)}`,
+      });
+      return;
+    }
+
+    // Create the journal entry
+    entries.push({
+      organization_id: organizationId,
+      fiscal_year_id: fiscalYearId,
+      entry_date: voucher.date,
+      description: voucher.text || `SIE Import ${voucher.series}${voucher.number}`,
+      source_type: 'sie_import',
+      source_reference: `${voucher.series}${voucher.number}`,
+      status: 'posted',
+      lines,
+      // Store original SIE data for reference
+      sie_series: voucher.series,
+      sie_number: voucher.number,
+    });
+  });
+
+  return { entries, errors };
+}
+
+/**
+ * Prepare opening balance journal entries from parsed balances
+ * Creates journal entries at the start of each fiscal year with opening balances
+ * @param {Array} openingBalances - Parsed #IB records
+ * @param {Array} fiscalYears - Parsed fiscal years 
+ * @param {string} organizationId - Target organization ID
+ * @param {Map} accountMap - Map of account_number to account_id
+ * @param {Map} fiscalYearMap - Map of year to fiscal_year_id
+ * @returns {Object} { entries: Array, errors: Array }
+ */
+export function prepareOpeningBalanceEntries(openingBalances, fiscalYears, organizationId, accountMap, fiscalYearMap) {
+  const entries = [];
+  const errors = [];
+
+  // Group opening balances by year index
+  const balancesByYear = new Map();
+  openingBalances.forEach((balance) => {
+    const yearIndex = balance.yearIndex;
+    if (!balancesByYear.has(yearIndex)) {
+      balancesByYear.set(yearIndex, []);
+    }
+    balancesByYear.get(yearIndex).push(balance);
+  });
+
+  // Find the equity account for balancing (typically 2099 "Årets resultat" or similar)
+  // We'll create the entries as balanced sets
+  balancesByYear.forEach((balances, yearIndex) => {
+    // Find the fiscal year for this index
+    const fiscalYear = fiscalYears.find((fy) => fy.index === yearIndex);
+    if (!fiscalYear) {
+      errors.push({
+        yearIndex,
+        error: `No fiscal year found for index ${yearIndex}`,
+      });
+      return;
+    }
+
+    const startYear = fiscalYear.start ? fiscalYear.start.substring(0, 4) : null;
+    const fiscalYearId = startYear ? fiscalYearMap.get(startYear) : null;
+
+    if (!fiscalYearId) {
+      errors.push({
+        yearIndex,
+        fiscalYear: fiscalYear.start,
+        error: `Fiscal year ID not found for ${startYear}`,
+      });
+      return;
+    }
+
+    const lines = [];
+    let hasError = false;
+
+    balances.forEach((balance, lineIndex) => {
+      const accountId = accountMap.get(balance.account_number);
+      
+      if (!accountId) {
+        errors.push({
+          yearIndex,
+          account: balance.account_number,
+          error: `Account ${balance.account_number} not found for opening balance`,
+        });
+        hasError = true;
+        return;
+      }
+
+      // Opening balances: positive amounts are typically debit for assets, credit for liabilities
+      // But we store them as the actual balance would appear
+      const amount = balance.amount;
+      const debitAmount = amount > 0 ? Math.abs(amount) : 0;
+      const creditAmount = amount < 0 ? Math.abs(amount) : 0;
+
+      lines.push({
+        account_id: accountId,
+        debit_amount: debitAmount,
+        credit_amount: creditAmount,
+        description: 'Opening balance / Ingående balans',
+        line_order: lineIndex,
+      });
+    });
+
+    if (hasError || lines.length === 0) {
+      return;
+    }
+
+    // Opening balances from SIE should be balanced (assets = liabilities + equity)
+    // If not balanced, it's typically because some accounts are missing
+    const totalDebit = lines.reduce((sum, line) => sum + line.debit_amount, 0);
+    const totalCredit = lines.reduce((sum, line) => sum + line.credit_amount, 0);
+
+    if (Math.abs(totalDebit - totalCredit) > 0.01) {
+      // Not balanced - this is informational, the entry can still be created
+      // but we'll note it as a warning
+      errors.push({
+        yearIndex,
+        type: 'warning',
+        totalDebit,
+        totalCredit,
+        error: `Opening balances not balanced: debit ${totalDebit.toFixed(2)} != credit ${totalCredit.toFixed(2)}. Some accounts may be missing.`,
+      });
+    }
+
+    entries.push({
+      organization_id: organizationId,
+      fiscal_year_id: fiscalYearId,
+      entry_date: fiscalYear.start,
+      description: `Opening Balance / Ingående balans ${startYear}`,
+      source_type: 'sie_import',
+      source_reference: `IB-${startYear}`,
+      status: 'posted',
+      lines,
+      is_opening_balance: true,
+    });
+  });
+
+  return { entries, errors };
+}
+
+/**
+ * Get summary of importable data from parsed SIE
+ * @param {Object} parsedData - Parsed SIE data
+ * @returns {Object} Summary of what can be imported
+ */
+export function getSieImportSummary(parsedData) {
+  // Group vouchers by fiscal year
+  const vouchersByYear = {};
+  parsedData.vouchers?.forEach((voucher) => {
+    const year = voucher.date ? voucher.date.substring(0, 4) : 'unknown';
+    vouchersByYear[year] = (vouchersByYear[year] || 0) + 1;
+  });
+
+  // Group opening balances by year
+  const openingBalancesByYear = {};
+  parsedData.openingBalances?.forEach((balance) => {
+    const yearIndex = balance.yearIndex;
+    openingBalancesByYear[yearIndex] = (openingBalancesByYear[yearIndex] || 0) + 1;
+  });
+
+  // Group closing balances by year
+  const closingBalancesByYear = {};
+  parsedData.closingBalances?.forEach((balance) => {
+    const yearIndex = balance.yearIndex;
+    closingBalancesByYear[yearIndex] = (closingBalancesByYear[yearIndex] || 0) + 1;
+  });
+
+  return {
+    format: parsedData.format,
+    company: parsedData.company?.name,
+    accounts: {
+      count: parsedData.accounts?.length || 0,
+      canImport: (parsedData.accounts?.length || 0) > 0,
+    },
+    fiscalYears: {
+      count: parsedData.fiscalYears?.length || 0,
+      years: parsedData.fiscalYears?.map((fy) => ({
+        index: fy.index,
+        start: fy.start,
+        end: fy.end,
+        name: fy.start ? fy.start.substring(0, 4) : 'Unknown',
+      })) || [],
+      canImport: (parsedData.fiscalYears?.length || 0) > 0,
+    },
+    vouchers: {
+      count: parsedData.vouchers?.length || 0,
+      transactionCount: parsedData.vouchers?.reduce(
+        (sum, v) => sum + (v.transactions?.length || 0),
+        0
+      ) || 0,
+      byYear: vouchersByYear,
+      canImport: (parsedData.vouchers?.length || 0) > 0,
+    },
+    openingBalances: {
+      count: parsedData.openingBalances?.length || 0,
+      byYearIndex: openingBalancesByYear,
+      canImport: (parsedData.openingBalances?.length || 0) > 0,
+    },
+    closingBalances: {
+      count: parsedData.closingBalances?.length || 0,
+      byYearIndex: closingBalancesByYear,
+      canImport: (parsedData.closingBalances?.length || 0) > 0,
+    },
+  };
+}
+
+/**
+ * Detect required fiscal years from vouchers that don't exist in the system
+ * @param {Array} vouchers - Parsed vouchers from SIE
+ * @param {Array} existingFiscalYears - Existing fiscal years in the system
+ * @param {Array} sieFiscalYears - Fiscal years from the SIE file (#RAR records)
+ * @returns {Object} { requiredYears, missingYears, canCreateFromSie }
+ */
+export function detectMissingFiscalYears(vouchers, existingFiscalYears, sieFiscalYears) {
+  // Get unique years needed from vouchers
+  const requiredYears = new Set();
+  vouchers?.forEach((voucher) => {
+    if (voucher.date) {
+      const year = voucher.date.substring(0, 4);
+      requiredYears.add(year);
+    }
+  });
+
+  // Check which years exist in the system
+  const existingYears = new Set();
+  existingFiscalYears?.forEach((fy) => {
+    const startYear = fy.start_date?.substring(0, 4);
+    const endYear = fy.end_date?.substring(0, 4);
+    if (startYear) existingYears.add(startYear);
+    if (endYear && endYear !== startYear) existingYears.add(endYear);
+  });
+
+  // Check which years are in the SIE file
+  const sieYearsMap = new Map(); // year -> fiscal year data
+  sieFiscalYears?.forEach((fy) => {
+    const startYear = fy.start?.substring(0, 4);
+    const endYear = fy.end?.substring(0, 4);
+    if (startYear) {
+      sieYearsMap.set(startYear, fy);
+    }
+    if (endYear && endYear !== startYear) {
+      sieYearsMap.set(endYear, fy);
+    }
+  });
+
+  // Find missing years
+  const missingYears = [];
+  requiredYears.forEach((year) => {
+    if (!existingYears.has(year)) {
+      const sieFiscalYear = sieYearsMap.get(year);
+      missingYears.push({
+        year,
+        inSieFile: !!sieFiscalYear,
+        sieFiscalYear: sieFiscalYear || null,
+      });
+    }
+  });
+
+  // Sort by year
+  missingYears.sort((a, b) => a.year.localeCompare(b.year));
+
+  return {
+    requiredYears: Array.from(requiredYears).sort(),
+    missingYears,
+    canCreateFromSie: missingYears.some((y) => y.inSieFile),
+    allCanBeCreatedFromSie: missingYears.length > 0 && missingYears.every((y) => y.inSieFile),
+  };
+}
+
 export default {
   parseSIE,
   validateSIE,
   prepareAccountsForImport,
+  prepareFiscalYearsForImport,
+  prepareJournalEntriesForImport,
+  prepareOpeningBalanceEntries,
+  getSieImportSummary,
+  detectMissingFiscalYears,
   detectFormat,
 };
