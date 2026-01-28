@@ -6,6 +6,22 @@ import { parseSIE, validateSIE, prepareAccountsForImport } from '../utils/siePar
 import { importAccounts, selectAccountsLoading } from '../features/accounts/accountsSlice';
 import { useOrganization } from '../contexts/OrganizationContext';
 
+/**
+ * Calculate Swedish VAT number from organization number
+ * Organization number format: nnnnnn-nnnn (e.g., 556789-0123)
+ * VAT number format: SEnnnnnnnnnn01 (e.g., SE556789012301)
+ */
+const calculateVatNumber = (orgNumber) => {
+  if (!orgNumber) return null;
+  // Remove hyphen and any whitespace
+  const cleaned = orgNumber.replace(/[-\s]/g, '');
+  // Swedish VAT numbers are SE + 10 digits + 01
+  if (cleaned.length === 10 && /^\d+$/.test(cleaned)) {
+    return `SE${cleaned}01`;
+  }
+  return null;
+};
+
 // Wizard steps
 const STEPS = {
   UPLOAD: 'upload',
@@ -148,9 +164,11 @@ export default function SieImport() {
     setError(null);
 
     try {
+      const orgNumber = parsedData.company.organizationNumber || null;
       const newOrgData = {
         name: parsedData.company.name || 'Imported Organization',
-        organization_number: parsedData.company.organizationNumber || null,
+        organization_number: orgNumber,
+        vat_number: calculateVatNumber(orgNumber),
       };
 
       // Add address if available from SIE
