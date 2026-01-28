@@ -179,6 +179,10 @@ Cypress.Commands.add('login', (userType = 'user', options = {}) => {
         preferences: false,
         timestamp: Date.now()
       }))
+      // Set nav sections to expanded by default for tests
+      win.localStorage.setItem('nav-section-invoicing', 'true')
+      win.localStorage.setItem('nav-section-accounting', 'true')
+      win.localStorage.setItem('nav-section-administration', 'true')
     }
   })
 

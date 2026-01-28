@@ -104,6 +104,7 @@ describe('Overdue Invoice Alerts (US-026-A)', () => {
 
   describe('Visual Overdue Indicators', () => {
     beforeEach(() => {
+      // Navigate to invoices using direct data-cy selector
       cy.getByCy('sidebar-nav-invoices').click();
       cy.wait('@getInvoices');
     });
@@ -151,6 +152,7 @@ describe('Overdue Invoice Alerts (US-026-A)', () => {
 
   describe('Reminder Button and Actions', () => {
     beforeEach(() => {
+      // Navigate to invoices using direct data-cy selector
       cy.getByCy('sidebar-nav-invoices').click();
       cy.wait('@getInvoices');
     });
@@ -225,6 +227,7 @@ describe('Overdue Invoice Alerts (US-026-A)', () => {
 
   describe('Reminder Badge Display', () => {
     beforeEach(() => {
+      // Navigate to invoices using direct data-cy selector
       cy.getByCy('sidebar-nav-invoices').click();
       cy.wait('@getInvoices');
     });
@@ -245,6 +248,8 @@ describe('Overdue Invoice Alerts (US-026-A)', () => {
       overdueInvoice.reminder_count = 3;
       overdueInvoice.reminder_sent_at = new Date().toISOString();
 
+      // Reload to fetch updated data
+      cy.reload();
       cy.wait('@getInvoices');
       
       cy.getByCy(`reminder-badge-${overdueInvoice.id}`)

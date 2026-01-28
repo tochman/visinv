@@ -106,7 +106,8 @@ describe('Credit Invoices (US-063)', () => {
       body: [existingInvoice]
     }).as('getInvoicesWithExisting');
 
-    // Refresh to pick up new intercept
+    // Refresh the invoices page by navigating away and back
+    cy.getByCy('sidebar-nav-dashboard').click();
     cy.getByCy('sidebar-nav-invoices').click();
     cy.wait('@getInvoicesWithExisting');
 
@@ -163,7 +164,8 @@ describe('Credit Invoices (US-063)', () => {
       body: invoices
     }).as('getInvoicesWithCredit');
 
-    // Refresh to pick up new intercept
+    // Refresh the invoices page by navigating away and back
+    cy.getByCy('sidebar-nav-dashboard').click();
     cy.getByCy('sidebar-nav-invoices').click();
     cy.wait('@getInvoicesWithCredit');
     
@@ -188,6 +190,8 @@ describe('Credit Invoices (US-063)', () => {
       body: [existingInvoice]
     }).as('getInvoicesWithExisting');
 
+    // Refresh the invoices page by navigating away and back
+    cy.getByCy('sidebar-nav-dashboard').click();
     cy.getByCy('sidebar-nav-invoices').click();
     cy.wait('@getInvoicesWithExisting');
 
@@ -226,6 +230,8 @@ describe('Credit Invoices (US-063)', () => {
       body: [existingInvoice]
     }).as('getInvoicesWithExisting');
 
+    // Refresh the invoices page by navigating away and back
+    cy.getByCy('sidebar-nav-dashboard').click();
     cy.getByCy('sidebar-nav-invoices').click();
     cy.wait('@getInvoicesWithExisting');
 

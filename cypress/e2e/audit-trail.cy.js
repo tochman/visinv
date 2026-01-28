@@ -21,19 +21,22 @@ describe('Invoice Audit Trail', () => {
     status: 'sent', // Must be non-draft to show view button
     issue_date: '2024-01-15',
     due_date: '2024-02-15',
-    subtotal: '10000.00',
+    subtotal: 10000,
     tax_rate: 25,
-    tax_amount: '2500.00',
-    total_amount: '12500.00',
+    tax_amount: 2500,
+    total_amount: 12500,
     currency: 'SEK',
+    exchange_rate: 1.0,
+    created_at: '2024-01-15T10:00:00Z',
+    sent_at: '2024-01-16T14:30:00Z',
     client: mockClient,
     invoice_rows: [
       {
         id: 'row-1',
         description: 'Consulting Services',
-        quantity: '10',
-        unit_price: '1000.00',
-        amount: '10000.00',
+        quantity: 10,
+        unit_price: 1000,
+        amount: 10000,
       },
     ],
   };
@@ -70,70 +73,77 @@ describe('Invoice Audit Trail', () => {
     },
   ];
 
-  // Helper to set up intercepts for both list and detail pages
-  const setupIntercepts = (events = mockAuditEvents) => {
-    // Mock ALL invoice requests (both list and detail)
-    cy.intercept('GET', '**/rest/v1/invoices*', (req) => {
-      // Return single object for detail (uses .single()), array for list
-      const isDetailRequest = req.url.includes('id=eq.');
-      req.reply({
-        statusCode: 200,
-        body: isDetailRequest ? mockInvoice : [mockInvoice],
-      });
-    }).as('getInvoices');
-
-    // Mock payments endpoint (both general and specific)
-    cy.intercept('GET', '**/rest/v1/payments*', {
-      statusCode: 200,
-      body: [],
-    }).as('getPayments');
-
-    // Mock invoice_events endpoint
-    cy.intercept('GET', '**/rest/v1/invoice_events*', {
-      statusCode: 200,
-      body: events,
-    }).as('getInvoiceEvents');
-
-    // Mock clients
-    cy.intercept('GET', '**/rest/v1/clients*', {
-      statusCode: 200,
-      body: [mockClient],
-    }).as('getClients');
-
-    // Mock templates
-    cy.intercept('GET', '**/rest/v1/invoice_templates*', {
-      statusCode: 200,
-      body: [],
-    }).as('getTemplates');
-
-    // Mock products
-    cy.intercept('GET', '**/rest/v1/products*', {
-      statusCode: 200,
-      body: [],
-    }).as('getProducts');
-  };
-
-  // Helper to navigate to invoices and open invoice detail page
-  const navigateToInvoiceDetail = () => {
-    // Navigate to invoices via sidebar
-    cy.getByCy('sidebar-nav-invoices').click();
-    cy.wait('@getInvoices');
-
-    // Click the view button (eye icon) for the sent invoice - this navigates to detail page
-    cy.getByCy(`view-invoice-button-${mockInvoice.id}`).click();
-    
-    // Wait for the detail page content to load
-    cy.getByCy('audit-trail-section').should('exist');
+  // Mock organization used by all tests
+  const mockOrganization = {
+    id: 'test-org-id',
+    name: 'Test Organization AB',
+    organization_number: '556677-8899',
+    invoice_numbering_mode: 'auto',
+    invoice_prefix: 'INV-',
+    next_invoice_number: 1,
   };
 
   describe('Happy Path - Viewing Audit Trail', () => {
     beforeEach(() => {
       cy.login('admin');
-      setupIntercepts();
+      
+      // Mock organization (same pattern as invoices.cy.js)
+      const mockOrganization = {
+        id: 'test-org-id',
+        name: 'Test Organization AB',
+        org_number: '556677-8899',
+        organization_number: '556677-8899',
+        vat_number: 'SE556677889901',
+        address: 'Testgatan 123',
+        city: 'Stockholm',
+        postal_code: '11122',
+        country: 'Sweden',
+        email: 'billing@testorg.se',
+        phone: '+46701234567',
+        bank_name: 'Nordea',
+        bank_account: '1234-5678901234',
+        bank_bic: 'NDEASESS',
+        bank_iban: 'SE1234567890123456789012',
+        invoice_numbering_mode: 'auto',
+        invoice_prefix: 'INV-',
+        next_invoice_number: 1,
+      };
+      
+      // Use setupCommonIntercepts for the list page
+      cy.setupCommonIntercepts({
+        invoices: [mockInvoice],
+        clients: [mockClient],
+        templates: [],
+        products: [],
+        defaultOrganization: mockOrganization,
+      });
+      
+      // Mock payments for invoice detail page
+      cy.intercept('GET', '**/rest/v1/payments*', {
+        statusCode: 200,
+        body: [],
+      }).as('getPayments');
+      
+      // Mock invoice_events for audit trail
+      cy.intercept('GET', '**/rest/v1/invoice_events*', {
+        statusCode: 200,
+        body: mockAuditEvents,
+      }).as('getInvoiceEvents');
+      
+      // Navigate to invoices page (same pattern as invoices.cy.js)
+      cy.getByCy('sidebar-nav-invoices').click();
+      cy.wait('@getInvoices');
     });
 
     it('is expected to display audit trail section on invoice detail page', () => {
-      navigateToInvoiceDetail();
+      // Wait for invoice table to load
+      cy.getByCy('invoices-page-title').should('be.visible');
+      
+      // Check if our invoice is in the list
+      cy.contains('INV-0001').should('be.visible');
+      
+      // Now click the view button
+      cy.getByCy(`view-invoice-button-${mockInvoice.id}`).click();
       cy.wait('@getInvoiceEvents');
 
       // Verify audit trail section exists
@@ -141,7 +151,10 @@ describe('Invoice Audit Trail', () => {
     });
 
     it('is expected to display all audit events', () => {
-      navigateToInvoiceDetail();
+      // Navigate to invoice detail (same pattern as first test)
+      cy.getByCy('invoices-page-title').should('be.visible');
+      cy.contains('INV-0001').should('be.visible');
+      cy.getByCy(`view-invoice-button-${mockInvoice.id}`).click();
       cy.wait('@getInvoiceEvents');
 
       // Verify all events are displayed (scroll into view for overflow containers)
@@ -151,7 +164,9 @@ describe('Invoice Audit Trail', () => {
     });
 
     it('is expected to show correct event details', () => {
-      navigateToInvoiceDetail();
+      cy.getByCy('invoices-page-title').should('be.visible');
+      cy.contains('INV-0001').should('be.visible');
+      cy.getByCy(`view-invoice-button-${mockInvoice.id}`).click();
       cy.wait('@getInvoiceEvents');
 
       // Verify created event details (scroll into view first)
@@ -174,7 +189,9 @@ describe('Invoice Audit Trail', () => {
     });
 
     it('is expected to display events in chronological order (newest first)', () => {
-      navigateToInvoiceDetail();
+      cy.getByCy('invoices-page-title').should('be.visible');
+      cy.contains('INV-0001').should('be.visible');
+      cy.getByCy(`view-invoice-button-${mockInvoice.id}`).click();
       cy.wait('@getInvoiceEvents');
 
       // Scroll audit trail into view first
@@ -192,7 +209,9 @@ describe('Invoice Audit Trail', () => {
     });
 
     it('is expected to display timestamps for each event', () => {
-      navigateToInvoiceDetail();
+      cy.getByCy('invoices-page-title').should('be.visible');
+      cy.contains('INV-0001').should('be.visible');
+      cy.getByCy(`view-invoice-button-${mockInvoice.id}`).click();
       cy.wait('@getInvoiceEvents');
 
       // Verify each event has a timestamp displayed (scroll into view first)
@@ -211,13 +230,43 @@ describe('Invoice Audit Trail', () => {
   });
 
   describe('Edge Cases', () => {
-    beforeEach(() => {
-      cy.login('admin');
-    });
-
     it('is expected to show empty state when no events exist', () => {
-      setupIntercepts([]);
-      navigateToInvoiceDetail();
+      cy.login('admin');
+      
+      // Mock organization
+      const mockOrganization = {
+        id: 'test-org-id',
+        name: 'Test Organization AB',
+        organization_number: '556677-8899',
+        invoice_numbering_mode: 'auto',
+        invoice_prefix: 'INV-',
+        next_invoice_number: 1,
+      };
+      
+      cy.setupCommonIntercepts({
+        invoices: [mockInvoice],
+        clients: [mockClient],
+        templates: [],
+        products: [],
+        defaultOrganization: mockOrganization,
+      });
+      
+      cy.intercept('GET', '**/rest/v1/payments*', {
+        statusCode: 200,
+        body: [],
+      }).as('getPayments');
+      
+      cy.intercept('GET', '**/rest/v1/invoice_events*', {
+        statusCode: 200,
+        body: [],
+      }).as('getInvoiceEvents');
+      
+      cy.getByCy('sidebar-nav-invoices').click();
+      cy.wait('@getInvoices');
+      
+      cy.getByCy('invoices-page-title').should('be.visible');
+      cy.contains('INV-0001').should('be.visible');
+      cy.getByCy(`view-invoice-button-${mockInvoice.id}`).click();
       cy.wait('@getInvoiceEvents');
 
       // Verify empty state message
@@ -261,8 +310,41 @@ describe('Invoice Audit Trail', () => {
         },
       ];
 
-      setupIntercepts(allEventTypes);
-      navigateToInvoiceDetail();
+      cy.login('admin');
+      
+      const mockOrganization = {
+        id: 'test-org-id',
+        name: 'Test Organization AB',
+        organization_number: '556677-8899',
+        invoice_numbering_mode: 'auto',
+        invoice_prefix: 'INV-',
+        next_invoice_number: 1,
+      };
+      
+      cy.setupCommonIntercepts({
+        invoices: [mockInvoice],
+        clients: [mockClient],
+        templates: [],
+        products: [],
+        defaultOrganization: mockOrganization,
+      });
+      
+      cy.intercept('GET', '**/rest/v1/payments*', {
+        statusCode: 200,
+        body: [],
+      }).as('getPayments');
+      
+      cy.intercept('GET', '**/rest/v1/invoice_events*', {
+        statusCode: 200,
+        body: allEventTypes,
+      }).as('getInvoiceEvents');
+      
+      cy.getByCy('sidebar-nav-invoices').click();
+      cy.wait('@getInvoices');
+      
+      cy.getByCy('invoices-page-title').should('be.visible');
+      cy.contains('INV-0001').should('be.visible');
+      cy.getByCy(`view-invoice-button-${mockInvoice.id}`).click();
       cy.wait('@getInvoiceEvents');
 
       // Verify all event types are displayed (scroll into view for overflow containers)
@@ -274,19 +356,25 @@ describe('Invoice Audit Trail', () => {
   });
 
   describe('Sad Path - Error Scenarios', () => {
-    beforeEach(() => {
-      cy.login('admin');
-    });
-
     it('is expected to handle API error gracefully', () => {
-      // Set up intercepts manually with error for events
-      cy.intercept('GET', '**/rest/v1/invoices*', (req) => {
-        const isDetailRequest = req.url.includes('id=eq.');
-        req.reply({
-          statusCode: 200,
-          body: isDetailRequest ? mockInvoice : [mockInvoice],
-        });
-      }).as('getInvoices');
+      cy.login('admin');
+      
+      const mockOrganization = {
+        id: 'test-org-id',
+        name: 'Test Organization AB',
+        organization_number: '556677-8899',
+        invoice_numbering_mode: 'auto',
+        invoice_prefix: 'INV-',
+        next_invoice_number: 1,
+      };
+      
+      cy.setupCommonIntercepts({
+        invoices: [mockInvoice],
+        clients: [mockClient],
+        templates: [],
+        products: [],
+        defaultOrganization: mockOrganization,
+      });
 
       cy.intercept('GET', '**/rest/v1/payments*', {
         statusCode: 200,
@@ -298,26 +386,13 @@ describe('Invoice Audit Trail', () => {
         body: { error: 'Internal server error' },
       }).as('getEventsError');
 
-      cy.intercept('GET', '**/rest/v1/clients*', {
-        statusCode: 200,
-        body: [mockClient],
-      }).as('getClients');
-
-      cy.intercept('GET', '**/rest/v1/invoice_templates*', {
-        statusCode: 200,
-        body: [],
-      }).as('getTemplates');
-
-      cy.intercept('GET', '**/rest/v1/products*', {
-        statusCode: 200,
-        body: [],
-      }).as('getProducts');
-
       // Navigate to invoices via sidebar
       cy.getByCy('sidebar-nav-invoices').click();
       cy.wait('@getInvoices');
 
       // Click the view button
+      cy.getByCy('invoices-page-title').should('be.visible');
+      cy.contains('INV-0001').should('be.visible');
       cy.getByCy(`view-invoice-button-${mockInvoice.id}`).click();
       cy.wait('@getEventsError');
 
