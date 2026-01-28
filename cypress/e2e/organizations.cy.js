@@ -2,45 +2,83 @@
 
 describe('Organization Management', () => {
   describe('Organization Setup Wizard', () => {
+    // Track organization data to return - starts null, populated after creation
+    let orgCreated = false
+    let newOrgData = null
+
     beforeEach(() => {
-      // Login with no organization first
-      cy.login('admin', { skipOrgMock: true })
+      // Reset state for each test
+      orgCreated = false
       
-      // Set up common intercepts for organization members
+      newOrgData = {
+        id: 'new-org-id', 
+        name: 'Test Company AB',
+        organization_number: '556677-8899',
+        vat_number: 'SE556677889901',
+        address: 'Storgatan 1',
+        postal_code: '11122',
+        city: 'Stockholm',
+        municipality: 'Stockholm',
+        email: 'info@testcompany.se',
+        phone: '+46 8 123 456',
+        bank_giro: '123-4567',
+        f_skatt_approved: true,
+        invoice_number_prefix: 'INV',
+        next_invoice_number: 1,
+        default_payment_terms: 30,
+        default_currency: 'SEK',
+        default_tax_rate: 25.00,
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString()
+      }
+
+      // Single intercept that returns empty initially, then org data after creation
+      cy.intercept('GET', '**/rest/v1/organization_members?*', (req) => {
+        if (orgCreated) {
+          req.reply({
+            statusCode: 200,
+            body: [{
+              role: 'owner',
+              is_default: true,
+              joined_at: newOrgData.created_at,
+              organizations: newOrgData
+            }]
+          })
+        } else {
+          req.reply({
+            statusCode: 200,
+            body: []
+          })
+        }
+      }).as('getOrganizationMembers')
+
       cy.setupCommonIntercepts({
-        organizationMembers: [],
-        invoices: null,  // Skip invoices intercept
-        clients: null,   // Skip clients intercept
-        products: null,  // Skip products intercept
-        templates: null  // Skip templates intercept
+        invoices: null,
+        clients: null,
+        products: null,
+        templates: null
       })
 
+      // Login but expect wizard instead of main layout
+      cy.login('admin', { skipOrgMock: true, expectWizard: true })
+      
+      // Wait for the organization members query to complete
+      cy.wait('@getOrganizationMembers')
+
+      // Intercept organization creation - returns single object because of .single()
       cy.intercept('POST', '**/rest/v1/organizations*', (req) => {
+        orgCreated = true  // Mark that org was created
         req.reply({
           statusCode: 201,
-          body: [{ 
-            id: 'new-org-id', 
-            ...req.body,
-            created_at: new Date().toISOString(),
-            updated_at: new Date().toISOString()
-          }]
+          body: newOrgData
         })
       }).as('createOrganization')
-
-      cy.intercept('POST', '**/rest/v1/organization_members*', (req) => {
-        req.reply({
-          statusCode: 201,
-          body: [{
-            id: 'new-member-id',
-            ...req.body,
-            joined_at: new Date().toISOString()
-          }]
-        })
-      }).as('createOrgMember')
       
-      // Wait for wizard to appear on dashboard (already navigated by login)
-      // The wizard appears automatically when no organization exists
-      cy.getByCy('organization-wizard', { timeout: 5000 }).should('exist')
+      // Intercept setDefault
+      cy.intercept('PATCH', '**/rest/v1/organization_members?*', {
+        statusCode: 200,
+        body: {}
+      }).as('setDefaultOrg')
     })
 
     it('is expected to show setup wizard for new users without organization', () => {
@@ -49,11 +87,13 @@ describe('Organization Management', () => {
     })
 
     it('is expected to display all 4 steps in wizard', () => {
+      cy.getByCy('organization-wizard', { timeout: 10000 }).should('be.visible')
       cy.contains('Basic Information').should('be.visible')
       cy.getByCy('org-name-input').should('be.visible')
     })
 
     it('is expected to navigate through wizard steps', () => {
+      cy.getByCy('organization-wizard', { timeout: 10000 }).should('be.visible')
       // Fill step 1 - Basic Information
       cy.getByCy('org-name-input').type('Test Company AB')
       cy.getByCy('org-number-input').type('556677-8899')
@@ -66,6 +106,7 @@ describe('Organization Management', () => {
     })
 
     it('is expected to go back to previous step', () => {
+      cy.getByCy('organization-wizard', { timeout: 10000 }).should('be.visible')
       // Fill step 1 and go to step 2
       cy.getByCy('org-name-input').type('Test Company AB')
       cy.getByCy('org-number-input').type('556677-8899')
@@ -80,6 +121,7 @@ describe('Organization Management', () => {
     })
     
     it('is expected to complete wizard and create organization', () => {
+      cy.getByCy('organization-wizard', { timeout: 10000 }).should('be.visible')
       // Step 1: Basic Information
       cy.getByCy('org-name-input').type('Test Company AB')
       cy.getByCy('org-number-input').type('556677-8899')
@@ -102,10 +144,49 @@ describe('Organization Management', () => {
       
       // Step 4: Invoice Settings
       cy.getByCy('org-invoice-prefix-input').type('INV')
+      
+      // Override the organization members intercept to return the new org after creation
+      // This intercept takes precedence over the one set in beforeEach
+      cy.intercept('GET', '**/rest/v1/organization_members?*', {
+        statusCode: 200,
+        body: [{
+          role: 'owner',
+          is_default: true,
+          joined_at: new Date().toISOString(),
+          organizations: {
+            id: 'new-org-id', 
+            name: 'Test Company AB',
+            organization_number: '556677-8899',
+            vat_number: 'SE556677889901',
+            address: 'Storgatan 1',
+            postal_code: '11122',
+            city: 'Stockholm',
+            municipality: 'Stockholm',
+            email: 'info@testcompany.se',
+            phone: '+46 8 123 456',
+            bank_giro: '123-4567',
+            f_skatt_approved: true,
+            invoice_number_prefix: 'INV',
+            next_invoice_number: 1,
+            default_payment_terms: 30,
+            default_currency: 'SEK',
+            default_tax_rate: 25.00,
+            created_at: new Date().toISOString(),
+            updated_at: new Date().toISOString()
+          }
+        }]
+      }).as('getOrganizationsAfterCreate')
+      
       cy.getByCy('complete-setup-button').click()
       
-      // Should create organization
+      // Should create organization (member is added via database trigger)
       cy.wait('@createOrganization')
+      
+      // After creation, the context reloads organizations
+      cy.wait('@getOrganizationsAfterCreate')
+      
+      // And sets it as default
+      cy.wait('@setDefaultOrg')
       
       // Wizard should close/redirect
       cy.getByCy('organization-wizard').should('not.exist')

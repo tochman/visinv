@@ -168,7 +168,12 @@ Cypress.Commands.add('login', (userType = 'user', options = {}) => {
   })
 
   // Wait for the app to load
-  cy.get('[data-cy="main-layout"], [data-cy="dashboard"], nav', { timeout: 10000 }).should('exist')
+  // When expectWizard is true, wait for organization wizard instead of main layout
+  if (options.expectWizard) {
+    cy.get('[data-cy="organization-wizard"]', { timeout: 10000 }).should('exist')
+  } else {
+    cy.get('[data-cy="main-layout"], [data-cy="dashboard"], nav', { timeout: 10000 }).should('exist')
+  }
 
   // Dispatch organization to Redux store after app loads
   if (!options.skipOrgMock) {
