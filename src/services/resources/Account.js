@@ -356,6 +356,86 @@ class AccountResource extends BaseResource {
 
     return { data, error };
   }
+
+  /**
+   * Bulk import accounts from SIE file data
+   * @param {string} organizationId - Organization ID
+   * @param {Array} accounts - Array of account objects to import
+   * @param {boolean} skipExisting - Skip accounts that already exist (default: true)
+   * @returns {Promise<{data: Object|null, error: Error|null}>}
+   */
+  async bulkImport(organizationId, accounts, skipExisting = true) {
+    if (!organizationId) {
+      return { data: null, error: new Error('Organization ID is required') };
+    }
+
+    if (!accounts || accounts.length === 0) {
+      return { data: null, error: new Error('No accounts to import') };
+    }
+
+    // Get existing account numbers if skipping duplicates
+    let existingNumbers = new Set();
+    if (skipExisting) {
+      const { data: existing } = await this.supabase
+        .from(this.tableName)
+        .select('account_number')
+        .eq('organization_id', organizationId);
+      
+      if (existing) {
+        existingNumbers = new Set(existing.map(a => a.account_number));
+      }
+    }
+
+    // Filter and prepare accounts for import
+    const accountsToInsert = accounts
+      .filter(account => {
+        if (skipExisting && existingNumbers.has(account.account_number)) {
+          return false;
+        }
+        return true;
+      })
+      .map(account => ({
+        organization_id: organizationId,
+        account_number: account.account_number?.trim(),
+        name: account.name?.trim(),
+        name_en: account.name_en?.trim() || null,
+        account_class: account.account_class || 'expenses',
+        account_type: account.account_type || 'detail',
+        is_system: false,
+        is_active: true,
+        default_vat_rate: account.default_vat_rate || null,
+      }));
+
+    if (accountsToInsert.length === 0) {
+      return {
+        data: {
+          imported: [],
+          skipped: accounts.length,
+          total: accounts.length,
+        },
+        error: null,
+      };
+    }
+
+    // Insert accounts
+    const { data, error } = await this.supabase
+      .from(this.tableName)
+      .insert(accountsToInsert)
+      .select();
+
+    if (error) {
+      return { data: null, error };
+    }
+
+    return {
+      data: {
+        imported: data,
+        skipped: accounts.length - accountsToInsert.length,
+        total: accounts.length,
+      },
+      error: null,
+    };
+  }
 }
 
 // Export singleton instance

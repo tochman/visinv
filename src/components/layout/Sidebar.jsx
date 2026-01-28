@@ -11,6 +11,7 @@ import {
   Cog6ToothIcon,
   ShieldCheckIcon,
   CalculatorIcon,
+  ArrowUpTrayIcon,
 } from '@heroicons/react/24/outline';
 import { OrganizationSwitcher } from '../organization';
 import CollapsibleNavSection from './CollapsibleNavSection';
@@ -46,6 +47,7 @@ export default function Sidebar() {
   // Accounting module items
   const accountingItems = [
     { path: '/accounts', label: t('nav.accounts'), icon: CalculatorIcon },
+    { path: '/import/sie', label: t('nav.sieImport'), icon: ArrowUpTrayIcon },
   ];
 
   // Add admin panel if user is admin

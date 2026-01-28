@@ -127,6 +127,30 @@ export const seedBASAccounts = createAsyncThunk(
   }
 );
 
+/**
+ * Import accounts from SIE file data
+ * @param {Object} params - Import parameters
+ * @param {string} params.organizationId - Organization ID
+ * @param {Array} params.accounts - Array of account objects to import
+ * @param {boolean} params.skipExisting - Skip accounts that already exist (default: true)
+ */
+export const importAccounts = createAsyncThunk(
+  'accounts/importAccounts',
+  async ({ organizationId, accounts, skipExisting = true }, { rejectWithValue }) => {
+    if (!organizationId) {
+      return rejectWithValue('No organization selected');
+    }
+
+    if (!accounts || accounts.length === 0) {
+      return rejectWithValue('No accounts to import');
+    }
+
+    const { data, error } = await Account.bulkImport(organizationId, accounts, skipExisting);
+    if (error) return rejectWithValue(error.message);
+    return data;
+  }
+);
+
 const accountsSlice = createSlice({
   name: 'accounts',
   initialState: {
@@ -261,6 +285,25 @@ const accountsSlice = createSlice({
         );
       })
       .addCase(seedBASAccounts.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload;
+      })
+
+      // Import accounts from SIE file
+      .addCase(importAccounts.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(importAccounts.fulfilled, (state, action) => {
+        state.loading = false;
+        // Add imported accounts to the list (sorted by account_number)
+        if (action.payload.imported && action.payload.imported.length > 0) {
+          state.items = [...state.items, ...action.payload.imported].sort((a, b) =>
+            a.account_number.localeCompare(b.account_number)
+          );
+        }
+      })
+      .addCase(importAccounts.rejected, (state, action) => {
         state.loading = false;
         state.error = action.payload;
       });
