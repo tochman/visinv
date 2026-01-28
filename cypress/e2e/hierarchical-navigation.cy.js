@@ -83,16 +83,18 @@ describe('US-401: Hierarchical Sidebar Navigation', () => {
     });
   });
 
-  describe('Coming Soon Sections', () => {
+  describe('Accounting Section', () => {
     beforeEach(() => {
-      cy.login('premiumUser');
+      cy.login('admin');
+      cy.setupCommonIntercepts({ accounts: [] });
       cy.wait('@getOrganizations');
     });
 
-    it('is expected to show "Coming Soon" message for Accounting section', () => {
-      // Expand the accounting section first
-      cy.getByCy('nav-section-toggle-accounting').click();
-      cy.getByCy('nav-section-content-accounting').should('contain', 'Coming Soon');
+    it('is expected to contain accounts and SIE import links', () => {
+      // Accounting section is auto-expanded via localStorage set in cy.login()
+      cy.getByCy('nav-section-content-accounting').should('be.visible');
+      cy.getByCy('sidebar-nav-accounts').should('be.visible');
+      cy.get('[data-cy="sidebar-nav-import/sie"]').should('be.visible');
     });
 
     it('is expected to show "Coming Soon" message for Time & Projects section', () => {
@@ -127,10 +129,12 @@ describe('US-401: Hierarchical Sidebar Navigation', () => {
       beforeEach(() => {
         cy.login('admin');
         cy.wait('@getOrganizations');
+        // Wait for administration section content to be visible (auto-expanded via localStorage)
+        cy.getByCy('nav-section-content-administration').should('be.visible');
       });
 
       it('is expected to show admin link for admin users', () => {
-        cy.getByCy('sidebar-nav-admin').should('be.visible');
+        cy.getByCy('sidebar-nav-admin').scrollIntoView().should('be.visible');
       });
 
       it('is expected to navigate to admin page when admin link is clicked', () => {

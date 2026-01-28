@@ -131,8 +131,19 @@ export default function SieImport() {
       };
     }
 
+    // SIE has org number but current org doesn't - offer to create new org
+    if (sieOrgNumber && !currentOrgNumber) {
+      return {
+        type: 'org_number',
+        sieName: parsedData.company.name,
+        sieOrgNumber: parsedData.company.organizationNumber,
+        currentName: currentOrganization.name,
+        currentOrgNumber: currentOrganization.organization_number,
+      };
+    }
+
     // Check for mismatch by name if no org numbers
-    if (!currentOrgNumber && sieOrgName && currentOrgName && sieOrgName !== currentOrgName) {
+    if (!currentOrgNumber && !sieOrgNumber && sieOrgName && currentOrgName && sieOrgName !== currentOrgName) {
       return {
         type: 'name',
         sieName: parsedData.company.name,

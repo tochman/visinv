@@ -161,9 +161,30 @@ describe('Feature Name', () => {
 **IMPORTANT:** Never call `cy.visit()` after `cy.login()`. The login command already visits the page and sets up Redux state (including premium status). Calling `cy.visit()` again will reset the application state.
 
 **Running Tests:**
-- `npm run cy:open` - Interactive mode (development)
 - `npm run cy:run` - Headless mode (CI/CD)
+- `npm run cy:open` - Interactive mode (development)
 - `npm run test:coverage` - With code coverage
+
+**Fixing Failing Tests Workflow:**
+
+When tests fail, follow this systematic approach:
+
+1. **Run the spec file** (never use `| tail` - see full output):
+   ```bash
+   npm run cy:run -- --spec "cypress/e2e/feature-name.cy.js"
+   ```
+
+2. **Isolate with `.only`** - Add `it.only()` to the failing test and run again
+
+3. **Fix the issue** - Either fix the test or the implementation
+
+4. **Expand scope** - Move `.only` to the `describe` block, verify all pass
+
+5. **Run full file** - Remove `.only`, run entire spec
+
+6. **Remove `.only` before committing!** - Tests with `.only` skip other tests in CI
+
+See `docs/TESTING.md` for detailed workflow examples.
 
 ## Development Workflow
 

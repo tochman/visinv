@@ -11,6 +11,136 @@ This guide covers how to run, write, and maintain tests for the visinv invoice m
 - **Mocking:** Cypress intercept for API mocking
 - **Test Files:** Located in `cypress/e2e/`
 
+## Fixing Failing Tests - Workflow
+
+When tests fail, follow this systematic workflow to fix them efficiently:
+
+### Step 1: Identify the Failing Test
+
+Run the spec file to see which tests are failing:
+
+```bash
+npm run cy:run -- --spec "cypress/e2e/feature-name.cy.js"
+```
+
+**IMPORTANT:** Always run without `| tail` or output truncation. We need to see the full output to understand failures.
+
+### Step 2: Isolate the Failing Test with `.only`
+
+Add `.only` to the specific failing test to run it in isolation:
+
+```javascript
+// Before - running all tests
+it('is expected to create a new client', () => {
+  // test code
+})
+
+// After - isolate this test only
+it.only('is expected to create a new client', () => {
+  // test code
+})
+```
+
+Run the isolated test:
+
+```bash
+npm run cy:run -- --spec "cypress/e2e/feature-name.cy.js"
+```
+
+### Step 3: Fix the Test or Implementation
+
+With the test isolated, either:
+- **Fix the test** - Update selectors, waits, or assertions
+- **Fix the implementation** - Update the application code
+
+Run repeatedly until the isolated test passes.
+
+### Step 4: Expand to Describe/Context Block
+
+Once the single test passes, move `.only` to the parent `describe` or `context` block:
+
+```javascript
+// Before - single test only
+describe('Client Creation', () => {
+  it.only('is expected to create a new client', () => {})
+  it('is expected to validate required fields', () => {})
+})
+
+// After - run all tests in this block
+describe.only('Client Creation', () => {
+  it('is expected to create a new client', () => {})
+  it('is expected to validate required fields', () => {})
+})
+```
+
+Run again to verify all scenarios in that block pass:
+
+```bash
+npm run cy:run -- --spec "cypress/e2e/feature-name.cy.js"
+```
+
+### Step 5: Run the Entire File
+
+Once all scenarios in the block pass, remove `.only` completely and run the full spec:
+
+```bash
+npm run cy:run -- --spec "cypress/e2e/feature-name.cy.js"
+```
+
+### Step 6: Verify Full Suite (Optional)
+
+After fixing all issues, run the full test suite to ensure no regressions:
+
+```bash
+npm run cy:run
+```
+
+### Example Workflow Session
+
+```bash
+# 1. See what's failing
+npm run cy:run -- --spec "cypress/e2e/clients.cy.js"
+# Output shows: "is expected to create client with Swedish org number" failing
+
+# 2. Add it.only to that test, then run again
+npm run cy:run -- --spec "cypress/e2e/clients.cy.js"
+# Now only that test runs - easier to debug
+
+# 3. Fix the issue (test or implementation)
+
+# 4. Test passes? Move .only to describe block
+npm run cy:run -- --spec "cypress/e2e/clients.cy.js"
+# All tests in "Client Creation" block run
+
+# 5. All pass? Remove .only, run full file
+npm run cy:run -- --spec "cypress/e2e/clients.cy.js"
+# All 15 tests pass!
+
+# 6. Commit the fix
+git add . && git commit -m "fix: client creation with Swedish org number"
+```
+
+### Quick Reference: `.only` Syntax
+
+```javascript
+// Isolate a single test
+it.only('is expected to do something', () => {})
+
+// Isolate a describe block
+describe.only('Feature Name', () => {})
+
+// Isolate a context block  
+context.only('When condition', () => {})
+
+// Multiple .only - all marked items run
+describe.only('Block 1', () => {})
+describe.only('Block 2', () => {})  // Both run
+```
+
+**⚠️ Remember:** Always remove `.only` before committing! Tests marked with `.only` will cause other tests to be skipped in CI.
+
+---
+
 ## Running Tests
 
 ### Interactive Mode (Development)

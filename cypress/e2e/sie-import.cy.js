@@ -65,18 +65,18 @@ describe('SIE File Import (US-122)', () => {
 
   describe('Navigation', () => {
     it('is expected to have SIE Import link in Accounting section of sidebar', () => {
-      cy.getByCy('sidebar-nav').contains('Accounting').click()
-      cy.getByCy('sidebar-nav').contains('SIE Import').should('be.visible')
+      // The SIE Import link is in the Accounting section
+      // data-cy is sidebar-nav-import/sie due to path /import/sie
+      cy.get('[data-cy="sidebar-nav-import/sie"]').should('be.visible')
     })
 
     it('is expected to navigate to /import/sie route', () => {
-      cy.getByCy('sidebar-nav').contains('Accounting').click()
-      cy.getByCy('sidebar-nav').contains('SIE Import').click()
+      cy.get('[data-cy="sidebar-nav-import/sie"]').click()
       cy.url().should('include', '/import/sie')
     })
 
     it('is expected to display the SIE import page with title', () => {
-      cy.visit('/import/sie')
+      cy.get('[data-cy="sidebar-nav-import/sie"]').click()
       cy.getByCy('sie-import-page-title').should('be.visible')
       cy.getByCy('sie-import-page-title').should('contain', 'SIE Import')
     })
@@ -84,7 +84,7 @@ describe('SIE File Import (US-122)', () => {
 
   describe('Happy Path - SIE4 File Upload', () => {
     beforeEach(() => {
-      cy.visit('/import/sie')
+      cy.get('[data-cy="sidebar-nav-import/sie"]').click()
     })
 
     it('is expected to display the drop zone', () => {
@@ -143,7 +143,7 @@ describe('SIE File Import (US-122)', () => {
 
   describe('Happy Path - SIE5 File Upload', () => {
     beforeEach(() => {
-      cy.visit('/import/sie')
+      cy.get('[data-cy="sidebar-nav-import/sie"]').click()
     })
 
     it('is expected to accept a .sie file', () => {
@@ -163,7 +163,7 @@ describe('SIE File Import (US-122)', () => {
 
   describe('Happy Path - Import Options', () => {
     beforeEach(() => {
-      cy.visit('/import/sie')
+      cy.get('[data-cy="sidebar-nav-import/sie"]').click()
       uploadSIEFile(sampleSIE4, 'test-accounts.se')
       cy.getByCy('parse-file-button').should('not.be.disabled').click()
       cy.getByCy('proceed-to-preview-button').click()
@@ -183,7 +183,7 @@ describe('SIE File Import (US-122)', () => {
   describe('Happy Path - Skip Existing Accounts', () => {
     it('is expected to show import option for skipping existing accounts', () => {
       // Simply verify the skip existing checkbox is available and works
-      cy.visit('/import/sie')
+      cy.get('[data-cy="sidebar-nav-import/sie"]').click()
       uploadSIEFile(sampleSIE4, 'test-accounts.se')
       cy.getByCy('parse-file-button').should('not.be.disabled').click()
       cy.getByCy('proceed-to-preview-button').click()
@@ -199,7 +199,7 @@ describe('SIE File Import (US-122)', () => {
 
   describe('Sad Path - Invalid File', () => {
     beforeEach(() => {
-      cy.visit('/import/sie')
+      cy.get('[data-cy="sidebar-nav-import/sie"]').click()
     })
 
     it('is expected to show error for invalid file extension', () => {
@@ -241,7 +241,7 @@ INVALID CONTENT HERE
   describe('Sad Path - Import Errors', () => {
     it('is expected to show import button only when accounts checkbox is checked', () => {
       // Test the UI behavior rather than the backend error handling
-      cy.visit('/import/sie')
+      cy.get('[data-cy="sidebar-nav-import/sie"]').click()
       uploadSIEFile(sampleSIE4, 'test-accounts.se')
       cy.getByCy('parse-file-button').should('not.be.disabled').click()
       cy.getByCy('proceed-to-preview-button').click()
@@ -259,7 +259,7 @@ INVALID CONTENT HERE
 
   describe('Wizard Navigation', () => {
     beforeEach(() => {
-      cy.visit('/import/sie')
+      cy.get('[data-cy="sidebar-nav-import/sie"]').click()
       uploadSIEFile(sampleSIE4, 'test-accounts.se')
     })
 
@@ -325,13 +325,14 @@ INVALID CONTENT HERE
 #KONTO 1510 "Kundfordringar"
 `;
 
-    // No beforeEach here - we inherit from parent (login + setupCommonIntercepts)
-    // Then navigate to the SIE import page in each test using sidebar
+    // All tests in this block need the organization loaded first
+    beforeEach(() => {
+      cy.wait('@getDefaultOrg')
+    })
 
     it('is expected to show organization mismatch warning when org numbers differ', () => {
-      // Navigate to SIE import via sidebar
-      cy.getByCy('sidebar-nav').contains('Accounting').click()
-      cy.getByCy('sidebar-nav').contains('SIE Import').click()
+      // Navigate to SIE import page
+      cy.get('[data-cy="sidebar-nav-import/sie"]').click()
       
       uploadSIEFile(sieMismatchOrgNumber, 'mismatch.se')
       cy.getByCy('parse-file-button').should('not.be.disabled').click()
@@ -348,9 +349,8 @@ INVALID CONTENT HERE
     })
 
     it('is expected to allow creating new organization from SIE data', () => {
-      // Navigate to SIE import via sidebar
-      cy.getByCy('sidebar-nav').contains('Accounting').click()
-      cy.getByCy('sidebar-nav').contains('SIE Import').click()
+      // Navigate to SIE import page
+      cy.get('[data-cy="sidebar-nav-import/sie"]').click()
 
       uploadSIEFile(sieMismatchOrgNumber, 'mismatch.se')
       cy.getByCy('parse-file-button').should('not.be.disabled').click()
@@ -400,9 +400,8 @@ INVALID CONTENT HERE
     })
 
     it('is expected to allow using current organization despite mismatch', () => {
-      // Navigate to SIE import via sidebar
-      cy.getByCy('sidebar-nav').contains('Accounting').click()
-      cy.getByCy('sidebar-nav').contains('SIE Import').click()
+      // Navigate to SIE import page
+      cy.get('[data-cy="sidebar-nav-import/sie"]').click()
 
       uploadSIEFile(sieMismatchOrgNumber, 'mismatch.se')
       cy.getByCy('parse-file-button').should('not.be.disabled').click()
@@ -420,9 +419,8 @@ INVALID CONTENT HERE
     })
 
     it('is expected to allow canceling from org mismatch screen', () => {
-      // Navigate to SIE import via sidebar
-      cy.getByCy('sidebar-nav').contains('Accounting').click()
-      cy.getByCy('sidebar-nav').contains('SIE Import').click()
+      // Navigate to SIE import page
+      cy.get('[data-cy="sidebar-nav-import/sie"]').click()
 
       uploadSIEFile(sieMismatchOrgNumber, 'mismatch.se')
       cy.getByCy('parse-file-button').should('not.be.disabled').click()
@@ -439,21 +437,20 @@ INVALID CONTENT HERE
     })
 
     it('is expected to skip mismatch dialog when organizations match', () => {
-      // SIE file that matches the current org
+      // SIE file that matches the current org (which has empty org number by default)
+      // So we need a SIE file without org number, matching by name
       const sieMatchingOrg = `#FLAGGA 0
 #FORMAT PC8
 #SIETYP 4
 #PROGRAM "Test Program" 1.0
 #GEN 20240101
 #FNAMN "Test Organization"
-#ORGNR 556123-4567
 #RAR 0 20240101 20241231
 #KONTO 1510 "Kundfordringar"
 `;
 
       // Navigate to SIE import via sidebar
-      cy.getByCy('sidebar-nav').contains('Accounting').click()
-      cy.getByCy('sidebar-nav').contains('SIE Import').click()
+      cy.get('[data-cy="sidebar-nav-import/sie"]').click()
       
       uploadSIEFile(sieMatchingOrg, 'matching.se')
       cy.getByCy('parse-file-button').should('not.be.disabled').click()
@@ -470,9 +467,8 @@ INVALID CONTENT HERE
         body: { message: 'Organization number already exists' }
       }).as('createOrgError')
 
-      // Navigate to SIE import via sidebar
-      cy.getByCy('sidebar-nav').contains('Accounting').click()
-      cy.getByCy('sidebar-nav').contains('SIE Import').click()
+      // Navigate to SIE import page
+      cy.get('[data-cy="sidebar-nav-import/sie"]').click()
 
       uploadSIEFile(sieMismatchOrgNumber, 'mismatch.se')
       cy.getByCy('parse-file-button').should('not.be.disabled').click()
