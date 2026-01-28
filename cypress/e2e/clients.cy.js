@@ -240,10 +240,12 @@ describe('Client Management', () => {
     }
 
     beforeEach(() => {
-      // Override clients intercept with existing client data
-      cy.setupCommonIntercepts({
-        clients: [existingClient]
-      })
+      // Override clients intercept with existing client data BEFORE the page loads
+      // This intercept will take precedence over the one from setupCommonIntercepts
+      cy.intercept('GET', '**/rest/v1/clients*', {
+        statusCode: 200,
+        body: [existingClient]
+      }).as('getClientsWithData')
 
       cy.intercept('PATCH', '**/rest/v1/clients*', (req) => {
         req.reply({
@@ -251,9 +253,11 @@ describe('Client Management', () => {
           body: [{ ...existingClient, ...req.body }]
         })
       }).as('updateClient')
-
-      cy.reload()
-      cy.wait('@getClients')
+      
+      // Navigate away and back to trigger fresh data load with new intercept
+      cy.getByCy('sidebar-nav-dashboard').click()
+      cy.getByCy('sidebar-nav-clients').click()
+      cy.wait('@getClientsWithData')
     })
 
     it('is expected to open edit modal with prefilled values', () => {

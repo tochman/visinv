@@ -325,16 +325,21 @@ describe("Invoice Management", () => {
     ];
 
     beforeEach(() => {
-      cy.setupCommonIntercepts({
-        invoices: mockInvoices,
-        clients: [mockClient],
-        templates: [mockTemplate],
-        products: [],
-      });
-
-      // Need to reload/refresh data with new intercepts for this nested context
-      cy.reload();
-      cy.wait("@getInvoices");
+      // Override intercepts BEFORE navigation - these take precedence
+      cy.intercept('GET', '**/rest/v1/invoices*', {
+        statusCode: 200,
+        body: mockInvoices
+      }).as('getInvoicesWithStatus')
+      
+      cy.intercept('GET', '**/rest/v1/clients*', {
+        statusCode: 200,
+        body: [mockClient]
+      }).as('getClientsForStatus')
+      
+      // Navigate away and back to trigger fresh data load
+      cy.getByCy("sidebar-nav-dashboard").click();
+      cy.getByCy("sidebar-nav-invoices").click();
+      cy.wait("@getInvoicesWithStatus");
     });
 
     it("is expected to display invoice list", () => {
@@ -492,16 +497,26 @@ describe("Invoice Management", () => {
     };
 
     beforeEach(() => {
-      cy.setupCommonIntercepts({
-        invoices: [existingInvoice],
-        clients: [mockClient],
-        templates: [mockTemplate],
-        products: [],
-      });
+      // Override intercepts BEFORE navigation - these take precedence
+      cy.intercept('GET', '**/rest/v1/invoices*', {
+        statusCode: 200,
+        body: [existingInvoice]
+      }).as('getInvoicesForEdit')
+      
+      cy.intercept('GET', '**/rest/v1/clients*', {
+        statusCode: 200,
+        body: [mockClient]
+      }).as('getClientsForEdit')
+      
+      cy.intercept('GET', '**/rest/v1/invoice_templates*', {
+        statusCode: 200,
+        body: [mockTemplate]
+      }).as('getTemplatesForEdit')
 
-      // Reload to pick up new intercepts
-      cy.reload();
-      cy.wait("@getInvoices");
+      // Navigate away and back to trigger fresh data load
+      cy.getByCy("sidebar-nav-dashboard").click();
+      cy.getByCy("sidebar-nav-invoices").click();
+      cy.wait("@getInvoicesForEdit");
     });
 
     it("is expected to open invoice in edit mode", () => {
@@ -1220,11 +1235,13 @@ describe("Invoice Management", () => {
 
     describe("View Recurring Invoices", () => {
       beforeEach(() => {
-        // Override invoices with fixture data containing recurring invoice
+        // Override invoices with fixture data containing recurring invoice BEFORE navigation
         cy.intercept("GET", "**/rest/v1/invoices*", {
           fixture: "recurring_invoices.json",
         }).as("getInvoicesFixture");
 
+        // Navigate away and back to trigger fresh data load
+        cy.getByCy("sidebar-nav-dashboard").click();
         cy.getByCy("sidebar-nav-invoices").click();
         cy.wait("@getInvoicesFixture");
       });
@@ -1276,11 +1293,13 @@ describe("Invoice Management", () => {
 
     describe("Edit Recurring Invoice", () => {
       beforeEach(() => {
-        // Override invoices with fixture data containing recurring invoice
+        // Override invoices with fixture data containing recurring invoice BEFORE navigation
         cy.intercept("GET", "**/rest/v1/invoices*", {
           fixture: "recurring_invoices.json",
         }).as("getInvoicesFixture");
 
+        // Navigate away and back to trigger fresh data load
+        cy.getByCy("sidebar-nav-dashboard").click();
         cy.getByCy("sidebar-nav-invoices").click();
         cy.wait("@getInvoicesFixture");
       });
@@ -1371,11 +1390,13 @@ describe("Invoice Management", () => {
 
     describe("Recurring Invoice Information Display", () => {
       beforeEach(() => {
-        // Override invoices with fixture data containing recurring invoice
+        // Override invoices with fixture data containing recurring invoice BEFORE navigation
         cy.intercept("GET", "**/rest/v1/invoices*", {
           fixture: "recurring_invoices.json",
         }).as("getInvoicesFixture");
 
+        // Navigate away and back to trigger fresh data load
+        cy.getByCy("sidebar-nav-dashboard").click();
         cy.getByCy("sidebar-nav-invoices").click();
         cy.wait("@getInvoicesFixture");
       });
@@ -1472,11 +1493,13 @@ describe("Invoice Management", () => {
 
     describe("Delete Recurring Invoice", () => {
       beforeEach(() => {
-        // Override invoices with fixture data containing recurring invoice
+        // Override invoices with fixture data containing recurring invoice BEFORE navigation
         cy.intercept("GET", "**/rest/v1/invoices*", {
           fixture: "recurring_invoices.json",
         }).as("getInvoicesFixture");
 
+        // Navigate away and back to trigger fresh data load
+        cy.getByCy("sidebar-nav-dashboard").click();
         cy.getByCy("sidebar-nav-invoices").click();
         cy.wait("@getInvoicesFixture");
       });
@@ -1543,17 +1566,22 @@ describe("Invoice Management", () => {
     };
 
     beforeEach(() => {
-      cy.setupCommonIntercepts({
-        invoices: [invoiceWithFullData],
-        clients: [mockClient],
-        templates: [mockTemplate],
-        products: [],
-      });
-      // Reload to pick up new intercepts
-      cy.reload();
-      // Already navigated to invoices in parent beforeEach
-      cy.wait("@getInvoices");
-      cy.wait("@getTemplates");
+      // Override intercepts BEFORE navigation - these take precedence
+      cy.intercept('GET', '**/rest/v1/invoices*', {
+        statusCode: 200,
+        body: [invoiceWithFullData]
+      }).as('getInvoicesWithPDF')
+      
+      cy.intercept('GET', '**/rest/v1/invoice_templates*', {
+        statusCode: 200,
+        body: [mockTemplate]
+      }).as('getTemplatesForPDF')
+      
+      // Navigate away and back to trigger fresh data load
+      cy.getByCy('sidebar-nav-dashboard').click()
+      cy.getByCy('sidebar-nav-invoices').click()
+      cy.wait('@getInvoicesWithPDF')
+      cy.wait('@getTemplatesForPDF')
     });
 
     it("is expected to display PDF download button", () => {
@@ -1572,17 +1600,17 @@ describe("Invoice Management", () => {
     });
 
     it("is expected to show error when no templates available", () => {
-      cy.setupCommonIntercepts({
-        invoices: [invoiceWithFullData],
-        clients: [mockClient],
-        templates: [],
-        products: [],
-      });
-
-      // Reload data with new intercepts
-      cy.reload();
-      cy.wait("@getInvoices");
-      cy.wait("@getTemplates");
+      // Override with empty templates
+      cy.intercept('GET', '**/rest/v1/invoice_templates*', {
+        statusCode: 200,
+        body: []
+      }).as('getEmptyTemplates')
+      
+      // Navigate away and back to trigger fresh data load
+      cy.getByCy("sidebar-nav-dashboard").click();
+      cy.getByCy("sidebar-nav-invoices").click();
+      cy.wait("@getInvoicesWithPDF");
+      cy.wait("@getEmptyTemplates");
 
       cy.getByCy("download-pdf-button-inv-pdf").click();
       // Alert handling is automatic in Cypress
