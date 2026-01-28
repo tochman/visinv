@@ -164,11 +164,18 @@ export default function SieImport() {
     setError(null);
 
     try {
-      const orgNumber = parsedData.company.organizationNumber || null;
+      const orgNumber = parsedData.company.organizationNumber || '000000-0000';
       const newOrgData = {
         name: parsedData.company.name || 'Imported Organization',
         organization_number: orgNumber,
-        vat_number: calculateVatNumber(orgNumber),
+        vat_number: calculateVatNumber(orgNumber) || 'SE000000000001',
+        // Default values for required fields (can be updated later in settings)
+        address: '-',
+        city: '-',
+        postal_code: '00000',
+        municipality: '-',
+        email: 'update@example.com',
+        country: 'Sweden',
       };
 
       // Add address if available from SIE
