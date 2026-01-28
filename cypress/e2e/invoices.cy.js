@@ -893,9 +893,11 @@ describe("Invoice Management", () => {
         cy.wait("@createManualInvoice");
         cy.getByCy("invoice-modal").should("not.exist");
 
+        // Wait for the invoice list to reload with the new invoice
+        cy.wait("@getInvoicesAfterCreate");
+
         // Verify invoice appears in the list with manual number
-        // Use contains to find the invoice by number rather than id (more reliable)
-        cy.contains("tr", "MANUAL-1001", { timeout: 15000 }).should("exist");
+        cy.contains("tr", "MANUAL-1001").should("exist");
       });
 
       it("is expected to prevent creating invoice without number in manual mode", () => {
