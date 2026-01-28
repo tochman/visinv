@@ -1820,6 +1820,51 @@ Swedish accounting follows **Bokföringslagen** (BFL) and **Årsredovisningslage
   - Audit trail of approvals
 - **Status:** Not Started
 
+**US-263: Supplier Invoice & Receipt OCR Upload**
+- As a **user**, in order to **simplify my accounting**, I would like to **upload a supplier invoice or receipt and extract information from it**.
+- **Acceptance Criteria:**
+  - **OCR Processing:**
+    - Upload PDF or image files (JPEG, PNG)
+    - Use OCR software (Scribe.js: https://github.com/scribeocr/scribe.js) to extract text from uploaded documents
+    - Consider Supabase Edge Function implementation to off-load browser processing
+  - **AI-Powered Data Extraction:**
+    - Use OpenAI GPT model to identify and extract key information:
+      - Supplier name and details (organization number, VAT number, address)
+      - Invoice number and date
+      - Due date and payment terms
+      - Line items with descriptions and amounts
+      - VAT rates and amounts
+      - Total amount
+    - Identify what the invoice is for (category/purpose of expense)
+  - **Account Suggestion:**
+    - AI suggests appropriate chart of accounts codes based on:
+      - Invoice content and category
+      - Supplier type
+      - Historical coding patterns for similar expenses
+    - User can review and adjust suggested accounts
+  - **UI Requirements:**
+    - Small, expandable document preview (thumbnail view)
+    - Click to expand preview to full-screen or larger modal
+    - Side-by-side view: document preview + extracted data form
+    - Highlight extracted fields on document (if possible)
+    - Edit extracted information before saving
+  - **Integration:**
+    - Pre-populate supplier invoice form (US-260) with extracted data
+    - Create or link to supplier record (US-261)
+    - Suggest account coding for line items
+    - Attach original document to invoice record
+  - **Validation:**
+    - Flag low-confidence extractions for manual review
+    - Validate extracted amounts and VAT calculations
+    - Check supplier data against existing supplier register
+- **Technical Considerations:**
+  - OCR: Scribe.js for text extraction (client-side or server-side via Supabase Function)
+  - AI: OpenAI GPT API for intelligent data extraction and categorization
+  - Storage: Supabase Storage for uploaded documents
+  - Performance: Consider Edge Function to off-load browser processing for large documents
+  - Progressive enhancement: Show loading states during OCR/AI processing
+- **Status:** Not Started
+
 #### Invoicing & Accounting Integration
 
 **US-280: Invoice Accounting Integration**
