@@ -31,18 +31,14 @@ class SupplierResource extends BaseResource {
   }
 
   /**
-   * Create a new supplier
+   * Create a new supplier (user_id not needed since RLS uses organization_id)
    * @param {Object} supplierData 
    * @returns {Promise<{data: Object, error: Error|null}>}
    */
   async create(supplierData) {
-    // Set created_by automatically
-    const { data: { user } } = await this.client.auth.getUser();
-    
-    return super.create({
-      ...supplierData,
-      created_by: user?.id
-    });
+    // Don't add user_id since suppliers table doesn't have it
+    // RLS policies use organization_id via organization_members
+    return super.create(supplierData, false);
   }
 
   /**
@@ -53,7 +49,7 @@ class SupplierResource extends BaseResource {
    */
   async search(organizationId, searchTerm) {
     try {
-      const { data, error } = await this.client
+      const { data, error } = await this.supabase
         .from(this.tableName)
         .select('*')
         .eq('organization_id', organizationId)

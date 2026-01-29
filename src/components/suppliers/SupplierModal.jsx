@@ -1,7 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { useTranslation } from 'react-i18next';
-import { useOrganization } from '../../contexts/OrganizationContext';
 import { createSupplier, updateSupplier } from '../../features/suppliers/suppliersSlice';
 import { fetchAccounts } from '../../features/accounts/accountsSlice';
 
@@ -33,7 +32,7 @@ const getInitialFormData = (supplier) => ({
 export default function SupplierModal({ isOpen, onClose, supplier = null }) {
   const { t } = useTranslation();
   const dispatch = useDispatch();
-  const { currentOrganization } = useOrganization();
+  const currentOrganization = useSelector((state) => state.organizations?.currentOrganization);
   const isEditing = !!supplier;
 
   const [formData, setFormData] = useState(getInitialFormData(supplier));
