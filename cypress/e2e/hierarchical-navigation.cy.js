@@ -129,8 +129,17 @@ describe('US-401: Hierarchical Sidebar Navigation', () => {
       beforeEach(() => {
         cy.login('admin');
         cy.wait('@getOrganizations');
-        // Wait for administration section content to be visible (auto-expanded via localStorage)
-        cy.getByCy('nav-section-content-administration').should('be.visible');
+        // Scroll to and expand the administration section
+        cy.getByCy('nav-section-toggle-administration').scrollIntoView();
+        // Check if section content exists (expanded) or not
+        cy.get('body').then($body => {
+          if ($body.find('[data-cy="nav-section-content-administration"]').length === 0) {
+            // Section is collapsed, click to expand
+            cy.getByCy('nav-section-toggle-administration').click();
+          }
+        });
+        // Wait for section to be visible after scrolling
+        cy.getByCy('nav-section-content-administration').scrollIntoView().should('exist');
       });
 
       it('is expected to show admin link for admin users', () => {

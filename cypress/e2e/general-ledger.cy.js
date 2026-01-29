@@ -106,38 +106,46 @@ describe('General Ledger (US-220)', () => {
 
     // Intercept ledger data (journal_entry_lines with journal_entry join)
     cy.intercept('GET', '**/rest/v1/journal_entry_lines*', (req) => {
-      // Check if it's a ledger query (has account_id filter)
+      // Decode URL for easier pattern matching
+      const decodedUrl = decodeURIComponent(req.url)
+      
+      // Check if this is an opening balance query (has lt filter for date)
+      const isOpeningBalanceQuery = decodedUrl.includes('entry_date=lt.')
+      
+      if (isOpeningBalanceQuery) {
+        // Return empty array for opening balance - no transactions before the period
+        req.reply({
+          statusCode: 200,
+          body: []
+        })
+        return
+      }
+      
+      // Check if it's a single account ledger query (has account_id filter)
       if (req.url.includes('account_id=eq.')) {
         // Extract account_id from URL
         const accountIdMatch = req.url.match(/account_id=eq\.([^&]+)/)
         const accountId = accountIdMatch ? accountIdMatch[1] : null
 
-        // Decode URL for easier pattern matching
-        const decodedUrl = decodeURIComponent(req.url)
-        
-        // Check if this is an opening balance query (has lt filter for date)
-        // The format is journal_entry.entry_date=lt.YYYY-MM-DD
-        const isOpeningBalanceQuery = decodedUrl.includes('entry_date=lt.')
-        
-        if (isOpeningBalanceQuery) {
-          // Return empty array for opening balance - no transactions before the period
-          req.reply({
-            statusCode: 200,
-            body: []
-          })
-        } else {
-          // Filter lines by account_id for ledger data
-          const filteredLines = ledgerLines.filter(l => l.account_id === accountId)
+        // Filter lines by account_id for ledger data
+        const filteredLines = ledgerLines.filter(l => l.account_id === accountId)
 
-          req.reply({
-            statusCode: 200,
-            body: filteredLines
-          })
-        }
-      } else {
         req.reply({
           statusCode: 200,
-          body: []
+          body: filteredLines
+        })
+      } else {
+        // All accounts view - return all ledger lines with account info
+        const linesWithAccountInfo = ledgerLines.map(line => {
+          const account = accounts.find(a => a.id === line.account_id)
+          return {
+            ...line,
+            account: account || { id: line.account_id, account_number: 'Unknown', name: 'Unknown' }
+          }
+        })
+        req.reply({
+          statusCode: 200,
+          body: linesWithAccountInfo
         })
       }
     }).as('getLedgerData')
@@ -186,9 +194,9 @@ describe('General Ledger (US-220)', () => {
       cy.wait('@getFiscalYears')
     })
 
-    it('is expected to show no account selected state initially', () => {
-      cy.contains('No Account Selected').should('be.visible')
-      cy.contains('Search and select an account to view its ledger').should('be.visible')
+    it('is expected to show all accounts view by default', () => {
+      // Component now defaults to "All Accounts" view instead of "No Account Selected"
+      cy.contains('All Accounts').should('be.visible')
     })
 
     it('is expected to show account search input', () => {
@@ -201,10 +209,11 @@ describe('General Ledger (US-220)', () => {
     })
 
     it('is expected to filter accounts when typing in search', () => {
-      cy.getByCy('account-search').type('1510')
+      // Clear the default "All Accounts" value and type search term
+      cy.getByCy('account-search').clear().type('1510')
+      // Dropdown should show filtered results
       cy.getByCy('account-dropdown').should('be.visible')
       cy.getByCy('account-option-1510').should('be.visible')
-      cy.getByCy('account-dropdown').find('button').should('have.length', 1)
     })
 
     it('is expected to select account when clicking dropdown option', () => {

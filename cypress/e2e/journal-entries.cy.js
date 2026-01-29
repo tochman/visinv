@@ -421,24 +421,24 @@ describe('Journal Entries (US-210)', () => {
   })
 
   describe('Error Handling', () => {
-    beforeEach(() => {
-      setupJournalEntriesIntercepts([testFiscalYear], [])
-      cy.get('[data-cy="sidebar-nav-journal-entries"]').click()
-      cy.wait('@getFiscalYears')
-      cy.wait('@getJournalEntries')
-    })
-
     it('is expected to display error when API fails', () => {
-      // Override the intercept to return an error
+      // Set up fiscal years to load correctly, but entries to fail
+      cy.intercept('GET', '**/rest/v1/fiscal_years*', {
+        statusCode: 200,
+        body: [testFiscalYear]
+      }).as('getFiscalYears')
+
+      // Intercept journal entries with error
       cy.intercept('GET', '**/rest/v1/journal_entries*', {
         statusCode: 500,
         body: { error: 'Server error' }
       }).as('getJournalEntriesError')
 
-      // Trigger a refresh
-      cy.getByCy('fiscal-year-select').select('2024')
+      // Navigate to page - the error intercept is already set up
+      cy.get('[data-cy="sidebar-nav-journal-entries"]').click()
+      cy.wait('@getFiscalYears')
       cy.wait('@getJournalEntriesError')
-      // Error handling would be shown in the UI
+      // Error handling would be shown in the UI - verify error state if component displays one
     })
   })
 })
