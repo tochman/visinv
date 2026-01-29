@@ -262,7 +262,7 @@ export default function VATReport() {
       </div>
 
       {/* Filters */}
-      <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm p-4 mb-6 print:hidden">
+      <div className="bg-white dark:bg-gray-800 rounded-sm shadow-sm p-4 mb-6 print:hidden">
         <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
           {/* Fiscal Year */}
           <div>
@@ -360,14 +360,14 @@ export default function VATReport() {
 
       {/* Error State */}
       {error && (
-        <div className="bg-red-50 dark:bg-red-900/30 border border-red-200 dark:border-red-800 rounded-lg p-4 mb-6">
+        <div className="bg-red-50 dark:bg-red-900/30 border border-red-200 dark:border-red-800 rounded-sm p-4 mb-6">
           <p className="text-red-600 dark:text-red-400" data-cy="error-message">{error}</p>
         </div>
       )}
 
       {/* Loading State */}
       {loading && (
-        <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm p-8 text-center">
+        <div className="bg-white dark:bg-gray-800 rounded-sm shadow-sm p-8 text-center">
           <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto"></div>
           <p className="mt-2 text-gray-500 dark:text-gray-400">{t('common.loading')}</p>
         </div>
@@ -375,7 +375,7 @@ export default function VATReport() {
 
       {/* VAT Report Content */}
       {!loading && vatReport && (
-        <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm" data-cy="vat-report-content">
+        <div className="bg-white dark:bg-gray-800 rounded-sm shadow-sm" data-cy="vat-report-content">
           {/* Report Header */}
           <div className="p-4 border-b border-gray-200 dark:border-gray-700 print:border-none">
             <h2 className="text-lg font-semibold text-gray-900 dark:text-white text-center">
@@ -458,7 +458,7 @@ export default function VATReport() {
 
       {/* Empty State */}
       {!loading && !vatReport && !error && (
-        <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm p-8 text-center">
+        <div className="bg-white dark:bg-gray-800 rounded-sm shadow-sm p-8 text-center">
           <p className="text-gray-500 dark:text-gray-400">
             {t('vatReport.noData')}
           </p>

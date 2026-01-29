@@ -732,7 +732,7 @@ class FinancialReportResource extends BaseResource {
           organization_id,
           fiscal_year_id,
           entry_date,
-          entry_number,
+          verification_number,
           description,
           status
         )
@@ -796,7 +796,7 @@ class FinancialReportResource extends BaseResource {
       const transactionInfo = {
         id: line.id,
         date: line.journal_entry.entry_date,
-        entryNumber: line.journal_entry.entry_number,
+        entryNumber: line.journal_entry.verification_number,
         description: line.description || line.journal_entry.description,
         accountNumber,
         accountName: line.account.name,
