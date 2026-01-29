@@ -757,8 +757,8 @@ export const generateVatReportHTML = (data, options = {}) => {
 
   const L = getLabels(locale);
   
-  const outputTotal = data?.output?.total || 0;
-  const inputTotal = data?.input?.total || 0;
+  const outputTotal = data?.outputVat?.total || 0;
+  const inputTotal = data?.inputVat?.total || 0;
   const netVat = data?.netVat || (outputTotal - inputTotal);
   const isPayable = netVat > 0;
 
@@ -802,10 +802,10 @@ export const generateVatReportHTML = (data, options = {}) => {
           </tr>
         </thead>
         <tbody>
-          ${renderVatRow(L.vatReport.rate25, data?.output?.rate25?.base || 0, data?.output?.rate25?.amount || 0)}
-          ${renderVatRow(L.vatReport.rate12, data?.output?.rate12?.base || 0, data?.output?.rate12?.amount || 0)}
-          ${renderVatRow(L.vatReport.rate6, data?.output?.rate6?.base || 0, data?.output?.rate6?.amount || 0)}
-          ${renderVatRow(L.vatReport.rate0, data?.output?.rate0?.base || 0, 0)}
+          ${renderVatRow(L.vatReport.rate25, 0, data?.outputVat?.rate25?.amount || 0)}
+          ${renderVatRow(L.vatReport.rate12, 0, data?.outputVat?.rate12?.amount || 0)}
+          ${renderVatRow(L.vatReport.rate6, 0, data?.outputVat?.rate6?.amount || 0)}
+          ${renderVatRow(L.vatReport.rate0, 0, 0)}
           <tr class="row-subtotal">
             <td>${L.vatReport.totalOutputVat}</td>
             <td class="amount">-</td>
@@ -827,7 +827,7 @@ export const generateVatReportHTML = (data, options = {}) => {
           </tr>
         </thead>
         <tbody>
-          ${renderVatRow(L.vatReport.deductibleVat, data?.input?.deductible?.base || 0, data?.input?.deductible?.amount || 0)}
+          ${renderVatRow(L.vatReport.deductibleVat, 0, data?.inputVat?.deductible?.amount || 0)}
           <tr class="row-subtotal">
             <td>${L.vatReport.totalInputVat}</td>
             <td class="amount">-</td>
