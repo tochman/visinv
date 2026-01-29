@@ -603,6 +603,7 @@
     "skippedCount": "{{count}} konton hoppades över (finns redan).",
     "fiscalYearsImported": "{{count}} räkenskapsår importerades.",
     "journalEntriesImported": "{{count}} verifikationer importerades.",
+    "openingBalancesImported": "{{count}} ingående balansposter importerades.",
     "importAnother": "Importera en till fil",
     "viewAccounts": "Visa kontoplan",
     "importError": "Ett fel uppstod vid import. Försök igen.",

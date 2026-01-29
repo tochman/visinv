@@ -728,7 +728,8 @@ export function prepareJournalEntriesForImport(vouchers, organizationId, account
 /**
  * Prepare opening balance journal entries from parsed balances
  * Creates journal entries at the start of each fiscal year with opening balances
- * @param {Array} openingBalances - Parsed #IB records
+ * Handles both SIE4 format (yearIndex) and SIE5 format (month like "2014-01")
+ * @param {Array} openingBalances - Parsed #IB records (SIE4) or OpeningBalance elements (SIE5)
  * @param {Array} fiscalYears - Parsed fiscal years 
  * @param {string} organizationId - Target organization ID
  * @param {Map} accountMap - Map of account_number to account_id
@@ -739,37 +740,77 @@ export function prepareOpeningBalanceEntries(openingBalances, fiscalYears, organ
   const entries = [];
   const errors = [];
 
-  // Group opening balances by year index
-  const balancesByYear = new Map();
+  // Detect format and group opening balances by fiscal year
+  // SIE4: uses yearIndex (0, -1, -2, etc.)
+  // SIE5: uses month like "2014-01"
+  const balancesByYearKey = new Map();
+  
   openingBalances.forEach((balance) => {
-    const yearIndex = balance.yearIndex;
-    if (!balancesByYear.has(yearIndex)) {
-      balancesByYear.set(yearIndex, []);
-    }
-    balancesByYear.get(yearIndex).push(balance);
-  });
-
-  // Find the equity account for balancing (typically 2099 "Årets resultat" or similar)
-  // We'll create the entries as balanced sets
-  balancesByYear.forEach((balances, yearIndex) => {
-    // Find the fiscal year for this index
-    const fiscalYear = fiscalYears.find((fy) => fy.index === yearIndex);
-    if (!fiscalYear) {
+    let yearKey;
+    
+    if (balance.yearIndex !== undefined) {
+      // SIE4 format - use yearIndex directly
+      yearKey = `idx:${balance.yearIndex}`;
+    } else if (balance.month) {
+      // SIE5 format - extract year from month "2014-01" -> "2014"
+      yearKey = `year:${balance.month.substring(0, 4)}`;
+    } else {
       errors.push({
-        yearIndex,
-        error: `No fiscal year found for index ${yearIndex}`,
+        account: balance.account_number,
+        error: 'Opening balance has no year reference',
       });
       return;
     }
+    
+    if (!balancesByYearKey.has(yearKey)) {
+      balancesByYearKey.set(yearKey, []);
+    }
+    balancesByYearKey.get(yearKey).push(balance);
+  });
 
-    const startYear = fiscalYear.start ? fiscalYear.start.substring(0, 4) : null;
-    const fiscalYearId = startYear ? fiscalYearMap.get(startYear) : null;
-
+  // Process each year's balances
+  balancesByYearKey.forEach((balances, yearKey) => {
+    let fiscalYear;
+    let fiscalYearId;
+    let entryDate;
+    let yearLabel;
+    
+    if (yearKey.startsWith('idx:')) {
+      // SIE4 format - find fiscal year by index
+      const yearIndex = parseInt(yearKey.substring(4), 10);
+      fiscalYear = fiscalYears.find((fy) => fy.index === yearIndex);
+      
+      if (!fiscalYear) {
+        errors.push({
+          yearKey,
+          error: `No fiscal year found for index ${yearIndex}`,
+        });
+        return;
+      }
+      
+      const startYear = fiscalYear.start ? fiscalYear.start.substring(0, 4) : null;
+      fiscalYearId = startYear ? fiscalYearMap.get(startYear) : null;
+      entryDate = normalizeSieDate(fiscalYear.start, false);
+      yearLabel = startYear;
+    } else {
+      // SIE5 format - find fiscal year by year
+      const year = yearKey.substring(5); // Remove "year:" prefix
+      fiscalYearId = fiscalYearMap.get(year);
+      
+      // Find matching fiscal year for entry date
+      fiscalYear = fiscalYears.find((fy) => {
+        const fyStart = fy.start?.substring(0, 4);
+        return fyStart === year;
+      });
+      
+      entryDate = fiscalYear ? normalizeSieDate(fiscalYear.start, false) : `${year}-01-01`;
+      yearLabel = year;
+    }
+    
     if (!fiscalYearId) {
       errors.push({
-        yearIndex,
-        fiscalYear: fiscalYear.start,
-        error: `Fiscal year ID not found for ${startYear}`,
+        yearKey,
+        error: `Fiscal year ID not found for ${yearLabel}`,
       });
       return;
     }
@@ -782,7 +823,7 @@ export function prepareOpeningBalanceEntries(openingBalances, fiscalYears, organ
       
       if (!accountId) {
         errors.push({
-          yearIndex,
+          yearKey,
           account: balance.account_number,
           error: `Account ${balance.account_number} not found for opening balance`,
         });
@@ -818,7 +859,7 @@ export function prepareOpeningBalanceEntries(openingBalances, fiscalYears, organ
       // Not balanced - this is informational, the entry can still be created
       // but we'll note it as a warning
       errors.push({
-        yearIndex,
+        yearKey,
         type: 'warning',
         totalDebit,
         totalCredit,
@@ -829,10 +870,10 @@ export function prepareOpeningBalanceEntries(openingBalances, fiscalYears, organ
     entries.push({
       organization_id: organizationId,
       fiscal_year_id: fiscalYearId,
-      entry_date: fiscalYear.start,
-      description: `Opening Balance / Ingående balans ${startYear}`,
+      entry_date: entryDate,
+      description: `SIE Import IB-${yearLabel}: Opening Balance / Ingående balans`,
       source_type: 'sie_import',
-      source_reference: `IB-${startYear}`,
+      source_reference: `IB-${yearLabel}`,
       status: 'posted',
       lines,
       is_opening_balance: true,

@@ -8,6 +8,7 @@ import {
   prepareAccountsForImport, 
   prepareFiscalYearsForImport,
   prepareJournalEntriesForImport,
+  prepareOpeningBalanceEntries,
   getSieImportSummary,
   detectMissingFiscalYears,
 } from '../utils/sieParser';
@@ -66,6 +67,7 @@ export default function SieImport() {
   const [importResult, setImportResult] = useState(null);
   const [importSummary, setImportSummary] = useState(null);
   const [missingFiscalYears, setMissingFiscalYears] = useState(null);
+  const [fiscalYearsCheckComplete, setFiscalYearsCheckComplete] = useState(false);
   const [error, setError] = useState(null);
   const [orgMismatch, setOrgMismatch] = useState(null);
   const [creatingOrg, setCreatingOrg] = useState(false);
@@ -188,8 +190,11 @@ export default function SieImport() {
 
   // Check for missing fiscal years when vouchers need to be imported
   const checkMissingFiscalYears = useCallback(async () => {
+    setFiscalYearsCheckComplete(false);
+    
     if (!parsedData?.vouchers?.length || !currentOrganization?.id) {
       setMissingFiscalYears(null);
+      setFiscalYearsCheckComplete(true);
       return;
     }
 
@@ -207,6 +212,7 @@ export default function SieImport() {
     } else {
       setMissingFiscalYears(null);
     }
+    setFiscalYearsCheckComplete(true);
   }, [parsedData, currentOrganization]);
 
   // Proceed to preview (or org mismatch step)
@@ -301,6 +307,7 @@ export default function SieImport() {
       accounts: { imported: 0, skipped: 0 },
       fiscalYears: { imported: 0, skipped: 0 },
       journalEntries: { imported: 0, skipped: 0, errors: [] },
+      openingBalances: { imported: 0, skipped: 0, errors: [] },
     };
 
     try {
@@ -443,6 +450,62 @@ export default function SieImport() {
         }
       }
 
+      // 4. Import Opening Balances (creates journal entries for each fiscal year's opening balances)
+      if (importOptions.importOpeningBalances && parsedData.openingBalances?.length > 0) {
+        // Fetch fresh accounts and fiscal years from database
+        const { data: accountsData } = await Account.indexAll(currentOrganization.id);
+        const { data: fiscalYearsData } = await FiscalYear.index(currentOrganization.id);
+        
+        // Build account map (account_number -> account_id)
+        const accountMap = new Map();
+        if (accountsData) {
+          accountsData.forEach(account => {
+            accountMap.set(account.account_number, account.id);
+          });
+        }
+        
+        // Build fiscal year map (year -> fiscal_year_id)
+        const fiscalYearMap = new Map();
+        if (fiscalYearsData) {
+          fiscalYearsData.forEach(fy => {
+            const startYear = fy.start_date?.substring(0, 4);
+            const endYear = fy.end_date?.substring(0, 4);
+            if (startYear) {
+              fiscalYearMap.set(startYear, fy.id);
+            }
+            if (endYear && endYear !== startYear) {
+              fiscalYearMap.set(endYear, fy.id);
+            }
+          });
+        }
+
+        // Prepare opening balance entries
+        const { entries: obEntries, errors: obErrors } = prepareOpeningBalanceEntries(
+          parsedData.openingBalances,
+          parsedData.fiscalYears,
+          currentOrganization.id,
+          accountMap,
+          fiscalYearMap
+        );
+
+        if (obEntries.length > 0) {
+          const obResult = await dispatch(
+            importJournalEntries({
+              entries: obEntries,
+              skipExisting: importOptions.skipExisting,
+            })
+          ).unwrap();
+
+          results.openingBalances = {
+            imported: obResult.imported || 0,
+            skipped: obResult.skipped || 0,
+            errors: obErrors.filter(e => e.type !== 'warning'),
+          };
+        } else {
+          results.openingBalances.errors = obErrors.filter(e => e.type !== 'warning');
+        }
+      }
+
       setImportResult(results);
       setStep(STEPS.COMPLETE);
     } catch (err) {
@@ -460,6 +523,7 @@ export default function SieImport() {
     setImportResult(null);
     setImportSummary(null);
     setMissingFiscalYears(null);
+    setFiscalYearsCheckComplete(false);
     setError(null);
     setOrgMismatch(null);
     setCreatingOrg(false);
@@ -909,7 +973,7 @@ export default function SieImport() {
 
         {/* PREVIEW Step */}
         {step === STEPS.PREVIEW && parsedData && (
-          <div>
+          <div data-cy={fiscalYearsCheckComplete ? 'preview-step-ready' : 'preview-step-loading'}>
             <h2 className="text-xl font-semibold text-gray-900 dark:text-white mb-4">
               {t('sieImport.previewTitle')}
             </h2>
@@ -1201,6 +1265,11 @@ export default function SieImport() {
                 {importResult.journalEntries && importResult.journalEntries.imported > 0 && (
                   <p data-cy="import-journal-entries-result">
                     {t('sieImport.journalEntriesImported', { count: importResult.journalEntries.imported })}
+                  </p>
+                )}
+                {importResult.openingBalances && importResult.openingBalances.imported > 0 && (
+                  <p data-cy="import-opening-balances-result">
+                    {t('sieImport.openingBalancesImported', { count: importResult.openingBalances.imported })}
                   </p>
                 )}
                 {importResult.journalEntries?.errors?.length > 0 && (

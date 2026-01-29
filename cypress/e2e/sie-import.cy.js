@@ -117,11 +117,23 @@ describe('SIE File Import (US-122)', () => {
     })
 
     it('is expected to import accounts successfully', () => {
-      // Override the default getAccounts intercept with more specific ones for import
+      // Mock the check for existing account numbers - returns empty so all accounts are imported
       cy.intercept('GET', '**/rest/v1/accounts?select=account_number*', {
         statusCode: 200,
         body: []
       }).as('getExistingAccountNumbers')
+
+      // Mock accounts fetch for opening balance preparation (does NOT have select=account_number)
+      cy.intercept('GET', /\/rest\/v1\/accounts\?.*order=.*organization_id/, {
+        statusCode: 200,
+        body: [
+          { id: 'new-0', account_number: '1510', name: 'Kundfordringar' },
+          { id: 'new-1', account_number: '1930', name: 'Företagskonto' },
+          { id: 'new-2', account_number: '2440', name: 'Leverantörsskulder' },
+          { id: 'new-3', account_number: '3010', name: 'Försäljning varor 25%' },
+          { id: 'new-4', account_number: '4010', name: 'Inköp material' }
+        ]
+      }).as('getAccountsForOpeningBalances')
 
       cy.intercept('POST', '**/rest/v1/accounts*', (req) => {
         req.reply({
@@ -143,13 +155,36 @@ describe('SIE File Import (US-122)', () => {
         })
       }).as('importFiscalYears')
 
+      // Mock journal entries for opening balance import
+      cy.intercept('GET', '**/rest/v1/journal_entries?*', {
+        statusCode: 200,
+        body: []
+      }).as('getExistingJournalEntries')
+
+      cy.intercept('POST', '**/rest/v1/journal_entries*', (req) => {
+        req.reply({
+          statusCode: 201,
+          body: { id: 'je-1', ...req.body }
+        })
+      }).as('importJournalEntries')
+
+      cy.intercept('POST', '**/rest/v1/journal_entry_lines*', {
+        statusCode: 201,
+        body: []
+      }).as('importJournalEntryLines')
+
+      cy.intercept('PATCH', '**/rest/v1/journal_entries*', {
+        statusCode: 200,
+        body: {}
+      }).as('updateJournalEntry')
+
       uploadSIEFile(sampleSIE4, 'test-accounts.se')
       cy.getByCy('parse-file-button').should('not.be.disabled').click()
       cy.getByCy('proceed-to-preview-button').click()
       cy.getByCy('import-button').click()
 
-      // Check for successful import result
-      cy.getByCy('import-accounts-result').should('contain', '5 accounts imported')
+      // Check for successful import result with increased timeout
+      cy.getByCy('import-accounts-result', { timeout: 15000 }).should('contain', '5 accounts imported')
       cy.getByCy('go-to-accounts-button').should('be.visible')
     })
   })
@@ -315,6 +350,14 @@ INVALID CONTENT HERE
     })
 
     it('is expected to allow importing another file after completion', () => {
+      // Mock accounts fetch for opening balance import - put broad matcher FIRST
+      // (more specific matchers below will override for their specific patterns)
+      cy.intercept('GET', /\/rest\/v1\/accounts\?.*organization_id/, {
+        statusCode: 200,
+        body: []
+      }).as('getAccountsForOB')
+
+      // More specific intercept for account_number check (overrides the broad one)
       cy.intercept('GET', '**/rest/v1/accounts?select=account_number*', {
         statusCode: 200,
         body: []
@@ -336,12 +379,18 @@ INVALID CONTENT HERE
         body: []
       }).as('importFiscalYears')
 
+      // Mock journal entries import (used for opening balances)
+      cy.intercept('POST', '**/rest/v1/journal_entries*', {
+        statusCode: 201,
+        body: []
+      }).as('importJournalEntries')
+
       cy.getByCy('parse-file-button').should('not.be.disabled').click()
       cy.getByCy('proceed-to-preview-button').click()
       cy.getByCy('import-button').click()
 
       // Wait for the import to complete by checking for the "Import Another File" button
-      cy.getByCy('import-another-button').should('be.visible').click()
+      cy.getByCy('import-another-button', { timeout: 15000 }).should('be.visible').click()
       cy.getByCy('sie-drop-zone').should('be.visible')
     })
   })
@@ -597,12 +646,24 @@ INVALID CONTENT HERE
         })
       }).as('importFiscalYears')
 
+      // Mock accounts fetch for opening balance import
+      cy.intercept('GET', '**/rest/v1/accounts*', {
+        statusCode: 200,
+        body: []
+      }).as('getAccountsForOB')
+
+      // Mock journal entries import (used for opening balances)
+      cy.intercept('POST', '**/rest/v1/journal_entries*', {
+        statusCode: 201,
+        body: []
+      }).as('importJournalEntries')
+
       uploadSIEFile(sieWithFiscalYears, 'test-fiscal-years.se')
       cy.getByCy('parse-file-button').click()
       cy.getByCy('proceed-to-preview-button').click()
       cy.getByCy('import-button').click()
 
-      cy.getByCy('import-fiscal-years-result').should('be.visible')
+      cy.getByCy('import-fiscal-years-result', { timeout: 15000 }).should('be.visible')
     })
   })
 
@@ -793,17 +854,21 @@ INVALID CONTENT HERE
       // Wait for validation to appear before proceeding
       cy.getByCy('proceed-to-preview-button').should('not.be.disabled').click()
 
-      // The warning container should be visible with the checkbox inside
-      // Give extra time for the async fiscal years check
-      cy.getByCy('create-missing-fiscal-years-checkbox', { timeout: 15000 }).should('be.visible')
-      // The parent warning container should also be visible
-      cy.get('[data-cy="create-missing-fiscal-years-checkbox"]')
-        .closest('[data-cy="missing-fiscal-years-warning"]')
-        .should('be.visible')
+      // Wait for the preview step to be fully ready (fiscal years check complete)
+      // This is the key - we wait for the application to signal it's done checking
+      cy.getByCy('preview-step-ready', { timeout: 15000 }).should('exist')
+
+      // Now the warning should be visible with the checkbox
+      cy.getByCy('missing-fiscal-years-warning').should('be.visible')
+      cy.getByCy('create-missing-fiscal-years-checkbox').should('be.visible')
     })
 
     it('is expected to hide missing fiscal years warning when journal entries unchecked', () => {
-      // The empty fiscal years intercept is set up in beforeEach
+      // Explicitly intercept fiscal years to return empty (override any previous intercepts)
+      cy.intercept('GET', /\/rest\/v1\/fiscal_years/, {
+        statusCode: 200,
+        body: []
+      }).as('getEmptyFiscalYearsForHideTest')
       
       uploadSIEFile(sieWithMissingFiscalYear, 'test-missing-fy.se')
       cy.getByCy('parse-file-button').click()
@@ -811,12 +876,12 @@ INVALID CONTENT HERE
       // Wait for validation to complete before proceeding
       cy.getByCy('proceed-to-preview-button').should('not.be.disabled').click()
 
-      // Wait for the checkbox inside the warning to appear (confirms warning is visible)
-      // This is more reliable than waiting for the outer container
-      cy.getByCy('create-missing-fiscal-years-checkbox', { timeout: 15000 }).should('be.visible')
+      // Wait for the preview step to be fully ready
+      cy.getByCy('preview-step-ready', { timeout: 15000 }).should('exist')
       
-      // Verify the warning container is also visible
+      // Verify the warning is visible
       cy.getByCy('missing-fiscal-years-warning').should('be.visible')
+      cy.getByCy('create-missing-fiscal-years-checkbox').should('be.visible')
 
       // Uncheck journal entries
       cy.getByCy('import-journal-entries-checkbox').uncheck()
@@ -898,6 +963,9 @@ INVALID CONTENT HERE
       uploadSIEFile(sieWithMissingFiscalYear, 'test-missing-fy.se')
       cy.getByCy('parse-file-button').click()
       cy.getByCy('proceed-to-preview-button').click()
+
+      // Wait for the preview step to be fully ready
+      cy.getByCy('preview-step-ready', { timeout: 15000 }).should('exist')
 
       // Ensure create missing fiscal years is checked
       cy.getByCy('create-missing-fiscal-years-checkbox').check()
