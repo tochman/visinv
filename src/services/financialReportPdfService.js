@@ -467,8 +467,8 @@ export const generateBalanceSheetHTML = (data, options = {}) => {
   // Extract data - balance sheet returns {groups, totals}
   const groups = data?.groups || {};
   const totals = data?.totals || {};
-  const assetsTotal = totals.totalAssets || 0;
-  const eqLiabTotal = totals.totalEquityAndLiabilities || 0;
+  const assetsTotal = totals.assets || 0;
+  const eqLiabTotal = totals.equityAndLiabilities || 0;
   const difference = assetsTotal - eqLiabTotal;
 
   return `
@@ -505,7 +505,7 @@ export const generateBalanceSheetHTML = (data, options = {}) => {
           <tr class="row-total">
             <td>${L.balanceSheet.totalAssets}</td>
             <td class="amount">${formatAmount(assetsTotal, currency, locale)}</td>
-            ${showComparative ? `<td class="amount">${formatAmount(totals.comparativeTotalAssets || 0, currency, locale)}</td>` : ''}
+            ${showComparative ? `<td class="amount">${formatAmount(totals.assetsComparative || 0, currency, locale)}</td>` : ''}
           </tr>
         </tbody>
       </table>
@@ -531,7 +531,7 @@ export const generateBalanceSheetHTML = (data, options = {}) => {
           <tr class="row-total">
             <td>${L.balanceSheet.totalEquityAndLiabilities}</td>
             <td class="amount">${formatAmount(eqLiabTotal, currency, locale)}</td>
-            ${showComparative ? `<td class="amount">${formatAmount(totals.comparativeTotalEquityAndLiabilities || 0, currency, locale)}</td>` : ''}
+            ${showComparative ? `<td class="amount">${formatAmount(totals.equityAndLiabilitiesComparative || 0, currency, locale)}</td>` : ''}
           </tr>
         </tbody>
       </table>
