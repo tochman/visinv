@@ -606,7 +606,7 @@ INVALID CONTENT HERE
     })
   })
 
-  describe('US-123: Missing Fiscal Years Detection', () => {
+  describe('US-123: Journal Entries Import', () => {
     // SIE file with vouchers/transactions
     const sieWithJournalEntries = `#FLAGGA 0
 #FORMAT PC8
@@ -770,20 +770,23 @@ INVALID CONTENT HERE
 `;
 
     beforeEach(() => {
-      cy.get('[data-cy="sidebar-nav-import/sie"]').click()
-      // Wait for the SIE import page to load
-      cy.getByCy('sie-import-page-title').should('be.visible')
-    })
-
-    it('is expected to show missing fiscal years warning and checkbox when importing journal entries', () => {
-      // Mock that no fiscal years exist in the organization - use function to intercept all requests
+      // Mock that no fiscal years exist in the organization - set up before navigation
       cy.intercept('GET', /\/rest\/v1\/fiscal_years/, (req) => {
         req.reply({
           statusCode: 200,
           body: []
         })
       }).as('getEmptyFiscalYears')
+      
+      cy.get('[data-cy="sidebar-nav-import/sie"]').click()
+      // Wait for the SIE import page to load
+      cy.getByCy('sie-import-page-title').should('be.visible')
+      
+      // Ensure organization is set in Redux before proceeding
+      cy.window().its('store').invoke('getState').its('organizations.currentOrganization.id').should('exist')
+    })
 
+    it('is expected to show missing fiscal years warning and checkbox when importing journal entries', () => {
       uploadSIEFile(sieWithMissingFiscalYear, 'test-missing-fy.se')
       cy.getByCy('parse-file-button').click()
       
@@ -800,23 +803,20 @@ INVALID CONTENT HERE
     })
 
     it('is expected to hide missing fiscal years warning when journal entries unchecked', () => {
-      // Mock that no fiscal years exist in the organization
-      cy.intercept('GET', /\/rest\/v1\/fiscal_years/, (req) => {
-        req.reply({
-          statusCode: 200,
-          body: []
-        })
-      }).as('getEmptyFiscalYears')
-
+      // The empty fiscal years intercept is set up in beforeEach
+      
       uploadSIEFile(sieWithMissingFiscalYear, 'test-missing-fy.se')
       cy.getByCy('parse-file-button').click()
-      cy.getByCy('proceed-to-preview-button').click()
-
-      // Wait for the journal entries checkbox to be visible (means we're on preview step)
-      cy.getByCy('import-journal-entries-checkbox').should('be.visible')
       
-      // Wait for the warning to appear (async check for missing fiscal years)
-      cy.getByCy('missing-fiscal-years-warning', { timeout: 10000 }).should('be.visible')
+      // Wait for validation to complete before proceeding
+      cy.getByCy('proceed-to-preview-button').should('not.be.disabled').click()
+
+      // Wait for the checkbox inside the warning to appear (confirms warning is visible)
+      // This is more reliable than waiting for the outer container
+      cy.getByCy('create-missing-fiscal-years-checkbox', { timeout: 15000 }).should('be.visible')
+      
+      // Verify the warning container is also visible
+      cy.getByCy('missing-fiscal-years-warning').should('be.visible')
 
       // Uncheck journal entries
       cy.getByCy('import-journal-entries-checkbox').uncheck()

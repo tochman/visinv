@@ -23,7 +23,7 @@ Run the spec file to see which tests are failing:
 npm run cy:run -- --spec "cypress/e2e/feature-name.cy.js"
 ```
 
-**IMPORTANT:** Always run without `| tail` or output truncation. We need to see the full output to understand failures.
+**IMPORTANT:** Always run without `| tail` or  ` head`  or any other output truncation. We need to see the full output to understand failures.
 
 ### Step 2: Isolate the Failing Test with `.only`
 
