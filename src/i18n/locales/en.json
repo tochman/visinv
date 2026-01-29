@@ -693,6 +693,9 @@
     "post": "Post",
     "confirmPost": "Are you sure you want to post this journal entry? Posted entries cannot be modified.",
     "confirmDelete": "Are you sure you want to delete this journal entry?",
+    "confirmBulkDelete": "Are you sure you want to delete {{count}} draft entries? This action cannot be undone.",
+    "deleteSelected": "Delete Selected ({{count}})",
+    "selectAllDrafts": "Select all draft entries",
     "errors": {
       "dateRequired": "Entry date is required",
       "minimumTwoLines": "Journal entry must have at least two lines with amounts",

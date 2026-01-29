@@ -20,13 +20,13 @@ const EMPTY_LINE = {
   description: '',
 };
 
-export default function JournalEntryModal({ entry, fiscalYear, organizationId, onClose }) {
+export default function JournalEntryModal({ entry, fiscalYear, organizationId, onClose, viewOnly: viewOnlyProp }) {
   const { t, i18n } = useTranslation();
   const dispatch = useDispatch();
   const accounts = useSelector(selectAccounts);
 
   const isEditing = !!entry?.id;
-  const isViewOnly = entry?.viewOnly || (isEditing && entry?.status !== 'draft');
+  const isViewOnly = viewOnlyProp || (isEditing && entry?.status !== 'draft');
 
   const [formData, setFormData] = useState({
     entry_date: entry?.entry_date || new Date().toISOString().split('T')[0],

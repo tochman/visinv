@@ -681,6 +681,9 @@
     "post": "Bokför",
     "confirmPost": "Är du säker på att du vill bokföra denna verifikation? Bokförda verifikationer kan inte ändras.",
     "confirmDelete": "Är du säker på att du vill radera denna verifikation?",
+    "confirmBulkDelete": "Är du säker på att du vill radera {{count}} utkast? Denna åtgärd kan inte ångras.",
+    "deleteSelected": "Radera markerade ({{count}})",
+    "selectAllDrafts": "Markera alla utkast",
     "errors": {
       "dateRequired": "Verifikationsdatum krävs",
       "minimumTwoLines": "Verifikationen måste ha minst två rader med belopp",

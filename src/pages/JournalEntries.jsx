@@ -40,9 +40,11 @@ export default function JournalEntries() {
   const [showEntryModal, setShowEntryModal] = useState(false);
   const [showFiscalYearModal, setShowFiscalYearModal] = useState(false);
   const [editingEntry, setEditingEntry] = useState(null);
+  const [viewOnlyEntry, setViewOnlyEntry] = useState(null);
   const [statusFilter, setStatusFilter] = useState(null);
   const [searchQuery, setSearchQuery] = useState('');
   const [confirmAction, setConfirmAction] = useState(null);
+  const [selectedEntries, setSelectedEntries] = useState(new Set());
 
   // Load fiscal years when organization changes
   useEffect(() => {
@@ -106,7 +108,15 @@ export default function JournalEntries() {
   // Handle edit entry
   const handleEditEntry = (entry) => {
     if (entry.status !== 'draft') return;
+    setViewOnlyEntry(null);
     setEditingEntry(entry);
+    setShowEntryModal(true);
+  };
+
+  // Handle view entry (for posted entries)
+  const handleViewEntry = (entry) => {
+    setEditingEntry(null);
+    setViewOnlyEntry(entry);
     setShowEntryModal(true);
   };
 
@@ -129,6 +139,53 @@ export default function JournalEntries() {
     });
   };
 
+  // Handle bulk delete
+  const handleBulkDelete = () => {
+    const selectedDraftEntries = filteredEntries.filter(
+      (e) => selectedEntries.has(e.id) && e.status === 'draft'
+    );
+    if (selectedDraftEntries.length === 0) return;
+    setConfirmAction({
+      type: 'bulkDelete',
+      entries: selectedDraftEntries,
+      message: t('journalEntries.confirmBulkDelete', { count: selectedDraftEntries.length }),
+    });
+  };
+
+  // Toggle entry selection
+  const toggleEntrySelection = (entryId) => {
+    setSelectedEntries((prev) => {
+      const newSet = new Set(prev);
+      if (newSet.has(entryId)) {
+        newSet.delete(entryId);
+      } else {
+        newSet.add(entryId);
+      }
+      return newSet;
+    });
+  };
+
+  // Toggle all draft entries selection
+  const toggleAllDraftEntries = () => {
+    const draftEntries = filteredEntries.filter((e) => e.status === 'draft');
+    const allSelected = draftEntries.every((e) => selectedEntries.has(e.id));
+    if (allSelected) {
+      // Deselect all
+      setSelectedEntries(new Set());
+    } else {
+      // Select all draft entries
+      setSelectedEntries(new Set(draftEntries.map((e) => e.id)));
+    }
+  };
+
+  // Get draft entries count
+  const draftEntries = useMemo(() => filteredEntries.filter((e) => e.status === 'draft'), [filteredEntries]);
+  const selectedDraftCount = useMemo(
+    () => draftEntries.filter((e) => selectedEntries.has(e.id)).length,
+    [draftEntries, selectedEntries]
+  );
+  const allDraftsSelected = draftEntries.length > 0 && draftEntries.every((e) => selectedEntries.has(e.id));
+
   // Confirm action
   const handleConfirmAction = async () => {
     if (!confirmAction) return;
@@ -138,6 +195,13 @@ export default function JournalEntries() {
         await dispatch(postJournalEntry(confirmAction.entry.id)).unwrap();
       } else if (confirmAction.type === 'delete') {
         await dispatch(deleteJournalEntry(confirmAction.entry.id)).unwrap();
+      } else if (confirmAction.type === 'bulkDelete') {
+        // Delete entries one by one
+        for (const entry of confirmAction.entries) {
+          await dispatch(deleteJournalEntry(entry.id)).unwrap();
+        }
+        // Clear selection after bulk delete
+        setSelectedEntries(new Set());
       }
     } catch {
       // Error handled by Redux
@@ -149,6 +213,7 @@ export default function JournalEntries() {
   const handleEntryModalClose = (saved) => {
     setShowEntryModal(false);
     setEditingEntry(null);
+    setViewOnlyEntry(null);
     if (saved && currentOrganization?.id && selectedFiscalYearId) {
       dispatch(fetchJournalEntries({
         organizationId: currentOrganization.id,
@@ -295,6 +360,20 @@ export default function JournalEntries() {
               {t('journalEntries.statusVoided')}
             </button>
           </div>
+
+          {/* Bulk Delete Button */}
+          {selectedDraftCount > 0 && (
+            <button
+              onClick={handleBulkDelete}
+              data-cy="bulk-delete-button"
+              className="px-3 py-1.5 text-sm rounded-sm bg-red-600 text-white hover:bg-red-700 flex items-center gap-2"
+            >
+              <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+              </svg>
+              {t('journalEntries.deleteSelected', { count: selectedDraftCount })}
+            </button>
+          )}
         </div>
       </div>
 
@@ -413,6 +492,19 @@ export default function JournalEntries() {
             <table data-cy="journal-entries-table" className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
               <thead className="bg-gray-50 dark:bg-gray-900/50">
                 <tr>
+                  {/* Checkbox column for bulk selection */}
+                  <th className="px-4 py-3 text-center w-10">
+                    {draftEntries.length > 0 && (
+                      <input
+                        type="checkbox"
+                        checked={allDraftsSelected}
+                        onChange={toggleAllDraftEntries}
+                        data-cy="select-all-drafts-checkbox"
+                        className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+                        title={t('journalEntries.selectAllDrafts')}
+                      />
+                    )}
+                  </th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
                     {t('journalEntries.verificationNumber')}
                   </th>
@@ -439,12 +531,25 @@ export default function JournalEntries() {
               <tbody className="divide-y divide-gray-200 dark:divide-gray-700">
                 {filteredEntries.map((entry) => {
                   const totals = calculateEntryTotals(entry);
+                  const isSelected = selectedEntries.has(entry.id);
                   return (
                     <tr
                       key={entry.id}
                       data-cy={`journal-entry-row-${entry.verification_number}`}
-                      className="hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors"
+                      className={`hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors ${isSelected ? 'bg-blue-50 dark:bg-blue-900/20' : ''}`}
                     >
+                      {/* Checkbox cell */}
+                      <td className="px-4 py-4 text-center">
+                        {entry.status === 'draft' && (
+                          <input
+                            type="checkbox"
+                            checked={isSelected}
+                            onChange={() => toggleEntrySelection(entry.id)}
+                            data-cy={`select-entry-${entry.verification_number}`}
+                            className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+                          />
+                        )}
+                      </td>
                       <td className="px-6 py-4 whitespace-nowrap">
                         <span className="font-mono text-sm text-gray-900 dark:text-white">
                           #{entry.verification_number}
@@ -510,7 +615,7 @@ export default function JournalEntries() {
                           )}
                           {entry.status === 'posted' && (
                             <button
-                              onClick={() => handleEditEntry({ ...entry, viewOnly: true })}
+                              onClick={() => handleViewEntry(entry)}
                               data-cy={`view-entry-${entry.verification_number}`}
                               className="p-1.5 text-gray-500 hover:text-blue-600 dark:text-gray-400 dark:hover:text-blue-400"
                               title={t('common.view')}
@@ -545,10 +650,11 @@ export default function JournalEntries() {
       {/* Journal Entry Modal */}
       {showEntryModal && (
         <JournalEntryModal
-          entry={editingEntry}
+          entry={editingEntry || viewOnlyEntry}
           fiscalYear={selectedFiscalYear}
           organizationId={currentOrganization?.id}
           onClose={handleEntryModalClose}
+          viewOnly={!!viewOnlyEntry}
         />
       )}
 
@@ -583,7 +689,7 @@ export default function JournalEntries() {
                 onClick={handleConfirmAction}
                 data-cy="confirm-action"
                 className={`px-4 py-2 text-white rounded-sm ${
-                  confirmAction.type === 'delete'
+                  confirmAction.type === 'delete' || confirmAction.type === 'bulkDelete'
                     ? 'bg-red-600 hover:bg-red-700'
                     : 'bg-blue-600 hover:bg-blue-700'
                 }`}
