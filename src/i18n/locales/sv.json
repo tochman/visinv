@@ -397,7 +397,12 @@
     "defaultPayableAccount": "Standardleverantörsskuldkonto",
     "currency": "Valuta",
     "isActive": "Aktiv",
-    "inactive": "Inaktiv"
+    "inactive": "Inaktiv",
+    "errors": {
+      "duplicateOrgNumber": "En leverantör med detta organisationsnummer finns redan",
+      "nameRequired": "Leverantörsnamn krävs",
+      "noOrganization": "Ingen organisation vald"
+    }
   },
   "supplierInvoices": {
     "title": "Leverantörsfakturor",
@@ -436,7 +441,15 @@
     "confirmApprove": "Godkänn denna faktura och skapa en verifikation?",
     "confirmMarkPaid": "Markera denna faktura som betald?",
     "confirmCancel": "Avbryt denna leverantörsfaktura?",
-    "noActiveFiscalYear": "Inget aktivt räkenskapsår hittades. Vänligen skapa ett räkenskapsår först."
+    "noActiveFiscalYear": "Inget aktivt räkenskapsår hittades. Vänligen skapa ett räkenskapsår först.",
+    "errors": {
+      "duplicateInvoiceNumber": "Detta fakturanummer finns redan för denna leverantör",
+      "supplierRequired": "Leverantör krävs",
+      "invoiceNumberRequired": "Fakturanummer krävs",
+      "linesRequired": "Minst en fakturarad med konto krävs",
+      "noOrganization": "Ingen organisation vald",
+      "supplierNeedsPayableAccount": "Leverantören måste ha ett standard leverantörsskuldkonto"
+    }
   },
   "products": {
     "create": "Lägg till produkt",

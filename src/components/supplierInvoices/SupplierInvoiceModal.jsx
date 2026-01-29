@@ -124,19 +124,19 @@ export default function SupplierInvoiceModal({ isOpen, onClose, invoice = null }
     e.preventDefault();
 
     if (!formData.supplier_id) {
-      setError('Supplier is required');
+      setError(t('supplierInvoices.errors.supplierRequired'));
       return;
     }
     if (!formData.invoice_number?.trim()) {
-      setError('Invoice number is required');
+      setError(t('supplierInvoices.errors.invoiceNumberRequired'));
       return;
     }
     if (formData.lines.length === 0 || !formData.lines.some((l) => l.account_id)) {
-      setError('At least one line item with account is required');
+      setError(t('supplierInvoices.errors.linesRequired'));
       return;
     }
     if (!currentOrganization?.id) {
-      setError('No organization selected');
+      setError(t('supplierInvoices.errors.noOrganization'));
       return;
     }
 
@@ -158,7 +158,15 @@ export default function SupplierInvoiceModal({ isOpen, onClose, invoice = null }
       }
       onClose();
     } catch (err) {
-      setError(typeof err === 'string' ? err : err?.message || 'An error occurred');
+      // Handle database constraint errors
+      const errorMsg = typeof err === 'string' ? err : err?.message || 'An error occurred';
+      if (errorMsg.includes('unique_supplier_invoice_number')) {
+        setError(t('supplierInvoices.errors.duplicateInvoiceNumber'));
+      } else if (errorMsg.includes('default payable account')) {
+        setError(t('supplierInvoices.errors.supplierNeedsPayableAccount'));
+      } else {
+        setError(errorMsg);
+      }
     } finally {
       setLoading(false);
     }

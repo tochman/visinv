@@ -69,12 +69,12 @@ export default function SupplierModal({ isOpen, onClose, supplier = null }) {
     e.preventDefault();
     
     if (!formData.name?.trim()) {
-      setError('Supplier name is required');
+      setError(t('suppliers.errors.nameRequired'));
       return;
     }
 
     if (!currentOrganization?.id) {
-      setError('No organization selected');
+      setError(t('suppliers.errors.noOrganization'));
       return;
     }
     
@@ -100,7 +100,13 @@ export default function SupplierModal({ isOpen, onClose, supplier = null }) {
       }
       onClose();
     } catch (err) {
-      setError(typeof err === 'string' ? err : err?.message || 'An error occurred');
+      // Handle database constraint errors
+      const errorMsg = typeof err === 'string' ? err : err?.message || 'An error occurred';
+      if (errorMsg.includes('unique_supplier_org_number')) {
+        setError(t('suppliers.errors.duplicateOrgNumber'));
+      } else {
+        setError(errorMsg);
+      }
     } finally {
       setLoading(false);
     }

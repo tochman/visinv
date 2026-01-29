@@ -409,7 +409,12 @@
     "defaultPayableAccount": "Default Payable Account",
     "currency": "Currency",
     "isActive": "Active",
-    "inactive": "Inactive"
+    "inactive": "Inactive",
+    "errors": {
+      "duplicateOrgNumber": "A supplier with this organization number already exists",
+      "nameRequired": "Supplier name is required",
+      "noOrganization": "No organization selected"
+    }
   },
   "supplierInvoices": {
     "title": "Supplier Invoices",
@@ -448,7 +453,15 @@
     "confirmApprove": "Approve this invoice and create a journal entry?",
     "confirmMarkPaid": "Mark this invoice as paid?",
     "confirmCancel": "Cancel this supplier invoice?",
-    "noActiveFiscalYear": "No active fiscal year found. Please create a fiscal year first."
+    "noActiveFiscalYear": "No active fiscal year found. Please create a fiscal year first.",
+    "errors": {
+      "duplicateInvoiceNumber": "This invoice number already exists for this supplier",
+      "supplierRequired": "Supplier is required",
+      "invoiceNumberRequired": "Invoice number is required",
+      "linesRequired": "At least one line item with account is required",
+      "noOrganization": "No organization selected",
+      "supplierNeedsPayableAccount": "Supplier must have a default payable account"
+    }
   },
   "products": {
     "create": "Add Product",
