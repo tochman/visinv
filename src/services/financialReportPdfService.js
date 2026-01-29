@@ -339,18 +339,17 @@ const getStyles = () => `
 `;
 
 /**
- * Format currency amount
+ * Format currency amount - always show values, never dash
  */
 const formatAmount = (amount, currency = 'SEK', locale = 'sv-SE') => {
-  if (amount === null || amount === undefined) return '-';
-  if (amount === 0) return '-';
+  if (amount === null || amount === undefined) {
+    amount = 0;
+  }
   
-  const formatted = new Intl.NumberFormat(locale === 'sv-SE' ? 'sv-SE' : 'en-US', {
+  return new Intl.NumberFormat(locale === 'sv-SE' ? 'sv-SE' : 'en-US', {
     minimumFractionDigits: 2,
     maximumFractionDigits: 2,
-  }).format(Math.abs(amount));
-  
-  return amount < 0 ? `-${formatted}` : formatted;
+  }).format(amount);
 };
 
 /**
@@ -403,7 +402,7 @@ export const generateBalanceSheetHTML = (data, options = {}) => {
    * @param {number} level - Nesting level (0 = main, 1 = subgroup, 2 = account)
    */
   const renderSection = (section, level = 0) => {
-    if (!section || section.total === 0) return '';
+    if (!section) return '';
     
     let html = '';
     const sectionName = locale === 'sv-SE' ? (section.name || '') : (section.nameEn || section.name || '');
@@ -422,8 +421,6 @@ export const generateBalanceSheetHTML = (data, options = {}) => {
     // Render subgroups if in standard or detailed mode
     if (section.subgroups && detailLevel !== 'summary') {
       for (const [key, subgroup] of Object.entries(section.subgroups)) {
-        if (subgroup.total === 0 && (!subgroup.accounts || subgroup.accounts.length === 0)) continue;
-        
         const subgroupName = locale === 'sv-SE' ? (subgroup.name || '') : (subgroup.nameEn || subgroup.name || '');
         
         html += `
@@ -609,8 +606,6 @@ export const generateIncomeStatementHTML = (data, options = {}) => {
     // Render subgroups if in standard or detailed mode
     if (section.subgroups && detailLevel !== 'summary') {
       for (const [key, subgroup] of Object.entries(section.subgroups)) {
-        if (subgroup.total === 0 && (!subgroup.accounts || subgroup.accounts.length === 0)) continue;
-        
         const subgroupName = locale === 'sv-SE' ? (subgroup.name || '') : (subgroup.nameEn || subgroup.name || '');
         
         html += `
