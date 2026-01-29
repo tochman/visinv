@@ -205,6 +205,8 @@ The `dist` folder can be deployed to:
 - AWS S3 + CloudFront
 - Any static hosting service
 
+**Note for Netlify:** The project includes a `public/_redirects` file that ensures proper SPA routing. This file is automatically included in the build output and tells Netlify to serve `index.html` for all routes, allowing React Router to handle client-side navigation.
+
 ### Post-Deployment
 
 1. Update Supabase redirect URLs
