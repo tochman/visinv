@@ -8,7 +8,7 @@ import SupplierModal from '../components/suppliers/SupplierModal';
 export default function Suppliers() {
   const { t } = useTranslation();
   const dispatch = useDispatch();
-  const { suppliers, loading, error } = useSelector((state) => state.suppliers);
+  const { suppliers = [], loading = false, error } = useSelector((state) => state.suppliers || {});
   const { user } = useSelector((state) => state.auth);
   const { currentOrganization } = useOrganization();
 
@@ -36,8 +36,13 @@ export default function Suppliers() {
   };
 
   const handleDelete = async (id) => {
-    await dispatch(deleteSupplier(id));
-    setDeleteConfirm(null);
+    try {
+      await dispatch(deleteSupplier(id)).unwrap();
+      setDeleteConfirm(null);
+    } catch (err) {
+      console.error('Failed to delete supplier:', err);
+      // Error will be shown from Redux state
+    }
   };
 
   const handleCloseModal = () => {
@@ -45,11 +50,13 @@ export default function Suppliers() {
     setSelectedSupplier(null);
   };
 
-  const filteredSuppliers = suppliers.filter((supplier) =>
-    supplier.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    supplier.email?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    supplier.organization_number?.includes(searchTerm)
-  );
+  const filteredSuppliers = Array.isArray(suppliers) 
+    ? suppliers.filter((supplier) =>
+        supplier?.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        supplier?.email?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        supplier?.organization_number?.includes(searchTerm)
+      )
+    : [];
 
   return (
     <div>

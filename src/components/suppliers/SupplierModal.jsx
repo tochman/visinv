@@ -40,14 +40,15 @@ export default function SupplierModal({ isOpen, onClose, supplier = null }) {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
 
-  const accounts = useSelector((state) => state.accounts.accounts || []);
+  const accounts = useSelector((state) => state.accounts?.accounts || []);
+  const accountsLoading = useSelector((state) => state.accounts?.loading || false);
 
   // Fetch accounts for dropdown
   useEffect(() => {
-    if (isOpen && currentOrganization?.id) {
+    if (isOpen && currentOrganization?.id && accounts.length === 0) {
       dispatch(fetchAccounts(currentOrganization.id));
     }
-  }, [dispatch, isOpen, currentOrganization?.id]);
+  }, [dispatch, isOpen, currentOrganization?.id, accounts.length]);
 
   // Update form data when supplier changes (for edit mode)
   useEffect(() => {
@@ -68,8 +69,13 @@ export default function SupplierModal({ isOpen, onClose, supplier = null }) {
   const handleSubmit = async (e) => {
     e.preventDefault();
     
-    if (!formData.name.trim()) {
+    if (!formData.name?.trim()) {
       setError('Supplier name is required');
+      return;
+    }
+
+    if (!currentOrganization?.id) {
+      setError('No organization selected');
       return;
     }
     
@@ -95,7 +101,7 @@ export default function SupplierModal({ isOpen, onClose, supplier = null }) {
       }
       onClose();
     } catch (err) {
-      setError(err);
+      setError(typeof err === 'string' ? err : err?.message || 'An error occurred');
     } finally {
       setLoading(false);
     }
@@ -103,9 +109,13 @@ export default function SupplierModal({ isOpen, onClose, supplier = null }) {
 
   if (!isOpen) return null;
 
-  // Filter accounts for dropdowns
-  const expenseAccounts = accounts.filter(a => a.account_number >= 4000 && a.account_number < 8000);
-  const payableAccounts = accounts.filter(a => a.account_number >= 2400 && a.account_number < 2500);
+  // Filter accounts for dropdowns - ensure accounts is an array
+  const expenseAccounts = Array.isArray(accounts) 
+    ? accounts.filter(a => a?.account_number >= 4000 && a?.account_number < 8000)
+    : [];
+  const payableAccounts = Array.isArray(accounts)
+    ? accounts.filter(a => a?.account_number >= 2400 && a?.account_number < 2500)
+    : [];
 
   return (
     <div className="fixed inset-0 z-50 overflow-y-auto" data-cy="supplier-modal">
