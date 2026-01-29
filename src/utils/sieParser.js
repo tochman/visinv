@@ -547,6 +547,45 @@ export function prepareAccountsForImport(accounts, organizationId) {
 }
 
 /**
+ * Normalize a SIE date to YYYY-MM-DD format
+ * Handles: YYYYMMDD (SIE4), YYYY-MM-DD (ISO), YYYY-MM (SIE5 partial)
+ * @param {string} dateStr - Date string from SIE file
+ * @param {boolean} isEndDate - If true, use last day of month for partial dates
+ * @returns {string} Date in YYYY-MM-DD format
+ */
+function normalizeSieDate(dateStr, isEndDate = false) {
+  if (!dateStr) return null;
+  
+  // Already in YYYY-MM-DD format
+  if (/^\d{4}-\d{2}-\d{2}$/.test(dateStr)) {
+    return dateStr;
+  }
+  
+  // SIE4 format: YYYYMMDD
+  if (/^\d{8}$/.test(dateStr)) {
+    return `${dateStr.substring(0, 4)}-${dateStr.substring(4, 6)}-${dateStr.substring(6, 8)}`;
+  }
+  
+  // SIE5 format: YYYY-MM (partial date)
+  if (/^\d{4}-\d{2}$/.test(dateStr)) {
+    const year = parseInt(dateStr.substring(0, 4), 10);
+    const month = parseInt(dateStr.substring(5, 7), 10);
+    
+    if (isEndDate) {
+      // Get last day of the month
+      const lastDay = new Date(year, month, 0).getDate();
+      return `${dateStr}-${String(lastDay).padStart(2, '0')}`;
+    } else {
+      // First day of the month
+      return `${dateStr}-01`;
+    }
+  }
+  
+  // Unknown format, return as-is
+  return dateStr;
+}
+
+/**
  * Convert parsed fiscal years to format ready for import
  * @param {Array} fiscalYears - Parsed fiscal years from SIE (#RAR records)
  * @param {string} organizationId - Target organization ID
@@ -554,9 +593,13 @@ export function prepareAccountsForImport(accounts, organizationId) {
  */
 export function prepareFiscalYearsForImport(fiscalYears, organizationId) {
   return fiscalYears.map((fy) => {
+    // Normalize dates to YYYY-MM-DD format
+    const startDate = normalizeSieDate(fy.start, false);
+    const endDate = normalizeSieDate(fy.end, true);
+    
     // Extract year from start date for name
-    const startYear = fy.start ? fy.start.substring(0, 4) : '';
-    const endYear = fy.end ? fy.end.substring(0, 4) : '';
+    const startYear = startDate ? startDate.substring(0, 4) : '';
+    const endYear = endDate ? endDate.substring(0, 4) : '';
     
     // Create name: "2016" or "2015/2016" for split years
     const name = startYear === endYear ? startYear : `${startYear}/${endYear}`;
@@ -564,8 +607,8 @@ export function prepareFiscalYearsForImport(fiscalYears, organizationId) {
     return {
       organization_id: organizationId,
       name: name,
-      start_date: fy.start,
-      end_date: fy.end,
+      start_date: startDate,
+      end_date: endDate,
       is_closed: fy.closed || fy.index < 0, // Previous years (negative index) are typically closed
       sie_index: fy.index, // Keep track of original SIE index for mapping
     };
