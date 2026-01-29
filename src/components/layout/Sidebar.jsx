@@ -53,6 +53,7 @@ export default function Sidebar() {
 
   // Accounting module items
   const accountingItems = [
+    { path: '/supplier-invoices', label: t('nav.supplierInvoices'), icon: DocumentTextIcon },
     { path: '/accounts', label: t('nav.accounts'), icon: CalculatorIcon },
     { path: '/journal-entries', label: t('nav.journalEntries'), icon: ClipboardDocumentListIcon },
     { path: '/general-ledger', label: t('nav.generalLedger'), icon: BookOpenIcon },
