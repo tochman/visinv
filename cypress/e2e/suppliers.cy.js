@@ -22,7 +22,7 @@ describe('Suppliers', () => {
     }).as('getSuppliers');
     
     // Visit suppliers page
-    cy.getByCy('sidebar-link-/suppliers').click();
+    cy.getByCy('sidebar-nav-suppliers').click();
     cy.wait('@getSuppliers');
   });
 
