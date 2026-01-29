@@ -272,20 +272,49 @@ export default function VATReport() {
   };
 
   return (
-    <div className="p-6 max-w-5xl mx-auto" data-cy="vat-report-page">
+    <div className="space-y-6" data-cy="vat-report-page">
       {/* Header */}
-      <div className="mb-6">
-        <h1 className="text-2xl font-bold text-gray-900 dark:text-white">
-          {t('vatReport.title')}
-        </h1>
-        <p className="text-gray-500 dark:text-gray-400 mt-1">
-          {t('vatReport.description')}
-        </p>
+      <div className="flex items-center justify-between">
+        <div>
+          <h1 className="text-2xl font-semibold text-gray-900 dark:text-white">
+            {t('vatReport.title')}
+          </h1>
+          <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
+            {t('vatReport.description')}
+          </p>
+        </div>
+        <div className="flex items-center gap-3">
+          {/* Detail Level Selector */}
+          <div className="flex items-center gap-2">
+            <label className="text-sm text-gray-500 dark:text-gray-400">
+              {t('common.detailLevel')}:
+            </label>
+            <select
+              value={pdfDetailLevel}
+              onChange={(e) => setPdfDetailLevel(e.target.value)}
+              className="px-2 py-1.5 text-sm border border-gray-300 dark:border-gray-600 rounded-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500"
+              data-cy="detail-level-select"
+            >
+              <option value="summary">{t('common.summary')}</option>
+              <option value="standard">{t('common.standard')}</option>
+              <option value="detailed">{t('common.detailed')}</option>
+            </select>
+          </div>
+          <button
+            onClick={handleExportPdf}
+            disabled={exportingPdf || !vatReport}
+            className="inline-flex items-center px-4 py-2 text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 rounded-sm disabled:opacity-50 disabled:cursor-not-allowed"
+            data-cy="export-pdf-btn"
+          >
+            <ArrowDownTrayIcon className="h-4 w-4 mr-2" />
+            {exportingPdf ? t('common.exporting') : t('common.exportPdf')}
+          </button>
+        </div>
       </div>
 
       {/* Filters */}
-      <div className="bg-white dark:bg-gray-800 rounded-sm shadow-sm p-4 mb-6 print:hidden">
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+      <div className="bg-white dark:bg-gray-800 rounded-sm shadow-sm p-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
           {/* Fiscal Year */}
           <div>
             <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
@@ -294,8 +323,8 @@ export default function VATReport() {
             <select
               value={selectedFiscalYearId || ''}
               onChange={handleFiscalYearChange}
-              className="w-full rounded-sm border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white px-3 py-2"
               data-cy="fiscal-year-select"
+              className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
             >
               <option value="">{t('vatReport.allPeriods')}</option>
               {fiscalYears.map((fy) => (
@@ -315,8 +344,8 @@ export default function VATReport() {
               type="date"
               value={startDate}
               onChange={(e) => setStartDate(e.target.value)}
-              className="w-full rounded-sm border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white px-3 py-2"
               data-cy="start-date"
+              className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
             />
           </div>
 
@@ -329,71 +358,43 @@ export default function VATReport() {
               type="date"
               value={endDate}
               onChange={(e) => setEndDate(e.target.value)}
-              className="w-full rounded-sm border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white px-3 py-2"
               data-cy="end-date"
+              className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
             />
           </div>
+        </div>
 
-          {/* Actions */}
-          <div className="flex items-end gap-3">
-            {/* Detail Level Selector */}
-            <div className="flex flex-col gap-1">
-              <label className="text-xs text-gray-500 dark:text-gray-400">
-                {t('common.detailLevel')}
-              </label>
-              <select
-                value={pdfDetailLevel}
-                onChange={(e) => setPdfDetailLevel(e.target.value)}
-                className="px-2 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500"
-                data-cy="detail-level-select"
+        {/* Quick Period Selection & Show Transactions */}
+        <div className="flex items-center justify-between gap-4 mt-4 pt-4 border-t border-gray-200 dark:border-gray-700">
+          <div className="flex flex-wrap gap-2">
+            <span className="text-sm text-gray-500 dark:text-gray-400 mr-2">
+              {t('vatReport.quickPeriod')}:
+            </span>
+            {['q1', 'q2', 'q3', 'q4', 'lastMonth', 'thisMonth', 'ytd'].map((period) => (
+              <button
+                key={period}
+                onClick={() => setPeriod(period)}
+                className="px-2 py-1 text-xs rounded-sm bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 hover:bg-blue-100 dark:hover:bg-blue-900/50"
+                data-cy={`period-${period}`}
               >
-                <option value="summary">{t('common.summary')}</option>
-                <option value="standard">{t('common.standard')}</option>
-                <option value="detailed">{t('common.detailed')}</option>
-              </select>
-            </div>
-            <button
-              onClick={handleExportPdf}
-              disabled={exportingPdf || !vatReport}
-              className="flex items-center gap-1 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-sm text-sm disabled:opacity-50 disabled:cursor-not-allowed"
-              data-cy="export-pdf-btn"
-            >
-              <ArrowDownTrayIcon className="h-4 w-4" />
-              {exportingPdf ? t('common.exporting') : t('common.exportPdf')}
-            </button>
+                {t(`vatReport.periods.${period}`)}
+              </button>
+            ))}
           </div>
-        </div>
 
-        {/* Quick Period Selection */}
-        <div className="flex flex-wrap gap-2 mt-4 pt-4 border-t border-gray-200 dark:border-gray-700">
-          <span className="text-sm text-gray-500 dark:text-gray-400 mr-2">
-            {t('vatReport.quickPeriod')}:
-          </span>
-          {['q1', 'q2', 'q3', 'q4', 'lastMonth', 'thisMonth', 'ytd'].map((period) => (
-            <button
-              key={period}
-              onClick={() => setPeriod(period)}
-              className="px-2 py-1 text-xs rounded-sm bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 hover:bg-blue-100 dark:hover:bg-blue-900/50"
-              data-cy={`period-${period}`}
-            >
-              {t(`vatReport.periods.${period}`)}
-            </button>
-          ))}
-        </div>
-
-        {/* Show Transactions Toggle */}
-        <div className="mt-4 flex items-center gap-2">
-          <input
-            type="checkbox"
-            id="showTransactions"
-            checked={showTransactions}
-            onChange={(e) => setShowTransactions(e.target.checked)}
-            className="rounded text-blue-600"
-            data-cy="show-transactions"
-          />
-          <label htmlFor="showTransactions" className="text-sm text-gray-700 dark:text-gray-300">
-            {t('vatReport.showTransactions')}
-          </label>
+          <div className="flex items-center gap-2">
+            <input
+              type="checkbox"
+              id="showTransactions"
+              checked={showTransactions}
+              onChange={(e) => setShowTransactions(e.target.checked)}
+              className="rounded text-blue-600"
+              data-cy="show-transactions"
+            />
+            <label htmlFor="showTransactions" className="text-sm text-gray-700 dark:text-gray-300">
+              {t('vatReport.showTransactions')}
+            </label>
+          </div>
         </div>
       </div>
 
