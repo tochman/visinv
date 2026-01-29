@@ -1668,6 +1668,22 @@ Swedish accounting follows **Bokföringslagen** (BFL) and **Årsredovisningslage
   - Export for filing
 - **Status:** ✅ Implemented and E2E tested
 
+**US-233B: Financial Report PDF Export** ✅
+- As an **accountant**, in order to **share professional financial reports with stakeholders**, I would like to **export Balance Sheet, Income Statement, and VAT Report to PDF format with selectable detail levels**.
+- **Acceptance Criteria:**
+  - PDF export button on Balance Sheet, Income Statement, and VAT Report pages
+  - Detail level selection: Summary (totals only), Standard (group subtotals), Detailed (account-level breakdown)
+  - Professional formatting with company name, period, currency
+  - Proper Swedish/English labels based on locale
+  - Download as professionally styled PDF
+  - File naming convention: report-type-date.pdf
+- **Implementation:**
+  - Service: financialReportPdfService.js with HTML generators and getLabels() for i18n
+  - PDF Generation: Supabase Edge Function (generate-pdf) using Browserless
+  - UI: Detail level selector + Export PDF button on all three report pages
+  - i18n: Full Swedish/English label support without using t() function (labels embedded in HTML)
+- **Status:** ✅ Implemented
+
 **US-234: Aged Receivables Report (Kundreskontra)**
 - As a **bookkeeper**, in order to **manage outstanding invoices**, I would like to **generate an aged receivables report showing overdue amounts by client**.
 - **Acceptance Criteria:**

@@ -15,7 +15,7 @@ import {
   setSelectedFiscalYear,
 } from '../features/fiscalYears/fiscalYearsSlice';
 import { useOrganization } from '../contexts/OrganizationContext';
-import { PrinterIcon, ArrowDownTrayIcon, ChevronDownIcon, ChevronRightIcon } from '@heroicons/react/24/outline';
+import { ArrowDownTrayIcon, ChevronDownIcon, ChevronRightIcon } from '@heroicons/react/24/outline';
 import { exportVatReportToPDF } from '../services/financialReportPdfService';
 
 /**
@@ -39,6 +39,7 @@ export default function VATReport() {
   const [endDate, setEndDate] = useState('');
   const [expandedSections, setExpandedSections] = useState(new Set());
   const [showTransactions, setShowTransactions] = useState(false);
+  const [pdfDetailLevel, setPdfDetailLevel] = useState('standard'); // 'summary', 'standard', 'detailed'
 
   // Load fiscal years on mount
   useEffect(() => {
@@ -138,11 +139,6 @@ export default function VATReport() {
     }).format(amount || 0);
   };
 
-  // Handle print
-  const handlePrint = () => {
-    window.print();
-  };
-
   // State for PDF export
   const [exportingPdf, setExportingPdf] = useState(false);
 
@@ -159,6 +155,7 @@ export default function VATReport() {
         endDate,
         currency: currentOrganization?.default_currency || 'SEK',
         locale: 'sv-SE', // VAT reports are always in Swedish format
+        detailLevel: pdfDetailLevel,
       });
     } catch (err) {
       console.error('PDF export failed:', err);
@@ -338,23 +335,31 @@ export default function VATReport() {
           </div>
 
           {/* Actions */}
-          <div className="flex items-end gap-2">
+          <div className="flex items-end gap-3">
+            {/* Detail Level Selector */}
+            <div className="flex flex-col gap-1">
+              <label className="text-xs text-gray-500 dark:text-gray-400">
+                {t('common.detailLevel')}
+              </label>
+              <select
+                value={pdfDetailLevel}
+                onChange={(e) => setPdfDetailLevel(e.target.value)}
+                className="px-2 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500"
+                data-cy="detail-level-select"
+              >
+                <option value="summary">{t('common.summary')}</option>
+                <option value="standard">{t('common.standard')}</option>
+                <option value="detailed">{t('common.detailed')}</option>
+              </select>
+            </div>
             <button
               onClick={handleExportPdf}
               disabled={exportingPdf || !vatReport}
-              className="flex items-center gap-1 px-3 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-sm text-sm disabled:opacity-50 disabled:cursor-not-allowed"
+              className="flex items-center gap-1 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-sm text-sm disabled:opacity-50 disabled:cursor-not-allowed"
               data-cy="export-pdf-btn"
             >
               <ArrowDownTrayIcon className="h-4 w-4" />
               {exportingPdf ? t('common.exporting') : t('common.exportPdf')}
-            </button>
-            <button
-              onClick={handlePrint}
-              className="flex items-center gap-1 px-3 py-2 bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 rounded-sm text-sm"
-              data-cy="print-btn"
-            >
-              <PrinterIcon className="h-4 w-4" />
-              {t('common.print')}
             </button>
           </div>
         </div>
