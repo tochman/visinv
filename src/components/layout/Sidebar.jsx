@@ -14,6 +14,8 @@ import {
   ArrowUpTrayIcon,
   ClipboardDocumentListIcon,
   BookOpenIcon,
+  ChartBarIcon,
+  ScaleIcon,
 } from '@heroicons/react/24/outline';
 import { OrganizationSwitcher } from '../organization';
 import CollapsibleNavSection from './CollapsibleNavSection';
@@ -51,6 +53,8 @@ export default function Sidebar() {
     { path: '/accounts', label: t('nav.accounts'), icon: CalculatorIcon },
     { path: '/journal-entries', label: t('nav.journalEntries'), icon: ClipboardDocumentListIcon },
     { path: '/general-ledger', label: t('nav.generalLedger'), icon: BookOpenIcon },
+    { path: '/reports/balance-sheet', label: t('nav.balanceSheet'), icon: ScaleIcon },
+    { path: '/reports/income-statement', label: t('nav.incomeStatement'), icon: ChartBarIcon },
     { path: '/import/sie', label: t('nav.sieImport'), icon: ArrowUpTrayIcon },
   ];
 

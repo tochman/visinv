@@ -1,6 +1,7 @@
 // Export all resources
 export { Account } from './Account';
 export { Client } from './Client';
+export { FinancialReport } from './FinancialReport';
 export { FiscalYear } from './FiscalYear';
 export { Invoice } from './Invoice';
 export { InvoiceEvent } from './InvoiceEvent';

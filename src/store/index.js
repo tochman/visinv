@@ -1,6 +1,7 @@
 import { configureStore } from '@reduxjs/toolkit';
 import authReducer from '../features/auth/authSlice';
 import accountsReducer from '../features/accounts/accountsSlice';
+import financialReportsReducer from '../features/financialReports/financialReportsSlice';
 import fiscalYearsReducer from '../features/fiscalYears/fiscalYearsSlice';
 import invoicesReducer from '../features/invoices/invoicesSlice';
 import journalEntriesReducer from '../features/journalEntries/journalEntriesSlice';
@@ -20,6 +21,7 @@ export const store = configureStore({
   reducer: {
     auth: authReducer,
     accounts: accountsReducer,
+    financialReports: financialReportsReducer,
     fiscalYears: fiscalYearsReducer,
     invoices: invoicesReducer,
     journalEntries: journalEntriesReducer,
