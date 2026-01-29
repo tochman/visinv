@@ -12,17 +12,13 @@ describe('Suppliers', () => {
         { id: 'acc2', account_number: 4000, name: 'Inköp varor', account_type: 'expense' },
         { id: 'acc3', account_number: 5010, name: 'Lokalhyra', account_type: 'expense' },
       ],
+      suppliers: [], // Add empty suppliers to setupCommonIntercepts
     });
     cy.login('admin');
-    
-    // Intercept suppliers fetch
-    cy.intercept('GET', '**/rest/v1/suppliers*', {
-      statusCode: 200,
-      body: [],
-    }).as('getSuppliers');
+    cy.wait('@getClients'); // Wait for initial load to complete
     
     // Visit suppliers page
-    cy.getByCy('sidebar-nav-suppliers').click();
+    cy.visit('/suppliers');
     cy.wait('@getSuppliers');
   });
 

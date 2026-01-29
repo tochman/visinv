@@ -394,6 +394,7 @@ Cypress.Commands.add('setupCommonIntercepts', (options = {}) => {
   const defaults = {
     invoices: [],
     clients: [],
+    suppliers: [],
     products: [],
     accounts: [],
     templates: [],
@@ -417,6 +418,13 @@ Cypress.Commands.add('setupCommonIntercepts', (options = {}) => {
       statusCode: 200,
       body: config.clients
     }).as('getClients')
+  }
+
+  if (config.suppliers !== null) {
+    cy.intercept('GET', '**/rest/v1/suppliers*', {
+      statusCode: 200,
+      body: config.suppliers
+    }).as('getSuppliers')
   }
   
   if (config.products !== null) {
