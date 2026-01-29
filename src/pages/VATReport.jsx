@@ -222,7 +222,9 @@ export default function VATReport() {
           className={`flex items-center justify-between py-2 px-4 ${
             isTotal 
               ? 'bg-gray-100 dark:bg-gray-700 font-semibold' 
-              : 'hover:bg-gray-50 dark:hover:bg-gray-700/50 cursor-pointer'
+              : hasTransactions 
+                ? 'hover:bg-gray-50 dark:hover:bg-gray-700/50 cursor-pointer'
+                : ''
           }`}
           onClick={() => !isTotal && hasTransactions && toggleSection(sectionKey)}
           data-cy={`vat-row-${sectionKey}`}
@@ -233,7 +235,7 @@ export default function VATReport() {
                 ? <ChevronDownIcon className="h-4 w-4 text-gray-500" />
                 : <ChevronRightIcon className="h-4 w-4 text-gray-500" />
             )}
-            <span className={isTotal ? '' : 'ml-6'}>{label}</span>
+            <span className={!hasTransactions && !isTotal ? 'ml-6' : ''}>{label}</span>
           </div>
           <span className={data?.amount < 0 ? 'text-red-600 dark:text-red-400' : ''}>
             {formatAmount(isTotal ? data : data?.amount)}
