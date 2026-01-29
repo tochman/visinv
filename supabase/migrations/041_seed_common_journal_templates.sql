@@ -724,12 +724,28 @@ BEGIN
 END;
 $$;
 
--- Note: We're NOT automatically creating the trigger here to avoid unexpected behavior.
--- Organizations can manually call seed_journal_entry_templates() or 
--- enable the trigger if desired.
+-- Seed templates for ALL existing organizations that have accounts
+DO $$
+DECLARE
+  v_org RECORD;
+  v_count INTEGER;
+  v_total INTEGER := 0;
+BEGIN
+  FOR v_org IN 
+    SELECT DISTINCT o.id, o.name
+    FROM organizations o
+    WHERE EXISTS (SELECT 1 FROM accounts a WHERE a.organization_id = o.id)
+  LOOP
+    SELECT seed_journal_entry_templates(v_org.id) INTO v_count;
+    v_total := v_total + v_count;
+    RAISE NOTICE 'Seeded % templates for organization: %', v_count, v_org.name;
+  END LOOP;
+  RAISE NOTICE 'Total templates created: %', v_total;
+END;
+$$;
 
--- Example of how to enable auto-seeding (commented out):
--- CREATE TRIGGER trigger_auto_seed_templates
--- AFTER INSERT ON accounts
--- FOR EACH ROW
--- EXECUTE FUNCTION auto_seed_templates_after_accounts();
+-- Enable auto-seeding trigger for NEW organizations when they import accounts
+CREATE TRIGGER trigger_auto_seed_templates
+AFTER INSERT ON accounts
+FOR EACH ROW
+EXECUTE FUNCTION auto_seed_templates_after_accounts();
