@@ -40,7 +40,7 @@ export default function SupplierModal({ isOpen, onClose, supplier = null }) {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
 
-  const accounts = useSelector((state) => state.accounts.accounts);
+  const accounts = useSelector((state) => state.accounts.accounts || []);
 
   // Fetch accounts for dropdown
   useEffect(() => {
