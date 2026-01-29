@@ -26,6 +26,7 @@ import JournalEntries from './pages/JournalEntries';
 import GeneralLedger from './pages/GeneralLedger';
 import BalanceSheet from './pages/BalanceSheet';
 import IncomeStatement from './pages/IncomeStatement';
+import VATReport from './pages/VATReport';
 import SieImport from './pages/SieImport';
 import Templates from './pages/Templates';
 import TemplateEditor from './pages/TemplateEditor';
@@ -110,6 +111,7 @@ function App() {
             <Route path="/general-ledger" element={<GeneralLedger />} />
             <Route path="/reports/balance-sheet" element={<BalanceSheet />} />
             <Route path="/reports/income-statement" element={<IncomeStatement />} />
+            <Route path="/reports/vat-report" element={<VATReport />} />
             <Route path="/import/sie" element={<SieImport />} />
             <Route path="/templates" element={<Templates />} />
             <Route path="/templates/new" element={<TemplateEditor />} />

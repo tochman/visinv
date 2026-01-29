@@ -16,6 +16,7 @@ import {
   BookOpenIcon,
   ChartBarIcon,
   ScaleIcon,
+  ReceiptPercentIcon,
 } from '@heroicons/react/24/outline';
 import { OrganizationSwitcher } from '../organization';
 import CollapsibleNavSection from './CollapsibleNavSection';
@@ -55,6 +56,7 @@ export default function Sidebar() {
     { path: '/general-ledger', label: t('nav.generalLedger'), icon: BookOpenIcon },
     { path: '/reports/balance-sheet', label: t('nav.balanceSheet'), icon: ScaleIcon },
     { path: '/reports/income-statement', label: t('nav.incomeStatement'), icon: ChartBarIcon },
+    { path: '/reports/vat-report', label: t('nav.vatReport'), icon: ReceiptPercentIcon },
     { path: '/import/sie', label: t('nav.sieImport'), icon: ArrowUpTrayIcon },
   ];
 

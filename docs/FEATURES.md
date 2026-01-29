@@ -1666,7 +1666,7 @@ Swedish accounting follows **Bokföringslagen** (BFL) and **Årsredovisningslage
   - Format compatible with Skatteverket requirements
   - Drilldown to underlying transactions
   - Export for filing
-- **Status:** Not Started
+- **Status:** ✅ Implemented and E2E tested
 
 **US-234: Aged Receivables Report (Kundreskontra)**
 - As a **bookkeeper**, in order to **manage outstanding invoices**, I would like to **generate an aged receivables report showing overdue amounts by client**.

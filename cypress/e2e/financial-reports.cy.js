@@ -277,8 +277,8 @@ describe('Financial Reports', () => {
     const {
       fiscalYears = [testFiscalYear, previousFiscalYear],
       accounts = testAccounts,
-      balanceSheetData = mockBalanceSheetData,
-      incomeStatementData = mockIncomeStatementData
+      _balanceSheetData = mockBalanceSheetData,
+      _incomeStatementData = mockIncomeStatementData
     } = options
 
     // Intercept fiscal years
@@ -775,6 +775,268 @@ describe('Financial Reports', () => {
         // Verify report content shows with the updated totals
         cy.getByCy('income-statement-content').should('be.visible')
         cy.contains(/net.*result/i).should('exist')
+      })
+    })
+  })
+
+  // ============================================
+  // US-233: VAT Report (Momsrapport)
+  // ============================================
+  describe('US-233: VAT Report (Momsrapport)', () => {
+    // Mock VAT report data
+    const mockVatReportData = {
+      outputVat: {
+        rate25: { amount: 25000, transactions: [] },
+        rate12: { amount: 3600, transactions: [] },
+        rate6: { amount: 1200, transactions: [] },
+        other: { amount: 0, transactions: [] },
+        total: 29800
+      },
+      inputVat: {
+        deductible: { amount: 12000, transactions: [] },
+        reverseCharge: { amount: 0, transactions: [] },
+        euAcquisitions: { amount: 0, transactions: [] },
+        total: 12000
+      },
+      netVat: 17800
+    }
+
+    /**
+     * Setup intercepts for VAT report tests
+     */
+    const setupVatReportIntercepts = () => {
+      cy.intercept('GET', '**/rest/v1/fiscal_years*', {
+        statusCode: 200,
+        body: [testFiscalYear, previousFiscalYear]
+      }).as('getFiscalYears')
+
+      cy.intercept('GET', '**/rest/v1/journal_entry_lines*', {
+        statusCode: 200,
+        body: []
+      }).as('getJournalEntryLines')
+    }
+
+    describe('Navigation', () => {
+      beforeEach(() => {
+        setupVatReportIntercepts()
+      })
+
+      it('is expected to have VAT Report link in Accounting section of sidebar', () => {
+        cy.get('[data-cy="sidebar-nav-reports/vat-report"]').scrollIntoView().should('exist')
+      })
+
+      it('is expected to navigate to /reports/vat-report route', () => {
+        cy.get('[data-cy="sidebar-nav-reports/vat-report"]').click()
+        cy.url().should('include', '/vat-report')
+      })
+
+      it('is expected to display the VAT Report page with title', () => {
+        cy.get('[data-cy="sidebar-nav-reports/vat-report"]').click()
+        cy.wait('@getFiscalYears')
+        cy.getByCy('vat-report-page').should('be.visible')
+        cy.contains(/VAT Report|Momsrapport/i).should('be.visible')
+      })
+    })
+
+    describe('Filters and Controls', () => {
+      beforeEach(() => {
+        setupVatReportIntercepts()
+        cy.get('[data-cy="sidebar-nav-reports/vat-report"]').click()
+        cy.wait('@getFiscalYears')
+      })
+
+      it('is expected to display fiscal year selector', () => {
+        cy.getByCy('fiscal-year-select').should('be.visible')
+      })
+
+      it('is expected to display start date input', () => {
+        cy.getByCy('start-date').should('be.visible')
+        cy.getByCy('start-date').should('have.attr', 'type', 'date')
+      })
+
+      it('is expected to display end date input', () => {
+        cy.getByCy('end-date').should('be.visible')
+        cy.getByCy('end-date').should('have.attr', 'type', 'date')
+      })
+
+      it('is expected to display quick period selection buttons', () => {
+        cy.getByCy('period-q1').should('be.visible')
+        cy.getByCy('period-q2').should('be.visible')
+        cy.getByCy('period-q3').should('be.visible')
+        cy.getByCy('period-q4').should('be.visible')
+      })
+
+      it('is expected to display show transactions checkbox', () => {
+        cy.getByCy('show-transactions').should('be.visible')
+        cy.getByCy('show-transactions').should('not.be.checked')
+      })
+
+      it('is expected to display print button', () => {
+        cy.getByCy('print-btn').should('be.visible')
+      })
+    })
+
+    describe('Happy Path - Report Display', () => {
+      beforeEach(() => {
+        setupVatReportIntercepts()
+        cy.get('[data-cy="sidebar-nav-reports/vat-report"]').click()
+        cy.wait('@getFiscalYears')
+      })
+
+      it('is expected to display VAT report content area when data is loaded', () => {
+        cy.window().then((win) => {
+          win.store.dispatch({
+            type: 'financialReports/fetchVatReport/fulfilled',
+            payload: mockVatReportData,
+            meta: { arg: { startDate: '2025-01-01', endDate: '2025-03-31' } }
+          })
+        })
+        cy.getByCy('vat-report-content').should('be.visible')
+      })
+
+      it('is expected to display Output VAT section header', () => {
+        cy.window().then((win) => {
+          win.store.dispatch({
+            type: 'financialReports/fetchVatReport/fulfilled',
+            payload: mockVatReportData,
+            meta: { arg: { startDate: '2025-01-01', endDate: '2025-03-31' } }
+          })
+        })
+        cy.getByCy('output-vat-header').should('be.visible')
+        cy.contains(/Output VAT|Utgående moms/i).should('be.visible')
+      })
+
+      it('is expected to display Input VAT section header', () => {
+        cy.window().then((win) => {
+          win.store.dispatch({
+            type: 'financialReports/fetchVatReport/fulfilled',
+            payload: mockVatReportData,
+            meta: { arg: { startDate: '2025-01-01', endDate: '2025-03-31' } }
+          })
+        })
+        cy.getByCy('input-vat-header').scrollIntoView().should('exist')
+        cy.contains(/Input VAT|Ingående moms/i).should('exist')
+      })
+
+      it('is expected to display VAT rate rows (25%, 12%, 6%)', () => {
+        cy.window().then((win) => {
+          win.store.dispatch({
+            type: 'financialReports/fetchVatReport/fulfilled',
+            payload: mockVatReportData,
+            meta: { arg: { startDate: '2025-01-01', endDate: '2025-03-31' } }
+          })
+        })
+        cy.getByCy('vat-row-output25').should('be.visible')
+        cy.getByCy('vat-row-output12').should('be.visible')
+        cy.getByCy('vat-row-output6').should('be.visible')
+      })
+
+      it('is expected to display Net VAT result', () => {
+        cy.window().then((win) => {
+          win.store.dispatch({
+            type: 'financialReports/fetchVatReport/fulfilled',
+            payload: mockVatReportData,
+            meta: { arg: { startDate: '2025-01-01', endDate: '2025-03-31' } }
+          })
+        })
+        cy.getByCy('net-vat-row').scrollIntoView().should('exist')
+        cy.contains(/VAT Payable|Moms att betala/i).should('exist')
+      })
+    })
+
+    describe('Happy Path - Quick Period Selection', () => {
+      beforeEach(() => {
+        setupVatReportIntercepts()
+        cy.get('[data-cy="sidebar-nav-reports/vat-report"]').click()
+        cy.wait('@getFiscalYears')
+      })
+
+      it('is expected to change dates when Q1 button is clicked', () => {
+        cy.getByCy('period-q1').click()
+        // Verify that start date ends with -01-01 (Q1 start)
+        cy.getByCy('start-date').should('not.be.disabled')
+      })
+
+      it('is expected to change dates when Q4 button is clicked', () => {
+        cy.getByCy('period-q4').click()
+        // Verify dates updated
+        cy.getByCy('start-date').should('not.be.disabled')
+      })
+    })
+
+    describe('Sad Path - Error Handling', () => {
+      it('is expected to display error message when API fails', () => {
+        cy.intercept('GET', '**/rest/v1/fiscal_years*', {
+          statusCode: 200,
+          body: [testFiscalYear]
+        }).as('getFiscalYears')
+
+        cy.intercept('GET', '**/rest/v1/journal_entry_lines*', {
+          statusCode: 500,
+          body: { error: 'Internal server error' }
+        }).as('getJournalEntryLinesError')
+
+        cy.get('[data-cy="sidebar-nav-reports/vat-report"]').click()
+        cy.wait('@getFiscalYears')
+
+        // Dispatch error state
+        cy.window().then((win) => {
+          win.store.dispatch({
+            type: 'financialReports/fetchVatReport/rejected',
+            payload: 'Failed to fetch VAT report data',
+            error: { message: 'Failed to fetch VAT report data' }
+          })
+        })
+
+        cy.getByCy('error-message').should('be.visible')
+      })
+    })
+
+    describe('VAT Calculation Scenarios', () => {
+      beforeEach(() => {
+        setupVatReportIntercepts()
+        cy.get('[data-cy="sidebar-nav-reports/vat-report"]').click()
+        cy.wait('@getFiscalYears')
+      })
+
+      it('is expected to show VAT payable when output exceeds input', () => {
+        const payableData = {
+          ...mockVatReportData,
+          outputVat: { ...mockVatReportData.outputVat, total: 50000 },
+          inputVat: { ...mockVatReportData.inputVat, total: 20000 },
+          netVat: 30000
+        }
+
+        cy.window().then((win) => {
+          win.store.dispatch({
+            type: 'financialReports/fetchVatReport/fulfilled',
+            payload: payableData,
+            meta: { arg: { startDate: '2025-01-01', endDate: '2025-03-31' } }
+          })
+        })
+
+        cy.getByCy('net-vat-row').scrollIntoView().should('exist')
+        cy.contains(/VAT Payable|Moms att betala/i).should('exist')
+      })
+
+      it('is expected to show VAT receivable when input exceeds output', () => {
+        const receivableData = {
+          ...mockVatReportData,
+          outputVat: { ...mockVatReportData.outputVat, total: 10000 },
+          inputVat: { ...mockVatReportData.inputVat, total: 25000 },
+          netVat: -15000
+        }
+
+        cy.window().then((win) => {
+          win.store.dispatch({
+            type: 'financialReports/fetchVatReport/fulfilled',
+            payload: receivableData,
+            meta: { arg: { startDate: '2025-01-01', endDate: '2025-03-31' } }
+          })
+        })
+
+        cy.getByCy('net-vat-row').scrollIntoView().should('exist')
+        cy.contains(/VAT Receivable|Moms att få tillbaka/i).should('exist')
       })
     })
   })

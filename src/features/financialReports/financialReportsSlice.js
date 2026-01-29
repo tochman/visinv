@@ -5,6 +5,7 @@ import { FinancialReport } from '../../services/resources';
  * Financial Reports Redux Slice
  * US-230: Balance Sheet (Balansräkning)
  * US-231: Income Statement (Resultaträkning)
+ * US-233: VAT Report (Momsrapport)
  */
 
 // Async thunks
@@ -46,6 +47,24 @@ export const fetchIncomeStatement = createAsyncThunk(
   }
 );
 
+export const fetchVatReport = createAsyncThunk(
+  'financialReports/fetchVatReport',
+  async ({ organizationId, startDate, endDate, fiscalYearId }, { rejectWithValue }) => {
+    const { data, error } = await FinancialReport.getVatReport({
+      organizationId,
+      startDate,
+      endDate,
+      fiscalYearId,
+    });
+
+    if (error) {
+      return rejectWithValue(error.message);
+    }
+
+    return data;
+  }
+);
+
 // Initial state
 const initialState = {
   balanceSheet: {
@@ -64,6 +83,13 @@ const initialState = {
     comparativeStartDate: null,
     comparativeEndDate: null,
   },
+  vatReport: {
+    data: null,
+    loading: false,
+    error: null,
+    startDate: null,
+    endDate: null,
+  },
 };
 
 // Slice
@@ -76,6 +102,9 @@ const financialReportsSlice = createSlice({
     },
     clearIncomeStatement: (state) => {
       state.incomeStatement = initialState.incomeStatement;
+    },
+    clearVatReport: (state) => {
+      state.vatReport = initialState.vatReport;
     },
     clearAllReports: () => initialState,
   },
@@ -112,12 +141,27 @@ const financialReportsSlice = createSlice({
       .addCase(fetchIncomeStatement.rejected, (state, action) => {
         state.incomeStatement.loading = false;
         state.incomeStatement.error = action.payload || action.error.message;
+      })
+      // VAT Report
+      .addCase(fetchVatReport.pending, (state) => {
+        state.vatReport.loading = true;
+        state.vatReport.error = null;
+      })
+      .addCase(fetchVatReport.fulfilled, (state, action) => {
+        state.vatReport.loading = false;
+        state.vatReport.data = action.payload;
+        state.vatReport.startDate = action.meta.arg.startDate;
+        state.vatReport.endDate = action.meta.arg.endDate;
+      })
+      .addCase(fetchVatReport.rejected, (state, action) => {
+        state.vatReport.loading = false;
+        state.vatReport.error = action.payload || action.error.message;
       });
   },
 });
 
 // Actions
-export const { clearBalanceSheet, clearIncomeStatement, clearAllReports } = financialReportsSlice.actions;
+export const { clearBalanceSheet, clearIncomeStatement, clearVatReport, clearAllReports } = financialReportsSlice.actions;
 
 // Selectors
 export const selectBalanceSheetData = (state) => state.financialReports.balanceSheet.data;
@@ -136,6 +180,14 @@ export const selectIncomeStatementDates = (state) => ({
   endDate: state.financialReports.incomeStatement.endDate,
   comparativeStartDate: state.financialReports.incomeStatement.comparativeStartDate,
   comparativeEndDate: state.financialReports.incomeStatement.comparativeEndDate,
+});
+
+export const selectVatReportData = (state) => state.financialReports.vatReport.data;
+export const selectVatReportLoading = (state) => state.financialReports.vatReport.loading;
+export const selectVatReportError = (state) => state.financialReports.vatReport.error;
+export const selectVatReportDates = (state) => ({
+  startDate: state.financialReports.vatReport.startDate,
+  endDate: state.financialReports.vatReport.endDate,
 });
 
 export default financialReportsSlice.reducer;

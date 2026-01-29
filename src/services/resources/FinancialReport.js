@@ -679,6 +679,201 @@ class FinancialReportResource extends BaseResource {
       },
     };
   }
+
+  /**
+   * Generate VAT Report (Momsrapport) data
+   * US-233: VAT Report
+   * Swedish Skatteverket format: Output VAT, Input VAT, Net VAT by rate
+   * 
+   * Swedish VAT rates:
+   * - 25% (standard rate)
+   * - 12% (food, hotels, camping)
+   * - 6% (books, newspapers, public transport, cultural events)
+   * - 0% (exports, healthcare, education)
+   * 
+   * BAS account structure for VAT:
+   * - 2610: Output VAT 25% (Utgående moms 25%)
+   * - 2620: Output VAT 12% (Utgående moms 12%)
+   * - 2630: Output VAT 6% (Utgående moms 6%)
+   * - 2640: Input VAT (Ingående moms)
+   * - 2650: Input VAT reverse charge (Ingående moms omvänd skattskyldighet)
+   * - 2660: VAT on EU acquisitions (Moms på varuförvärv från EU)
+   * 
+   * @param {Object} options - Query options
+   * @param {string} options.organizationId - Organization ID (required)
+   * @param {string} options.startDate - Period start date (required)
+   * @param {string} options.endDate - Period end date (required)
+   * @param {string} options.fiscalYearId - Fiscal year ID (optional)
+   * @returns {Promise<{data: Object|null, error: Error|null}>}
+   */
+  async getVatReport({ organizationId, startDate, endDate, fiscalYearId = null }) {
+    if (!organizationId || !startDate || !endDate) {
+      return { data: null, error: new Error('Organization ID, startDate, and endDate are required') };
+    }
+
+    // Fetch VAT-related transactions
+    let query = this.supabase
+      .from('journal_entry_lines')
+      .select(`
+        id,
+        account_id,
+        debit_amount,
+        credit_amount,
+        description,
+        account:accounts!inner(
+          id,
+          account_number,
+          name,
+          name_en,
+          account_type
+        ),
+        journal_entry:journal_entries!inner(
+          id,
+          organization_id,
+          fiscal_year_id,
+          entry_date,
+          entry_number,
+          description,
+          status
+        )
+      `)
+      .eq('journal_entry.organization_id', organizationId)
+      .eq('journal_entry.status', 'posted')
+      .gte('journal_entry.entry_date', startDate)
+      .lte('journal_entry.entry_date', endDate);
+
+    if (fiscalYearId) {
+      query = query.eq('journal_entry.fiscal_year_id', fiscalYearId);
+    }
+
+    // Filter for VAT accounts (26xx in BAS standard)
+    query = query.like('account.account_number', '26%');
+
+    const { data, error } = await query;
+
+    if (error) {
+      return { data: null, error };
+    }
+
+    // Build VAT report structure
+    const vatReport = this.buildVatReport(data || []);
+
+    return { data: vatReport, error: null };
+  }
+
+  /**
+   * Build VAT report structure from journal entry lines
+   * Categorizes VAT by type (output/input) and rate
+   */
+  buildVatReport(lines) {
+    // Initialize VAT categories
+    const vatData = {
+      outputVat: {
+        rate25: { amount: 0, transactions: [] },
+        rate12: { amount: 0, transactions: [] },
+        rate6: { amount: 0, transactions: [] },
+        other: { amount: 0, transactions: [] },
+        total: 0,
+      },
+      inputVat: {
+        deductible: { amount: 0, transactions: [] },
+        reverseCharge: { amount: 0, transactions: [] },
+        euAcquisitions: { amount: 0, transactions: [] },
+        total: 0,
+      },
+      netVat: 0,
+    };
+
+    lines.forEach((line) => {
+      const accountNumber = line.account.account_number;
+      const debit = parseFloat(line.debit_amount) || 0;
+      const credit = parseFloat(line.credit_amount) || 0;
+      
+      // VAT liability accounts are credit accounts, so balance = credit - debit
+      // Output VAT (2610, 2620, 2630) increases with credit (VAT collected)
+      // Input VAT (2640, 2650, 2660) increases with debit (VAT paid)
+      
+      const transactionInfo = {
+        id: line.id,
+        date: line.journal_entry.entry_date,
+        entryNumber: line.journal_entry.entry_number,
+        description: line.description || line.journal_entry.description,
+        accountNumber,
+        accountName: line.account.name,
+        debit,
+        credit,
+      };
+
+      // Categorize by account number
+      if (accountNumber.startsWith('2610') || accountNumber === '2611' || accountNumber === '2612') {
+        // Output VAT 25%
+        const amount = credit - debit;
+        vatData.outputVat.rate25.amount += amount;
+        vatData.outputVat.rate25.transactions.push(transactionInfo);
+      } else if (accountNumber.startsWith('2620') || accountNumber === '2621' || accountNumber === '2622') {
+        // Output VAT 12%
+        const amount = credit - debit;
+        vatData.outputVat.rate12.amount += amount;
+        vatData.outputVat.rate12.transactions.push(transactionInfo);
+      } else if (accountNumber.startsWith('2630') || accountNumber === '2631' || accountNumber === '2632') {
+        // Output VAT 6%
+        const amount = credit - debit;
+        vatData.outputVat.rate6.amount += amount;
+        vatData.outputVat.rate6.transactions.push(transactionInfo);
+      } else if (accountNumber.startsWith('2640') || accountNumber === '2641') {
+        // Input VAT (deductible)
+        const amount = debit - credit;
+        vatData.inputVat.deductible.amount += amount;
+        vatData.inputVat.deductible.transactions.push(transactionInfo);
+      } else if (accountNumber.startsWith('2650')) {
+        // Input VAT reverse charge
+        const amount = debit - credit;
+        vatData.inputVat.reverseCharge.amount += amount;
+        vatData.inputVat.reverseCharge.transactions.push(transactionInfo);
+      } else if (accountNumber.startsWith('2660')) {
+        // VAT on EU acquisitions
+        const amount = debit - credit;
+        vatData.inputVat.euAcquisitions.amount += amount;
+        vatData.inputVat.euAcquisitions.transactions.push(transactionInfo);
+      } else if (accountNumber.startsWith('26')) {
+        // Other output VAT accounts
+        const amount = credit - debit;
+        vatData.outputVat.other.amount += amount;
+        vatData.outputVat.other.transactions.push(transactionInfo);
+      }
+    });
+
+    // Calculate totals
+    vatData.outputVat.total = 
+      vatData.outputVat.rate25.amount +
+      vatData.outputVat.rate12.amount +
+      vatData.outputVat.rate6.amount +
+      vatData.outputVat.other.amount;
+
+    vatData.inputVat.total = 
+      vatData.inputVat.deductible.amount +
+      vatData.inputVat.reverseCharge.amount +
+      vatData.inputVat.euAcquisitions.amount;
+
+    // Net VAT = Output VAT - Input VAT
+    // Positive = VAT payable to Skatteverket
+    // Negative = VAT receivable from Skatteverket
+    vatData.netVat = vatData.outputVat.total - vatData.inputVat.total;
+
+    // Round all amounts
+    vatData.outputVat.rate25.amount = Math.round(vatData.outputVat.rate25.amount * 100) / 100;
+    vatData.outputVat.rate12.amount = Math.round(vatData.outputVat.rate12.amount * 100) / 100;
+    vatData.outputVat.rate6.amount = Math.round(vatData.outputVat.rate6.amount * 100) / 100;
+    vatData.outputVat.other.amount = Math.round(vatData.outputVat.other.amount * 100) / 100;
+    vatData.outputVat.total = Math.round(vatData.outputVat.total * 100) / 100;
+    vatData.inputVat.deductible.amount = Math.round(vatData.inputVat.deductible.amount * 100) / 100;
+    vatData.inputVat.reverseCharge.amount = Math.round(vatData.inputVat.reverseCharge.amount * 100) / 100;
+    vatData.inputVat.euAcquisitions.amount = Math.round(vatData.inputVat.euAcquisitions.amount * 100) / 100;
+    vatData.inputVat.total = Math.round(vatData.inputVat.total * 100) / 100;
+    vatData.netVat = Math.round(vatData.netVat * 100) / 100;
+
+    return vatData;
+  }
 }
 
 export const FinancialReport = new FinancialReportResource();
