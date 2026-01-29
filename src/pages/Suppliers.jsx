@@ -48,6 +48,10 @@ export default function Suppliers() {
   const handleCloseModal = () => {
     setIsModalOpen(false);
     setSelectedSupplier(null);
+    // Refetch suppliers after modal closes to ensure we have latest data
+    if (currentOrganization?.id) {
+      dispatch(fetchSuppliers({ organizationId: currentOrganization.id, activeOnly: !showInactive }));
+    }
   };
 
   const filteredSuppliers = Array.isArray(suppliers) 
