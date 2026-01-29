@@ -1,0 +1,24 @@
+# GitHub Copilot Coding Agent Setup Steps
+# These steps run BEFORE the firewall is enabled, allowing network access
+# for installing dependencies and setting up the environment.
+
+name: "Copilot Setup Steps"
+
+steps:
+  # Set up Node.js
+  - uses: actions/setup-node@v4
+    with:
+      node-version: "22"
+      cache: "npm"
+
+  # Install dependencies (including Cypress)
+  - name: Install dependencies
+    run: npm ci
+
+  # Install Cypress binary
+  - name: Install Cypress binary
+    run: npx cypress install
+
+  # Verify Cypress installation
+  - name: Verify Cypress
+    run: npx cypress verify
