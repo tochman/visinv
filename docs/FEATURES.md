@@ -1634,7 +1634,7 @@ Swedish accounting follows **Bokföringslagen** (BFL) and **Årsredovisningslage
   - Equity & Liabilities (Eget kapital och skulder)
   - Comparative period (previous year)
   - Export to PDF/Excel
-- **Status:** Not Started
+- **Status:** ✅ Implemented and E2E tested
 
 **US-231: Income Statement (Resultaträkning)**
 - As an **organization owner**, in order to **see profit and loss**, I would like to **generate an income statement report**.
@@ -1645,7 +1645,7 @@ Swedish accounting follows **Bokföringslagen** (BFL) and **Årsredovisningslage
   - Comparative period
   - Budget comparison (if budgets exist)
   - Export to PDF/Excel
-- **Status:** Not Started
+- **Status:** ✅ Implemented and E2E tested
 
 **US-232: Cash Flow Statement (Kassaflödesanalys)**
 - As an **organization owner**, in order to **understand cash movements**, I would like to **generate a cash flow statement**.
