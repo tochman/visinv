@@ -2172,14 +2172,31 @@ The Swedish Tax Authority (Skatteverket) provides APIs for digital submission of
   - Auto-create journal entry
 - **Status:** Not Started
 
-**US-261: Supplier Management**
+**US-261: Supplier Management** ✅
 - As a **bookkeeper**, in order to **manage vendors**, I would like to **maintain a supplier register**.
 - **Acceptance Criteria:**
   - CRUD operations for suppliers
   - Fields: name, org number, VAT number, address, bank details
   - Default accounts for supplier
   - Supplier transaction history
-- **Status:** Not Started
+- **Status:** Complete
+- **Implementation Notes:**
+  - Database table with RLS policies
+  - Supplier resource and Redux slice
+  - Full CRUD UI with modal form
+  - Active/inactive filtering
+  - Search by name, org number, VAT number
+  - Banking details (IBAN, SWIFT/BIC)
+  - Payment terms configuration
+  - Default expense and payable accounts
+  - Cypress E2E tests
+- **Files:**
+  - `supabase/migrations/070_create_suppliers.sql`
+  - `src/services/resources/Supplier.js`
+  - `src/features/suppliers/suppliersSlice.js`
+  - `src/pages/Suppliers.jsx`
+  - `src/components/suppliers/SupplierModal.jsx`
+  - `cypress/e2e/suppliers.cy.js`
 
 **US-262: Purchase Invoice Approval Workflow**
 - As an **organization**, in order to **control spending**, I would like to **route supplier invoices through an approval workflow before payment**.
