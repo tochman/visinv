@@ -5,6 +5,7 @@ import {
   HomeIcon,
   DocumentTextIcon,
   UsersIcon,
+  BuildingStorefrontIcon,
   CubeIcon,
   SwatchIcon,
   UserGroupIcon,
@@ -39,6 +40,7 @@ export default function Sidebar() {
   const invoicingItems = [
     { path: '/invoices', label: t('nav.invoices'), icon: DocumentTextIcon },
     { path: '/clients', label: t('nav.clients'), icon: UsersIcon },
+    { path: '/suppliers', label: t('nav.suppliers'), icon: BuildingStorefrontIcon },
     { path: '/products', label: t('nav.products'), icon: CubeIcon },
     { path: '/templates', label: t('nav.templates'), icon: SwatchIcon, premium: true },
   ];

@@ -20,6 +20,7 @@ import Dashboard from './pages/Dashboard';
 import Invoices from './pages/Invoices';
 import InvoiceDetail from './pages/InvoiceDetail';
 import Clients from './pages/Clients';
+import Suppliers from './pages/Suppliers';
 import Products from './pages/Products';
 import Accounts from './pages/Accounts';
 import JournalEntries from './pages/JournalEntries';
@@ -105,6 +106,7 @@ function App() {
             <Route path="/invoices" element={<Invoices />} />
             <Route path="/invoices/:id" element={<InvoiceDetail />} />
             <Route path="/clients" element={<Clients />} />
+            <Route path="/suppliers" element={<Suppliers />} />
             <Route path="/products" element={<Products />} />
             <Route path="/accounts" element={<Accounts />} />
             <Route path="/journal-entries" element={<JournalEntries />} />
