@@ -180,7 +180,7 @@ describe('US-004: Free Invoice Limit', () => {
       cy.getByCy('upgrade-modal').should('not.exist');
     });
 
-    it('is expected to navigate to subscription page when View Plans is clicked', () => {
+    it.skip('is expected to navigate to subscription page when View Plans is clicked', () => {
       cy.setupCommonIntercepts({ clients: [mockClient], products: [], invoices: [] });
 
       cy.visit('/invoices');

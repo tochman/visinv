@@ -133,7 +133,8 @@ class JournalEntryResource extends BaseResource {
     }
 
     // Validate that the entry is balanced if posting
-    if (entryData.status === 'posted') {
+    const shouldPost = entryData.status === 'posted';
+    if (shouldPost) {
       const balanceError = this.validateBalance(lines);
       if (balanceError) {
         return { data: null, error: new Error(balanceError) };
@@ -153,15 +154,16 @@ class JournalEntryResource extends BaseResource {
       return { data: null, error: verNumError };
     }
 
-    // Create the journal entry
+    // Create the journal entry as DRAFT first (RLS requires draft status for line inserts)
     const { data: createdEntry, error: createError } = await this.supabase
       .from(this.tableName)
       .insert({
         ...entryData,
         verification_number: verificationNumber,
         created_by: user.id,
-        posted_at: entryData.status === 'posted' ? new Date().toISOString() : null,
-        posted_by: entryData.status === 'posted' ? user.id : null,
+        status: 'draft', // Always create as draft first to allow line inserts
+        posted_at: null,
+        posted_by: null,
       })
       .select()
       .single();
@@ -192,6 +194,24 @@ class JournalEntryResource extends BaseResource {
         // Rollback: delete the created entry
         await this.delete(createdEntry.id);
         return { data: null, error: linesError };
+      }
+    }
+
+    // If the entry should be posted, update it to posted status now
+    if (shouldPost) {
+      const { error: postError } = await this.supabase
+        .from(this.tableName)
+        .update({
+          status: 'posted',
+          posted_at: new Date().toISOString(),
+          posted_by: user.id,
+        })
+        .eq('id', createdEntry.id);
+
+      if (postError) {
+        // Rollback: delete the created entry and its lines
+        await this.delete(createdEntry.id);
+        return { data: null, error: postError };
       }
     }
 

@@ -41,24 +41,24 @@ BEGIN
     SELECT id INTO v_account_id FROM accounts 
     WHERE organization_id = p_organization_id AND account_number = '7010' LIMIT 1;
     IF v_account_id IS NOT NULL THEN
-      INSERT INTO journal_entry_template_lines (template_id, account_id, debit_amount, credit_amount, description, line_order)
-      VALUES (v_template_id, v_account_id, 0, 0, 'Bruttolön', 0);
+      INSERT INTO journal_entry_template_lines (template_id, account_id, debit_amount, credit_amount, description, line_order, entry_type)
+      VALUES (v_template_id, v_account_id, 0, 0, 'Bruttolön', 0, 'debit');
     END IF;
 
     -- Line 2: Preliminärskatt (Tax deduction) - Credit 2710
     SELECT id INTO v_account_id FROM accounts 
     WHERE organization_id = p_organization_id AND account_number = '2710' LIMIT 1;
     IF v_account_id IS NOT NULL THEN
-      INSERT INTO journal_entry_template_lines (template_id, account_id, debit_amount, credit_amount, description, line_order)
-      VALUES (v_template_id, v_account_id, 0, 0, 'Preliminärskatt', 1);
+      INSERT INTO journal_entry_template_lines (template_id, account_id, debit_amount, credit_amount, description, line_order, entry_type)
+      VALUES (v_template_id, v_account_id, 0, 0, 'Preliminärskatt', 1, 'credit');
     END IF;
 
     -- Line 3: Nettolön skuld (Net salary payable) - Credit 2820
     SELECT id INTO v_account_id FROM accounts 
     WHERE organization_id = p_organization_id AND account_number = '2820' LIMIT 1;
     IF v_account_id IS NOT NULL THEN
-      INSERT INTO journal_entry_template_lines (template_id, account_id, debit_amount, credit_amount, description, line_order)
-      VALUES (v_template_id, v_account_id, 0, 0, 'Nettolön att betala', 2);
+      INSERT INTO journal_entry_template_lines (template_id, account_id, debit_amount, credit_amount, description, line_order, entry_type)
+      VALUES (v_template_id, v_account_id, 0, 0, 'Nettolön att betala', 2, 'credit');
     END IF;
 
     v_templates_created := v_templates_created + 1;
@@ -83,16 +83,16 @@ BEGIN
     SELECT id INTO v_account_id FROM accounts 
     WHERE organization_id = p_organization_id AND account_number = '7510' LIMIT 1;
     IF v_account_id IS NOT NULL THEN
-      INSERT INTO journal_entry_template_lines (template_id, account_id, debit_amount, credit_amount, description, line_order)
-      VALUES (v_template_id, v_account_id, 0, 0, 'Arbetsgivaravgifter', 0);
+      INSERT INTO journal_entry_template_lines (template_id, account_id, debit_amount, credit_amount, description, line_order, entry_type)
+      VALUES (v_template_id, v_account_id, 0, 0, 'Arbetsgivaravgifter', 0, 'debit');
     END IF;
 
     -- Line 2: Arbetsgivaravgifter skuld - Credit 2730
     SELECT id INTO v_account_id FROM accounts 
     WHERE organization_id = p_organization_id AND account_number = '2730' LIMIT 1;
     IF v_account_id IS NOT NULL THEN
-      INSERT INTO journal_entry_template_lines (template_id, account_id, debit_amount, credit_amount, description, line_order)
-      VALUES (v_template_id, v_account_id, 0, 0, 'Skuld arbetsgivaravgifter', 1);
+      INSERT INTO journal_entry_template_lines (template_id, account_id, debit_amount, credit_amount, description, line_order, entry_type)
+      VALUES (v_template_id, v_account_id, 0, 0, 'Skuld arbetsgivaravgifter', 1, 'credit');
     END IF;
 
     v_templates_created := v_templates_created + 1;
@@ -117,16 +117,16 @@ BEGIN
     SELECT id INTO v_account_id FROM accounts 
     WHERE organization_id = p_organization_id AND account_number = '2820' LIMIT 1;
     IF v_account_id IS NOT NULL THEN
-      INSERT INTO journal_entry_template_lines (template_id, account_id, debit_amount, credit_amount, description, line_order)
-      VALUES (v_template_id, v_account_id, 0, 0, 'Löneskuld', 0);
+      INSERT INTO journal_entry_template_lines (template_id, account_id, debit_amount, credit_amount, description, line_order, entry_type)
+      VALUES (v_template_id, v_account_id, 0, 0, 'Löneskuld', 0, 'debit');
     END IF;
 
     -- Line 2: Bank - Credit 1930
     SELECT id INTO v_account_id FROM accounts 
     WHERE organization_id = p_organization_id AND account_number = '1930' LIMIT 1;
     IF v_account_id IS NOT NULL THEN
-      INSERT INTO journal_entry_template_lines (template_id, account_id, debit_amount, credit_amount, description, line_order)
-      VALUES (v_template_id, v_account_id, 0, 0, 'Företagskonto', 1);
+      INSERT INTO journal_entry_template_lines (template_id, account_id, debit_amount, credit_amount, description, line_order, entry_type)
+      VALUES (v_template_id, v_account_id, 0, 0, 'Företagskonto', 1, 'credit');
     END IF;
 
     v_templates_created := v_templates_created + 1;
@@ -155,24 +155,24 @@ BEGIN
     SELECT id INTO v_account_id FROM accounts 
     WHERE organization_id = p_organization_id AND account_number = '4010' LIMIT 1;
     IF v_account_id IS NOT NULL THEN
-      INSERT INTO journal_entry_template_lines (template_id, account_id, debit_amount, credit_amount, description, line_order, vat_code)
-      VALUES (v_template_id, v_account_id, 0, 0, 'Inköp varor', 0, '25');
+      INSERT INTO journal_entry_template_lines (template_id, account_id, debit_amount, credit_amount, description, line_order, vat_code, entry_type)
+      VALUES (v_template_id, v_account_id, 0, 0, 'Inköp varor', 0, '25', 'debit');
     END IF;
 
     -- Line 2: Ingående moms 25% - Debit 2640
     SELECT id INTO v_account_id FROM accounts 
     WHERE organization_id = p_organization_id AND account_number = '2640' LIMIT 1;
     IF v_account_id IS NOT NULL THEN
-      INSERT INTO journal_entry_template_lines (template_id, account_id, debit_amount, credit_amount, description, line_order)
-      VALUES (v_template_id, v_account_id, 0, 0, 'Ingående moms 25%', 1);
+      INSERT INTO journal_entry_template_lines (template_id, account_id, debit_amount, credit_amount, description, line_order, entry_type)
+      VALUES (v_template_id, v_account_id, 0, 0, 'Ingående moms 25%', 1, 'debit');
     END IF;
 
     -- Line 3: Leverantörsskuld - Credit 2440
     SELECT id INTO v_account_id FROM accounts 
     WHERE organization_id = p_organization_id AND account_number = '2440' LIMIT 1;
     IF v_account_id IS NOT NULL THEN
-      INSERT INTO journal_entry_template_lines (template_id, account_id, debit_amount, credit_amount, description, line_order)
-      VALUES (v_template_id, v_account_id, 0, 0, 'Leverantörsskuld', 2);
+      INSERT INTO journal_entry_template_lines (template_id, account_id, debit_amount, credit_amount, description, line_order, entry_type)
+      VALUES (v_template_id, v_account_id, 0, 0, 'Leverantörsskuld', 2, 'credit');
     END IF;
 
     v_templates_created := v_templates_created + 1;
@@ -197,16 +197,16 @@ BEGIN
     SELECT id INTO v_account_id FROM accounts 
     WHERE organization_id = p_organization_id AND account_number = '2440' LIMIT 1;
     IF v_account_id IS NOT NULL THEN
-      INSERT INTO journal_entry_template_lines (template_id, account_id, debit_amount, credit_amount, description, line_order)
-      VALUES (v_template_id, v_account_id, 0, 0, 'Leverantörsskuld', 0);
+      INSERT INTO journal_entry_template_lines (template_id, account_id, debit_amount, credit_amount, description, line_order, entry_type)
+      VALUES (v_template_id, v_account_id, 0, 0, 'Leverantörsskuld', 0, 'debit');
     END IF;
 
     -- Line 2: Bank - Credit 1930
     SELECT id INTO v_account_id FROM accounts 
     WHERE organization_id = p_organization_id AND account_number = '1930' LIMIT 1;
     IF v_account_id IS NOT NULL THEN
-      INSERT INTO journal_entry_template_lines (template_id, account_id, debit_amount, credit_amount, description, line_order)
-      VALUES (v_template_id, v_account_id, 0, 0, 'Företagskonto', 1);
+      INSERT INTO journal_entry_template_lines (template_id, account_id, debit_amount, credit_amount, description, line_order, entry_type)
+      VALUES (v_template_id, v_account_id, 0, 0, 'Företagskonto', 1, 'credit');
     END IF;
 
     v_templates_created := v_templates_created + 1;
@@ -235,24 +235,24 @@ BEGIN
     SELECT id INTO v_account_id FROM accounts 
     WHERE organization_id = p_organization_id AND account_number = '5010' LIMIT 1;
     IF v_account_id IS NOT NULL THEN
-      INSERT INTO journal_entry_template_lines (template_id, account_id, debit_amount, credit_amount, description, line_order, vat_code)
-      VALUES (v_template_id, v_account_id, 0, 0, 'Lokalhyra', 0, '25');
+      INSERT INTO journal_entry_template_lines (template_id, account_id, debit_amount, credit_amount, description, line_order, vat_code, entry_type)
+      VALUES (v_template_id, v_account_id, 0, 0, 'Lokalhyra', 0, '25', 'debit');
     END IF;
 
     -- Line 2: Ingående moms - Debit 2640
     SELECT id INTO v_account_id FROM accounts 
     WHERE organization_id = p_organization_id AND account_number = '2640' LIMIT 1;
     IF v_account_id IS NOT NULL THEN
-      INSERT INTO journal_entry_template_lines (template_id, account_id, debit_amount, credit_amount, description, line_order)
-      VALUES (v_template_id, v_account_id, 0, 0, 'Ingående moms 25%', 1);
+      INSERT INTO journal_entry_template_lines (template_id, account_id, debit_amount, credit_amount, description, line_order, entry_type)
+      VALUES (v_template_id, v_account_id, 0, 0, 'Ingående moms 25%', 1, 'debit');
     END IF;
 
     -- Line 3: Leverantörsskuld - Credit 2440
     SELECT id INTO v_account_id FROM accounts 
     WHERE organization_id = p_organization_id AND account_number = '2440' LIMIT 1;
     IF v_account_id IS NOT NULL THEN
-      INSERT INTO journal_entry_template_lines (template_id, account_id, debit_amount, credit_amount, description, line_order)
-      VALUES (v_template_id, v_account_id, 0, 0, 'Leverantörsskuld', 2);
+      INSERT INTO journal_entry_template_lines (template_id, account_id, debit_amount, credit_amount, description, line_order, entry_type)
+      VALUES (v_template_id, v_account_id, 0, 0, 'Leverantörsskuld', 2, 'credit');
     END IF;
 
     v_templates_created := v_templates_created + 1;
@@ -281,24 +281,24 @@ BEGIN
     SELECT id INTO v_account_id FROM accounts 
     WHERE organization_id = p_organization_id AND account_number = '5310' LIMIT 1;
     IF v_account_id IS NOT NULL THEN
-      INSERT INTO journal_entry_template_lines (template_id, account_id, debit_amount, credit_amount, description, line_order, vat_code)
-      VALUES (v_template_id, v_account_id, 0, 0, 'El', 0, '25');
+      INSERT INTO journal_entry_template_lines (template_id, account_id, debit_amount, credit_amount, description, line_order, vat_code, entry_type)
+      VALUES (v_template_id, v_account_id, 0, 0, 'El', 0, '25', 'debit');
     END IF;
 
     -- Line 2: Ingående moms - Debit 2640
     SELECT id INTO v_account_id FROM accounts 
     WHERE organization_id = p_organization_id AND account_number = '2640' LIMIT 1;
     IF v_account_id IS NOT NULL THEN
-      INSERT INTO journal_entry_template_lines (template_id, account_id, debit_amount, credit_amount, description, line_order)
-      VALUES (v_template_id, v_account_id, 0, 0, 'Ingående moms 25%', 1);
+      INSERT INTO journal_entry_template_lines (template_id, account_id, debit_amount, credit_amount, description, line_order, entry_type)
+      VALUES (v_template_id, v_account_id, 0, 0, 'Ingående moms 25%', 1, 'debit');
     END IF;
 
     -- Line 3: Leverantörsskuld - Credit 2440
     SELECT id INTO v_account_id FROM accounts 
     WHERE organization_id = p_organization_id AND account_number = '2440' LIMIT 1;
     IF v_account_id IS NOT NULL THEN
-      INSERT INTO journal_entry_template_lines (template_id, account_id, debit_amount, credit_amount, description, line_order)
-      VALUES (v_template_id, v_account_id, 0, 0, 'Leverantörsskuld', 2);
+      INSERT INTO journal_entry_template_lines (template_id, account_id, debit_amount, credit_amount, description, line_order, entry_type)
+      VALUES (v_template_id, v_account_id, 0, 0, 'Leverantörsskuld', 2, 'credit');
     END IF;
 
     v_templates_created := v_templates_created + 1;
@@ -323,24 +323,24 @@ BEGIN
     SELECT id INTO v_account_id FROM accounts 
     WHERE organization_id = p_organization_id AND account_number = '5320' LIMIT 1;
     IF v_account_id IS NOT NULL THEN
-      INSERT INTO journal_entry_template_lines (template_id, account_id, debit_amount, credit_amount, description, line_order, vat_code)
-      VALUES (v_template_id, v_account_id, 0, 0, 'Värme', 0, '25');
+      INSERT INTO journal_entry_template_lines (template_id, account_id, debit_amount, credit_amount, description, line_order, vat_code, entry_type)
+      VALUES (v_template_id, v_account_id, 0, 0, 'Värme', 0, '25', 'debit');
     END IF;
 
     -- Line 2: Ingående moms - Debit 2640
     SELECT id INTO v_account_id FROM accounts 
     WHERE organization_id = p_organization_id AND account_number = '2640' LIMIT 1;
     IF v_account_id IS NOT NULL THEN
-      INSERT INTO journal_entry_template_lines (template_id, account_id, debit_amount, credit_amount, description, line_order)
-      VALUES (v_template_id, v_account_id, 0, 0, 'Ingående moms 25%', 1);
+      INSERT INTO journal_entry_template_lines (template_id, account_id, debit_amount, credit_amount, description, line_order, entry_type)
+      VALUES (v_template_id, v_account_id, 0, 0, 'Ingående moms 25%', 1, 'debit');
     END IF;
 
     -- Line 3: Leverantörsskuld - Credit 2440
     SELECT id INTO v_account_id FROM accounts 
     WHERE organization_id = p_organization_id AND account_number = '2440' LIMIT 1;
     IF v_account_id IS NOT NULL THEN
-      INSERT INTO journal_entry_template_lines (template_id, account_id, debit_amount, credit_amount, description, line_order)
-      VALUES (v_template_id, v_account_id, 0, 0, 'Leverantörsskuld', 2);
+      INSERT INTO journal_entry_template_lines (template_id, account_id, debit_amount, credit_amount, description, line_order, entry_type)
+      VALUES (v_template_id, v_account_id, 0, 0, 'Leverantörsskuld', 2, 'credit');
     END IF;
 
     v_templates_created := v_templates_created + 1;
@@ -369,24 +369,24 @@ BEGIN
     SELECT id INTO v_account_id FROM accounts 
     WHERE organization_id = p_organization_id AND account_number = '6210' LIMIT 1;
     IF v_account_id IS NOT NULL THEN
-      INSERT INTO journal_entry_template_lines (template_id, account_id, debit_amount, credit_amount, description, line_order, vat_code)
-      VALUES (v_template_id, v_account_id, 0, 0, 'Telefon & Internet', 0, '25');
+      INSERT INTO journal_entry_template_lines (template_id, account_id, debit_amount, credit_amount, description, line_order, vat_code, entry_type)
+      VALUES (v_template_id, v_account_id, 0, 0, 'Telefon & Internet', 0, '25', 'debit');
     END IF;
 
     -- Line 2: Ingående moms - Debit 2640
     SELECT id INTO v_account_id FROM accounts 
     WHERE organization_id = p_organization_id AND account_number = '2640' LIMIT 1;
     IF v_account_id IS NOT NULL THEN
-      INSERT INTO journal_entry_template_lines (template_id, account_id, debit_amount, credit_amount, description, line_order)
-      VALUES (v_template_id, v_account_id, 0, 0, 'Ingående moms 25%', 1);
+      INSERT INTO journal_entry_template_lines (template_id, account_id, debit_amount, credit_amount, description, line_order, entry_type)
+      VALUES (v_template_id, v_account_id, 0, 0, 'Ingående moms 25%', 1, 'debit');
     END IF;
 
     -- Line 3: Leverantörsskuld - Credit 2440
     SELECT id INTO v_account_id FROM accounts 
     WHERE organization_id = p_organization_id AND account_number = '2440' LIMIT 1;
     IF v_account_id IS NOT NULL THEN
-      INSERT INTO journal_entry_template_lines (template_id, account_id, debit_amount, credit_amount, description, line_order)
-      VALUES (v_template_id, v_account_id, 0, 0, 'Leverantörsskuld', 2);
+      INSERT INTO journal_entry_template_lines (template_id, account_id, debit_amount, credit_amount, description, line_order, entry_type)
+      VALUES (v_template_id, v_account_id, 0, 0, 'Leverantörsskuld', 2, 'credit');
     END IF;
 
     v_templates_created := v_templates_created + 1;
@@ -415,24 +415,24 @@ BEGIN
     SELECT id INTO v_account_id FROM accounts 
     WHERE organization_id = p_organization_id AND account_number = '1510' LIMIT 1;
     IF v_account_id IS NOT NULL THEN
-      INSERT INTO journal_entry_template_lines (template_id, account_id, debit_amount, credit_amount, description, line_order)
-      VALUES (v_template_id, v_account_id, 0, 0, 'Kundfordran', 0);
+      INSERT INTO journal_entry_template_lines (template_id, account_id, debit_amount, credit_amount, description, line_order, entry_type)
+      VALUES (v_template_id, v_account_id, 0, 0, 'Kundfordran', 0, 'debit');
     END IF;
 
     -- Line 2: Försäljning - Credit 3010
     SELECT id INTO v_account_id FROM accounts 
     WHERE organization_id = p_organization_id AND account_number = '3010' LIMIT 1;
     IF v_account_id IS NOT NULL THEN
-      INSERT INTO journal_entry_template_lines (template_id, account_id, debit_amount, credit_amount, description, line_order, vat_code)
-      VALUES (v_template_id, v_account_id, 0, 0, 'Försäljning varor/tjänster', 1, '25');
+      INSERT INTO journal_entry_template_lines (template_id, account_id, debit_amount, credit_amount, description, line_order, vat_code, entry_type)
+      VALUES (v_template_id, v_account_id, 0, 0, 'Försäljning varor/tjänster', 1, '25', 'credit');
     END IF;
 
     -- Line 3: Utgående moms - Credit 2610
     SELECT id INTO v_account_id FROM accounts 
     WHERE organization_id = p_organization_id AND account_number = '2610' LIMIT 1;
     IF v_account_id IS NOT NULL THEN
-      INSERT INTO journal_entry_template_lines (template_id, account_id, debit_amount, credit_amount, description, line_order)
-      VALUES (v_template_id, v_account_id, 0, 0, 'Utgående moms 25%', 2);
+      INSERT INTO journal_entry_template_lines (template_id, account_id, debit_amount, credit_amount, description, line_order, entry_type)
+      VALUES (v_template_id, v_account_id, 0, 0, 'Utgående moms 25%', 2, 'credit');
     END IF;
 
     v_templates_created := v_templates_created + 1;
@@ -457,16 +457,16 @@ BEGIN
     SELECT id INTO v_account_id FROM accounts 
     WHERE organization_id = p_organization_id AND account_number = '1930' LIMIT 1;
     IF v_account_id IS NOT NULL THEN
-      INSERT INTO journal_entry_template_lines (template_id, account_id, debit_amount, credit_amount, description, line_order)
-      VALUES (v_template_id, v_account_id, 0, 0, 'Företagskonto', 0);
+      INSERT INTO journal_entry_template_lines (template_id, account_id, debit_amount, credit_amount, description, line_order, entry_type)
+      VALUES (v_template_id, v_account_id, 0, 0, 'Företagskonto', 0, 'debit');
     END IF;
 
     -- Line 2: Kundfordran - Credit 1510
     SELECT id INTO v_account_id FROM accounts 
     WHERE organization_id = p_organization_id AND account_number = '1510' LIMIT 1;
     IF v_account_id IS NOT NULL THEN
-      INSERT INTO journal_entry_template_lines (template_id, account_id, debit_amount, credit_amount, description, line_order)
-      VALUES (v_template_id, v_account_id, 0, 0, 'Kundfordran', 1);
+      INSERT INTO journal_entry_template_lines (template_id, account_id, debit_amount, credit_amount, description, line_order, entry_type)
+      VALUES (v_template_id, v_account_id, 0, 0, 'Kundfordran', 1, 'credit');
     END IF;
 
     v_templates_created := v_templates_created + 1;
@@ -495,16 +495,16 @@ BEGIN
     SELECT id INTO v_account_id FROM accounts 
     WHERE organization_id = p_organization_id AND account_number = '2650' LIMIT 1;
     IF v_account_id IS NOT NULL THEN
-      INSERT INTO journal_entry_template_lines (template_id, account_id, debit_amount, credit_amount, description, line_order)
-      VALUES (v_template_id, v_account_id, 0, 0, 'Redovisad moms', 0);
+      INSERT INTO journal_entry_template_lines (template_id, account_id, debit_amount, credit_amount, description, line_order, entry_type)
+      VALUES (v_template_id, v_account_id, 0, 0, 'Redovisad moms', 0, 'debit');
     END IF;
 
     -- Line 2: Bank - Credit 1930
     SELECT id INTO v_account_id FROM accounts 
     WHERE organization_id = p_organization_id AND account_number = '1930' LIMIT 1;
     IF v_account_id IS NOT NULL THEN
-      INSERT INTO journal_entry_template_lines (template_id, account_id, debit_amount, credit_amount, description, line_order)
-      VALUES (v_template_id, v_account_id, 0, 0, 'Företagskonto', 1);
+      INSERT INTO journal_entry_template_lines (template_id, account_id, debit_amount, credit_amount, description, line_order, entry_type)
+      VALUES (v_template_id, v_account_id, 0, 0, 'Företagskonto', 1, 'credit');
     END IF;
 
     v_templates_created := v_templates_created + 1;
@@ -529,24 +529,24 @@ BEGIN
     SELECT id INTO v_account_id FROM accounts 
     WHERE organization_id = p_organization_id AND account_number = '2710' LIMIT 1;
     IF v_account_id IS NOT NULL THEN
-      INSERT INTO journal_entry_template_lines (template_id, account_id, debit_amount, credit_amount, description, line_order)
-      VALUES (v_template_id, v_account_id, 0, 0, 'Personalskatt', 0);
+      INSERT INTO journal_entry_template_lines (template_id, account_id, debit_amount, credit_amount, description, line_order, entry_type)
+      VALUES (v_template_id, v_account_id, 0, 0, 'Personalskatt', 0, 'debit');
     END IF;
 
     -- Line 2: Arbetsgivaravgifter - Debit 2730
     SELECT id INTO v_account_id FROM accounts 
     WHERE organization_id = p_organization_id AND account_number = '2730' LIMIT 1;
     IF v_account_id IS NOT NULL THEN
-      INSERT INTO journal_entry_template_lines (template_id, account_id, debit_amount, credit_amount, description, line_order)
-      VALUES (v_template_id, v_account_id, 0, 0, 'Arbetsgivaravgifter', 1);
+      INSERT INTO journal_entry_template_lines (template_id, account_id, debit_amount, credit_amount, description, line_order, entry_type)
+      VALUES (v_template_id, v_account_id, 0, 0, 'Arbetsgivaravgifter', 1, 'debit');
     END IF;
 
     -- Line 3: Bank - Credit 1930
     SELECT id INTO v_account_id FROM accounts 
     WHERE organization_id = p_organization_id AND account_number = '1930' LIMIT 1;
     IF v_account_id IS NOT NULL THEN
-      INSERT INTO journal_entry_template_lines (template_id, account_id, debit_amount, credit_amount, description, line_order)
-      VALUES (v_template_id, v_account_id, 0, 0, 'Företagskonto', 2);
+      INSERT INTO journal_entry_template_lines (template_id, account_id, debit_amount, credit_amount, description, line_order, entry_type)
+      VALUES (v_template_id, v_account_id, 0, 0, 'Företagskonto', 2, 'credit');
     END IF;
 
     v_templates_created := v_templates_created + 1;
@@ -575,24 +575,24 @@ BEGIN
     SELECT id INTO v_account_id FROM accounts 
     WHERE organization_id = p_organization_id AND account_number = '6110' LIMIT 1;
     IF v_account_id IS NOT NULL THEN
-      INSERT INTO journal_entry_template_lines (template_id, account_id, debit_amount, credit_amount, description, line_order, vat_code)
-      VALUES (v_template_id, v_account_id, 0, 0, 'Kontorsmaterial', 0, '25');
+      INSERT INTO journal_entry_template_lines (template_id, account_id, debit_amount, credit_amount, description, line_order, vat_code, entry_type)
+      VALUES (v_template_id, v_account_id, 0, 0, 'Kontorsmaterial', 0, '25', 'debit');
     END IF;
 
     -- Line 2: Ingående moms - Debit 2640
     SELECT id INTO v_account_id FROM accounts 
     WHERE organization_id = p_organization_id AND account_number = '2640' LIMIT 1;
     IF v_account_id IS NOT NULL THEN
-      INSERT INTO journal_entry_template_lines (template_id, account_id, debit_amount, credit_amount, description, line_order)
-      VALUES (v_template_id, v_account_id, 0, 0, 'Ingående moms 25%', 1);
+      INSERT INTO journal_entry_template_lines (template_id, account_id, debit_amount, credit_amount, description, line_order, entry_type)
+      VALUES (v_template_id, v_account_id, 0, 0, 'Ingående moms 25%', 1, 'debit');
     END IF;
 
     -- Line 3: Leverantörsskuld - Credit 2440
     SELECT id INTO v_account_id FROM accounts 
     WHERE organization_id = p_organization_id AND account_number = '2440' LIMIT 1;
     IF v_account_id IS NOT NULL THEN
-      INSERT INTO journal_entry_template_lines (template_id, account_id, debit_amount, credit_amount, description, line_order)
-      VALUES (v_template_id, v_account_id, 0, 0, 'Leverantörsskuld', 2);
+      INSERT INTO journal_entry_template_lines (template_id, account_id, debit_amount, credit_amount, description, line_order, entry_type)
+      VALUES (v_template_id, v_account_id, 0, 0, 'Leverantörsskuld', 2, 'credit');
     END IF;
 
     v_templates_created := v_templates_created + 1;
@@ -617,16 +617,16 @@ BEGIN
     SELECT id INTO v_account_id FROM accounts 
     WHERE organization_id = p_organization_id AND account_number = '6570' LIMIT 1;
     IF v_account_id IS NOT NULL THEN
-      INSERT INTO journal_entry_template_lines (template_id, account_id, debit_amount, credit_amount, description, line_order)
-      VALUES (v_template_id, v_account_id, 0, 0, 'Bankavgifter', 0);
+      INSERT INTO journal_entry_template_lines (template_id, account_id, debit_amount, credit_amount, description, line_order, entry_type)
+      VALUES (v_template_id, v_account_id, 0, 0, 'Bankavgifter', 0, 'debit');
     END IF;
 
     -- Line 2: Bank - Credit 1930
     SELECT id INTO v_account_id FROM accounts 
     WHERE organization_id = p_organization_id AND account_number = '1930' LIMIT 1;
     IF v_account_id IS NOT NULL THEN
-      INSERT INTO journal_entry_template_lines (template_id, account_id, debit_amount, credit_amount, description, line_order)
-      VALUES (v_template_id, v_account_id, 0, 0, 'Företagskonto', 1);
+      INSERT INTO journal_entry_template_lines (template_id, account_id, debit_amount, credit_amount, description, line_order, entry_type)
+      VALUES (v_template_id, v_account_id, 0, 0, 'Företagskonto', 1, 'credit');
     END IF;
 
     v_templates_created := v_templates_created + 1;
@@ -655,16 +655,16 @@ BEGIN
     SELECT id INTO v_account_id FROM accounts 
     WHERE organization_id = p_organization_id AND account_number = '6310' LIMIT 1;
     IF v_account_id IS NOT NULL THEN
-      INSERT INTO journal_entry_template_lines (template_id, account_id, debit_amount, credit_amount, description, line_order)
-      VALUES (v_template_id, v_account_id, 0, 0, 'Företagsförsäkring', 0);
+      INSERT INTO journal_entry_template_lines (template_id, account_id, debit_amount, credit_amount, description, line_order, entry_type)
+      VALUES (v_template_id, v_account_id, 0, 0, 'Företagsörsäkring', 0, 'debit');
     END IF;
 
     -- Line 2: Bank - Credit 1930
     SELECT id INTO v_account_id FROM accounts 
     WHERE organization_id = p_organization_id AND account_number = '1930' LIMIT 1;
     IF v_account_id IS NOT NULL THEN
-      INSERT INTO journal_entry_template_lines (template_id, account_id, debit_amount, credit_amount, description, line_order)
-      VALUES (v_template_id, v_account_id, 0, 0, 'Företagskonto', 1);
+      INSERT INTO journal_entry_template_lines (template_id, account_id, debit_amount, credit_amount, description, line_order, entry_type)
+      VALUES (v_template_id, v_account_id, 0, 0, 'Företagskonto', 1, 'credit');
     END IF;
 
     v_templates_created := v_templates_created + 1;

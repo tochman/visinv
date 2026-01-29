@@ -18,6 +18,7 @@ const EMPTY_LINE = {
   debit_amount: '',
   credit_amount: '',
   description: '',
+  entry_type: null, // null = both editable, 'debit' = only debit editable, 'credit' = only credit editable
 };
 
 export default function JournalEntryModal({ entry, fiscalYear, organizationId, onClose, viewOnly: viewOnlyProp }) {
@@ -41,6 +42,7 @@ export default function JournalEntryModal({ entry, fiscalYear, organizationId, o
       debit_amount: l.debit_amount > 0 ? l.debit_amount.toString() : '',
       credit_amount: l.credit_amount > 0 ? l.credit_amount.toString() : '',
       description: l.description || '',
+      entry_type: null, // existing entries don't have entry_type from template
     })) || [{ ...EMPTY_LINE }, { ...EMPTY_LINE }]
   );
 
@@ -142,6 +144,7 @@ export default function JournalEntryModal({ entry, fiscalYear, organizationId, o
         debit_amount: line.debit_amount > 0 ? line.debit_amount.toString() : '',
         credit_amount: line.credit_amount > 0 ? line.credit_amount.toString() : '',
         description: line.description || '',
+        entry_type: line.entry_type || null, // Preserve entry_type from template for smart disabling
       }));
       // Ensure at least 2 lines
       while (templateLines.length < 2) {
@@ -435,11 +438,16 @@ export default function JournalEntryModal({ entry, fiscalYear, organizationId, o
                           type="number"
                           value={line.debit_amount}
                           onChange={(e) => handleLineChange(index, 'debit_amount', e.target.value)}
-                          disabled={isViewOnly}
+                          disabled={isViewOnly || line.entry_type === 'credit'}
                           data-cy={`line-debit-${index}`}
                           step="0.01"
                           min="0"
-                          className="w-full px-2 py-1 text-sm text-right font-mono border border-gray-300 dark:border-gray-600 rounded-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-white disabled:bg-gray-100 disabled:dark:bg-gray-900"
+                          className={`w-full px-2 py-1 text-sm text-right font-mono border rounded-sm ${
+                            line.entry_type === 'credit'
+                              ? 'bg-gray-100 dark:bg-gray-800 border-gray-200 dark:border-gray-700 text-gray-400 dark:text-gray-600 cursor-not-allowed'
+                              : 'border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white'
+                          } disabled:bg-gray-100 disabled:dark:bg-gray-900`}
+                          placeholder={line.entry_type === 'credit' ? '-' : ''}
                         />
                       </td>
 
@@ -449,11 +457,16 @@ export default function JournalEntryModal({ entry, fiscalYear, organizationId, o
                           type="number"
                           value={line.credit_amount}
                           onChange={(e) => handleLineChange(index, 'credit_amount', e.target.value)}
-                          disabled={isViewOnly}
+                          disabled={isViewOnly || line.entry_type === 'debit'}
                           data-cy={`line-credit-${index}`}
                           step="0.01"
                           min="0"
-                          className="w-full px-2 py-1 text-sm text-right font-mono border border-gray-300 dark:border-gray-600 rounded-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-white disabled:bg-gray-100 disabled:dark:bg-gray-900"
+                          className={`w-full px-2 py-1 text-sm text-right font-mono border rounded-sm ${
+                            line.entry_type === 'debit'
+                              ? 'bg-gray-100 dark:bg-gray-800 border-gray-200 dark:border-gray-700 text-gray-400 dark:text-gray-600 cursor-not-allowed'
+                              : 'border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white'
+                          } disabled:bg-gray-100 disabled:dark:bg-gray-900`}
+                          placeholder={line.entry_type === 'debit' ? '-' : ''}
                         />
                       </td>
 

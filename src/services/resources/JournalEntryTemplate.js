@@ -32,7 +32,8 @@ class JournalEntryTemplateResource extends BaseResource {
           credit_amount,
           description,
           vat_code,
-          line_order
+          line_order,
+          entry_type
         )
       `)
       .eq('organization_id', organizationId)
@@ -68,7 +69,8 @@ class JournalEntryTemplateResource extends BaseResource {
           credit_amount,
           description,
           vat_code,
-          line_order
+          line_order,
+          entry_type
         )
       `)
       .eq('id', id)
