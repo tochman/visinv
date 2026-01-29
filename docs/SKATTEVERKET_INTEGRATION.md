@@ -37,19 +37,68 @@ The integration aims to:
 
 ### API Capabilities
 
-#### Momsdeklaration (VAT) API
+#### Momsdeklaration (VAT) API (v1.0.19)
+
+**Common HTTP Methods:**
+- **POST** - Submit new VAT declarations
+- **GET** - Retrieve declaration status and results
+- **PUT** - Update draft declarations
+
+**Key Operations:**
 - Create and manage VAT declaration drafts
 - Validate declarations against business rules
 - Submit declarations with BankID authentication
 - Retrieve submission status and decisions
 - Download submission receipts
 
-#### Arbetsgivardeklaration (Employer) API
-- Submit payroll declaration data (Läsa in underlag)
-- Poll for validation/control results (Hämta kontrollresultat)
-- Prepare declaration for review (Förbered granskning)
-- Generate deep link to signing portal
-- Retrieve submission status
+**Typical Endpoints:**
+- `POST /v1/declarations` - Submit a new VAT declaration
+- `GET /v1/declarations/{id}` - Retrieve a specific VAT declaration by ID
+- `GET /v1/declarations` - List submitted VAT declarations
+- `GET /v1/declarations/{id}/status` - Get submission status
+
+**Data Format:**
+- Request/Response: JSON or XML
+- VAT declaration XML must comply with Skatteverket's schema
+- Authentication via OAuth2 with organization certificates
+
+#### Arbetsgivardeklaration (Employer) API (v1.0.0)
+
+**Key API Operations:**
+
+1. **Läsa in underlag (Submit Payroll Data)**
+   - **Method**: POST
+   - **Purpose**: Upload employer declaration data to Skatteverket
+   - **Input**: AG declaration data (employee salaries, contributions, tax withheld)
+   - **Output**: Declaration ID (inläsnings-ID) for tracking
+   - **Process**: Asynchronous - data is validated in background
+
+2. **Hämta kontrollresultat (Fetch Control Results)**
+   - **Method**: GET
+   - **Purpose**: Poll for validation results of submitted data
+   - **Input**: Declaration ID (inläsnings-ID)
+   - **Output**: Validation results (errors, warnings, summary checks)
+   - **Usage**: Poll periodically until validation is complete
+
+3. **Förbered granskning (Prepare for Review)**
+   - **Method**: POST
+   - **Purpose**: Create review record when validation passes
+   - **Input**: Employer registration ID + reporting period
+   - **Output**: Deep link to Skatteverket's signing portal
+   - **Final Step**: Authorized person signs with BankID (external to API)
+
+**Workflow:**
+```
+1. POST payroll data → Receive declaration ID
+2. GET control results (polling) → Validation complete
+3. POST prepare review → Receive deep link
+4. User signs via BankID (external) → Declaration submitted
+```
+
+**Data Format:**
+- Request/Response: JSON
+- Authentication via OAuth2 with client credentials
+- Requires organization e-legitimation for final signing
 
 ## Authentication Requirements
 
@@ -70,7 +119,16 @@ The integration aims to:
 ### Certificate-based Authentication
 - API calls authenticated using certificates provided by Skatteverket
 - OAuth 2.0 flow for authorization
+- Client ID and Client Secret for API access
+- Organization e-legitimation certificate required
 - Secure storage of credentials required
+
+**Authentication Flow:**
+1. Obtain client credentials (Client ID, Client Secret) from Skatteverket
+2. Request OAuth2 access token using client credentials
+3. Include access token in API requests (Bearer token)
+4. Refresh token when expired
+5. BankID signature required for final declaration submission
 
 ## Data Flow
 
@@ -88,6 +146,142 @@ API Submission → Declaration ID → Validation Results →
 Review Request → Deep Link → BankID Signing (external) → 
 Submission Confirmation
 ```
+
+## API Endpoint Details
+
+### VAT Declaration API Endpoints
+
+**Base URL (Production):** `https://api.skatteverket.se/moms/v1`  
+**Base URL (Test):** `https://test-api.skatteverket.se/moms/v1`
+
+**Example Endpoints:**
+
+```http
+POST /v1/declarations
+Authorization: Bearer {access_token}
+Content-Type: application/json
+
+{
+  "organizationNumber": "556677-8899",
+  "periodStart": "2024-01-01",
+  "periodEnd": "2024-01-31",
+  "vatOutput": {
+    "rate25": { "base": 100000, "vat": 25000 },
+    "rate12": { "base": 50000, "vat": 6000 },
+    "rate6": { "base": 20000, "vat": 1200 }
+  },
+  "vatInput": {
+    "rate25": { "base": 40000, "vat": 10000 }
+  },
+  "netVat": 22200
+}
+```
+
+```http
+GET /v1/declarations/{declarationId}
+Authorization: Bearer {access_token}
+```
+
+**Response:**
+```json
+{
+  "declarationId": "abc123",
+  "status": "submitted",
+  "organizationNumber": "556677-8899",
+  "submittedDate": "2024-02-15T10:30:00Z",
+  "decision": {
+    "status": "accepted",
+    "date": "2024-02-15T11:00:00Z"
+  }
+}
+```
+
+### Employer Declaration API Endpoints
+
+**Base URL (Production):** `https://api.skatteverket.se/agd/v1`  
+**Base URL (Test):** `https://test-api.skatteverket.se/agd/v1`
+
+**1. Submit Payroll Data (Läsa in underlag)**
+
+```http
+POST /v1/inlamning/underlag
+Authorization: Bearer {access_token}
+Content-Type: application/json
+
+{
+  "arbetsgivarregId": "556677-8899",
+  "redovisningsperiod": "2024-01",
+  "anstallda": [
+    {
+      "personnummer": "19901231-1234",
+      "bruttolön": 35000,
+      "skatteavdrag": 10500,
+      "arbetsgivaravgift": 10990,
+      "frånvaro": {
+        "sjukfrånvaro": 5,
+        "föräldraledighet": 0
+      }
+    }
+  ]
+}
+```
+
+**Response:**
+```json
+{
+  "inläsningsId": "xyz789",
+  "status": "received",
+  "timestamp": "2024-02-05T09:15:00Z"
+}
+```
+
+**2. Fetch Control Results (Hämta kontrollresultat)**
+
+```http
+GET /v1/inlamning/kontrollresultat/{inläsningsId}
+Authorization: Bearer {access_token}
+```
+
+**Response:**
+```json
+{
+  "inläsningsId": "xyz789",
+  "status": "completed",
+  "resultat": {
+    "fel": [],
+    "varningar": [],
+    "sammanställning": {
+      "totalBruttolön": 35000,
+      "totalSkatteavdrag": 10500,
+      "totalArbetsgivaravgift": 10990
+    }
+  }
+}
+```
+
+**3. Prepare Review (Förbered granskning)**
+
+```http
+POST /v1/inlamning/granskning
+Authorization: Bearer {access_token}
+Content-Type: application/json
+
+{
+  "arbetsgivarregId": "556677-8899",
+  "redovisningsperiod": "2024-01"
+}
+```
+
+**Response:**
+```json
+{
+  "granskningsId": "grans456",
+  "djuplänk": "https://www.skatteverket.se/granskning?id=grans456&token=abc...",
+  "giltigTill": "2024-02-06T23:59:59Z"
+}
+```
+
+**Note:** The exact endpoint URLs and request/response formats are subject to Skatteverket's API specifications. Consult the official API documentation for production use.
 
 ## Technical Architecture
 
