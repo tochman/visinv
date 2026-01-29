@@ -518,6 +518,10 @@
     "search": "Search",
     "filter": "Filter",
     "export": "Export",
+    "exportPdf": "Export PDF",
+    "exporting": "Exporting...",
+    "print": "Print",
+    "generatedOn": "Generated on",
     "loading": "Loading...",
     "error": "Error",
     "success": "Success",
@@ -1030,6 +1034,14 @@
     "date": "Date",
     "entry": "Entry",
     "description": "Description",
-    "amount": "Amount"
+    "amount": "Amount",
+    "sales": "Sales",
+    "orgNumber": "Organization Number",
+    "vatNumber": "VAT Number",
+    "skatteverketReport": "Momsrapport för Skatteverket",
+    "netVat": "Net VAT",
+    "vatPayableNote": "This amount should be paid to Skatteverket by the filing deadline.",
+    "vatReceivableNote": "This amount can be claimed back from Skatteverket.",
+    "deductibleInputVat": "Deductible Input VAT"
   }
 }

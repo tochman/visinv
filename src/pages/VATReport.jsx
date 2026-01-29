@@ -16,6 +16,7 @@ import {
 } from '../features/fiscalYears/fiscalYearsSlice';
 import { useOrganization } from '../contexts/OrganizationContext';
 import { PrinterIcon, ArrowDownTrayIcon, ChevronDownIcon, ChevronRightIcon } from '@heroicons/react/24/outline';
+import { exportVatReportToPDF } from '../services/financialReportPdfService';
 
 /**
  * VAT Report Page - US-233
@@ -140,6 +141,30 @@ export default function VATReport() {
   // Handle print
   const handlePrint = () => {
     window.print();
+  };
+
+  // State for PDF export
+  const [exportingPdf, setExportingPdf] = useState(false);
+
+  // Handle PDF export
+  const handleExportPdf = async () => {
+    if (!vatReport) return;
+    setExportingPdf(true);
+    try {
+      await exportVatReportToPDF(vatReport, {
+        organizationName: currentOrganization?.name || '',
+        organizationNumber: currentOrganization?.organization_number || '',
+        vatNumber: currentOrganization?.vat_number || '',
+        startDate,
+        endDate,
+        currency: currentOrganization?.default_currency || 'SEK',
+        locale: 'sv-SE', // VAT reports are always in Swedish format
+      });
+    } catch (err) {
+      console.error('PDF export failed:', err);
+    } finally {
+      setExportingPdf(false);
+    }
   };
 
   // Handle quick period selection
@@ -314,6 +339,15 @@ export default function VATReport() {
 
           {/* Actions */}
           <div className="flex items-end gap-2">
+            <button
+              onClick={handleExportPdf}
+              disabled={exportingPdf || !vatReport}
+              className="flex items-center gap-1 px-3 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-sm text-sm disabled:opacity-50 disabled:cursor-not-allowed"
+              data-cy="export-pdf-btn"
+            >
+              <ArrowDownTrayIcon className="h-4 w-4" />
+              {exportingPdf ? t('common.exporting') : t('common.exportPdf')}
+            </button>
             <button
               onClick={handlePrint}
               className="flex items-center gap-1 px-3 py-2 bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 rounded-sm text-sm"

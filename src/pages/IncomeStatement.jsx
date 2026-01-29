@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { useTranslation } from 'react-i18next';
+import { ArrowDownTrayIcon } from '@heroicons/react/24/outline';
 import {
   fetchIncomeStatement,
   clearIncomeStatement,
@@ -15,6 +16,7 @@ import {
   setSelectedFiscalYear,
 } from '../features/fiscalYears/fiscalYearsSlice';
 import { useOrganization } from '../contexts/OrganizationContext';
+import { exportIncomeStatementToPDF } from '../services/financialReportPdfService';
 
 /**
  * Income Statement Page - US-231
@@ -40,6 +42,29 @@ export default function IncomeStatement() {
   const [comparativeEndDate, setComparativeEndDate] = useState('');
   const [showDetails, setShowDetails] = useState(false);
   const [expandedGroups, setExpandedGroups] = useState(new Set());
+  const [exportingPdf, setExportingPdf] = useState(false);
+
+  // Handle PDF export
+  const handleExportPdf = async () => {
+    if (!incomeStatement) return;
+    setExportingPdf(true);
+    try {
+      await exportIncomeStatementToPDF(incomeStatement, {
+        organizationName: currentOrganization?.name || '',
+        startDate,
+        endDate,
+        showComparative,
+        comparativeStartDate,
+        comparativeEndDate,
+        currency: currentOrganization?.default_currency || 'SEK',
+        locale: i18n.language === 'sv' ? 'sv-SE' : 'en-US',
+      });
+    } catch (err) {
+      console.error('PDF export failed:', err);
+    } finally {
+      setExportingPdf(false);
+    }
+  };
 
   // Load fiscal years on mount
   useEffect(() => {
@@ -258,6 +283,16 @@ export default function IncomeStatement() {
           </p>
         </div>
         <div className="flex gap-2">
+          <button
+            type="button"
+            onClick={handleExportPdf}
+            disabled={exportingPdf || !incomeStatement}
+            className="inline-flex items-center px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-sm hover:bg-gray-50 dark:hover:bg-gray-700 disabled:opacity-50 disabled:cursor-not-allowed"
+            data-cy="export-pdf-btn"
+          >
+            <ArrowDownTrayIcon className="h-4 w-4 mr-2" />
+            {exportingPdf ? t('common.exporting') : t('common.exportPdf')}
+          </button>
           <button
             type="button"
             onClick={() => window.print()}

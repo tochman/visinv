@@ -506,6 +506,10 @@
     "search": "Sök",
     "filter": "Filtrera",
     "export": "Exportera",
+    "exportPdf": "Exportera PDF",
+    "exporting": "Exporterar...",
+    "print": "Skriv ut",
+    "generatedOn": "Genererad",
     "loading": "Laddar...",
     "error": "Fel",
     "success": "Lyckades",
@@ -1011,6 +1015,14 @@
     "date": "Datum",
     "entry": "Verifikation",
     "description": "Beskrivning",
-    "amount": "Belopp"
+    "amount": "Belopp",
+    "sales": "Försäljning",
+    "orgNumber": "Organisationsnummer",
+    "vatNumber": "Momsnummer",
+    "skatteverketReport": "Momsrapport för Skatteverket",
+    "netVat": "Netto moms",
+    "vatPayableNote": "Detta belopp ska betalas till Skatteverket före deklarationsfristen.",
+    "vatReceivableNote": "Detta belopp kan återkrävas från Skatteverket.",
+    "deductibleInputVat": "Avdragsgill ingående moms"
   }
 }

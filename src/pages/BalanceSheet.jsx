@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { useTranslation } from 'react-i18next';
+import { ArrowDownTrayIcon } from '@heroicons/react/24/outline';
 import {
   fetchBalanceSheet,
   clearBalanceSheet,
@@ -15,6 +16,7 @@ import {
   setSelectedFiscalYear,
 } from '../features/fiscalYears/fiscalYearsSlice';
 import { useOrganization } from '../contexts/OrganizationContext';
+import { exportBalanceSheetToPDF } from '../services/financialReportPdfService';
 
 /**
  * Balance Sheet Page - US-230
@@ -38,6 +40,27 @@ export default function BalanceSheet() {
   const [comparativeDate, setComparativeDate] = useState('');
   const [showDetails, setShowDetails] = useState(false);
   const [expandedGroups, setExpandedGroups] = useState(new Set());
+  const [exportingPdf, setExportingPdf] = useState(false);
+
+  // Handle PDF export
+  const handleExportPdf = async () => {
+    if (!balanceSheet) return;
+    setExportingPdf(true);
+    try {
+      await exportBalanceSheetToPDF(balanceSheet, {
+        organizationName: currentOrganization?.name || '',
+        asOfDate,
+        showComparative,
+        comparativeDate,
+        currency: currentOrganization?.default_currency || 'SEK',
+        locale: i18n.language === 'sv' ? 'sv-SE' : 'en-US',
+      });
+    } catch (err) {
+      console.error('PDF export failed:', err);
+    } finally {
+      setExportingPdf(false);
+    }
+  };
 
   // Load fiscal years on mount
   useEffect(() => {
@@ -222,6 +245,16 @@ export default function BalanceSheet() {
           </p>
         </div>
         <div className="flex gap-2">
+          <button
+            type="button"
+            onClick={handleExportPdf}
+            disabled={exportingPdf || !balanceSheet}
+            className="inline-flex items-center px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-sm hover:bg-gray-50 dark:hover:bg-gray-700 disabled:opacity-50 disabled:cursor-not-allowed"
+            data-cy="export-pdf-btn"
+          >
+            <ArrowDownTrayIcon className="h-4 w-4 mr-2" />
+            {exportingPdf ? t('common.exporting') : t('common.exportPdf')}
+          </button>
           <button
             type="button"
             onClick={() => window.print()}
