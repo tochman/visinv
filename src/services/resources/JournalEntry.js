@@ -736,12 +736,12 @@ class JournalEntryResource extends BaseResource {
       return { data: null, error: fetchError };
     }
 
-    // Build set of existing SIE references (stored in description as "SIE Import A1" etc)
+    // Build set of existing SIE references (stored in description as "SIE Import A1" or "SIE Import A1: description")
     const existingRefs = new Set(
       (existing || [])
         .map((e) => {
-          // Extract SIE reference from description like "SIE Import A1" -> "A1"
-          const match = e.description?.match(/^SIE Import (.+)$/);
+          // Extract SIE reference from description like "SIE Import A1" or "SIE Import A1: some text"
+          const match = e.description?.match(/^SIE Import ([A-Za-z]*\d+)(?::|$)/);
           return match ? match[1] : null;
         })
         .filter(Boolean)

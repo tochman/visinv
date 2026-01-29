@@ -658,13 +658,19 @@ export function prepareJournalEntriesForImport(vouchers, organizationId, account
     }
 
     // Create the journal entry
+    // Always include SIE reference in description for duplicate detection
+    const sieRef = `${voucher.series}${voucher.number}`;
+    const description = voucher.text
+      ? `SIE Import ${sieRef}: ${voucher.text}`
+      : `SIE Import ${sieRef}`;
+
     entries.push({
       organization_id: organizationId,
       fiscal_year_id: fiscalYearId,
       entry_date: voucher.date,
-      description: voucher.text || `SIE Import ${voucher.series}${voucher.number}`,
+      description,
       source_type: 'sie_import',
-      source_reference: `${voucher.series}${voucher.number}`,
+      source_reference: sieRef,
       status: 'posted',
       lines,
       // Store original SIE data for reference
