@@ -2162,15 +2162,36 @@ The Swedish Tax Authority (Skatteverket) provides APIs for digital submission of
 
 #### Supplier Management (Leverantörer)
 
-**US-260: Supplier Invoice Registration**
+**US-260: Supplier Invoice Registration** ✅
 - As a **bookkeeper**, in order to **track business expenses**, I would like to **register supplier invoices/bills**.
 - **Acceptance Criteria:**
-  - Supplier selection (from supplier register)
-  - Invoice details: number, date, due date, amount, VAT
-  - Line items with account coding
-  - Attach PDF of invoice
-  - Auto-create journal entry
-- **Status:** Not Started
+  - Supplier selection (from supplier register) ✅
+  - Invoice details: number, date, due date, amount, VAT ✅
+  - Line items with account coding ✅
+  - Attach PDF of invoice ⏸️ (deferred)
+  - Auto-create journal entry ✅
+- **Status:** Complete
+- **Implementation Notes:**
+  - Database tables: `supplier_invoices`, `supplier_invoice_lines`
+  - Status workflow: draft → approved → paid (or cancelled)
+  - Automatic journal entry creation on approval
+  - Journal entry structure:
+    - Debit: Expense accounts (from line items)
+    - Credit: Accounts Payable (supplier's default payable account)
+  - Line items with quantity, unit price, VAT calculations
+  - Auto-calculate due date from supplier payment terms
+  - Search and filter by status
+  - Full CRUD operations (draft invoices only)
+  - Approval workflow with fiscal year selection
+  - Mark as paid functionality
+  - i18n support (English/Swedish)
+- **Files:**
+  - `supabase/migrations/071_create_supplier_invoices.sql`
+  - `src/services/resources/SupplierInvoice.js`
+  - `src/features/supplierInvoices/supplierInvoicesSlice.js`
+  - `src/pages/SupplierInvoices.jsx`
+  - `src/components/supplierInvoices/SupplierInvoiceModal.jsx`
+  - Route: `/supplier-invoices`
 
 **US-261: Supplier Management** ✅
 - As a **bookkeeper**, in order to **manage vendors**, I would like to **maintain a supplier register**.
