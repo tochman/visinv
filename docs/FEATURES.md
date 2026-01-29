@@ -1762,6 +1762,284 @@ Swedish accounting follows **Bokföringslagen** (BFL) and **Årsredovisningslage
   - Visual indicator of locked periods
 - **Status:** Not Started
 
+#### Skatteverket Integration (Swedish Tax Authority)
+
+The Swedish Tax Authority (Skatteverket) provides APIs for digital submission of tax reports. Integration enables automated compliance with Swedish tax reporting requirements.
+
+**API Documentation:**
+- [Momsdeklaration API (VAT Declaration)](https://www7.skatteverket.se/portal/apier-och-oppna-data/utvecklarportalen/api/momsdeklaration/1.0.19/Exempel)
+- [Arbetsgivardeklaration API (Employer Declaration)](https://www7.skatteverket.se/portal/apier-och-oppna-data/utvecklarportalen/api/arbetsgivardeklaration-hantera-redovisningsperiod/1.0.0/Exempel)
+- [Utvecklarportalen (Developer Portal)](https://www7.skatteverket.se/portal/apier-och-oppna-data/utvecklarportalen)
+
+##### API Connection & Authentication
+
+**US-290: Skatteverket API Registration**
+- As a **business owner**, in order to **enable digital tax reporting**, I would like to **register my organization with Skatteverket's API service**.
+- **Acceptance Criteria:**
+  - Organization settings include Skatteverket API connection section
+  - Step-by-step guide to register at Skatteverket's developer portal
+  - Link to onboarding documentation and registration forms
+  - Store API credentials securely (API keys, certificates)
+  - Connection status indicator (connected/disconnected)
+  - Test connection functionality
+  - Separate test and production environment settings
+- **Technical Requirements:**
+  - Secure storage of API credentials in Supabase (encrypted)
+  - Support for certificate-based authentication
+  - OAuth 2.0 flow for authorization
+  - Connection testing against Skatteverket test environment
+- **Status:** Not Started
+
+**US-291: Skatteverket BankID Authentication**
+- As a **user submitting tax reports**, in order to **legally sign and submit declarations**, I would like to **authenticate using Swedish BankID (e-legitimation)**.
+- **Acceptance Criteria:**
+  - BankID integration for signing tax declarations
+  - Support for both BankID mobile and desktop client
+  - Clear instructions for BankID authentication flow
+  - Secure session management during signing process
+  - Verification of user authorization to sign on behalf of organization
+  - Audit trail of all signed submissions
+- **Technical Requirements:**
+  - BankID OAuth integration or SDK
+  - Strong authentication before submission
+  - Signature attached to submitted declarations
+  - Compliance with Skatteverket's authentication requirements
+- **Status:** Not Started
+
+##### VAT (Moms) Reporting
+
+**US-300: VAT Declaration Generation**
+- As a **bookkeeper**, in order to **file VAT returns**, I would like to **generate VAT declarations (momsdeklaration) from system data**.
+- **Acceptance Criteria:**
+  - Select reporting period (monthly, quarterly, or yearly)
+  - Automatic calculation from invoice and purchase data:
+    - Output VAT (försäljning/utgående moms) by rate (25%, 12%, 6%, 0%)
+    - Input VAT (inköp/ingående moms) by rate
+    - Net VAT payable or receivable (skatteskuld/tillgodo)
+  - Breakdown by VAT categories matching Skatteverket's form:
+    - Domestic sales (försäljning inom Sverige)
+    - EU sales (försäljning inom EU)
+    - Export sales (export)
+    - Reverse charge purchases (omvänd skattskyldighet)
+  - Review screen showing all calculated amounts
+  - Validation against business logic rules
+  - Preview of declaration before submission
+  - Option to adjust/correct amounts manually if needed
+  - Link to source transactions for each amount
+- **Status:** Not Started
+
+**US-301: VAT Declaration Submission to Skatteverket**
+- As a **bookkeeper**, in order to **comply with VAT reporting obligations**, I would like to **submit VAT declarations directly to Skatteverket via API**.
+- **Acceptance Criteria:**
+  - Submit VAT declaration from review screen
+  - Generate XML file in Skatteverket's required format
+  - BankID authentication required before submission
+  - Submit to Skatteverket API with proper authentication
+  - Receive and store submission receipt/confirmation
+  - Display submission status (pending, accepted, rejected)
+  - Error handling with clear messages in Swedish/English
+  - Ability to retrieve submission status from Skatteverket
+  - Store submission history with timestamps and user info
+  - Retrieve and display decision document (beslut) from Skatteverket
+  - Download submission receipt as PDF for records
+- **Technical Requirements:**
+  - Implement Skatteverket Momsdeklaration API client
+  - XML generation according to schema
+  - API error handling and retry logic
+  - Store submission metadata and responses
+- **Status:** Not Started
+
+**US-302: VAT Declaration Draft Management**
+- As a **bookkeeper**, in order to **prepare VAT returns incrementally**, I would like to **save VAT declarations as drafts before final submission**.
+- **Acceptance Criteria:**
+  - Save declaration as draft at any stage
+  - Multiple drafts per period (with version tracking)
+  - Edit and update draft declarations
+  - Compare draft versions
+  - Validation checks run on drafts
+  - Submit draft to Skatteverket's test environment for validation
+  - Retrieve validation results and control checks from Skatteverket
+  - Fix validation errors before production submission
+  - Convert draft to final submission when ready
+  - Cannot edit after submission (archive only)
+- **Status:** Not Started
+
+**US-303: VAT Report History & Archive**
+- As a **business owner**, in order to **maintain tax records**, I would like to **view history of all VAT declarations with submission details**.
+- **Acceptance Criteria:**
+  - List all VAT declarations by period
+  - Show status: draft, submitted, accepted, rejected
+  - View full declaration details for any period
+  - Download original submitted XML file
+  - Download submission receipt/confirmation
+  - Download decision document (beslut) from Skatteverket
+  - Export history to PDF or Excel
+  - Search and filter by period, status, amount
+  - Cannot delete submitted declarations
+  - Audit trail showing who submitted and when
+- **Status:** Not Started
+
+##### Employer (Arbetsgivardeklaration) Reporting
+
+**US-310: Payroll Data Management**
+- As a **business owner with employees**, in order to **report payroll taxes**, I would like to **manage payroll data for employer declarations**.
+- **Acceptance Criteria:**
+  - Register employee information (name, personnummer, employment details)
+  - Record monthly payroll data per employee:
+    - Gross salary (bruttolön)
+    - Taxable benefits (förmåner)
+    - Tax withheld (skatteavdrag)
+    - Pension contributions (pensionsavgift)
+  - Calculate employer contributions (arbetsgivaravgifter):
+    - Social security fees (socialavgifter) at applicable rates
+    - Special payroll tax (särskild löneskatt) if applicable
+    - Calculate reduced rates for young employees (nedsättning för unga)
+  - Import payroll data from external payroll systems (CSV, Excel)
+  - Support for different employee types (regular, temporary, consultant)
+  - Period-based data entry (monthly reporting)
+  - Validation of personnummer format
+- **Status:** Not Started
+
+**US-311: Employer Declaration Generation**
+- As a **business owner with employees**, in order to **report payroll taxes**, I would like to **generate employer declarations (arbetsgivardeklaration)**.
+- **Acceptance Criteria:**
+  - Select reporting period (monthly)
+  - Automatic calculation from payroll data:
+    - Total salaries and benefits paid
+    - Total tax withheld from employees
+    - Total employer contributions calculated
+    - Breakdown by contribution type
+  - Calculate absence data (frånvaro) for reporting to Försäkringskassan:
+    - Sick leave days (sjukfrånvaro)
+    - Parental leave (föräldraledighet)
+    - Other absence types
+  - Review screen showing all calculated amounts
+  - Summary by employee (optional detailed view)
+  - Validation against Skatteverket's business rules
+  - Preview declaration before submission
+  - Option to adjust amounts manually if needed
+  - Link to source payroll data for verification
+- **Status:** Not Started
+
+**US-312: Employer Declaration Submission to Skatteverket**
+- As a **business owner with employees**, in order to **comply with employer reporting obligations**, I would like to **submit employer declarations directly to Skatteverket via API**.
+- **Acceptance Criteria:**
+  - Submit employer declaration from review screen
+  - Transfer declaration data to Skatteverket via API
+  - Receive declaration ID from Skatteverket
+  - Poll for control/validation results from Skatteverket
+  - Display validation results and any errors/warnings
+  - Fix errors and resubmit if needed
+  - Request review record when validation passes
+  - Receive deep link to Skatteverket's signing portal
+  - Redirect authorized user to sign with BankID
+  - Final submission requires BankID signature (cannot be automated)
+  - Confirm submission success after signing
+  - Store submission receipt and reference
+  - Display submission status (pending, validated, signed, accepted)
+- **Technical Requirements:**
+  - Implement Skatteverket Arbetsgivardeklaration API client
+  - API operations: submit data, fetch control results, prepare review
+  - Handle async validation results (polling mechanism)
+  - Generate and handle deep links to signing portal
+  - Store submission metadata and API responses
+- **Status:** Not Started
+
+**US-313: Employer Declaration Draft Management**
+- As a **business owner with employees**, in order to **prepare employer declarations incrementally**, I would like to **save declarations as drafts and validate before submission**.
+- **Acceptance Criteria:**
+  - Save declaration as draft
+  - Multiple drafts per period
+  - Edit and update draft declarations
+  - Submit draft to Skatteverket for validation (without final signing)
+  - Retrieve and display control results from Skatteverket
+  - Show validation errors, warnings, and summary checks
+  - Fix issues identified in validation results
+  - Re-validate after corrections
+  - Submit final declaration when validation passes
+  - Archive after submission (no further edits)
+- **Status:** Not Started
+
+**US-314: Employer Declaration History & Archive**
+- As a **business owner with employees**, in order to **maintain payroll tax records**, I would like to **view history of all employer declarations**.
+- **Acceptance Criteria:**
+  - List all employer declarations by period
+  - Show status: draft, validated, submitted, signed, accepted
+  - View full declaration details and payroll breakdown
+  - View control/validation results from Skatteverket
+  - Access deep link to review record (if available)
+  - Download submission receipts
+  - Export history to PDF or Excel
+  - Search and filter by period, status, amount
+  - Cannot delete submitted declarations
+  - Audit trail of submissions and signatures
+- **Status:** Not Started
+
+##### Tax Reporting Dashboard
+
+**US-320: Tax Reporting Dashboard**
+- As a **business owner**, in order to **stay compliant with tax obligations**, I would like to **see an overview of upcoming and past tax filings**.
+- **Acceptance Criteria:**
+  - Dashboard shows upcoming tax filing deadlines:
+    - VAT declaration deadlines based on organization's reporting frequency
+    - Employer declaration deadlines (monthly, due 12th of following month)
+  - Visual calendar with filing dates
+  - Status of current period declarations (not started, draft, submitted, accepted)
+  - Alerts for approaching deadlines
+  - Quick links to create/continue draft declarations
+  - Summary of recent submissions and their status
+  - Connection status to Skatteverket API
+  - Display any pending validation results or actions required
+- **Status:** Not Started
+
+**US-321: Tax Filing Notifications**
+- As a **business owner**, in order to **never miss a tax deadline**, I would like to **receive notifications about upcoming tax filings**.
+- **Acceptance Criteria:**
+  - Email notifications for upcoming deadlines (7 days, 3 days, 1 day before)
+  - In-app notifications for overdue filings
+  - Reminder to complete draft declarations
+  - Notification when Skatteverket responds with validation results
+  - Notification when submission is accepted/rejected
+  - Notification to sign declarations waiting for BankID signature
+  - Configurable notification preferences per user
+  - Option to disable specific notification types
+- **Status:** Not Started
+
+##### Integration & Data Flow
+
+**US-330: Automatic VAT Calculation from Invoices**
+- As a **bookkeeper**, in order to **simplify VAT reporting**, I would like to **have VAT declarations automatically populated from invoice data**.
+- **Acceptance Criteria:**
+  - System aggregates output VAT from all invoices in period:
+    - Group by VAT rate (25%, 12%, 6%, 0%)
+    - Separate domestic sales from EU/export
+    - Calculate reverse charge amounts
+  - System aggregates input VAT from supplier invoices (if module exists)
+  - Automatic categorization based on invoice metadata
+  - Preview calculated amounts before creating declaration
+  - Ability to adjust individual transactions if miscategorized
+  - Recalculate when invoices are added/edited in period
+  - Link from VAT declaration to source invoices
+  - Drilldown to see which invoices contributed to each amount
+- **Status:** Not Started
+
+**US-331: Journal Entry Integration for Tax Accounts**
+- As a **bookkeeper**, in order to **maintain accurate books**, I would like to **automatic journal entries created when tax declarations are filed**.
+- **Acceptance Criteria:**
+  - When VAT declaration submitted, create journal entries:
+    - Debit/Credit: VAT accounts (26xx) based on net payable/receivable
+    - Debit/Credit: Tax liability account (29xx)
+    - Description includes period and submission reference
+  - When employer declaration submitted, create journal entries:
+    - Employer contributions to liability accounts
+    - Tax withheld from salaries to liability account
+    - Link to payroll period and Skatteverket reference
+  - Option to auto-create entries on submission or manually
+  - Review entries before posting
+  - Link journal entries to tax declarations
+  - Reverse entries if declaration is amended
+- **Status:** Not Started
+
 #### SIE Integration
 
 **US-121: SIE File Export**
