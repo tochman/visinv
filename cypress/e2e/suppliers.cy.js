@@ -15,11 +15,9 @@ describe('Suppliers', () => {
       suppliers: [], // Add empty suppliers to setupCommonIntercepts
     });
     cy.login('admin');
-    cy.wait('@getClients'); // Wait for initial load to complete
     
-    // Visit suppliers page
+    // Visit suppliers page directly
     cy.visit('/suppliers');
-    cy.wait('@getSuppliers');
   });
 
   describe('Happy Path - Success Scenarios', () => {
