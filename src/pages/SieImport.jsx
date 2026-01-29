@@ -950,7 +950,7 @@ export default function SieImport() {
                 </label>
 
                 {/* Fiscal Years Import Option */}
-                {importSummary?.fiscalYearCount > 0 && (
+                {importSummary?.fiscalYears?.count > 0 && (
                   <label className="flex items-center">
                     <input
                       type="checkbox"
@@ -962,13 +962,13 @@ export default function SieImport() {
                       className="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
                     />
                     <span className="ml-2 text-gray-700 dark:text-gray-300">
-                      {t('sieImport.importFiscalYearsOption', { count: importSummary.fiscalYearCount })}
+                      {t('sieImport.importFiscalYearsOption', { count: importSummary.fiscalYears.count })}
                     </span>
                   </label>
                 )}
 
                 {/* Journal Entries Import Option */}
-                {importSummary?.voucherCount > 0 && (
+                {importSummary?.vouchers?.count > 0 && (
                   <label className="flex items-center">
                     <input
                       type="checkbox"
@@ -981,15 +981,15 @@ export default function SieImport() {
                     />
                     <span className="ml-2 text-gray-700 dark:text-gray-300">
                       {t('sieImport.importJournalEntriesOption', { 
-                        voucherCount: importSummary.voucherCount,
-                        transactionCount: importSummary.transactionCount 
+                        voucherCount: importSummary.vouchers.count,
+                        transactionCount: importSummary.vouchers.transactionCount 
                       })}
                     </span>
                   </label>
                 )}
 
                 {/* Opening Balances Import Option */}
-                {importSummary?.openingBalanceCount > 0 && (
+                {importSummary?.openingBalances?.count > 0 && (
                   <label className="flex items-center ml-6">
                     <input
                       type="checkbox"
@@ -1002,7 +1002,7 @@ export default function SieImport() {
                       className="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500 disabled:opacity-50"
                     />
                     <span className={`ml-2 ${!importOptions.importFiscalYears && !importOptions.importJournalEntries ? 'text-gray-400 dark:text-gray-500' : 'text-gray-700 dark:text-gray-300'}`}>
-                      {t('sieImport.importOpeningBalancesOption', { count: importSummary.openingBalanceCount })}
+                      {t('sieImport.importOpeningBalancesOption', { count: importSummary.openingBalances.count })}
                     </span>
                   </label>
                 )}
@@ -1140,7 +1140,7 @@ export default function SieImport() {
               </button>
               <button
                 onClick={handleImport}
-                disabled={!importOptions.importAccounts || loading}
+                disabled={(!importOptions.importAccounts && !importOptions.importFiscalYears && !importOptions.importJournalEntries) || loading}
                 data-cy="import-button"
                 className="px-6 py-2 bg-blue-600 text-white rounded-sm hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed"
               >
@@ -1228,6 +1228,7 @@ export default function SieImport() {
             <div className="flex justify-center gap-4">
               <button
                 onClick={handleReset}
+                data-cy="import-another-button"
                 className="px-6 py-2 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-sm"
               >
                 {t('sieImport.importAnother')}

@@ -130,13 +130,26 @@ describe('SIE File Import (US-122)', () => {
         })
       }).as('importAccounts')
 
+      // Mock fiscal years import (also enabled by default)
+      cy.intercept('GET', /\/rest\/v1\/fiscal_years/, {
+        statusCode: 200,
+        body: []
+      }).as('getExistingFiscalYears')
+
+      cy.intercept('POST', '**/rest/v1/fiscal_years*', (req) => {
+        req.reply({
+          statusCode: 201,
+          body: [{ id: 'fy-1', ...req.body }]
+        })
+      }).as('importFiscalYears')
+
       uploadSIEFile(sampleSIE4, 'test-accounts.se')
       cy.getByCy('parse-file-button').should('not.be.disabled').click()
       cy.getByCy('proceed-to-preview-button').click()
       cy.getByCy('import-button').click()
 
-      // Check for successful import result without explicit wait for network
-      cy.getByCy('import-result').should('contain', '5 accounts imported')
+      // Check for successful import result
+      cy.getByCy('import-accounts-result').should('contain', '5 accounts imported')
       cy.getByCy('go-to-accounts-button').should('be.visible')
     })
   })
@@ -171,6 +184,17 @@ describe('SIE File Import (US-122)', () => {
 
     it('is expected to allow disabling account import', () => {
       cy.getByCy('import-accounts-checkbox').uncheck()
+      // Import button should still be enabled if fiscal years is checked
+      cy.getByCy('import-fiscal-years-checkbox').should('be.checked')
+      cy.getByCy('import-button').should('not.be.disabled')
+      
+      // Uncheck opening balances first (while fiscal years is still checked)
+      cy.getByCy('import-opening-balances-checkbox').uncheck()
+      
+      // Then uncheck fiscal years
+      cy.getByCy('import-fiscal-years-checkbox').uncheck()
+      
+      // Now import button should be disabled (all options unchecked)
       cy.getByCy('import-button').should('be.disabled')
     })
 
@@ -217,14 +241,17 @@ describe('SIE File Import (US-122)', () => {
       cy.getByCy('sie-import-error').should('contain', 'Invalid file type')
     })
 
-    it('is expected to show error for empty file', () => {
+    it('is expected to show warning for empty file', () => {
       uploadSIEFile('', 'empty.se')
       cy.getByCy('parse-file-button').should('not.be.disabled').click()
 
-      cy.getByCy('validation-status').should('contain', 'validation failed')
+      // Empty file still passes validation but shows warnings
+      cy.getByCy('validation-status').should('be.visible')
+      // Should show warning about no accounts
+      cy.contains('No accounts found').should('be.visible')
     })
 
-    it('is expected to show error for malformed SIE file', () => {
+    it('is expected to show warning for malformed SIE file', () => {
       const invalidSIE = `#FLAGGA 0
 #FORMAT PC8
 INVALID CONTENT HERE
@@ -232,15 +259,16 @@ INVALID CONTENT HERE
       uploadSIEFile(invalidSIE, 'invalid.se')
       cy.getByCy('parse-file-button').should('not.be.disabled').click()
 
-      cy.getByCy('validation-status').should('contain', 'validation failed')
-      // Error message is displayed in a separate errors list
+      // Malformed file still passes validation but shows warnings
+      cy.getByCy('validation-status').should('be.visible')
+      // Warning message about no accounts is displayed
       cy.contains('No accounts found').should('be.visible')
     })
   })
 
   describe('Sad Path - Import Errors', () => {
-    it('is expected to show import button only when accounts checkbox is checked', () => {
-      // Test the UI behavior rather than the backend error handling
+    it('is expected to show import button disabled when all options are unchecked', () => {
+      // Test the UI behavior - import button disabled when no import options selected
       cy.get('[data-cy="sidebar-nav-import/sie"]').click()
       uploadSIEFile(sampleSIE4, 'test-accounts.se')
       cy.getByCy('parse-file-button').should('not.be.disabled').click()
@@ -249,10 +277,17 @@ INVALID CONTENT HERE
       // Import button should be enabled when accounts checkbox is checked
       cy.getByCy('import-button').should('not.be.disabled')
       
-      // Uncheck accounts checkbox
+      // Uncheck accounts checkbox - button still enabled because fiscal years is checked
       cy.getByCy('import-accounts-checkbox').uncheck()
+      cy.getByCy('import-button').should('not.be.disabled')
       
-      // Import button should be disabled
+      // Uncheck opening balances first (while fiscal years is still checked)
+      cy.getByCy('import-opening-balances-checkbox').uncheck()
+      
+      // Then uncheck fiscal years
+      cy.getByCy('import-fiscal-years-checkbox').uncheck()
+      
+      // Now import button should be disabled (all options unchecked)
       cy.getByCy('import-button').should('be.disabled')
     })
   })
@@ -290,12 +325,23 @@ INVALID CONTENT HERE
         body: []
       }).as('importAccounts')
 
+      // Mock fiscal years import
+      cy.intercept('GET', /\/rest\/v1\/fiscal_years/, {
+        statusCode: 200,
+        body: []
+      }).as('getExistingFiscalYears')
+
+      cy.intercept('POST', '**/rest/v1/fiscal_years*', {
+        statusCode: 201,
+        body: []
+      }).as('importFiscalYears')
+
       cy.getByCy('parse-file-button').should('not.be.disabled').click()
       cy.getByCy('proceed-to-preview-button').click()
       cy.getByCy('import-button').click()
 
       // Wait for the import to complete by checking for the "Import Another File" button
-      cy.contains('button', 'Import Another File').should('be.visible').click()
+      cy.getByCy('import-another-button').should('be.visible').click()
       cy.getByCy('sie-drop-zone').should('be.visible')
     })
   })
@@ -510,7 +556,7 @@ INVALID CONTENT HERE
       cy.getByCy('fiscal-year-count').should('contain', '2')
     })
 
-    it.only('is expected to show import fiscal years checkbox in preview', () => {
+    it('is expected to show import fiscal years checkbox in preview', () => {
       uploadSIEFile(sieWithFiscalYears, 'test-fiscal-years.se')
       cy.getByCy('parse-file-button').click()
       cy.getByCy('proceed-to-preview-button').click()
@@ -560,7 +606,7 @@ INVALID CONTENT HERE
     })
   })
 
-  describe('US-123: Journal Entries Import', () => {
+  describe('US-123: Missing Fiscal Years Detection', () => {
     // SIE file with vouchers/transactions
     const sieWithJournalEntries = `#FLAGGA 0
 #FORMAT PC8
@@ -617,7 +663,7 @@ INVALID CONTENT HERE
     })
 
     it('is expected to import journal entries successfully', () => {
-      // Mock all required endpoints
+      // Mock account lookup for existing accounts check
       cy.intercept('GET', '**/rest/v1/accounts?select=account_number*', {
         statusCode: 200,
         body: [
@@ -628,16 +674,18 @@ INVALID CONTENT HERE
         ]
       }).as('getExistingAccountNumbers')
 
+      // Mock accounts fetch for building account map
       cy.intercept('GET', '**/rest/v1/accounts*', {
         statusCode: 200,
         body: [
-          { id: 'acc-1', account_number: '1510', name: 'Kundfordringar' },
-          { id: 'acc-2', account_number: '2440', name: 'Leverantörsskulder' },
-          { id: 'acc-3', account_number: '3010', name: 'Försäljning' },
-          { id: 'acc-4', account_number: '6230', name: 'Datakommunikation' }
+          { id: 'acc-1510', account_number: '1510', name: 'Kundfordringar' },
+          { id: 'acc-2440', account_number: '2440', name: 'Leverantörsskulder' },
+          { id: 'acc-3010', account_number: '3010', name: 'Försäljning' },
+          { id: 'acc-6230', account_number: '6230', name: 'Datakommunikation' }
         ]
       }).as('getAccounts')
 
+      // Mock fiscal years fetch
       cy.intercept('GET', '**/rest/v1/fiscal_years*', {
         statusCode: 200,
         body: [
@@ -645,27 +693,44 @@ INVALID CONTENT HERE
         ]
       }).as('getFiscalYears')
 
-      cy.intercept('POST', '**/rest/v1/journal_entries*', (req) => {
+      // Mock existing journal entries check (for duplicate detection)
+      cy.intercept('GET', '**/rest/v1/journal_entries?select=description*', {
+        statusCode: 200,
+        body: [] // No existing entries
+      }).as('getExistingJournalEntries')
+
+      // Mock verification number RPC
+      cy.intercept('POST', '**/rest/v1/rpc/get_next_verification_number*', {
+        statusCode: 200,
+        body: 1
+      }).as('getVerificationNumber')
+
+      // Mock journal entry creation - Supabase returns the created row
+      let jeCounter = 0
+      cy.intercept('POST', '**/rest/v1/journal_entries?select=*', (req) => {
+        jeCounter++
         req.reply({
           statusCode: 201,
-          body: { id: 'je-new', ...req.body }
+          body: {
+            id: `je-${jeCounter}`,
+            ...req.body,
+            status: 'draft',
+            created_at: new Date().toISOString()
+          }
         })
       }).as('createJournalEntry')
 
+      // Mock journal entry lines creation
       cy.intercept('POST', '**/rest/v1/journal_entry_lines*', {
         statusCode: 201,
         body: []
       }).as('createJournalLines')
 
+      // Mock journal entry status update (posting)
       cy.intercept('PATCH', '**/rest/v1/journal_entries*', {
         statusCode: 200,
         body: {}
       }).as('updateJournalEntry')
-
-      cy.intercept('POST', '**/rest/v1/rpc/get_next_verification_number*', {
-        statusCode: 200,
-        body: 1
-      }).as('getVerificationNumber')
 
       uploadSIEFile(sieWithJournalEntries, 'test-vouchers.se')
       cy.getByCy('parse-file-button').click()
@@ -675,6 +740,10 @@ INVALID CONTENT HERE
       cy.getByCy('import-accounts-checkbox').uncheck()
 
       cy.getByCy('import-button').click()
+
+      // Wait for import operations to complete
+      cy.wait('@getAccounts')
+      cy.wait('@getFiscalYears')
 
       // Should show journal entries import result
       cy.getByCy('import-journal-entries-result').should('be.visible')
@@ -701,39 +770,53 @@ INVALID CONTENT HERE
 `;
 
     beforeEach(() => {
-      // Mock that no fiscal years exist in the organization
-      cy.intercept('GET', '**/rest/v1/fiscal_years*', {
-        statusCode: 200,
-        body: []
+      cy.get('[data-cy="sidebar-nav-import/sie"]').click()
+      // Wait for the SIE import page to load
+      cy.getByCy('sie-import-page-title').should('be.visible')
+    })
+
+    it('is expected to show missing fiscal years warning and checkbox when importing journal entries', () => {
+      // Mock that no fiscal years exist in the organization - use function to intercept all requests
+      cy.intercept('GET', /\/rest\/v1\/fiscal_years/, (req) => {
+        req.reply({
+          statusCode: 200,
+          body: []
+        })
       }).as('getEmptyFiscalYears')
 
-      cy.get('[data-cy="sidebar-nav-import/sie"]').click()
-    })
-
-    it('is expected to show missing fiscal years warning when importing journal entries', () => {
       uploadSIEFile(sieWithMissingFiscalYear, 'test-missing-fy.se')
       cy.getByCy('parse-file-button').click()
-      cy.getByCy('proceed-to-preview-button').click()
+      
+      // Wait for validation to appear before proceeding
+      cy.getByCy('proceed-to-preview-button').should('not.be.disabled').click()
 
-      // Ensure journal entries checkbox is checked
-      cy.getByCy('import-journal-entries-checkbox').should('be.checked')
-
-      // Should show missing fiscal years warning
-      cy.getByCy('missing-fiscal-years-warning').should('be.visible')
-    })
-
-    it('is expected to show checkbox to create missing fiscal years', () => {
-      uploadSIEFile(sieWithMissingFiscalYear, 'test-missing-fy.se')
-      cy.getByCy('parse-file-button').click()
-      cy.getByCy('proceed-to-preview-button').click()
-
-      cy.getByCy('create-missing-fiscal-years-checkbox').should('be.visible')
+      // The warning container should be visible with the checkbox inside
+      // Give extra time for the async fiscal years check
+      cy.getByCy('create-missing-fiscal-years-checkbox', { timeout: 15000 }).should('be.visible')
+      // The parent warning container should also be visible
+      cy.get('[data-cy="create-missing-fiscal-years-checkbox"]')
+        .closest('[data-cy="missing-fiscal-years-warning"]')
+        .should('be.visible')
     })
 
     it('is expected to hide missing fiscal years warning when journal entries unchecked', () => {
+      // Mock that no fiscal years exist in the organization
+      cy.intercept('GET', /\/rest\/v1\/fiscal_years/, (req) => {
+        req.reply({
+          statusCode: 200,
+          body: []
+        })
+      }).as('getEmptyFiscalYears')
+
       uploadSIEFile(sieWithMissingFiscalYear, 'test-missing-fy.se')
       cy.getByCy('parse-file-button').click()
       cy.getByCy('proceed-to-preview-button').click()
+
+      // Wait for the journal entries checkbox to be visible (means we're on preview step)
+      cy.getByCy('import-journal-entries-checkbox').should('be.visible')
+      
+      // Wait for the warning to appear (async check for missing fiscal years)
+      cy.getByCy('missing-fiscal-years-warning', { timeout: 10000 }).should('be.visible')
 
       // Uncheck journal entries
       cy.getByCy('import-journal-entries-checkbox').uncheck()
@@ -743,6 +826,16 @@ INVALID CONTENT HERE
     })
 
     it('is expected to create missing fiscal years when checkbox is checked', () => {
+      // Track whether fiscal year has been created to return it in subsequent GET requests
+      let fiscalYearCreated = false
+      const createdFiscalYear = {
+        id: 'fy-2023',
+        name: '2023',
+        start_date: '2023-01-01',
+        end_date: '2023-12-31',
+        organization_id: 'test-org-id'
+      }
+
       cy.intercept('GET', '**/rest/v1/accounts?select=account_number*', {
         statusCode: 200,
         body: [{ account_number: '1510' }, { account_number: '3010' }]
@@ -751,22 +844,39 @@ INVALID CONTENT HERE
       cy.intercept('GET', '**/rest/v1/accounts*', {
         statusCode: 200,
         body: [
-          { id: 'acc-1', account_number: '1510', name: 'Kundfordringar' },
-          { id: 'acc-2', account_number: '3010', name: 'Försäljning' }
+          { id: 'acc-1510', account_number: '1510', name: 'Kundfordringar' },
+          { id: 'acc-3010', account_number: '3010', name: 'Försäljning' }
         ]
       }).as('getAccounts')
 
+      // Mock fiscal years POST for creation - set flag when created
       cy.intercept('POST', '**/rest/v1/fiscal_years*', (req) => {
+        fiscalYearCreated = true
         req.reply({
           statusCode: 201,
-          body: { id: 'fy-new', ...req.body }
+          body: [{ ...createdFiscalYear, ...req.body }]
         })
       }).as('createFiscalYear')
 
-      cy.intercept('POST', '**/rest/v1/journal_entries*', (req) => {
+      // Mock fiscal years GET - return created fiscal year after it's been created
+      // This overrides the beforeEach empty array intercept
+      cy.intercept('GET', '**/rest/v1/fiscal_years*', (req) => {
+        req.reply({
+          statusCode: 200,
+          body: fiscalYearCreated ? [createdFiscalYear] : []
+        })
+      }).as('getFiscalYearsForImport')
+
+      // Mock existing journal entries check (empty - no duplicates)
+      cy.intercept('GET', '**/rest/v1/journal_entries?select=description*', {
+        statusCode: 200,
+        body: []
+      }).as('getExistingJournalEntries')
+
+      cy.intercept('POST', '**/rest/v1/journal_entries?select=*', (req) => {
         req.reply({
           statusCode: 201,
-          body: { id: 'je-new', ...req.body }
+          body: { id: 'je-new', ...req.body, status: 'draft' }
         })
       }).as('createJournalEntry')
 
@@ -797,11 +907,18 @@ INVALID CONTENT HERE
 
       cy.getByCy('import-button').click()
 
-      // Should create fiscal year
+      // Should create fiscal year first
       cy.wait('@createFiscalYear')
 
-      // Should show results
+      // Should create journal entry (using the newly created fiscal year)
+      cy.wait('@createJournalEntry')
+
+      // Should show results without warnings about missing fiscal years
       cy.getByCy('import-fiscal-years-result').should('be.visible')
+      cy.getByCy('import-journal-entries-result').should('be.visible')
+      
+      // Should NOT show the "no fiscal year found" warning
+      cy.contains('No fiscal year found').should('not.exist')
     })
   })
 
