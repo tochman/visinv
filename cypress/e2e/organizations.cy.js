@@ -195,10 +195,20 @@ describe('Organization Management', () => {
 
   describe('Organization Settings Page', () => {
     beforeEach(() => {
+      cy.setupCommonIntercepts({
+        invoices: [],
+        clients: [],
+        products: [],
+        templates: []
+      });
+      
       cy.fixture('organizations').then((data) => {
         // Login with custom organization data
         cy.login('admin', { customOrganization: data.mockOrganization })
         cy.getByCy('sidebar-nav-settings').click()
+        
+        // Click on Organization Settings tab
+        cy.getByCy('tab-settings').click()
         
         // Wait for page to load
         cy.getByCy('edit-organization', { timeout: 10000 }).should('be.visible')

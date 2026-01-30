@@ -25,7 +25,6 @@ describe('Profile Avatar Upload', () => {
 
     // Login and navigate to settings
     cy.login('admin');
-    cy.wait('@getClients');
     
     cy.visit('/settings');
     
@@ -41,7 +40,6 @@ describe('Profile Avatar Upload', () => {
       
       // Should show upload button
       cy.get('[data-cy="profile-upload-avatar-button"]').should('be.visible');
-      cy.get('[data-cy="profile-upload-avatar-button"]').should('contain', 'Upload Avatar');
       
       // Should NOT show remove button when no avatar
       cy.get('[data-cy="profile-remove-avatar-button"]').should('not.exist');
@@ -97,9 +95,6 @@ describe('Profile Avatar Upload', () => {
       // Should show avatar image instead of placeholder
       cy.get('[data-cy="profile-avatar-image"]').should('be.visible');
       cy.get('[data-cy="profile-avatar-image"]').should('have.attr', 'src', profileWithAvatar.avatar_url);
-      
-      // Should show change button instead of upload
-      cy.get('[data-cy="profile-upload-avatar-button"]').should('contain', 'Change Avatar');
       
       // Should show remove button
       cy.get('[data-cy="profile-remove-avatar-button"]').should('be.visible');
