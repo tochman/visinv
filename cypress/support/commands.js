@@ -470,4 +470,14 @@ Cypress.Commands.add('setupCommonIntercepts', (options = {}) => {
       body: { organizations: config.defaultOrganization }
     }).as('getDefaultOrganization')
   }
+  
+  // Mock Supabase Edge Function for sending invoice emails
+  // This ensures email sending always succeeds in tests unless explicitly overridden
+  cy.intercept('POST', '**/functions/v1/send-invoice-email', {
+    statusCode: 200,
+    body: {
+      success: true,
+      messageId: 'test-message-id'
+    }
+  }).as('sendInvoiceEmail')
 })
