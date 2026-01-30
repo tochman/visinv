@@ -67,7 +67,7 @@ export default function NpsModal() {
         : 'bg-white dark:bg-gray-700 text-gray-700 dark:text-gray-300 border-gray-300 dark:border-gray-600 hover:border-green-400 dark:hover:border-green-500';
     }
 
-    return `w-12 h-12 sm:w-14 sm:h-14 border-2 rounded-md font-semibold transition-all ${colorClass} ${
+    return `w-12 h-12 sm:w-14 sm:h-14 border-2 rounded-sm font-semibold transition-all ${colorClass} ${
       isSelected ? 'scale-110 shadow-lg' : 'hover:scale-105'
     }`;
   };

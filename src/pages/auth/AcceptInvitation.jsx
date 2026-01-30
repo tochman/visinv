@@ -112,7 +112,7 @@ export default function AcceptInvitation() {
         </p>
         <Link
           to="/"
-          className="inline-block px-6 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700"
+          className="inline-block px-6 py-2 bg-blue-600 text-white rounded-sm hover:bg-blue-700"
         >
           {t('common.back')}
         </Link>
@@ -171,13 +171,13 @@ export default function AcceptInvitation() {
       </div>
 
       {error && (
-        <div className="mb-4 p-3 bg-red-50 dark:bg-red-900/30 border border-red-200 dark:border-red-800 rounded-md" data-cy="error-message">
+        <div className="mb-4 p-3 bg-red-50 dark:bg-red-900/30 border border-red-200 dark:border-red-800 rounded-sm" data-cy="error-message">
           <p className="text-red-600 dark:text-red-400 text-sm">{error}</p>
         </div>
       )}
 
       {emailMismatch && (
-        <div className="mb-4 p-3 bg-yellow-50 dark:bg-yellow-900/30 border border-yellow-200 dark:border-yellow-800 rounded-md" data-cy="email-mismatch-warning">
+        <div className="mb-4 p-3 bg-yellow-50 dark:bg-yellow-900/30 border border-yellow-200 dark:border-yellow-800 rounded-sm" data-cy="email-mismatch-warning">
           <p className="text-yellow-700 dark:text-yellow-400 text-sm">
             {t('organization.invitations.emailMismatch', { 
               invitedEmail: invitation?.email,
@@ -194,13 +194,13 @@ export default function AcceptInvitation() {
           </p>
           <Link
             to={`/auth/signin?redirect=/invite/${token}`}
-            className="block w-full px-4 py-2 bg-blue-600 text-white text-center rounded-md hover:bg-blue-700"
+            className="block w-full px-4 py-2 bg-blue-600 text-white text-center rounded-sm hover:bg-blue-700"
           >
             {t('auth.signIn')}
           </Link>
           <Link
             to={`/auth/signup?redirect=/invite/${token}`}
-            className="block w-full px-4 py-2 border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 text-center rounded-md hover:bg-gray-50 dark:hover:bg-gray-700"
+            className="block w-full px-4 py-2 border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 text-center rounded-sm hover:bg-gray-50 dark:hover:bg-gray-700"
           >
             {t('auth.signUp')}
           </Link>
@@ -210,7 +210,7 @@ export default function AcceptInvitation() {
           onClick={handleAccept}
           disabled={accepting || emailMismatch}
           data-cy="accept-invitation-button"
-          className="w-full px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed"
+          className="w-full px-4 py-2 bg-blue-600 text-white rounded-sm hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed"
         >
           {accepting ? t('common.loading') : t('organization.invitations.acceptInvitation')}
         </button>

@@ -103,7 +103,7 @@ const OrganizationSetupWizard = ({ onClose, onComplete, isModal = false }) => {
           name="name"
           value={formData.name}
           onChange={handleChange}
-          className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white"
+          className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-sm focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white"
           data-cy="org-name-input"
           required
         />
@@ -119,7 +119,7 @@ const OrganizationSetupWizard = ({ onClose, onComplete, isModal = false }) => {
           value={formData.organization_number}
           onChange={handleChange}
           placeholder="XXXXXX-XXXX"
-          className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white"
+          className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-sm focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white"
           data-cy="org-number-input"
         />
       </div>
@@ -134,7 +134,7 @@ const OrganizationSetupWizard = ({ onClose, onComplete, isModal = false }) => {
           value={formData.vat_number}
           onChange={handleChange}
           placeholder="SE123456789001"
-          className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white"
+          className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-sm focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white"
           data-cy="vat-number-input"
         />
       </div>
@@ -152,7 +152,7 @@ const OrganizationSetupWizard = ({ onClose, onComplete, isModal = false }) => {
           name="address"
           value={formData.address}
           onChange={handleChange}
-          className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white"
+          className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-sm focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white"
           data-cy="org-address-input"
         />
       </div>
@@ -167,7 +167,7 @@ const OrganizationSetupWizard = ({ onClose, onComplete, isModal = false }) => {
             name="postal_code"
             value={formData.postal_code}
             onChange={handleChange}
-            className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white"
+            className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-sm focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white"
             data-cy="org-postal-code-input"
           />
         </div>
@@ -181,7 +181,7 @@ const OrganizationSetupWizard = ({ onClose, onComplete, isModal = false }) => {
             name="city"
             value={formData.city}
             onChange={handleChange}
-            className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white"
+            className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-sm focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white"
             data-cy="org-city-input"
           />
         </div>
@@ -196,7 +196,7 @@ const OrganizationSetupWizard = ({ onClose, onComplete, isModal = false }) => {
           name="municipality"
           value={formData.municipality}
           onChange={handleChange}
-          className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white"
+          className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-sm focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white"
           data-cy="org-municipality-input"
         />
       </div>
@@ -210,7 +210,7 @@ const OrganizationSetupWizard = ({ onClose, onComplete, isModal = false }) => {
           name="email"
           value={formData.email}
           onChange={handleChange}
-          className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white"
+          className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-sm focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white"
           data-cy="org-email-input"
         />
       </div>
@@ -224,7 +224,7 @@ const OrganizationSetupWizard = ({ onClose, onComplete, isModal = false }) => {
           name="phone"
           value={formData.phone}
           onChange={handleChange}
-          className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white"
+          className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-sm focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white"
           data-cy="org-phone-input"
         />
       </div>
@@ -243,7 +243,7 @@ const OrganizationSetupWizard = ({ onClose, onComplete, isModal = false }) => {
           value={formData.bank_giro}
           onChange={handleChange}
           placeholder="XXX-XXXX"
-          className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white"
+          className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-sm focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white"
           data-cy="org-bank-giro-input"
         />
       </div>
@@ -257,7 +257,7 @@ const OrganizationSetupWizard = ({ onClose, onComplete, isModal = false }) => {
           name="plus_giro"
           value={formData.plus_giro}
           onChange={handleChange}
-          className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white"
+          className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-sm focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white"
           data-cy="org-plus-giro-input"
         />
       </div>
@@ -272,7 +272,7 @@ const OrganizationSetupWizard = ({ onClose, onComplete, isModal = false }) => {
           value={formData.bank_iban}
           onChange={handleChange}
           placeholder="SE00 0000 0000 0000 0000 0000"
-          className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white"
+          className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-sm focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white"
           data-cy="org-iban-input"
         />
       </div>
@@ -305,7 +305,7 @@ const OrganizationSetupWizard = ({ onClose, onComplete, isModal = false }) => {
             name="invoice_number_prefix"
             value={formData.invoice_number_prefix}
             onChange={handleChange}
-            className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white"
+            className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-sm focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white"
             data-cy="org-invoice-prefix-input"
           />
         </div>
@@ -320,7 +320,7 @@ const OrganizationSetupWizard = ({ onClose, onComplete, isModal = false }) => {
             value={formData.next_invoice_number}
             onChange={handleChange}
             min="1"
-            className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white"
+            className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-sm focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white"
             data-cy="org-next-invoice-number-input"
           />
         </div>
@@ -336,7 +336,7 @@ const OrganizationSetupWizard = ({ onClose, onComplete, isModal = false }) => {
           value={formData.default_payment_terms}
           onChange={handleChange}
           min="1"
-          className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white"
+          className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-sm focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white"
           data-cy="org-payment-terms-input"
         />
       </div>
@@ -350,7 +350,7 @@ const OrganizationSetupWizard = ({ onClose, onComplete, isModal = false }) => {
             name="default_currency"
             value={formData.default_currency}
             onChange={handleChange}
-            className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white"
+            className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-sm focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white"
             data-cy="org-currency-select"
           >
             <option value="SEK">SEK - Swedish Krona</option>
@@ -372,7 +372,7 @@ const OrganizationSetupWizard = ({ onClose, onComplete, isModal = false }) => {
             step="0.01"
             min="0"
             max="100"
-            className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white"
+            className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-sm focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white"
             data-cy="org-tax-rate-input"
           />
         </div>
@@ -478,7 +478,7 @@ const OrganizationSetupWizard = ({ onClose, onComplete, isModal = false }) => {
             <button
               type="button"
               onClick={handleNext}
-              className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm font-medium"
+              className="px-4 py-2 bg-blue-600 text-white rounded-sm hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm font-medium"
               disabled={loading}
               data-cy="next-step-button"
             >
@@ -488,7 +488,7 @@ const OrganizationSetupWizard = ({ onClose, onComplete, isModal = false }) => {
             <button
               type="button"
               onClick={handleSubmit}
-              className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm font-medium disabled:opacity-50"
+              className="px-4 py-2 bg-blue-600 text-white rounded-sm hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm font-medium disabled:opacity-50"
               disabled={loading}
               data-cy="complete-setup-button"
             >

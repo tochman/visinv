@@ -64,7 +64,7 @@ export default function EditorHeader({
         <div className="flex items-center bg-gray-100 dark:bg-gray-700 rounded-sm p-0.5">
           <button
             onClick={() => onModeSwitch('visual')}
-            className={`px-3 py-1.5 text-sm font-medium rounded-md transition ${
+            className={`px-3 py-1.5 text-sm font-medium rounded-sm transition ${
               editorMode === 'visual' 
                 ? 'bg-white dark:bg-gray-800 text-gray-900 dark:text-white shadow-sm' 
                 : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white'
@@ -80,7 +80,7 @@ export default function EditorHeader({
           </button>
           <button
             onClick={() => onModeSwitch('code')}
-            className={`px-3 py-1.5 text-sm font-medium rounded-md transition ${
+            className={`px-3 py-1.5 text-sm font-medium rounded-sm transition ${
               editorMode === 'code' 
                 ? 'bg-white dark:bg-gray-800 text-gray-900 dark:text-white shadow-sm' 
                 : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white'
@@ -96,7 +96,7 @@ export default function EditorHeader({
           </button>
           <button
             onClick={() => onModeSwitch('preview')}
-            className={`px-3 py-1.5 text-sm font-medium rounded-md transition ${
+            className={`px-3 py-1.5 text-sm font-medium rounded-sm transition ${
               editorMode === 'preview' 
                 ? 'bg-white dark:bg-gray-800 text-gray-900 dark:text-white shadow-sm' 
                 : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white'

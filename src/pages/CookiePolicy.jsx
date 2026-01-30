@@ -124,7 +124,7 @@ export default function CookiePolicy() {
               </p>
               <button
                 onClick={handleOpenSettings}
-                className="px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-md transition-colors shadow-sm"
+                className="px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-sm transition-colors shadow-sm"
                 data-cy="open-cookie-settings-btn"
               >
                 {t('cookieConsent.policy.goToSettings')}

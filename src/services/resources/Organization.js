@@ -1,8 +1,10 @@
 import { BaseResource } from './BaseResource';
+import { uploadLogo, deleteLogo } from '../storage';
 
 /**
  * Organization Resource
  * Handles all organization-related data operations
+ * US-053: Organization Logo Upload
  */
 class OrganizationResource extends BaseResource {
   constructor() {
@@ -210,6 +212,104 @@ class OrganizationResource extends BaseResource {
       .single();
 
     return { data, error };
+  }
+
+  /**
+   * Upload logo for an organization
+   * US-053: Organization Logo Upload
+   * @param {string} orgId - Organization ID
+   * @param {File} file - Logo image file
+   * @returns {Promise<{data: Object|null, error: Error|null}>}
+   */
+  async uploadLogoImage(orgId, file) {
+    const { user, error: authError } = await this.getCurrentUser();
+    if (authError || !user) {
+      return { data: null, error: authError || new Error('Not authenticated') };
+    }
+
+    // Get current organization to delete old logo if exists
+    const { data: org, error: orgError } = await this.show(orgId);
+    if (orgError) {
+      return { data: null, error: orgError };
+    }
+
+    const oldLogoPath = org?.logo_url ? this.extractPathFromUrl(org.logo_url) : null;
+
+    // Upload new logo
+    const { data: uploadData, error: uploadError } = await uploadLogo(file, user.id);
+    if (uploadError) {
+      return { data: null, error: uploadError };
+    }
+
+    // Update organization with new logo URL
+    const { data, error } = await this.update(orgId, {
+      logo_url: uploadData.url,
+    });
+
+    if (error) {
+      // Rollback: delete uploaded file if update fails
+      await deleteLogo(uploadData.path);
+      return { data: null, error };
+    }
+
+    // Delete old logo if it existed
+    if (oldLogoPath) {
+      await deleteLogo(oldLogoPath);
+    }
+
+    return { data, error: null };
+  }
+
+  /**
+   * Delete logo for an organization
+   * US-053: Organization Logo Upload
+   * @param {string} orgId - Organization ID
+   * @returns {Promise<{data: Object|null, error: Error|null}>}
+   */
+  async deleteLogoImage(orgId) {
+    const { user, error: authError } = await this.getCurrentUser();
+    if (authError || !user) {
+      return { data: null, error: authError || new Error('Not authenticated') };
+    }
+
+    // Get current organization
+    const { data: org, error: orgError } = await this.show(orgId);
+    if (orgError) {
+      return { data: null, error: orgError };
+    }
+
+    if (!org?.logo_url) {
+      return { data: org, error: null }; // Nothing to delete
+    }
+
+    const logoPath = this.extractPathFromUrl(org.logo_url);
+
+    // Delete from storage
+    const { error: deleteError } = await deleteLogo(logoPath);
+    if (deleteError) {
+      return { data: null, error: deleteError };
+    }
+
+    // Update organization to remove logo URL
+    const { data, error } = await this.update(orgId, {
+      logo_url: null,
+    });
+
+    return { data, error };
+  }
+
+  /**
+   * Extract storage path from public URL
+   * @param {string} url - Public URL
+   * @returns {string|null} - Storage path
+   */
+  extractPathFromUrl(url) {
+    if (!url) return null;
+    
+    // Extract path from URL like:
+    // https://xxx.supabase.co/storage/v1/object/public/logos/user-id/logo.jpg
+    const match = url.match(/\/logos\/(.*)/);
+    return match ? match[1] : null;
   }
 }
 

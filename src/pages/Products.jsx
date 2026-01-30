@@ -89,7 +89,7 @@ export default function Products() {
         </button>
         {pricePopover === productId && (
           <div 
-            className="fixed z-[9999] bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-md shadow-lg p-3 min-w-[150px]"
+            className="fixed z-[9999] bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-sm shadow-lg p-3 min-w-[150px]"
             style={{ 
               top: document.querySelector(`[data-cy="show-all-prices-${productId}"]`)?.getBoundingClientRect().bottom + 4,
               left: document.querySelector(`[data-cy="show-all-prices-${productId}"]`)?.getBoundingClientRect().left

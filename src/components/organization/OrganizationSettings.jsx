@@ -1,7 +1,8 @@
 import { useTranslation } from 'react-i18next';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useForm } from 'react-hook-form';
 import { useOrganization } from '../../contexts/OrganizationContext';
+import { Organization } from '../../services/resources/Organization';
 
 export default function OrganizationSettings() {
   const { t } = useTranslation();
@@ -10,6 +11,8 @@ export default function OrganizationSettings() {
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState(null);
   const [successMessage, setSuccessMessage] = useState('');
+  const [uploadingLogo, setUploadingLogo] = useState(false);
+  const logoInputRef = useRef(null);
 
   const { register, handleSubmit, formState: { errors }, reset } = useForm({
     mode: 'onSubmit',
@@ -64,6 +67,53 @@ export default function OrganizationSettings() {
     setSaving(false);
   };
 
+  const handleLogoChange = async (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    setUploadingLogo(true);
+    setError(null);
+    setSuccessMessage('');
+
+    const { data, error: uploadError } = await Organization.uploadLogoImage(currentOrganization.id, file);
+
+    if (uploadError) {
+      setError(uploadError.message || t('organization.logoUploadError'));
+    } else {
+      setSuccessMessage(t('organization.logoUploadSuccess'));
+      // Refresh organization context
+      setTimeout(() => setSuccessMessage(''), 3000);
+    }
+
+    setUploadingLogo(false);
+    
+    // Reset file input
+    if (logoInputRef.current) {
+      logoInputRef.current.value = '';
+    }
+  };
+
+  const handleLogoRemove = async () => {
+    if (!window.confirm(t('organization.confirmDeleteLogo'))) {
+      return;
+    }
+
+    setUploadingLogo(true);
+    setError(null);
+    setSuccessMessage('');
+
+    const { data, error: deleteError } = await Organization.deleteLogoImage(currentOrganization.id);
+
+    if (deleteError) {
+      setError(deleteError.message || t('organization.logoDeleteError'));
+    } else {
+      setSuccessMessage(t('organization.logoDeleteSuccess'));
+      setTimeout(() => setSuccessMessage(''), 3000);
+    }
+
+    setUploadingLogo(false);
+  };
+
   if (!currentOrganization) {
     return (
       <div className="bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 rounded-sm p-6">
@@ -78,7 +128,7 @@ export default function OrganizationSettings() {
         {!isEditing && (
           <button
             onClick={handleEdit}
-            className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700"
+            className="px-4 py-2 bg-blue-600 text-white rounded-sm hover:bg-blue-700"
             data-cy="edit-organization"
           >
             {t('organization.edit')}
@@ -100,6 +150,81 @@ export default function OrganizationSettings() {
 
       <form onSubmit={handleSubmit(onSubmit)}>
         <div className="bg-white dark:bg-gray-800 rounded-sm shadow dark:shadow-gray-900/20 p-6 space-y-6">
+          {/* Logo Section */}
+          <div className="pb-6 border-b border-gray-200 dark:border-gray-700">
+            <h2 className="text-xl font-bold text-gray-900 dark:text-white mb-4">
+              {t('organization.logo')}
+            </h2>
+            
+            <div className="flex items-start space-x-6">
+              {/* Logo Display */}
+              <div className="flex-shrink-0">
+                {currentOrganization?.logo_url ? (
+                  <div className="w-24 h-24 border-2 border-gray-200 dark:border-gray-700 rounded-sm bg-white dark:bg-gray-800 p-2 flex items-center justify-center">
+                    <img
+                      src={currentOrganization.logo_url}
+                      alt={currentOrganization.name}
+                      className="max-w-full max-h-full object-contain"
+                      data-cy="organization-logo-image"
+                    />
+                  </div>
+                ) : (
+                  <div 
+                    className="w-24 h-24 border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-sm flex items-center justify-center bg-gray-50 dark:bg-gray-700"
+                    data-cy="organization-logo-placeholder"
+                  >
+                    <svg className="w-12 h-12 text-gray-400 dark:text-gray-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                    </svg>
+                  </div>
+                )}
+              </div>
+
+              {/* Logo Controls */}
+              <div className="flex-1">
+                <p className="text-sm text-gray-600 dark:text-gray-400 mb-2">
+                  {t('organization.logoHint')}
+                </p>
+                <p className="text-xs text-gray-500 dark:text-gray-500 mb-3">
+                  {t('organization.logoWillAppear')}
+                </p>
+
+                <div className="flex space-x-3">
+                  <input
+                    ref={logoInputRef}
+                    type="file"
+                    accept="image/jpeg,image/jpg,image/png,image/webp,image/svg+xml"
+                    onChange={handleLogoChange}
+                    className="hidden"
+                    data-cy="organization-logo-input"
+                  />
+
+                  <button
+                    type="button"
+                    onClick={() => logoInputRef.current?.click()}
+                    disabled={uploadingLogo}
+                    className="px-4 py-2 bg-blue-600 hover:bg-blue-700 disabled:bg-blue-400 text-white text-sm font-medium rounded-sm transition-colors"
+                    data-cy="organization-upload-logo-button"
+                  >
+                    {uploadingLogo ? t('common.saving') : (currentOrganization?.logo_url ? t('organization.changeLogo') : t('organization.uploadLogo'))}
+                  </button>
+
+                  {currentOrganization?.logo_url && (
+                    <button
+                      type="button"
+                      onClick={handleLogoRemove}
+                      disabled={uploadingLogo}
+                      className="px-4 py-2 bg-red-600 hover:bg-red-700 disabled:bg-red-400 text-white text-sm font-medium rounded-sm transition-colors"
+                      data-cy="organization-remove-logo-button"
+                    >
+                      {t('organization.removeLogo')}
+                    </button>
+                  )}
+                </div>
+              </div>
+            </div>
+          </div>
+
           {/* Basic Information */}
           <div>
             <h2 className="text-xl font-bold text-gray-900 dark:text-white mb-4">
@@ -118,7 +243,7 @@ export default function OrganizationSettings() {
                         required: 'Företagsnamn är obligatoriskt',
                         validate: value => (value?.trim() ? true : 'Företagsnamn är obligatoriskt')
                       })}
-                      className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white"
+                      className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-sm focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white"
                       data-cy="org-name"
                     />
                     {errors.name && (
@@ -142,7 +267,7 @@ export default function OrganizationSettings() {
                         required: 'Organisationsnummer är obligatoriskt enligt Aktiebolagslagen',
                         validate: value => (value?.trim() ? true : 'Organisationsnummer är obligatoriskt enligt Aktiebolagslagen')
                       })}
-                      className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white"
+                      className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-sm focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white"
                       data-cy="org-number"
                     />
                     {errors.organization_number && (
@@ -168,7 +293,7 @@ export default function OrganizationSettings() {
                         required: 'Momsregistreringsnummer är obligatoriskt enligt Mervärdesskattelagen',
                         validate: value => (value?.trim() ? true : 'Momsregistreringsnummer är obligatoriskt enligt Mervärdesskattelagen')
                       })}
-                      className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white"
+                      className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-sm focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white"
                       data-cy="org-vat"
                     />
                     {errors.vat_number && (
@@ -202,7 +327,7 @@ export default function OrganizationSettings() {
                         required: 'Adress är obligatorisk',
                         validate: value => (value?.trim() ? true : 'Adress är obligatorisk')
                       })}
-                      className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white"
+                      className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-sm focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white"
                       data-cy="org-address"
                     />
                     {errors.address && (
@@ -228,7 +353,7 @@ export default function OrganizationSettings() {
                         required: 'Stad är obligatorisk',
                         validate: value => (value?.trim() ? true : 'Stad är obligatorisk')
                       })}
-                      className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white"
+                      className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-sm focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white"
                       data-cy="org-city"
                     />
                     {errors.city && (
@@ -252,7 +377,7 @@ export default function OrganizationSettings() {
                         required: 'Postnummer är obligatoriskt',
                         validate: value => (value?.trim() ? true : 'Postnummer är obligatoriskt')
                       })}
-                      className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white"
+                      className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-sm focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white"
                       data-cy="org-postal-code"
                     />
                     {errors.postal_code && (
@@ -276,7 +401,7 @@ export default function OrganizationSettings() {
                         required: 'Kommun är obligatoriskt enligt Aktiebolagslagen',
                         validate: value => (value?.trim() ? true : 'Kommun är obligatoriskt enligt Aktiebolagslagen')
                       })}
-                      className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white"
+                      className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-sm focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white"
                       data-cy="org-municipality"
                     />
                     {errors.municipality && (
@@ -306,7 +431,7 @@ export default function OrganizationSettings() {
                           message: 'Ogiltig e-postadress'
                         }
                       })}
-                      className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white"
+                      className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-sm focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white"
                       data-cy="org-email"
                       required
                     />
@@ -327,7 +452,7 @@ export default function OrganizationSettings() {
                   <input
                     type="tel"
                     {...register('phone')}
-                    className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white"
+                    className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-sm focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white"
                   />
                 ) : (
                   <div className="text-gray-900 dark:text-white py-2">{currentOrganization.phone || '-'}</div>
@@ -350,7 +475,7 @@ export default function OrganizationSettings() {
                   <input
                     type="text"
                     {...register('bank_giro')}
-                    className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white"
+                    className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-sm focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white"
                   />
                 ) : (
                   <div className="text-gray-900 dark:text-white py-2">
@@ -367,7 +492,7 @@ export default function OrganizationSettings() {
                   <input
                     type="text"
                     {...register('bank_iban')}
-                    className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white"
+                    className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-sm focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white"
                   />
                 ) : (
                   <div className="text-gray-900 dark:text-white py-2">
@@ -417,7 +542,7 @@ export default function OrganizationSettings() {
                   <input
                     type="text"
                     {...register('invoice_number_prefix')}
-                    className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white"
+                    className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-sm focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white"
                     data-cy="invoice-prefix-input"
                   />
                 ) : (
@@ -434,7 +559,7 @@ export default function OrganizationSettings() {
                 {isEditing ? (
                   <select
                     {...register('invoice_numbering_mode')}
-                    className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white"
+                    className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-sm focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white"
                     data-cy="invoice-numbering-mode-select"
                   >
                     <option value="automatic">{t('organization.numberingModes.automatic')}</option>
@@ -456,7 +581,7 @@ export default function OrganizationSettings() {
                     type="number"
                     {...register('default_payment_terms', { valueAsNumber: true })}
                     min="1"
-                    className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white"
+                    className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-sm focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white"
                     data-cy="payment-terms-input"
                   />
                 ) : (
@@ -473,7 +598,7 @@ export default function OrganizationSettings() {
                 {isEditing ? (
                   <select
                     {...register('default_currency')}
-                    className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white"
+                    className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-sm focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white"
                   >
                     <option value="SEK">SEK</option>
                     <option value="EUR">EUR</option>
@@ -498,7 +623,7 @@ export default function OrganizationSettings() {
                     step="0.01"
                     min="0"
                     max="100"
-                    className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white"
+                    className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-sm focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white"
                   />
                 ) : (
                   <div className="text-gray-900 dark:text-white py-2">
@@ -514,14 +639,14 @@ export default function OrganizationSettings() {
               <button
                 type="button"
                 onClick={handleCancel}
-                className="px-4 py-2 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-md"
+                className="px-4 py-2 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-sm"
                 disabled={saving}
               >
                 {t('common.cancel')}
               </button>
               <button
                 type="submit"
-                className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 disabled:opacity-50"
+                className="px-4 py-2 bg-blue-600 text-white rounded-sm hover:bg-blue-700 disabled:opacity-50"
                 disabled={saving}
                 data-cy="save-organization"
               >

@@ -487,7 +487,7 @@ export default function Invoices() {
                         value={invoice.invoice_template_id || ''}
                         onChange={(e) => handleTemplateChange(invoice, e.target.value)}
                         data-cy={`template-select-${invoice.id}`}
-                        className="text-xs border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-900 dark:text-white px-2 py-1 focus:ring-1 focus:ring-blue-500 focus:border-blue-500 max-w-[140px]"
+                        className="text-xs border border-gray-300 dark:border-gray-600 rounded-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-white px-2 py-1 focus:ring-1 focus:ring-blue-500 focus:border-blue-500 max-w-[140px]"
                       >
                         <option value="">{t('invoice.defaultTemplate')}</option>
                         {templates.filter(t => t.is_system).length > 0 && (

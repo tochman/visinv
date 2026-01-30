@@ -3,9 +3,11 @@ import { useState } from 'react';
 import { useDispatch } from 'react-redux';
 import { useOrganization } from '../contexts/OrganizationContext';
 import { OrganizationSettings, OrganizationMembers } from '../components/organization';
+import ProfileSettings from '../components/profile/ProfileSettings';
 import { openCookieSettings } from '../features/cookieConsent/cookieConsentSlice';
 
 const TABS = {
+  PROFILE: 'profile',
   SETTINGS: 'settings',
   MEMBERS: 'members',
   PRIVACY: 'privacy',
@@ -15,7 +17,7 @@ export default function Settings() {
   const { t } = useTranslation();
   const dispatch = useDispatch();
   const { currentOrganization, loading } = useOrganization();
-  const [activeTab, setActiveTab] = useState(TABS.SETTINGS);
+  const [activeTab, setActiveTab] = useState(TABS.PROFILE);
 
   if (loading) {
     return (
@@ -43,6 +45,17 @@ export default function Settings() {
       {/* Tab Navigation */}
       <div className="border-b border-gray-200 dark:border-gray-700 mb-6 animate-fade-in-up animate-delay-100">
         <nav className="-mb-px flex space-x-8" aria-label="Tabs">
+          <button
+            onClick={() => setActiveTab(TABS.PROFILE)}
+            className={`whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm ${
+              activeTab === TABS.PROFILE
+                ? 'border-blue-500 text-blue-600 dark:text-blue-400'
+                : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 dark:text-gray-400 dark:hover:text-gray-300'
+            }`}
+            data-cy="tab-profile"
+          >
+            {t('profile.title')}
+          </button>
           <button
             onClick={() => setActiveTab(TABS.SETTINGS)}
             className={`whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm ${
@@ -74,30 +87,31 @@ export default function Settings() {
             }`}
             data-cy="tab-privacy"
           >
-            Privacy
+            {t('privacy.title')}
           </button>
         </nav>
       </div>
 
       {/* Tab Content */}
       <div className="animate-fade-in-up animate-delay-200">
+        {activeTab === TABS.PROFILE && <ProfileSettings />}
         {activeTab === TABS.SETTINGS && <OrganizationSettings />}
         {activeTab === TABS.MEMBERS && <OrganizationMembers />}
         {activeTab === TABS.PRIVACY && (
           <div className="bg-white dark:bg-gray-800 rounded-sm shadow-md p-6">
-            <h2 className="text-xl font-semibold text-gray-900 dark:text-white mb-4">Privacy Settings</h2>
+            <h2 className="text-xl font-semibold text-gray-900 dark:text-white mb-4">{t('privacy.title')}</h2>
             <div className="space-y-4">
               <div className="border-b border-gray-200 dark:border-gray-700 pb-4">
-                <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-2">Cookie Preferences</h3>
+                <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-2">{t('privacy.cookiePreferences')}</h3>
                 <p className="text-sm text-gray-600 dark:text-gray-300 mb-4">
-                  Manage how we use cookies and similar technologies to improve your experience.
+                  {t('privacy.cookieDescription')}
                 </p>
                 <button
                   onClick={() => dispatch(openCookieSettings())}
-                  className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium rounded-md transition-colors"
+                  className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium rounded-sm transition-colors"
                   data-cy="open-cookie-settings"
                 >
-                  Manage Cookie Settings
+                  {t('privacy.manageCookieSettings')}
                 </button>
               </div>
             </div>

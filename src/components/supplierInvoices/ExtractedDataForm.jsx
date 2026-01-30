@@ -57,7 +57,7 @@ function EditableField({
         value={value || ''}
         onChange={(e) => onChange(e.target.value)}
         placeholder={placeholder}
-        className="w-full px-3 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-md 
+        className="w-full px-3 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-sm 
                    focus:ring-2 focus:ring-blue-500 focus:border-transparent
                    bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
         data-cy={dataCy}
@@ -284,7 +284,7 @@ export default function ExtractedDataForm({
             <select
               value={selectedSupplierId}
               onChange={(e) => handleSupplierSelect(e.target.value)}
-              className="w-full px-3 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-md 
+              className="w-full px-3 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-sm 
                          bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
               data-cy="supplier-select"
             >
@@ -460,7 +460,7 @@ export default function ExtractedDataForm({
                   <select
                     value={item.account_id || ''}
                     onChange={(e) => handleLineItemChange(index, 'account_id', e.target.value)}
-                    className="w-full px-3 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-md 
+                    className="w-full px-3 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-sm 
                                bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
                     data-cy={`line-account-${index}`}
                   >

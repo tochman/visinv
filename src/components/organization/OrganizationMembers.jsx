@@ -156,7 +156,7 @@ export default function OrganizationMembers() {
           {isOwner && (
             <button
               onClick={() => setShowInviteModal(true)}
-              className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700"
+              className="px-4 py-2 bg-blue-600 text-white rounded-sm hover:bg-blue-700"
               data-cy="invite-member-button"
             >
               {t('organization.invitations.inviteNew')}
@@ -272,7 +272,7 @@ export default function OrganizationMembers() {
                   {invitations.map((invitation) => (
                     <div
                       key={invitation.id}
-                      className="flex items-center justify-between p-3 bg-gray-50 dark:bg-gray-700/50 rounded-md"
+                      className="flex items-center justify-between p-3 bg-gray-50 dark:bg-gray-700/50 rounded-sm"
                       data-cy="invitation-row"
                     >
                       <div>
@@ -330,7 +330,7 @@ export default function OrganizationMembers() {
                       type="email"
                       value={inviteEmail}
                       onChange={(e) => setInviteEmail(e.target.value)}
-                      className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white"
+                      className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-sm focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white"
                       placeholder="colleague@example.com"
                       required
                       data-cy="invite-email-input"
@@ -343,7 +343,7 @@ export default function OrganizationMembers() {
                     <select
                       value={inviteRole}
                       onChange={(e) => setInviteRole(e.target.value)}
-                      className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white"
+                      className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-sm focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white"
                       data-cy="invite-role-select"
                     >
                       <option value="associate">{t('organization.roles.associate')}</option>
@@ -358,14 +358,14 @@ export default function OrganizationMembers() {
                   <button
                     type="button"
                     onClick={() => setShowInviteModal(false)}
-                    className="px-4 py-2 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-600 rounded-md"
+                    className="px-4 py-2 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-600 rounded-sm"
                   >
                     {t('common.cancel')}
                   </button>
                   <button
                     type="submit"
                     disabled={inviting || !inviteEmail.trim()}
-                    className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 disabled:opacity-50"
+                    className="px-4 py-2 bg-blue-600 text-white rounded-sm hover:bg-blue-700 disabled:opacity-50"
                     data-cy="send-invitation-button"
                   >
                     {inviting ? t('common.loading') : t('organization.invitations.send')}

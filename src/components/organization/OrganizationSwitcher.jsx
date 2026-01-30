@@ -82,7 +82,7 @@ export default function OrganizationSwitcher() {
       <div className="px-4 py-3 border-t border-gray-200 dark:border-gray-700" ref={dropdownRef}>
         <button
           onClick={() => setIsOpen(!isOpen)}
-          className="w-full flex items-center justify-between gap-2 px-3 py-2 text-sm rounded-md bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors"
+          className="w-full flex items-center justify-between gap-2 px-3 py-2 text-sm rounded-sm bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors"
           data-cy="organization-switcher-button"
         >
           <div className="flex items-center gap-2 min-w-0">
@@ -95,7 +95,7 @@ export default function OrganizationSwitcher() {
         </button>
 
         {isOpen && (
-          <div className="absolute bottom-full left-4 right-4 mb-2 bg-white dark:bg-gray-800 rounded-md shadow-lg border border-gray-200 dark:border-gray-700 z-50 max-h-64 overflow-y-auto" data-cy="organization-switcher-dropdown">
+          <div className="absolute bottom-full left-4 right-4 mb-2 bg-white dark:bg-gray-800 rounded-sm shadow-lg border border-gray-200 dark:border-gray-700 z-50 max-h-64 overflow-y-auto" data-cy="organization-switcher-dropdown">
             <div className="py-1">
               {organizations.map((org) => (
                 <button

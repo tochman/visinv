@@ -1320,7 +1320,7 @@ export default function TemplateEditor({
           <div className="flex items-center bg-gray-100 rounded-sm p-0.5">
             <button
               onClick={() => handleModeSwitch('visual')}
-              className={`px-3 py-1.5 text-sm font-medium rounded-md transition ${
+              className={`px-3 py-1.5 text-sm font-medium rounded-sm transition ${
                 editorMode === 'visual' 
                   ? 'bg-white text-gray-900 shadow-sm' 
                   : 'text-gray-600 hover:text-gray-900'
@@ -1336,7 +1336,7 @@ export default function TemplateEditor({
             </button>
             <button
               onClick={() => handleModeSwitch('code')}
-              className={`px-3 py-1.5 text-sm font-medium rounded-md transition ${
+              className={`px-3 py-1.5 text-sm font-medium rounded-sm transition ${
                 editorMode === 'code' 
                   ? 'bg-white text-gray-900 shadow-sm' 
                   : 'text-gray-600 hover:text-gray-900'
@@ -1352,7 +1352,7 @@ export default function TemplateEditor({
             </button>
             <button
               onClick={() => handleModeSwitch('preview')}
-              className={`px-3 py-1.5 text-sm font-medium rounded-md transition ${
+              className={`px-3 py-1.5 text-sm font-medium rounded-sm transition ${
                 editorMode === 'preview' 
                   ? 'bg-white text-gray-900 shadow-sm' 
                   : 'text-gray-600 hover:text-gray-900'

@@ -653,7 +653,7 @@ export default function OcrUploadModal({ isOpen, onClose, onInvoiceCreated }) {
         <button
           type="button"
           onClick={handleClose}
-          className="px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-md hover:bg-gray-50 dark:hover:bg-gray-600"
+          className="px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-sm hover:bg-gray-50 dark:hover:bg-gray-600"
           data-cy="ocr-cancel-button"
         >
           {t('common.cancel')}
@@ -662,7 +662,7 @@ export default function OcrUploadModal({ isOpen, onClose, onInvoiceCreated }) {
           type="button"
           onClick={handleProcessFile}
           disabled={!file || loading}
-          className="px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-md hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed"
+          className="px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-sm hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed"
           data-cy="ocr-process-button"
         >
           {t('ocrUpload.processButton')}
@@ -715,7 +715,7 @@ export default function OcrUploadModal({ isOpen, onClose, onInvoiceCreated }) {
           {t('ocrUpload.extractedData')}
         </h3>
         {error && (
-          <div className="mb-4 p-3 bg-red-50 dark:bg-red-900/30 border border-red-200 dark:border-red-800 rounded-md">
+          <div className="mb-4 p-3 bg-red-50 dark:bg-red-900/30 border border-red-200 dark:border-red-800 rounded-sm">
             <p className="text-sm text-red-600 dark:text-red-400">{error}</p>
           </div>
         )}
@@ -731,7 +731,7 @@ export default function OcrUploadModal({ isOpen, onClose, onInvoiceCreated }) {
           <button
             type="button"
             onClick={() => setStep('upload')}
-            className="px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-md hover:bg-gray-50 dark:hover:bg-gray-600"
+            className="px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-sm hover:bg-gray-50 dark:hover:bg-gray-600"
             data-cy="ocr-back-button"
           >
             {t('common.back')}
@@ -739,7 +739,7 @@ export default function OcrUploadModal({ isOpen, onClose, onInvoiceCreated }) {
           <button
             type="button"
             onClick={handleProceedToSupplier}
-            className="px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-md hover:bg-blue-700"
+            className="px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-sm hover:bg-blue-700"
             data-cy="ocr-next-button"
           >
             {t('ocrUpload.nextSupplier')}
@@ -853,7 +853,7 @@ export default function OcrUploadModal({ isOpen, onClose, onInvoiceCreated }) {
               value={supplierSearchQuery}
               onChange={(e) => setSupplierSearchQuery(e.target.value)}
               placeholder={t('ocrUpload.searchSuppliersPlaceholder')}
-              className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+              className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
               data-cy="supplier-search-input"
             />
           </div>
@@ -953,7 +953,7 @@ export default function OcrUploadModal({ isOpen, onClose, onInvoiceCreated }) {
             <button
               type="button"
               onClick={() => setStep('review')}
-              className="px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-md hover:bg-gray-50 dark:hover:bg-gray-600"
+              className="px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-sm hover:bg-gray-50 dark:hover:bg-gray-600"
               data-cy="ocr-back-button"
             >
               {t('common.back')}
@@ -962,7 +962,7 @@ export default function OcrUploadModal({ isOpen, onClose, onInvoiceCreated }) {
               type="button"
               onClick={handleProceedToKontering}
               disabled={!selectedSupplierId}
-              className="px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-md hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed"
+              className="px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-sm hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed"
               data-cy="ocr-next-button"
             >
               {t('ocrUpload.nextKontering')}
@@ -1065,7 +1065,7 @@ export default function OcrUploadModal({ isOpen, onClose, onInvoiceCreated }) {
                 </label>
                 <select
                   onChange={(e) => handleSetAllAccounts(e.target.value)}
-                  className="flex-1 px-3 py-2 text-sm border border-blue-300 dark:border-blue-600 rounded-md 
+                  className="flex-1 px-3 py-2 text-sm border border-blue-300 dark:border-blue-600 rounded-sm 
                              bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
                   defaultValue=""
                   data-cy="set-all-accounts-select"
@@ -1117,7 +1117,7 @@ export default function OcrUploadModal({ isOpen, onClose, onInvoiceCreated }) {
                     <select
                       value={item.account_id || ''}
                       onChange={(e) => handleLineAccountChange(index, e.target.value)}
-                      className="w-full px-3 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500"
+                      className="w-full px-3 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-sm bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500"
                       data-cy={`kontering-account-${index}`}
                     >
                       <option value="">{t('ocrUpload.selectAccountPlaceholder')}</option>
@@ -1160,7 +1160,7 @@ export default function OcrUploadModal({ isOpen, onClose, onInvoiceCreated }) {
             <button
               type="button"
               onClick={() => setStep('supplier')}
-              className="px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-md hover:bg-gray-50 dark:hover:bg-gray-600"
+              className="px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-sm hover:bg-gray-50 dark:hover:bg-gray-600"
               data-cy="ocr-back-button"
             >
               {t('common.back')}
@@ -1169,7 +1169,7 @@ export default function OcrUploadModal({ isOpen, onClose, onInvoiceCreated }) {
               type="button"
               onClick={handleConfirm}
               disabled={creatingSupplier}
-              className="px-4 py-2 text-sm font-medium text-white bg-green-600 rounded-md hover:bg-green-700 disabled:opacity-50"
+              className="px-4 py-2 text-sm font-medium text-white bg-green-600 rounded-sm hover:bg-green-700 disabled:opacity-50"
               data-cy="ocr-confirm-button"
             >
               {creatingSupplier ? t('common.creating') : t('ocrUpload.confirmAndCreate')}

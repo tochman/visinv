@@ -693,6 +693,12 @@
     "saved": "Organization saved successfully.",
     "requiredForInvoices": "Organization information is required to create invoices."
   },
+  "privacy": {
+    "title": "Privacy Settings",
+    "cookiePreferences": "Cookie Preferences",
+    "cookieDescription": "Manage how we use cookies and similar technologies to improve your experience.",
+    "manageCookieSettings": "Manage Cookie Settings"
+  },
   "common": {
     "save": "Save",
     "saving": "Saving...",
@@ -736,6 +742,38 @@
     "close": "Close",
     "submitting": "Submitting...",
     "all": "All"
+  },
+  "profile": {
+    "title": "Profile Settings",
+    "personalInfo": "Personal Information",
+    "avatar": "Profile Picture",
+    "uploadAvatar": "Upload Avatar",
+    "changeAvatar": "Change Avatar",
+    "removeAvatar": "Remove Avatar",
+    "avatarHint": "Recommended: Square image, max 2MB (JPEG, PNG, WebP)",
+    "fullName": "Full Name",
+    "email": "Email",
+    "emailReadonly": "Email cannot be changed",
+    "updateSuccess": "Profile updated successfully",
+    "updateError": "Failed to update profile",
+    "avatarUploadSuccess": "Avatar uploaded successfully",
+    "avatarUploadError": "Failed to upload avatar",
+    "avatarDeleteSuccess": "Avatar removed successfully",
+    "avatarDeleteError": "Failed to remove avatar",
+    "confirmDeleteAvatar": "Remove your profile picture?"
+  },
+  "organization": {
+    "logo": "Company Logo",
+    "uploadLogo": "Upload Logo",
+    "changeLogo": "Change Logo",
+    "removeLogo": "Remove Logo",
+    "logoHint": "Recommended: Transparent PNG, max 2MB (JPEG, PNG, SVG, WebP)",
+    "logoUploadSuccess": "Logo uploaded successfully",
+    "logoUploadError": "Failed to upload logo",
+    "logoDeleteSuccess": "Logo removed successfully",
+    "logoDeleteError": "Failed to remove logo",
+    "confirmDeleteLogo": "Remove your company logo?",
+    "logoWillAppear": "This logo will appear on your invoices and documents"
   },
   "accounts": {
     "title": "Chart of Accounts",
