@@ -57,7 +57,7 @@ Run repeatedly until the isolated test passes.
 
 ### Step 4: Expand to Describe/Context Block
 
-Once the single test passes, move `.only` to the parent `describe` or `context` block:
+Once the single test passes, move `.only` to the parent `describe` or `context` block, unless you move on to the next it block that we know is failing before you run the entire describe block.
 
 ```javascript
 // Before - single test only

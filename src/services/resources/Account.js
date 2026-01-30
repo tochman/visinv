@@ -436,6 +436,151 @@ class AccountResource extends BaseResource {
       error: null,
     };
   }
+
+  /**
+   * Get account balance and transaction count
+   * @param {string} accountId - Account ID
+   * @param {string} organizationId - Organization ID 
+   * @param {string} endDate - End date for balance calculation (optional, defaults to today)
+   * @returns {Promise<{data: Object|null, error: Error|null}>}
+   */
+  async getAccountSummary(accountId, organizationId, endDate = null) {
+    if (!accountId || !organizationId) {
+      return { data: null, error: new Error('Account ID and Organization ID are required') };
+    }
+
+    try {
+      // Get account details
+      const { data: account, error: accountError } = await this.show(accountId);
+      if (accountError) return { data: null, error: accountError };
+      if (!account) return { data: null, error: new Error('Account not found') };
+
+      const finalEndDate = endDate || new Date().toISOString().split('T')[0];
+
+      // Get transaction count and balance from journal entries
+      const { data: balanceData, error: balanceError } = await this.supabase
+        .rpc('get_account_balance_and_count', {
+          p_account_id: accountId,
+          p_organization_id: organizationId,
+          p_end_date: finalEndDate
+        });
+
+      if (balanceError) {
+        // If the stored procedure doesn't exist, calculate manually
+        console.warn('get_account_balance_and_count procedure not found, calculating manually');
+        
+        // Manual calculation - get all journal entry lines for this account
+        const { data: lines, error: linesError } = await this.supabase
+          .from('journal_entry_lines')
+          .select(`
+            debit_amount,
+            credit_amount,
+            journal_entries!inner(
+              organization_id,
+              entry_date,
+              is_posted
+            )
+          `)
+          .eq('account_id', accountId)
+          .eq('journal_entries.organization_id', organizationId)
+          .eq('journal_entries.is_posted', true)
+          .lte('journal_entries.entry_date', finalEndDate);
+
+        if (linesError) return { data: null, error: linesError };
+
+        // Calculate balance and count
+        let debitTotal = 0;
+        let creditTotal = 0;
+        const transactionCount = lines?.length || 0;
+
+        if (lines) {
+          lines.forEach(line => {
+            debitTotal += parseFloat(line.debit_amount || 0);
+            creditTotal += parseFloat(line.credit_amount || 0);
+          });
+        }
+
+        // Calculate balance based on account type
+        let balance = 0;
+        const accountClass = account.account_class;
+        
+        if (accountClass === 'assets' || accountClass === 'expenses') {
+          // Debit normal accounts
+          balance = debitTotal - creditTotal;
+        } else {
+          // Credit normal accounts (liabilities, equity, revenue, financial)
+          balance = creditTotal - debitTotal;
+        }
+
+        return {
+          data: {
+            account_id: accountId,
+            account_number: account.account_number,
+            account_name: account.name,
+            account_class: account.account_class,
+            balance: balance,
+            debit_total: debitTotal,
+            credit_total: creditTotal,
+            transaction_count: transactionCount,
+            as_of_date: finalEndDate
+          },
+          error: null
+        };
+      }
+
+      return { 
+        data: balanceData?.[0] || {
+          account_id: accountId,
+          balance: 0,
+          transaction_count: 0,
+          debit_total: 0,
+          credit_total: 0,
+          as_of_date: finalEndDate
+        }, 
+        error: null 
+      };
+    } catch (error) {
+      return { data: null, error };
+    }
+  }
+
+  /**
+   * Get balances and transaction counts for multiple accounts
+   * @param {string} organizationId - Organization ID
+   * @param {Array} accountIds - Array of account IDs (optional, gets all if not provided)
+   * @param {string} endDate - End date for balance calculation (optional)
+   * @returns {Promise<{data: Array|null, error: Error|null}>}
+   */
+  async getAccountsSummary(organizationId, accountIds = null, endDate = null) {
+    if (!organizationId) {
+      return { data: null, error: new Error('Organization ID is required') };
+    }
+
+    // If no specific accounts requested, get all active accounts
+    if (!accountIds || accountIds.length === 0) {
+      const { data: accounts, error: accountsError } = await this.index({ 
+        organizationId, 
+        activeOnly: true 
+      });
+      if (accountsError) return { data: null, error: accountsError };
+      accountIds = accounts?.map(a => a.id) || [];
+    }
+
+    // Get summaries for each account
+    const summaries = [];
+    for (const accountId of accountIds) {
+      const { data: summary, error } = await this.getAccountSummary(accountId, organizationId, endDate);
+      if (error) {
+        console.error(`Error getting summary for account ${accountId}:`, error);
+        continue;
+      }
+      if (summary) {
+        summaries.push(summary);
+      }
+    }
+
+    return { data: summaries, error: null };
+  }
 }
 
 // Export singleton instance

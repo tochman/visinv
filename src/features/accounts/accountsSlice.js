@@ -151,11 +151,33 @@ export const importAccounts = createAsyncThunk(
   }
 );
 
+/**
+ * Fetch account summaries with balances and transaction counts
+ * @param {Object} params - Parameters
+ * @param {string} params.organizationId - Organization ID (required)
+ * @param {Array} params.accountIds - Array of account IDs (optional)
+ * @param {string} params.endDate - End date for balance calculation (optional)
+ */
+export const fetchAccountsSummary = createAsyncThunk(
+  'accounts/fetchAccountsSummary',
+  async ({ organizationId, accountIds, endDate }, { rejectWithValue }) => {
+    if (!organizationId) {
+      return rejectWithValue('No organization selected');
+    }
+
+    const { data, error } = await Account.getAccountsSummary(organizationId, accountIds, endDate);
+    if (error) return rejectWithValue(error.message);
+    return data;
+  }
+);
+
 const accountsSlice = createSlice({
   name: 'accounts',
   initialState: {
     items: [],
+    summaries: {}, // Map of account_id -> summary data (balance, transaction_count)
     loading: false,
+    summariesLoading: false,
     error: null,
     filter: {
       accountClass: null,
@@ -306,6 +328,24 @@ const accountsSlice = createSlice({
       .addCase(importAccounts.rejected, (state, action) => {
         state.loading = false;
         state.error = action.payload;
+      })
+
+      // Fetch accounts summary
+      .addCase(fetchAccountsSummary.pending, (state) => {
+        state.summariesLoading = true;
+      })
+      .addCase(fetchAccountsSummary.fulfilled, (state, action) => {
+        state.summariesLoading = false;
+        // Convert array to map for easy lookup
+        const summariesMap = {};
+        action.payload.forEach((summary) => {
+          summariesMap[summary.account_id] = summary;
+        });
+        state.summaries = summariesMap;
+      })
+      .addCase(fetchAccountsSummary.rejected, (state, action) => {
+        state.summariesLoading = false;
+        // Don't set error for summaries as it's not critical
       });
   },
 });
@@ -362,6 +402,26 @@ export const selectAccountsByClass = (state) => {
     acc[classKey].push(account);
     return acc;
   }, {});
+};
+
+// Summaries selectors
+export const selectAccountsSummaries = (state) => state.accounts.summaries;
+export const selectAccountsSummariesLoading = (state) => state.accounts.summariesLoading;
+
+// Get summary for specific account
+export const selectAccountSummary = (accountId) => (state) => {
+  return state.accounts.summaries[accountId] || null;
+};
+
+// Get accounts with summary data combined
+export const selectAccountsWithSummaries = (state) => {
+  const accounts = selectFilteredAccounts(state);
+  const summaries = state.accounts.summaries;
+  
+  return accounts.map((account) => ({
+    ...account,
+    summary: summaries[account.id] || null,
+  }));
 };
 
 export default accountsSlice.reducer;

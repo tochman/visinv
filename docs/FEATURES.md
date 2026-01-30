@@ -1539,25 +1539,40 @@ Swedish accounting follows **Bokföringslagen** (BFL) and **Årsredovisningslage
 
 #### Chart of Accounts
 
-**US-201: BAS Chart of Accounts Setup**
+**US-201: BAS Chart of Accounts Setup** ✅
 - As an **organization owner**, in order to **start accounting according to Swedish standards**, I would like to **initialize my chart of accounts with the BAS standard account plan**.
 - **Acceptance Criteria:**
-  - Option to import standard BAS chart of accounts (BAS 2024)
-  - Account structure: 4-digit codes (1xxx Assets, 2xxx Liabilities, 3xxx Revenue, etc.)
-  - Support for account groups and subaccounts
-  - Each account has: number, name, type (asset/liability/equity/revenue/expense), VAT code
-  - SRU codes for tax reporting linkage
-- **Status:** Not Started
+  - ✅ Option to import standard BAS chart of accounts (BAS 2024)
+  - ✅ Account structure: 4-digit codes (1xxx Assets, 2xxx Liabilities, 3xxx Revenue, etc.)
+  - ✅ Support for account groups and subaccounts
+  - ✅ Each account has: number, name, type (asset/liability/equity/revenue/expense), VAT code
+  - ⏸️ SRU codes for tax reporting linkage (future enhancement)
+- **Implementation:**
+  - Database: `accounts` table with organization-based RLS
+  - Resource: `Account.js` with `seedBASAccounts()` method containing comprehensive BAS 2024 accounts
+  - Account Structure: Complete Swedish chart of accounts with 4-digit codes
+  - Features: Assets (1xxx), Liabilities (2xxx), Revenue (3xxx), Expenses (4xxx-7xxx), Financial (8xxx)
+  - VAT Support: Accounts include default VAT rates (25%, 12%, 6%, 0%)
+  - Bilingual: Swedish names and English translations for all accounts
+- **Status:** ✅ Complete
 
-**US-202: Custom Account Management**
+**US-202: Custom Account Management** ✅
 - As a **bookkeeper**, in order to **adapt the chart of accounts to my business**, I would like to **add, edit, and deactivate accounts**.
 - **Acceptance Criteria:**
-  - Create new accounts with proper validation (unique number, correct range for type)
-  - Edit account name and settings (not number after use)
-  - Deactivate accounts (soft delete, keep for historical data)
-  - Cannot delete accounts with transactions
-  - Show account balance and transaction count
-- **Status:** Not Started
+  - ✅ Create new accounts with proper validation (unique number, correct range for type)
+  - ✅ Edit account name and settings (not number after use)
+  - ✅ Deactivate accounts (soft delete, keep for historical data)
+  - ✅ Cannot delete accounts with transactions
+  - ✅ Show account balance and transaction count
+- **Implementation:**
+  - Database: `accounts` table with RLS, account balance function `get_account_balance_and_count`
+  - Resource: `Account.js` with CRUD operations, validation, balance calculations
+  - Redux: `accountsSlice.js` with create, update, activate/deactivate, summary thunks
+  - UI: `AccountModal.jsx` for create/edit with validation, enhanced `Accounts.jsx` page
+  - Features: Account number validation, class/prefix matching, balance display, transaction counts
+  - Balance calculation: Automatic debit/credit handling based on account class
+  - Tests: `cypress/e2e/account-management.cy.js` (60+ tests covering all functionality)
+- **Status:** ✅ Complete
 
 **US-203: Account Groups and Hierarchy**
 - As a **bookkeeper**, in order to **organize accounts for reporting**, I would like to **group accounts into logical categories and subcategories**.

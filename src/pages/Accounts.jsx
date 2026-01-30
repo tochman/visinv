@@ -6,16 +6,20 @@ import {
   seedBASAccounts,
   activateAccount,
   deactivateAccount,
+  fetchAccountsSummary,
   selectAccounts,
   selectAccountsLoading,
   selectAccountsError,
   selectAccountsFilter,
+  selectAccountsWithSummaries,
+  selectAccountsSummariesLoading,
   setAccountClassFilter,
   setSearchQuery,
   setIncludeInactive,
   clearFilters,
 } from '../features/accounts/accountsSlice';
 import { useOrganization } from '../contexts/OrganizationContext';
+import AccountModal from '../components/accounts/AccountModal';
 
 // Account class definitions with colors
 const ACCOUNT_CLASSES = [
@@ -32,13 +36,17 @@ export default function Accounts() {
   const { t, i18n } = useTranslation();
   const dispatch = useDispatch();
   const accounts = useSelector(selectAccounts);
+  const accountsWithSummaries = useSelector(selectAccountsWithSummaries);
   const loading = useSelector(selectAccountsLoading);
+  const summariesLoading = useSelector(selectAccountsSummariesLoading);
   const error = useSelector(selectAccountsError);
   const filter = useSelector(selectAccountsFilter);
   const { currentOrganization } = useOrganization();
 
   const [seedingInProgress, setSeedingInProgress] = useState(false);
   const [actionConfirm, setActionConfirm] = useState(null);
+  const [showAccountModal, setShowAccountModal] = useState(false);
+  const [editingAccount, setEditingAccount] = useState(null);
 
   // Load accounts when organization changes
   useEffect(() => {
@@ -59,9 +67,19 @@ export default function Accounts() {
     };
   }, [dispatch]);
 
+  // Fetch account summaries when accounts are loaded
+  useEffect(() => {
+    if (currentOrganization?.id && accounts.length > 0) {
+      dispatch(fetchAccountsSummary({
+        organizationId: currentOrganization.id,
+        accountIds: accounts.map(a => a.id)
+      }));
+    }
+  }, [dispatch, currentOrganization?.id, accounts]);
+
   // Filter accounts client-side based on class and search
   const filteredAccounts = useMemo(() => {
-    let result = accounts;
+    let result = accountsWithSummaries;
 
     // Filter by class
     if (filter.accountClass) {
@@ -80,7 +98,7 @@ export default function Accounts() {
     }
 
     return result;
-  }, [accounts, filter.accountClass, filter.searchQuery]);
+  }, [accountsWithSummaries, filter.accountClass, filter.searchQuery]);
 
   // Get class badge styling
   const getClassBadge = (accountClass) => {
@@ -135,6 +153,24 @@ export default function Accounts() {
     setActionConfirm(null);
   };
 
+  // Handle create account
+  const handleCreateAccount = () => {
+    setEditingAccount(null);
+    setShowAccountModal(true);
+  };
+
+  // Handle edit account
+  const handleEditAccount = (account) => {
+    setEditingAccount(account);
+    setShowAccountModal(true);
+  };
+
+  // Handle close account modal
+  const handleCloseAccountModal = () => {
+    setShowAccountModal(false);
+    setEditingAccount(null);
+  };
+
   return (
     <div>
       {/* Header */}
@@ -146,34 +182,55 @@ export default function Accounts() {
           {t('accounts.title')}
         </h1>
 
-        {/* Seed BAS Accounts Button - only show if no accounts exist */}
-        {accounts.length === 0 && !loading && (
-          <button
-            onClick={handleSeedAccounts}
-            disabled={seedingInProgress}
-            data-cy="seed-accounts-button"
-            className="inline-flex items-center px-4 py-2 bg-blue-600 text-white rounded-sm hover:bg-blue-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-          >
-            {seedingInProgress ? (
-              <>
-                <div className="animate-spin rounded-full h-4 w-4 border-2 border-white border-t-transparent mr-2" />
-                {t('accounts.seeding')}
-              </>
-            ) : (
-              <>
-                <svg className="w-5 h-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M12 6v6m0 0v6m0-6h6m-6 0H6"
-                  />
-                </svg>
-                {t('accounts.seedBAS')}
-              </>
-            )}
-          </button>
-        )}
+        <div className="flex items-center space-x-3">
+          {/* Create Account Button - only show if accounts exist */}
+          {accounts.length > 0 && (
+            <button
+              onClick={handleCreateAccount}
+              data-cy="create-account-button"
+              className="inline-flex items-center px-4 py-2 bg-blue-600 text-white rounded-sm hover:bg-blue-700 transition-colors"
+            >
+              <svg className="w-5 h-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M12 6v6m0 0v6m0-6h6m-6 0H6"
+                />
+              </svg>
+              {t('accounts.createAccount')}
+            </button>
+          )}
+
+          {/* Seed BAS Accounts Button - only show if no accounts exist */}
+          {accounts.length === 0 && !loading && (
+            <button
+              onClick={handleSeedAccounts}
+              disabled={seedingInProgress}
+              data-cy="seed-accounts-button"
+              className="inline-flex items-center px-4 py-2 bg-blue-600 text-white rounded-sm hover:bg-blue-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              {seedingInProgress ? (
+                <>
+                  <div className="animate-spin rounded-full h-4 w-4 border-2 border-white border-t-transparent mr-2" />
+                  {t('accounts.seeding')}
+                </>
+              ) : (
+                <>
+                  <svg className="w-5 h-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M12 6v6m0 0v6m0-6h6m-6 0H6"
+                    />
+                  </svg>
+                  {t('accounts.seedBAS')}
+                </>
+              )}
+            </button>
+          )}
+        </div>
       </div>
 
       {/* Filters */}
@@ -357,6 +414,12 @@ export default function Accounts() {
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
                     {t('accounts.type')}
                   </th>
+                  <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                    {t('accounts.balance')}
+                  </th>
+                  <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                    {t('accounts.transactions')}
+                  </th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
                     {t('accounts.status')}
                   </th>
@@ -416,6 +479,43 @@ export default function Accounts() {
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-700 dark:text-gray-300">
                       {t(`accounts.types.${account.account_type}`)}
                     </td>
+                    
+                    {/* Balance Column */}
+                    <td className="px-6 py-4 whitespace-nowrap text-right text-sm">
+                      {summariesLoading ? (
+                        <div className="inline-block w-4 h-4 border-2 border-gray-300 border-t-blue-600 rounded-full animate-spin" />
+                      ) : account.summary ? (
+                        <span className={`font-mono font-medium ${
+                          account.summary.balance === 0 
+                            ? 'text-gray-500 dark:text-gray-400'
+                            : account.summary.balance > 0 
+                              ? 'text-green-600 dark:text-green-400'
+                              : 'text-red-600 dark:text-red-400'
+                        }`}>
+                          {new Intl.NumberFormat('sv-SE', {
+                            style: 'currency',
+                            currency: 'SEK',
+                            minimumFractionDigits: 0,
+                          }).format(account.summary.balance)}
+                        </span>
+                      ) : (
+                        <span className="text-gray-400 dark:text-gray-500 text-xs">—</span>
+                      )}
+                    </td>
+                    
+                    {/* Transactions Count Column */}
+                    <td className="px-6 py-4 whitespace-nowrap text-right text-sm text-gray-700 dark:text-gray-300">
+                      {summariesLoading ? (
+                        <div className="inline-block w-4 h-4 border-2 border-gray-300 border-t-blue-600 rounded-full animate-spin" />
+                      ) : account.summary ? (
+                        <span className="font-medium">
+                          {account.summary.transaction_count || 0}
+                        </span>
+                      ) : (
+                        <span className="text-gray-400 dark:text-gray-500 text-xs">—</span>
+                      )}
+                    </td>
+                    
                     <td className="px-6 py-4 whitespace-nowrap">
                       {account.is_active ? (
                         <span
@@ -439,19 +539,31 @@ export default function Accounts() {
                       )}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                      {!account.is_system && (
+                      <div className="flex items-center justify-end space-x-4">
+                        {/* Edit Button */}
                         <button
-                          onClick={() => handleToggleActive(account)}
-                          data-cy={`toggle-account-${account.account_number}`}
-                          className={`${
-                            account.is_active
-                              ? 'text-red-600 dark:text-red-400 hover:text-red-900 dark:hover:text-red-300'
-                              : 'text-green-600 dark:text-green-400 hover:text-green-900 dark:hover:text-green-300'
-                          }`}
+                          onClick={() => handleEditAccount(account)}
+                          data-cy={`edit-account-${account.account_number}`}
+                          className="text-blue-600 dark:text-blue-400 hover:text-blue-900 dark:hover:text-blue-300"
                         >
-                          {account.is_active ? t('accounts.deactivate') : t('accounts.activate')}
+                          {t('common.edit')}
                         </button>
-                      )}
+                        
+                        {/* Activate/Deactivate Button - only for non-system accounts */}
+                        {!account.is_system && (
+                          <button
+                            onClick={() => handleToggleActive(account)}
+                            data-cy={`toggle-account-${account.account_number}`}
+                            className={`${
+                              account.is_active
+                                ? 'text-red-600 dark:text-red-400 hover:text-red-900 dark:hover:text-red-300'
+                                : 'text-green-600 dark:text-green-400 hover:text-green-900 dark:hover:text-green-300'
+                            }`}
+                          >
+                            {account.is_active ? t('accounts.deactivate') : t('accounts.activate')}
+                          </button>
+                        )}
+                      </div>
                     </td>
                   </tr>
                 ))}
@@ -517,6 +629,14 @@ export default function Accounts() {
             </div>
           </div>
         </div>
+      )}
+
+      {/* Account Modal */}
+      {showAccountModal && (
+        <AccountModal
+          account={editingAccount}
+          onClose={handleCloseAccountModal}
+        />
       )}
     </div>
   );

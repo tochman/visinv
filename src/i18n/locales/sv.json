@@ -773,6 +773,8 @@
     "accountName": "Namn",
     "class": "Klass",
     "type": "Typ",
+    "balance": "Balans",
+    "transactions": "Transaktioner",
     "status": "Status",
     "active": "Aktiv",
     "inactive": "Inaktiv",
@@ -797,6 +799,32 @@
       "header": "Rubrik",
       "detail": "Detalj",
       "total": "Summa"
+    },
+    "createAccount": "Skapa konto",
+    "editAccount": "Redigera konto",
+    "accountNumberPlaceholder": "t.ex. 1510",
+    "nameSwedish": "Namn (svenska)",
+    "nameSwedishPlaceholder": "t.ex. Kundfordringar",
+    "nameEnglish": "Namn (engelska)",
+    "nameEnglishPlaceholder": "t.ex. Accounts Receivable",
+    "description": "Beskrivning",
+    "descriptionPlaceholder": "Valfri beskrivning...",
+    "defaultVatRate": "Standard momssats",
+    "accountNumberHint": "{{class}} konton ska börja med {{prefix}}",
+    "vatRates": {
+      "none": "Ingen moms",
+      "zero": "0% - Momsfri",
+      "six": "6% - Reducerad sats",
+      "twelve": "12% - Reducerad sats",
+      "twentyfive": "25% - Ordinarie sats"
+    },
+    "validation": {
+      "accountNumberRequired": "Kontonummer krävs",
+      "accountNumberFormat": "Kontonummer måste vara 4 siffror",
+      "accountNumberClassMismatch": "{{class}} konton måste börja med {{prefix}}",
+      "nameRequired": "Kontonamn krävs",
+      "classRequired": "Kontoklass krävs",
+      "typeRequired": "Kontotyp krävs"
     }
   },
   "sieImport": {

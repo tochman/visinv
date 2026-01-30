@@ -785,6 +785,8 @@
     "accountName": "Name",
     "class": "Class",
     "type": "Type",
+    "balance": "Balance",
+    "transactions": "Transactions",
     "status": "Status",
     "active": "Active",
     "inactive": "Inactive",
@@ -809,6 +811,32 @@
       "header": "Header",
       "detail": "Detail",
       "total": "Total"
+    },
+    "createAccount": "Create Account",
+    "editAccount": "Edit Account",
+    "accountNumberPlaceholder": "e.g. 1510",
+    "nameSwedish": "Name (Swedish)",
+    "nameSwedishPlaceholder": "e.g. Kundfordringar",
+    "nameEnglish": "Name (English)",
+    "nameEnglishPlaceholder": "e.g. Accounts Receivable",
+    "description": "Description",
+    "descriptionPlaceholder": "Optional description...",
+    "defaultVatRate": "Default VAT Rate",
+    "accountNumberHint": "{{class}} accounts should start with {{prefix}}",
+    "vatRates": {
+      "none": "No VAT",
+      "zero": "0% - Tax-exempt",
+      "six": "6% - Reduced rate",
+      "twelve": "12% - Reduced rate",
+      "twentyfive": "25% - Standard rate"
+    },
+    "validation": {
+      "accountNumberRequired": "Account number is required",
+      "accountNumberFormat": "Account number must be 4 digits",
+      "accountNumberClassMismatch": "{{class}} accounts must start with {{prefix}}",
+      "nameRequired": "Account name is required",
+      "classRequired": "Account class is required",
+      "typeRequired": "Account type is required"
     }
   },
   "sieImport": {

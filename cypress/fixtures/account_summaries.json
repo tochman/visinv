@@ -1,0 +1,35 @@
+[
+  {
+    "account_id": "acc-1510",
+    "account_number": "1510",
+    "account_name": "Kundfordringar",
+    "account_class": "assets",
+    "balance": 15000.00,
+    "debit_total": 20000.00,
+    "credit_total": 5000.00,
+    "transaction_count": 15,
+    "as_of_date": "2024-12-31"
+  },
+  {
+    "account_id": "acc-3010",
+    "account_number": "3010",
+    "account_name": "Försäljning varor 25% moms",
+    "account_class": "revenue",
+    "balance": 50000.00,
+    "debit_total": 2000.00,
+    "credit_total": 52000.00,
+    "transaction_count": 25,
+    "as_of_date": "2024-12-31"
+  },
+  {
+    "account_id": "acc-6570",
+    "account_number": "6570",
+    "account_name": "Bankkostnader",
+    "account_class": "expenses",
+    "balance": 0,
+    "debit_total": 0,
+    "credit_total": 0,
+    "transaction_count": 0,
+    "as_of_date": "2024-12-31"
+  }
+]
