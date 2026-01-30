@@ -1,6 +1,7 @@
 import { useTranslation } from 'react-i18next';
 import { useState, useEffect, useRef } from 'react';
 import { Profile } from '../../services/resources/Profile';
+import { ArrowUpTrayIcon, TrashIcon } from '@heroicons/react/24/outline';
 
 export default function ProfileSettings() {
   const { t } = useTranslation();
@@ -172,7 +173,7 @@ export default function ProfileSettings() {
               {t('profile.avatarHint')}
             </p>
 
-            <div className="flex space-x-3">
+            <div className="flex space-x-2">
               <input
                 ref={fileInputRef}
                 type="file"
@@ -186,10 +187,11 @@ export default function ProfileSettings() {
                 type="button"
                 onClick={() => fileInputRef.current?.click()}
                 disabled={uploading}
-                className="px-4 py-2 bg-blue-600 hover:bg-blue-700 disabled:bg-blue-400 text-white text-sm font-medium rounded-sm transition-colors"
+                title={profile?.avatar_url ? t('profile.changeAvatar') : t('profile.uploadAvatar')}
+                className="p-2 bg-blue-600 hover:bg-blue-700 disabled:bg-blue-400 text-white rounded-sm transition-colors"
                 data-cy="profile-upload-avatar-button"
               >
-                {uploading ? t('common.saving') : (profile?.avatar_url ? t('profile.changeAvatar') : t('profile.uploadAvatar'))}
+                <ArrowUpTrayIcon className="w-5 h-5" />
               </button>
 
               {profile?.avatar_url && (
@@ -197,10 +199,11 @@ export default function ProfileSettings() {
                   type="button"
                   onClick={handleAvatarRemove}
                   disabled={uploading}
-                  className="px-4 py-2 bg-red-600 hover:bg-red-700 disabled:bg-red-400 text-white text-sm font-medium rounded-sm transition-colors"
+                  title={t('profile.removeAvatar')}
+                  className="p-2 bg-red-600 hover:bg-red-700 disabled:bg-red-400 text-white rounded-sm transition-colors"
                   data-cy="profile-remove-avatar-button"
                 >
-                  {t('profile.removeAvatar')}
+                  <TrashIcon className="w-5 h-5" />
                 </button>
               )}
             </div>
