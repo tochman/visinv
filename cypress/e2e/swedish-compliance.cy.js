@@ -11,6 +11,14 @@
 
 describe('Swedish Compliance - Mandatory Fields', () => {
   beforeEach(() => {
+    // Setup common intercepts to prevent unmocked API calls
+    cy.setupCommonIntercepts({
+      clients: [],
+      products: [],
+      invoices: [],
+      templates: []
+    });
+    
     cy.login();
   });
 

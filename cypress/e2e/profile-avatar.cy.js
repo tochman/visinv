@@ -23,11 +23,12 @@ describe('Profile Avatar Upload', () => {
       body: [mockProfile],
     }).as('getProfile');
 
-    // Login and navigate to settings
+    // Login (already visits '/' - do NOT call cy.visit() after this)
     cy.login('admin');
     cy.wait('@getClients');
     
-    cy.visit('/settings');
+    // Navigate to settings using the sidebar
+    cy.getByCy('sidebar-nav-settings').click();
     
     // Click on Profile tab
     cy.get('[data-cy="tab-profile"]').click();
@@ -90,8 +91,10 @@ describe('Profile Avatar Upload', () => {
         body: [profileWithAvatar],
       }).as('getProfileWithAvatar');
 
-      // Reload page
-      cy.reload();
+      // Navigate away and back to refresh with new data
+      cy.getByCy('sidebar-nav-invoices').click();
+      cy.getByCy('sidebar-nav-settings').click();
+      cy.get('[data-cy="tab-profile"]').click();
       cy.wait('@getProfileWithAvatar');
 
       // Should show avatar image instead of placeholder
@@ -117,7 +120,10 @@ describe('Profile Avatar Upload', () => {
         body: [profileWithAvatar],
       }).as('getProfileWithAvatar');
 
-      cy.reload();
+      // Navigate away and back to refresh with new data
+      cy.getByCy('sidebar-nav-invoices').click();
+      cy.getByCy('sidebar-nav-settings').click();
+      cy.get('[data-cy="tab-profile"]').click();
       cy.wait('@getProfileWithAvatar');
 
       // Mock delete operations
@@ -185,7 +191,10 @@ describe('Profile Avatar Upload', () => {
         body: [profileWithAvatar],
       }).as('getProfileWithAvatar');
 
-      cy.reload();
+      // Navigate away and back to refresh with new data
+      cy.getByCy('sidebar-nav-invoices').click();
+      cy.getByCy('sidebar-nav-settings').click();
+      cy.get('[data-cy="tab-profile"]').click();
       cy.wait('@getProfileWithAvatar');
 
       // Mock failed delete
@@ -221,7 +230,10 @@ describe('Profile Avatar Upload', () => {
         body: [profileWithAvatar],
       }).as('getProfileWithAvatar');
 
-      cy.reload();
+      // Navigate away and back to refresh with new data
+      cy.getByCy('sidebar-nav-invoices').click();
+      cy.getByCy('sidebar-nav-settings').click();
+      cy.get('[data-cy="tab-profile"]').click();
       cy.wait('@getProfileWithAvatar');
 
       // Stub window.confirm to return false (cancel)

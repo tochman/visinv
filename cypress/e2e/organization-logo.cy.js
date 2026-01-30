@@ -34,11 +34,12 @@ describe('Organization Logo Upload', () => {
       }],
     }).as('getOrganizations');
 
-    // Login and navigate to settings
+    // Login (already visits '/' - do NOT call cy.visit() after this)
     cy.login('admin');
     cy.wait('@getClients');
     
-    cy.visit('/settings');
+    // Navigate to settings using the sidebar
+    cy.getByCy('sidebar-nav-settings').click();
     cy.wait('@getOrganizations');
     
     // Click on Organization Settings tab (should be default, but ensure)
@@ -116,8 +117,9 @@ describe('Organization Logo Upload', () => {
         }],
       }).as('getOrganizationsWithLogo');
 
-      // Reload page
-      cy.reload();
+      // Navigate away and back to refresh with new data
+      cy.getByCy('sidebar-nav-invoices').click();
+      cy.getByCy('sidebar-nav-settings').click();
       cy.wait('@getOrganizationsWithLogo');
       cy.get('[data-cy="tab-settings"]').click();
 
@@ -149,7 +151,9 @@ describe('Organization Logo Upload', () => {
         }],
       }).as('getOrganizationsWithLogo');
 
-      cy.reload();
+      // Navigate away and back to refresh with new data
+      cy.getByCy('sidebar-nav-invoices').click();
+      cy.getByCy('sidebar-nav-settings').click();
       cy.wait('@getOrganizationsWithLogo');
       cy.get('[data-cy="tab-settings"]').click();
 
@@ -214,7 +218,9 @@ describe('Organization Logo Upload', () => {
         }],
       }).as('getOrganizationsWithLogo');
 
-      cy.reload();
+      // Navigate away and back to refresh with new data
+      cy.getByCy('sidebar-nav-invoices').click();
+      cy.getByCy('sidebar-nav-settings').click();
       cy.wait('@getOrganizationsWithLogo');
       cy.get('[data-cy="tab-settings"]').click();
 
@@ -284,7 +290,9 @@ describe('Organization Logo Upload', () => {
         }],
       }).as('getOrganizationsWithLogo');
 
-      cy.reload();
+      // Navigate away and back to refresh with new data
+      cy.getByCy('sidebar-nav-invoices').click();
+      cy.getByCy('sidebar-nav-settings').click();
       cy.wait('@getOrganizationsWithLogo');
       cy.get('[data-cy="tab-settings"]').click();
 
@@ -326,7 +334,9 @@ describe('Organization Logo Upload', () => {
         }],
       }).as('getOrganizationsWithLogo');
 
-      cy.reload();
+      // Navigate away and back to refresh with new data
+      cy.getByCy('sidebar-nav-invoices').click();
+      cy.getByCy('sidebar-nav-settings').click();
       cy.wait('@getOrganizationsWithLogo');
       cy.get('[data-cy="tab-settings"]').click();
 
