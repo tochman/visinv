@@ -23,7 +23,7 @@ describe('Organization Logo Upload', () => {
     // Setup common intercepts
     cy.setupCommonIntercepts({ clients: [], products: [] });
     
-    // Intercept organization fetch (will override login's default org mock)
+    // Intercept organization fetch
     cy.intercept('GET', '**/rest/v1/organization_members?*', {
       statusCode: 200,
       body: [{
@@ -34,15 +34,12 @@ describe('Organization Logo Upload', () => {
       }],
     }).as('getOrganizations');
 
-    // Login with skipOrgMock since we're setting up our own org mock above
-    cy.login('admin', { skipOrgMock: true });
+    // Login and navigate to settings
+    cy.login('admin');
     cy.wait('@getClients');
     
-    // Wait for organization to load
+    cy.visit('/settings');
     cy.wait('@getOrganizations');
-    
-    // Navigate to settings using the sidebar
-    cy.getByCy('sidebar-nav-settings').click();
     
     // Click on Organization Settings tab (should be default, but ensure)
     cy.get('[data-cy="tab-settings"]').click();
@@ -119,9 +116,8 @@ describe('Organization Logo Upload', () => {
         }],
       }).as('getOrganizationsWithLogo');
 
-      // Navigate away and back to refresh with new data
-      cy.getByCy('sidebar-nav-invoices').click();
-      cy.getByCy('sidebar-nav-settings').click();
+      // Reload page
+      cy.reload();
       cy.wait('@getOrganizationsWithLogo');
       cy.get('[data-cy="tab-settings"]').click();
 
@@ -153,9 +149,7 @@ describe('Organization Logo Upload', () => {
         }],
       }).as('getOrganizationsWithLogo');
 
-      // Navigate away and back to refresh with new data
-      cy.getByCy('sidebar-nav-invoices').click();
-      cy.getByCy('sidebar-nav-settings').click();
+      cy.reload();
       cy.wait('@getOrganizationsWithLogo');
       cy.get('[data-cy="tab-settings"]').click();
 
@@ -220,9 +214,7 @@ describe('Organization Logo Upload', () => {
         }],
       }).as('getOrganizationsWithLogo');
 
-      // Navigate away and back to refresh with new data
-      cy.getByCy('sidebar-nav-invoices').click();
-      cy.getByCy('sidebar-nav-settings').click();
+      cy.reload();
       cy.wait('@getOrganizationsWithLogo');
       cy.get('[data-cy="tab-settings"]').click();
 
@@ -292,9 +284,7 @@ describe('Organization Logo Upload', () => {
         }],
       }).as('getOrganizationsWithLogo');
 
-      // Navigate away and back to refresh with new data
-      cy.getByCy('sidebar-nav-invoices').click();
-      cy.getByCy('sidebar-nav-settings').click();
+      cy.reload();
       cy.wait('@getOrganizationsWithLogo');
       cy.get('[data-cy="tab-settings"]').click();
 
@@ -336,9 +326,7 @@ describe('Organization Logo Upload', () => {
         }],
       }).as('getOrganizationsWithLogo');
 
-      // Navigate away and back to refresh with new data
-      cy.getByCy('sidebar-nav-invoices').click();
-      cy.getByCy('sidebar-nav-settings').click();
+      cy.reload();
       cy.wait('@getOrganizationsWithLogo');
       cy.get('[data-cy="tab-settings"]').click();
 
