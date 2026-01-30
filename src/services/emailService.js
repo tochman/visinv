@@ -4,7 +4,7 @@
  * US-008: Invoice Email Delivery
  */
 
-import { supabase } from '../config/supabase';
+import { supabase } from './supabase';
 
 class EmailService {
   /**
