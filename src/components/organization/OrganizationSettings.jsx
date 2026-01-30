@@ -3,6 +3,7 @@ import { useState, useEffect, useRef } from 'react';
 import { useForm } from 'react-hook-form';
 import { useOrganization } from '../../contexts/OrganizationContext';
 import { Organization } from '../../services/resources/Organization';
+import { ArrowUpTrayIcon, TrashIcon } from '@heroicons/react/24/outline';
 
 export default function OrganizationSettings() {
   const { t } = useTranslation();
@@ -189,7 +190,7 @@ export default function OrganizationSettings() {
                   {t('organization.logoWillAppear')}
                 </p>
 
-                <div className="flex space-x-3">
+                <div className="flex space-x-2">
                   <input
                     ref={logoInputRef}
                     type="file"
@@ -203,10 +204,11 @@ export default function OrganizationSettings() {
                     type="button"
                     onClick={() => logoInputRef.current?.click()}
                     disabled={uploadingLogo}
-                    className="px-4 py-2 bg-blue-600 hover:bg-blue-700 disabled:bg-blue-400 text-white text-sm font-medium rounded-sm transition-colors"
+                    title={currentOrganization?.logo_url ? t('organization.changeLogo') : t('organization.uploadLogo')}
+                    className="p-2 border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 disabled:opacity-50 rounded-sm transition-colors"
                     data-cy="organization-upload-logo-button"
                   >
-                    {uploadingLogo ? t('common.saving') : (currentOrganization?.logo_url ? t('organization.changeLogo') : t('organization.uploadLogo'))}
+                    <ArrowUpTrayIcon className="w-5 h-5" />
                   </button>
 
                   {currentOrganization?.logo_url && (
@@ -214,10 +216,11 @@ export default function OrganizationSettings() {
                       type="button"
                       onClick={handleLogoRemove}
                       disabled={uploadingLogo}
-                      className="px-4 py-2 bg-red-600 hover:bg-red-700 disabled:bg-red-400 text-white text-sm font-medium rounded-sm transition-colors"
+                      title={t('organization.removeLogo')}
+                      className="p-2 border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 disabled:opacity-50 rounded-sm transition-colors"
                       data-cy="organization-remove-logo-button"
                     >
-                      {t('organization.removeLogo')}
+                      <TrashIcon className="w-5 h-5" />
                     </button>
                   )}
                 </div>
