@@ -450,7 +450,9 @@
       "linesRequired": "Minst en fakturarad med konto krävs",
       "noOrganization": "Ingen organisation vald",
       "supplierNeedsPayableAccount": "Leverantören måste ha ett standard leverantörsskuldkonto"
-    }
+    },
+    "createSuccess": "Leverantörsfaktura skapad",
+    "updateSuccess": "Leverantörsfaktura uppdaterad"
   },
   "products": {
     "create": "Lägg till produkt",
@@ -605,6 +607,10 @@
     "delete": "Ta bort",
     "edit": "Redigera",
     "create": "Skapa",
+    "update": "Uppdatera",
+    "select": "Välj",
+    "confirm": "Bekräfta",
+    "confirmAction": "Bekräfta åtgärd",
     "search": "Sök",
     "filter": "Filtrera",
     "export": "Exportera",

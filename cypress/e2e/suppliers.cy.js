@@ -29,20 +29,28 @@ describe('Suppliers', () => {
     });
 
     it('is expected to create a new supplier successfully', () => {
+      const newSupplier = {
+        id: 'supplier-1',
+        organization_id: 'test-org-id',
+        name: 'Acme Supplies AB',
+        email: 'info@acme.se',
+        is_active: true,
+        default_payment_terms_days: 30,
+        currency: 'SEK',
+        created_at: new Date().toISOString(),
+      };
+
       // Intercept supplier creation
       cy.intercept('POST', '**/rest/v1/suppliers*', {
         statusCode: 201,
-        body: {
-          id: 'supplier-1',
-          organization_id: 'test-org-id',
-          name: 'Acme Supplies AB',
-          email: 'info@acme.se',
-          is_active: true,
-          default_payment_terms_days: 30,
-          currency: 'SEK',
-          created_at: new Date().toISOString(),
-        },
+        body: newSupplier,
       }).as('createSupplier');
+
+      // After creation, the modal closes and refetches suppliers - intercept that
+      cy.intercept('GET', '**/rest/v1/suppliers*', {
+        statusCode: 200,
+        body: [newSupplier],
+      }).as('getSuppliers');
 
       // Open create modal
       cy.getByCy('create-supplier-button').click();
@@ -55,6 +63,7 @@ describe('Suppliers', () => {
       // Submit form
       cy.getByCy('supplier-form').submit();
       cy.wait('@createSupplier');
+      cy.wait('@getSuppliers');
 
       // Verify modal closes and supplier appears in list
       cy.getByCy('supplier-modal').should('not.exist');
@@ -63,41 +72,49 @@ describe('Suppliers', () => {
     });
 
     it('is expected to edit an existing supplier successfully', () => {
-      // Add supplier to Redux state
-      cy.window().then((win) => {
-        win.store.dispatch({
-          type: 'suppliers/fetchSuppliers/fulfilled',
-          payload: [{
-            id: 'supplier-1',
-            organization_id: 'test-org-id',
-            name: 'Acme Supplies AB',
-            email: 'info@acme.se',
-            phone: '+46 8 123 456',
-            organization_number: '556123-4567',
-            is_active: true,
-            default_payment_terms_days: 30,
-            currency: 'SEK',
-          }]
-        });
-      });
+      const existingSupplier = {
+        id: 'supplier-1',
+        organization_id: 'test-org-id',
+        name: 'Acme Supplies AB',
+        email: 'info@acme.se',
+        phone: '+46 8 123 456',
+        organization_number: '556123-4567',
+        is_active: true,
+        default_payment_terms_days: 30,
+        currency: 'SEK',
+      };
+
+      const updatedSupplier = {
+        ...existingSupplier,
+        name: 'Acme Supplies AB Updated',
+        email: 'new@acme.se',
+        phone: '+46 8 999 888',
+        default_payment_terms_days: 45,
+      };
+
+      // Override the GET suppliers intercept to return existing supplier
+      cy.intercept('GET', '**/rest/v1/suppliers*', {
+        statusCode: 200,
+        body: [existingSupplier],
+      }).as('getSuppliersWithData');
+
+      // Trigger a refetch by toggling the show inactive checkbox
+      cy.getByCy('show-inactive-checkbox').check();
+      cy.wait('@getSuppliersWithData');
 
       cy.getByCy('supplier-row-supplier-1').should('be.visible');
 
       // Intercept update (returns single object with .single())
       cy.intercept('PATCH', '**/rest/v1/suppliers?id=eq.supplier-1*', {
         statusCode: 200,
-        body: {
-          id: 'supplier-1',
-          organization_id: 'test-org-id',
-          name: 'Acme Supplies AB Updated',
-          email: 'new@acme.se',
-          phone: '+46 8 999 888',
-          organization_number: '556123-4567',
-          is_active: true,
-          default_payment_terms_days: 45,
-          currency: 'SEK',
-        },
+        body: updatedSupplier,
       }).as('updateSupplier');
+
+      // After update, the refetch should return updated supplier
+      cy.intercept('GET', '**/rest/v1/suppliers*', {
+        statusCode: 200,
+        body: [updatedSupplier],
+      }).as('getSuppliersAfterUpdate');
 
       // Open edit modal
       cy.getByCy('edit-supplier-supplier-1').click();
@@ -110,6 +127,7 @@ describe('Suppliers', () => {
       // Submit
       cy.getByCy('supplier-form').submit();
       cy.wait('@updateSupplier');
+      cy.wait('@getSuppliersAfterUpdate');
 
       // Verify changes
       cy.getByCy('supplier-modal').should('not.exist');
@@ -118,19 +136,23 @@ describe('Suppliers', () => {
     });
 
     it('is expected to delete a supplier successfully', () => {
-      // Add supplier to Redux state
-      cy.window().then((win) => {
-        win.store.dispatch({
-          type: 'suppliers/fetchSuppliers/fulfilled',
-          payload: [{
-            id: 'supplier-1',
-            organization_id: 'test-org-id',
-            name: 'Acme Supplies AB',
-            email: 'info@acme.se',
-            is_active: true,
-          }]
-        });
-      });
+      const existingSupplier = {
+        id: 'supplier-1',
+        organization_id: 'test-org-id',
+        name: 'Acme Supplies AB',
+        email: 'info@acme.se',
+        is_active: true,
+      };
+
+      // Override the GET suppliers intercept to return existing supplier
+      cy.intercept('GET', '**/rest/v1/suppliers*', {
+        statusCode: 200,
+        body: [existingSupplier],
+      }).as('getSuppliersWithData');
+
+      // Trigger a refetch by toggling the show inactive checkbox
+      cy.getByCy('show-inactive-checkbox').check();
+      cy.wait('@getSuppliersWithData');
 
       cy.getByCy('supplier-row-supplier-1').should('be.visible');
 
@@ -138,6 +160,12 @@ describe('Suppliers', () => {
       cy.intercept('DELETE', '**/rest/v1/suppliers?id=eq.supplier-1*', {
         statusCode: 204,
       }).as('deleteSupplier');
+
+      // After delete, the refetch should return empty
+      cy.intercept('GET', '**/rest/v1/suppliers*', {
+        statusCode: 200,
+        body: [],
+      }).as('getSuppliersAfterDelete');
 
       // Click delete and confirm
       cy.getByCy('delete-supplier-supplier-1').click();
@@ -153,34 +181,38 @@ describe('Suppliers', () => {
     });
 
     it('is expected to search suppliers by name, email, or org number', () => {
-      // Add multiple suppliers to Redux state
-      cy.window().then((win) => {
-        win.store.dispatch({
-          type: 'suppliers/fetchSuppliers/fulfilled',
-          payload: [
-            {
-              id: 'supplier-1',
-              name: 'Acme Supplies AB',
-              email: 'info@acme.se',
-              organization_number: '556123-4567',
-              is_active: true,
-            },
-            {
-              id: 'supplier-2',
-              name: 'Beta Corp',
-              email: 'contact@beta.se',
-              organization_number: '559876-5432',
-              is_active: true,
-            },
-          ]
-        });
-      });
+      const suppliers = [
+        {
+          id: 'supplier-1',
+          name: 'Acme Supplies AB',
+          email: 'info@acme.se',
+          organization_number: '556123-4567',
+          is_active: true,
+        },
+        {
+          id: 'supplier-2',
+          name: 'Beta Corp',
+          email: 'contact@beta.se',
+          organization_number: '559876-5432',
+          is_active: true,
+        },
+      ];
+
+      // Override the GET suppliers intercept to return multiple suppliers
+      cy.intercept('GET', '**/rest/v1/suppliers*', {
+        statusCode: 200,
+        body: suppliers,
+      }).as('getSuppliersWithData');
+
+      // Trigger a refetch by toggling the show inactive checkbox
+      cy.getByCy('show-inactive-checkbox').check();
+      cy.wait('@getSuppliersWithData');
 
       // Both suppliers visible
       cy.getByCy('supplier-row-supplier-1').should('be.visible');
       cy.getByCy('supplier-row-supplier-2').should('be.visible');
 
-      // Search by name
+      // Search by name (client-side filtering, no API call)
       cy.getByCy('search-suppliers-input').type('Acme');
       cy.getByCy('supplier-row-supplier-1').should('be.visible');
       cy.getByCy('supplier-row-supplier-2').should('not.exist');
@@ -263,17 +295,21 @@ describe('Suppliers', () => {
     });
 
     it('is expected to handle cancel button in delete confirmation', () => {
-      // Add supplier to Redux
-      cy.window().then((win) => {
-        win.store.dispatch({
-          type: 'suppliers/fetchSuppliers/fulfilled',
-          payload: [{
-            id: 'supplier-1',
-            name: 'Acme Supplies AB',
-            is_active: true,
-          }]
-        });
-      });
+      const existingSupplier = {
+        id: 'supplier-1',
+        name: 'Acme Supplies AB',
+        is_active: true,
+      };
+
+      // Override the GET suppliers intercept to return existing supplier
+      cy.intercept('GET', '**/rest/v1/suppliers*', {
+        statusCode: 200,
+        body: [existingSupplier],
+      }).as('getSuppliersWithData');
+
+      // Trigger a refetch by toggling the show inactive checkbox
+      cy.getByCy('show-inactive-checkbox').check();
+      cy.wait('@getSuppliersWithData');
 
       cy.getByCy('supplier-row-supplier-1').should('be.visible');
 

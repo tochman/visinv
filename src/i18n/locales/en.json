@@ -462,7 +462,9 @@
       "linesRequired": "At least one line item with account is required",
       "noOrganization": "No organization selected",
       "supplierNeedsPayableAccount": "Supplier must have a default payable account"
-    }
+    },
+    "createSuccess": "Supplier invoice created successfully",
+    "updateSuccess": "Supplier invoice updated successfully"
   },
   "products": {
     "create": "Add Product",
@@ -617,6 +619,10 @@
     "delete": "Delete",
     "edit": "Edit",
     "create": "Create",
+    "update": "Update",
+    "select": "Select",
+    "confirm": "Confirm",
+    "confirmAction": "Confirm Action",
     "search": "Search",
     "filter": "Filter",
     "export": "Export",

@@ -7,6 +7,8 @@ import {
 } from '../../features/supplierInvoices/supplierInvoicesSlice';
 import { fetchSuppliers } from '../../features/suppliers/suppliersSlice';
 import { fetchAccounts } from '../../features/accounts/accountsSlice';
+import { useOrganization } from '../../contexts/OrganizationContext';
+import { useToast } from '../../context/ToastContext';
 
 const getInitialFormData = (invoice) => ({
   supplier_id: invoice?.supplier_id || '',
@@ -16,22 +18,23 @@ const getInitialFormData = (invoice) => ({
   description: invoice?.description || '',
   currency: invoice?.currency || 'SEK',
   lines: invoice?.lines || [
-    { account_id: '', description: '', quantity: 1, unit_price: 0, amount: 0, vat_rate: 0, vat_amount: 0 },
+    { account_id: '', description: '', quantity: 1, unit_price: 0, amount: 0, vat_rate: 25, vat_amount: 0 },
   ],
 });
 
 export default function SupplierInvoiceModal({ isOpen, onClose, invoice = null }) {
   const { t } = useTranslation();
   const dispatch = useDispatch();
-  const currentOrganization = useSelector((state) => state.organizations?.currentOrganization);
+  const { currentOrganization } = useOrganization();
+  const toast = useToast();
   const isEditing = !!invoice;
 
   const [formData, setFormData] = useState(getInitialFormData(invoice));
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
 
-  const suppliers = useSelector((state) => state.suppliers?.items || []);
-  const accounts = useSelector((state) => state.accounts?.accounts || []);
+  const suppliers = useSelector((state) => state.suppliers?.suppliers || []);
+  const accounts = useSelector((state) => state.accounts?.items || []);
 
   useEffect(() => {
     if (isOpen && currentOrganization?.id) {
@@ -39,7 +42,7 @@ export default function SupplierInvoiceModal({ isOpen, onClose, invoice = null }
         dispatch(fetchSuppliers({ organizationId: currentOrganization.id }));
       }
       if (accounts.length === 0) {
-        dispatch(fetchAccounts(currentOrganization.id));
+        dispatch(fetchAccounts({ organizationId: currentOrganization.id }));
       }
     }
   }, [dispatch, isOpen, currentOrganization?.id, suppliers.length, accounts.length]);
@@ -101,7 +104,7 @@ export default function SupplierInvoiceModal({ isOpen, onClose, invoice = null }
       ...prev,
       lines: [
         ...prev.lines,
-        { account_id: '', description: '', quantity: 1, unit_price: 0, amount: 0, vat_rate: 0, vat_amount: 0 },
+        { account_id: '', description: '', quantity: 1, unit_price: 0, amount: 0, vat_rate: 25, vat_amount: 0 },
       ],
     }));
   };
@@ -124,19 +127,27 @@ export default function SupplierInvoiceModal({ isOpen, onClose, invoice = null }
     e.preventDefault();
 
     if (!formData.supplier_id) {
-      setError(t('supplierInvoices.errors.supplierRequired'));
+      const errorMessage = t('supplierInvoices.errors.supplierRequired');
+      setError(errorMessage);
+      toast.error(errorMessage);
       return;
     }
     if (!formData.invoice_number?.trim()) {
-      setError(t('supplierInvoices.errors.invoiceNumberRequired'));
+      const errorMessage = t('supplierInvoices.errors.invoiceNumberRequired');
+      setError(errorMessage);
+      toast.error(errorMessage);
       return;
     }
     if (formData.lines.length === 0 || !formData.lines.some((l) => l.account_id)) {
-      setError(t('supplierInvoices.errors.linesRequired'));
+      const errorMessage = t('supplierInvoices.errors.linesRequired');
+      setError(errorMessage);
+      toast.error(errorMessage);
       return;
     }
     if (!currentOrganization?.id) {
-      setError(t('supplierInvoices.errors.noOrganization'));
+      const errorMessage = t('supplierInvoices.errors.noOrganization');
+      setError(errorMessage);
+      toast.error(errorMessage);
       return;
     }
 
@@ -153,20 +164,25 @@ export default function SupplierInvoiceModal({ isOpen, onClose, invoice = null }
 
       if (isEditing) {
         await dispatch(updateSupplierInvoice({ id: invoice.id, ...dataToSubmit })).unwrap();
+        toast.success(t('supplierInvoices.updateSuccess'));
       } else {
         await dispatch(createSupplierInvoice(dataToSubmit)).unwrap();
+        toast.success(t('supplierInvoices.createSuccess'));
       }
       onClose();
     } catch (err) {
       // Handle database constraint errors
       const errorMsg = typeof err === 'string' ? err : err?.message || 'An error occurred';
+      let displayError;
       if (errorMsg.includes('unique_supplier_invoice_number')) {
-        setError(t('supplierInvoices.errors.duplicateInvoiceNumber'));
+        displayError = t('supplierInvoices.errors.duplicateInvoiceNumber');
       } else if (errorMsg.includes('default payable account')) {
-        setError(t('supplierInvoices.errors.supplierNeedsPayableAccount'));
+        displayError = t('supplierInvoices.errors.supplierNeedsPayableAccount');
       } else {
-        setError(errorMsg);
+        displayError = errorMsg;
       }
+      setError(displayError);
+      toast.error(displayError);
     } finally {
       setLoading(false);
     }
@@ -178,7 +194,10 @@ export default function SupplierInvoiceModal({ isOpen, onClose, invoice = null }
 
   // Filter accounts - Expenses (4000-7999) for line items
   const expenseAccounts = Array.isArray(accounts)
-    ? accounts.filter((a) => a?.account_number >= 4000 && a?.account_number < 8000)
+    ? accounts.filter((a) => {
+        const accNum = parseInt(a?.account_number, 10);
+        return accNum >= 4000 && accNum < 8000;
+      })
     : [];
 
   return (
@@ -218,12 +237,11 @@ export default function SupplierInvoiceModal({ isOpen, onClose, invoice = null }
                   name="supplier_id"
                   value={formData.supplier_id}
                   onChange={handleChange}
-                  required
                   data-cy="supplier-select"
                   className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
                 >
                   <option value="">-- {t('common.select')} --</option>
-                  {suppliers.filter(s => s.is_active).map((supplier) => (
+                  {suppliers.map((supplier) => (
                     <option key={supplier.id} value={supplier.id}>
                       {supplier.name}
                     </option>
@@ -240,7 +258,6 @@ export default function SupplierInvoiceModal({ isOpen, onClose, invoice = null }
                   name="invoice_number"
                   value={formData.invoice_number}
                   onChange={handleChange}
-                  required
                   data-cy="invoice-number-input"
                   className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
                 />
@@ -255,7 +272,6 @@ export default function SupplierInvoiceModal({ isOpen, onClose, invoice = null }
                   name="invoice_date"
                   value={formData.invoice_date}
                   onChange={handleChange}
-                  required
                   data-cy="invoice-date-input"
                   className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
                 />
@@ -270,7 +286,6 @@ export default function SupplierInvoiceModal({ isOpen, onClose, invoice = null }
                   name="due_date"
                   value={formData.due_date}
                   onChange={handleChange}
-                  required
                   data-cy="due-date-input"
                   className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
                 />
@@ -348,7 +363,7 @@ export default function SupplierInvoiceModal({ isOpen, onClose, invoice = null }
                             <option value="">--</option>
                             {expenseAccounts.map((account) => (
                               <option key={account.id} value={account.id}>
-                                {account.account_number} - {account.name}
+                                {account.account_number} - {account.account_name || account.name}
                               </option>
                             ))}
                           </select>

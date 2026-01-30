@@ -17,17 +17,22 @@ class SupplierResource extends BaseResource {
    * @returns {Promise<{data: Array, error: Error|null}>}
    */
   async getByOrganization(organizationId, activeOnly = false) {
-    let conditions = [
-      { column: 'organization_id', value: organizationId }
-    ];
+    try {
+      let query = this.supabase
+        .from(this.tableName)
+        .select('*')
+        .eq('organization_id', organizationId)
+        .order('name', { ascending: true });
 
-    if (activeOnly) {
-      conditions.push({ column: 'is_active', value: true });
+      if (activeOnly) {
+        query = query.eq('is_active', true);
+      }
+
+      const { data, error } = await query;
+      return { data, error };
+    } catch (err) {
+      return { data: null, error: err };
     }
-
-    return this.where(conditions, {
-      orderBy: { column: 'name', ascending: true }
-    });
   }
 
   /**

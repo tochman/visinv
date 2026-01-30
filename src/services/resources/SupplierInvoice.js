@@ -333,9 +333,22 @@ class SupplierInvoiceResource extends BaseResource {
 
     // Add credit line for accounts payable
     // Use supplier's default payable account or fallback to 2440
-    const payableAccountId = invoice.supplier.default_payable_account_id;
+    let payableAccountId = invoice.supplier.default_payable_account_id;
+    
+    // If supplier doesn't have a default payable account, try to find account 2440
     if (!payableAccountId) {
-      return { data: null, error: new Error('Supplier must have a default payable account') };
+      const { data: defaultAccount } = await this.supabase
+        .from('accounts')
+        .select('id')
+        .eq('organization_id', invoice.organization_id)
+        .eq('account_number', '2440')
+        .single();
+      
+      if (defaultAccount) {
+        payableAccountId = defaultAccount.id;
+      } else {
+        return { data: null, error: new Error('No payable account found. Please set up account 2440 (Leverantörsskulder) or assign a default payable account to the supplier.') };
+      }
     }
 
     journalLines.push({

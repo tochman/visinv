@@ -3,6 +3,7 @@ import { useDispatch, useSelector } from 'react-redux';
 import { useTranslation } from 'react-i18next';
 import { createSupplier, updateSupplier } from '../../features/suppliers/suppliersSlice';
 import { fetchAccounts } from '../../features/accounts/accountsSlice';
+import { useOrganization } from '../../contexts/OrganizationContext';
 
 const getInitialFormData = (supplier) => ({
   name: supplier?.name || '',
@@ -32,14 +33,14 @@ const getInitialFormData = (supplier) => ({
 export default function SupplierModal({ isOpen, onClose, supplier = null }) {
   const { t } = useTranslation();
   const dispatch = useDispatch();
-  const currentOrganization = useSelector((state) => state.organizations?.currentOrganization);
+  const { currentOrganization } = useOrganization();
   const isEditing = !!supplier;
 
   const [formData, setFormData] = useState(getInitialFormData(supplier));
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
 
-  const accounts = useSelector((state) => state.accounts?.accounts || []);
+  const accounts = useSelector((state) => state.accounts?.items || []);
   const accountsLoading = useSelector((state) => state.accounts?.loading || false);
 
   // Fetch accounts for dropdown

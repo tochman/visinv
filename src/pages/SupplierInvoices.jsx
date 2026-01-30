@@ -9,6 +9,7 @@ import {
   cancelSupplierInvoice,
 } from '../features/supplierInvoices/supplierInvoicesSlice';
 import { fetchSuppliers } from '../features/suppliers/suppliersSlice';
+import { fetchAccounts } from '../features/accounts/accountsSlice';
 import { fetchFiscalYears } from '../features/fiscalYears/fiscalYearsSlice';
 import SupplierInvoiceModal from '../components/supplierInvoices/SupplierInvoiceModal';
 
@@ -19,7 +20,7 @@ export default function SupplierInvoices() {
   const currentOrganization = useSelector((state) => state.organizations?.currentOrganization);
   const invoices = useSelector((state) => state.supplierInvoices?.items || []);
   const loading = useSelector((state) => state.supplierInvoices?.loading);
-  const suppliers = useSelector((state) => state.suppliers?.items || []);
+  const suppliers = useSelector((state) => state.suppliers?.suppliers || []);
   const fiscalYears = useSelector((state) => state.fiscalYears?.items || []);
 
   const [showModal, setShowModal] = useState(false);
@@ -32,6 +33,7 @@ export default function SupplierInvoices() {
     if (currentOrganization?.id) {
       dispatch(fetchSupplierInvoices({ organizationId: currentOrganization.id }));
       dispatch(fetchSuppliers({ organizationId: currentOrganization.id }));
+      dispatch(fetchAccounts({ organizationId: currentOrganization.id }));
       dispatch(fetchFiscalYears(currentOrganization.id));
     }
   }, [dispatch, currentOrganization?.id]);
