@@ -188,7 +188,7 @@ export default function ProfileSettings() {
                 onClick={() => fileInputRef.current?.click()}
                 disabled={uploading}
                 title={profile?.avatar_url ? t('profile.changeAvatar') : t('profile.uploadAvatar')}
-                className="p-2 bg-blue-600 hover:bg-blue-700 disabled:bg-blue-400 text-white rounded-sm transition-colors"
+                className="p-2 border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 disabled:opacity-50 rounded-sm transition-colors"
                 data-cy="profile-upload-avatar-button"
               >
                 <ArrowUpTrayIcon className="w-5 h-5" />
@@ -200,7 +200,7 @@ export default function ProfileSettings() {
                   onClick={handleAvatarRemove}
                   disabled={uploading}
                   title={t('profile.removeAvatar')}
-                  className="p-2 bg-red-600 hover:bg-red-700 disabled:bg-red-400 text-white rounded-sm transition-colors"
+                  className="p-2 border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 disabled:opacity-50 rounded-sm transition-colors"
                   data-cy="profile-remove-avatar-button"
                 >
                   <TrashIcon className="w-5 h-5" />
