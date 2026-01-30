@@ -6,6 +6,8 @@ A modern, full-featured invoice management system built with React, Supabase, an
 
 ### Core Features
 - ✅ Email & Google OAuth authentication
+- ✅ User profile management with avatar upload
+- ✅ Organization management with logo upload
 - ✅ Client management (full CRUD with search)
 - ✅ Invoice templates with TipTap editor
   - System templates (Modern, Classic) available to all

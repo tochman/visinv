@@ -24,9 +24,18 @@ Features are organized into logical categories and prioritized into development 
 - As a **user**, in order to **quickly access the platform without creating a new password**, I would like to **sign in using my Google account**.
 - **Status:** Implemented - OAuth integration with redirect handling, configured in authService
 
-**US-003: User Avatar Upload**
+**US-003: User Avatar Upload** ✅
 - As a **user**, in order to **personalize my account**, I would like to **upload my avatar to Supabase storage**.
-- **Status:** Partial - Profile table exists, storage buckets configured, UI needs implementation
+- **Implementation:**
+  - Storage: avatars bucket (public) in Supabase Storage
+  - Service: storage.js with uploadAvatar/deleteAvatar helpers
+  - Resource: Profile resource with uploadAvatarImage/deleteAvatarImage methods
+  - UI: ProfileSettings component with avatar display, upload/delete icon buttons
+  - Header: Avatar displayed in header with fallback to initials, links to profile settings
+  - Validation: Max 2MB, JPEG/PNG/WebP formats
+  - Auto-cleanup: Old avatars deleted on new upload
+- **Tests:** Cypress test suite (profile-avatar.cy.js) covering upload, display, delete, and error scenarios
+- **Status:** ✅ Complete
 
 ---
 
@@ -45,9 +54,18 @@ Features are organized into logical categories and prioritized into development 
 - **Tests:** Comprehensive Cypress test suite (organizations.cy.js) covering wizard flow, navigation, and organization creation
 - **Status:** ✅ Complete
 
-**US-053: Organization Logo Upload**
+**US-053: Organization Logo Upload** ✅
 - As an **organization owner**, in order to **brand my invoices professionally**, I would like to **upload my company logo to appear on all invoices**.
-- **Status:** Not Started
+- **Implementation:**
+  - Storage: logos bucket (public) in Supabase Storage
+  - Service: storage.js with uploadLogo/deleteLogo helpers
+  - Resource: Organization resource with uploadLogoImage/deleteLogoImage methods
+  - UI: OrganizationSettings with logo display at top, upload/delete icon buttons
+  - Validation: Max 2MB, JPEG/PNG/SVG/WebP formats (transparent PNG recommended)
+  - Auto-cleanup: Old logos deleted on new upload
+  - Display: Logo appears in organization settings with proper SVG rendering
+- **Tests:** Cypress test suite (organization-logo.cy.js) covering upload, display, replace, delete, and error scenarios
+- **Status:** ✅ Complete
 
 **US-054: Organization Settings Management** ✅
 - As an **organization owner**, in order to **maintain accurate company information**, I would like to **edit organization details, payment terms, and invoice settings**.
