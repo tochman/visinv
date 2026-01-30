@@ -173,8 +173,9 @@ Features are organized into logical categories and prioritized into development 
 - **Status:** Implemented - Full CRUD with search, product selection in invoices, 18 Cypress tests
 - **Status:** Implemented - Full CRUD with Products page, product selection in invoice line items, auto-fill description/price/unit, 17 Cypress tests passing
 
-**US-008: Invoice Email Delivery**
+**US-008: Invoice Email Delivery** ✅
 - As a **free user**, in order to **send invoices to my clients**, I would like to **email invoices using Resend integration**.
+- **Status:** Implemented - Supabase Edge Function (send-invoice-email) integrates with Resend API to send invoice emails with PDF attachments. Emails sent automatically when "Send Invoice" button clicked in InvoiceModal, when marking draft as sent, and when sending reminders. Client email validation included. 10 Cypress E2E tests covering happy/sad paths and edge cases.
 
 **US-009: Invoice Printing**
 - As a **free user**, in order to **provide physical copies**, I would like to **print invoices in a professional format**.

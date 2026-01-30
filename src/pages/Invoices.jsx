@@ -102,7 +102,25 @@ export default function Invoices() {
   };
 
   const handleMarkAsSent = async (id) => {
-    await dispatch(markInvoiceAsSent(id));
+    // Mark as sent
+    const result = await dispatch(markInvoiceAsSent(id));
+    
+    // US-008: Send email after marking as sent
+    if (markInvoiceAsSent.fulfilled.match(result) && result.payload?.id) {
+      try {
+        const { Invoice } = await import('../services/resources');
+        const { success, error: emailError } = await Invoice.sendEmail(result.payload.id);
+        
+        if (success) {
+          alert(t('invoices.emailSentSuccessfully'));
+        } else {
+          alert(t('invoices.emailSendFailed') + (emailError ? `: ${emailError}` : ''));
+        }
+      } catch (emailErr) {
+        console.error('Email send error:', emailErr);
+        alert(t('invoices.emailSendFailed'));
+      }
+    }
   };
 
   const handleMarkAsPaid = async (invoice) => {
@@ -140,14 +158,24 @@ export default function Invoices() {
   const handleSendReminder = async (invoice) => {
     try {
       const { Invoice } = await import('../services/resources');
+      
+      // Mark reminder as sent in database
       await Invoice.markReminderSent(invoice.id);
+      
+      // US-008: Send reminder email
+      const { success, error: emailError } = await Invoice.sendEmail(invoice.id);
+      
       // Refresh invoices to show updated reminder status
       dispatch(fetchInvoices(currentOrganization?.id));
-      // TODO: In future, this would trigger email sending
-      alert(`Reminder marked as sent for invoice ${invoice.invoice_number}`);
+      
+      if (success) {
+        alert(`${t('invoices.emailSentSuccessfully')} - ${invoice.invoice_number}`);
+      } else {
+        alert(`Reminder marked as sent for invoice ${invoice.invoice_number}. ${t('invoices.emailSendFailed')}: ${emailError || 'Unknown error'}`);
+      }
     } catch (error) {
-      console.error('Failed to mark reminder as sent:', error);
-      alert('Failed to mark reminder as sent');
+      console.error('Failed to send reminder:', error);
+      alert('Failed to send reminder');
     }
   };
 

@@ -258,6 +258,15 @@ export default function InvoiceModal({ isOpen, onClose, invoice = null, viewOnly
       return;
     }
 
+    // US-008: Validate client email if sending immediately
+    if (sendImmediately) {
+      const selectedClient = clients.find(c => c.id === formData.client_id);
+      if (!selectedClient?.email) {
+        setError(t('invoices.emailMissingClientEmail'));
+        return;
+      }
+    }
+
     if (isManualNumbering && !isEditing && !formData.invoice_number?.trim()) {
       setError(t('invoices.invoiceNumberRequired'));
       return;
@@ -300,11 +309,13 @@ export default function InvoiceModal({ isOpen, onClose, invoice = null, viewOnly
         invoiceData.sent_at = new Date().toISOString();
       }
 
+      let createdInvoice = null;
+
       if (isEditing) {
         await dispatch(updateInvoice({ id: invoice.id, updates: invoiceData })).unwrap();
         toast.success(t('invoices.invoiceUpdatedSuccessfully') || 'Invoice updated successfully');
       } else {
-        await dispatch(createInvoice(invoiceData)).unwrap();
+        createdInvoice = await dispatch(createInvoice(invoiceData)).unwrap();
         const successMessage = sendImmediately 
           ? (t('invoices.sentSuccessfully') || 'Invoice sent successfully')
           : (t('invoices.draftSavedSuccessfully') || 'Draft saved successfully');
@@ -312,6 +323,25 @@ export default function InvoiceModal({ isOpen, onClose, invoice = null, viewOnly
         // Trigger NPS survey check after successful creation
         triggerNps('invoice_created');
       }
+
+      // US-008: Send email if sending immediately
+      if (sendImmediately && !isEditing && createdInvoice?.id) {
+        try {
+          toast.info(t('invoices.sendingEmail'));
+          const { Invoice } = await import('../../services/resources');
+          const { success, error: emailError } = await Invoice.sendEmail(createdInvoice.id);
+          
+          if (success) {
+            toast.success(t('invoices.emailSentSuccessfully'));
+          } else {
+            toast.error(t('invoices.emailSendFailed') + (emailError ? `: ${emailError}` : ''));
+          }
+        } catch (emailErr) {
+          console.error('Email send error:', emailErr);
+          toast.error(t('invoices.emailSendFailed'));
+        }
+      }
+
       onClose();
     } catch (err) {
       // Handle both Error objects and string errors

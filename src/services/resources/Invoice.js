@@ -455,6 +455,17 @@ class InvoiceResource extends BaseResource {
   }
 
   /**
+   * Send invoice email to client
+   * US-008: Invoice Email Delivery
+   * @param {string} id - Invoice ID
+   * @returns {Promise<{success: boolean, error: string|null}>}
+   */
+  async sendEmail(id) {
+    const { emailService } = await import('../emailService');
+    return emailService.sendInvoiceEmail(id);
+  }
+
+  /**
    * Mark reminder as sent for an invoice
    * @param {string} id - Invoice ID
    * @returns {Promise<{data: Object|null, error: Error|null}>}
