@@ -10,28 +10,66 @@ import { fetchAccounts } from '../../features/accounts/accountsSlice';
 import { useOrganization } from '../../contexts/OrganizationContext';
 import { useToast } from '../../context/ToastContext';
 
-const getInitialFormData = (invoice) => ({
-  supplier_id: invoice?.supplier_id || '',
-  invoice_number: invoice?.invoice_number || '',
-  invoice_date: invoice?.invoice_date || new Date().toISOString().split('T')[0],
-  due_date: invoice?.due_date || '',
-  description: invoice?.description || '',
-  currency: invoice?.currency || 'SEK',
-  lines: invoice?.lines || [
-    { account_id: '', description: '', quantity: 1, unit_price: 0, amount: 0, vat_rate: 25, vat_amount: 0 },
-  ],
-});
+const getInitialFormData = (invoice, extractedData) => {
+  // If we have extracted OCR data, use that
+  if (extractedData) {
+    return {
+      supplier_id: extractedData.matchedSupplier?.id || '',
+      invoice_number: extractedData.invoice?.invoice_number || '',
+      invoice_date: extractedData.invoice?.invoice_date || new Date().toISOString().split('T')[0],
+      due_date: extractedData.invoice?.due_date || '',
+      description: extractedData.invoice?.description || '',
+      currency: extractedData.invoice?.currency || 'SEK',
+      payment_reference: extractedData.invoice?.payment_reference || '',
+      lines: extractedData.line_items?.length > 0
+        ? extractedData.line_items.map((item) => ({
+            account_id: item.account_id || '',
+            description: item.description || '',
+            quantity: parseFloat(item.quantity) || 1,
+            unit_price: parseFloat(item.unit_price) || 0,
+            amount: parseFloat(item.amount) || 0,
+            vat_rate: parseFloat(item.vat_rate) || 25,
+            vat_amount: parseFloat(item.vat_amount) || 0,
+          }))
+        : [{ account_id: '', description: '', quantity: 1, unit_price: 0, amount: 0, vat_rate: 25, vat_amount: 0 }],
+      // Store extracted supplier info for potential new supplier creation
+      _extractedSupplier: extractedData.supplier || null,
+      _attachmentFile: extractedData.file || null,
+      _attachmentPreview: extractedData.filePreview || null,
+    };
+  }
 
-export default function SupplierInvoiceModal({ isOpen, onClose, invoice = null }) {
+  // Otherwise, use existing invoice or defaults
+  return {
+    supplier_id: invoice?.supplier_id || '',
+    invoice_number: invoice?.invoice_number || '',
+    invoice_date: invoice?.invoice_date || new Date().toISOString().split('T')[0],
+    due_date: invoice?.due_date || '',
+    description: invoice?.description || '',
+    currency: invoice?.currency || 'SEK',
+    payment_reference: invoice?.payment_reference || '',
+    lines: invoice?.lines || [
+      { account_id: '', description: '', quantity: 1, unit_price: 0, amount: 0, vat_rate: 25, vat_amount: 0 },
+    ],
+    _extractedSupplier: null,
+    _attachmentFile: null,
+    _attachmentPreview: null,
+  };
+};
+
+export default function SupplierInvoiceModal({ isOpen, onClose, invoice = null, extractedData = null }) {
   const { t } = useTranslation();
   const dispatch = useDispatch();
   const { currentOrganization } = useOrganization();
   const toast = useToast();
   const isEditing = !!invoice;
 
-  const [formData, setFormData] = useState(getInitialFormData(invoice));
+  const [formData, setFormData] = useState(getInitialFormData(invoice, extractedData));
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
+  const [showNewSupplierInfo, setShowNewSupplierInfo] = useState(
+    !!(extractedData && !extractedData.matchedSupplier?.id && extractedData.supplier)
+  );
 
   const suppliers = useSelector((state) => state.suppliers?.suppliers || []);
   const accounts = useSelector((state) => state.accounts?.items || []);
@@ -49,10 +87,13 @@ export default function SupplierInvoiceModal({ isOpen, onClose, invoice = null }
 
   useEffect(() => {
     if (isOpen) {
-      setFormData(getInitialFormData(invoice));
+      setFormData(getInitialFormData(invoice, extractedData));
       setError(null);
+      setShowNewSupplierInfo(
+        !!(extractedData && !extractedData.matchedSupplier?.id && extractedData.supplier)
+      );
     }
-  }, [invoice, isOpen]);
+  }, [invoice, extractedData, isOpen]);
 
   // Auto-calculate due date based on supplier payment terms
   useEffect(() => {

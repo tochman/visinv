@@ -466,6 +466,85 @@
     "createSuccess": "Supplier invoice created successfully",
     "updateSuccess": "Supplier invoice updated successfully"
   },
+  "ocrUpload": {
+    "title": "Upload Invoice Document",
+    "uploadButton": "Upload & Scan",
+    "processButton": "Process Document",
+    "confirmAndCreate": "Confirm & Create Invoice",
+    "nextKontering": "Next: Assign Accounts",
+    "nextSupplier": "Next: Select Supplier",
+    "steps": {
+      "review": "Review Data",
+      "supplier": "Supplier",
+      "kontering": "Account Assignment"
+    },
+    "selectSupplier": "Select or Create Supplier",
+    "selectSupplierDescription": "Choose an existing supplier or create a new one based on the extracted information.",
+    "extractedSupplierInfo": "Extracted from document",
+    "searchSuppliers": "Search suppliers",
+    "searchSuppliersPlaceholder": "Type to search...",
+    "noSuppliersFound": "No matching suppliers found",
+    "exactMatch": "Exact match",
+    "partialMatch": "Possible match",
+    "createNewSupplier": "Create new supplier",
+    "willCreateSupplier": "Will create: {{name}}",
+    "assignAccounts": "Assign Accounts",
+    "assignAccountsDescription": "Review and assign chart of accounts to each line item. AI suggestions are shown below each item.",
+    "setAllAccounts": "Set same account for all",
+    "setAllAccountsHint": "Apply one account to all line items, then adjust individual items if needed",
+    "selectAccount": "Account",
+    "selectAccountPlaceholder": "-- Select account --",
+    "aiSuggestion": "AI suggestion",
+    "unknownSupplier": "Unknown Supplier",
+    "noDescription": "No description",
+    "dropzone": {
+      "title": "Drop your invoice here",
+      "subtitle": "or click to browse files",
+      "fileTypes": "Supported: PDF, JPEG, PNG (max 10MB)"
+    },
+    "processing": {
+      "idle": "Ready",
+      "uploading": "Uploading document...",
+      "extracting": "Extracting text from document...",
+      "analyzing": "Analyzing invoice data with AI...",
+      "matching": "Matching supplier information...",
+      "complete": "Processing complete",
+      "pleaseWait": "This may take a moment..."
+    },
+    "documentPreview": "Document Preview",
+    "extractedData": "Extracted Data",
+    "expandPreview": "Expand",
+    "clickToExpand": "Click to expand",
+    "loadingPdf": "Loading PDF...",
+    "openInNewTab": "Open in new tab",
+    "noPreview": "No preview available",
+    "overallConfidence": "Extraction Confidence",
+    "supplierInfo": "Supplier Information",
+    "matchedSupplier": "Matched by {{type}}",
+    "matchType": {
+      "organization_number": "organization number",
+      "name": "name"
+    },
+    "invoiceDetails": "Invoice Details",
+    "paymentReference": "Payment Reference (OCR)",
+    "lineItem": "Line Item",
+    "suggestedAccount": "AI Suggested",
+    "category": "Category",
+    "totals": "Totals",
+    "confidence": {
+      "high": "High confidence",
+      "medium": "Medium confidence",
+      "low": "Low confidence - please verify"
+    },
+    "errors": {
+      "invalidFileType": "Invalid file type. Please upload a PDF or image file.",
+      "fileTooLarge": "File is too large. Maximum size is 10MB.",
+      "processingFailed": "Failed to process document. Please try again.",
+      "extractionFailed": "Failed to extract invoice data.",
+      "aiServiceError": "AI service is temporarily unavailable.",
+      "pdfConversionFailed": "Failed to process PDF. Please try a different file."
+    }
+  },
   "products": {
     "create": "Add Product",
     "edit": "Edit Product",
@@ -619,6 +698,7 @@
     "delete": "Delete",
     "edit": "Edit",
     "create": "Create",
+    "creating": "Creating...",
     "update": "Update",
     "select": "Select",
     "confirm": "Confirm",

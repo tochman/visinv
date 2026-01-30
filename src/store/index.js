@@ -18,6 +18,7 @@ import cookieConsentReducer from '../features/cookieConsent/cookieConsentSlice';
 import npsReducer from '../features/nps/npsSlice';
 import suppliersReducer from '../features/suppliers/suppliersSlice';
 import supplierInvoicesReducer from '../features/supplierInvoices/supplierInvoicesSlice';
+import supplierInvoiceOcrReducer from '../features/supplierInvoices/supplierInvoiceOcrSlice';
 
 export const store = configureStore({
   reducer: {
@@ -40,6 +41,7 @@ export const store = configureStore({
     nps: npsReducer,
     suppliers: suppliersReducer,
     supplierInvoices: supplierInvoicesReducer,
+    supplierInvoiceOcr: supplierInvoiceOcrReducer,
   },
   middleware: (getDefaultMiddleware) =>
     getDefaultMiddleware({

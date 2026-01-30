@@ -12,6 +12,7 @@ import { fetchSuppliers } from '../features/suppliers/suppliersSlice';
 import { fetchAccounts } from '../features/accounts/accountsSlice';
 import { fetchFiscalYears } from '../features/fiscalYears/fiscalYearsSlice';
 import SupplierInvoiceModal from '../components/supplierInvoices/SupplierInvoiceModal';
+import OcrUploadModal from '../components/supplierInvoices/OcrUploadModal';
 
 export default function SupplierInvoices() {
   const { t } = useTranslation();
@@ -28,6 +29,7 @@ export default function SupplierInvoices() {
   const [searchQuery, setSearchQuery] = useState('');
   const [statusFilter, setStatusFilter] = useState('all');
   const [confirmAction, setConfirmAction] = useState(null);
+  const [showOcrModal, setShowOcrModal] = useState(false);
 
   useEffect(() => {
     if (currentOrganization?.id) {
@@ -54,6 +56,15 @@ export default function SupplierInvoices() {
   const handleCreate = () => {
     setEditingInvoice(null);
     setShowModal(true);
+  };
+
+  const handleUploadOcr = () => {
+    setShowOcrModal(true);
+  };
+
+  const handleOcrInvoiceCreated = () => {
+    // Invoice was created directly from OCR wizard - just close the modal
+    setShowOcrModal(false);
   };
 
   const handleEdit = (invoice) => {
@@ -163,16 +174,28 @@ export default function SupplierInvoices() {
           {t('supplierInvoices.title')}
         </h1>
 
-        <button
-          onClick={handleCreate}
-          data-cy="create-supplier-invoice-button"
-          className="inline-flex items-center px-4 py-2 bg-blue-600 text-white rounded-sm hover:bg-blue-700 transition-colors"
-        >
-          <svg className="w-5 h-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
-          </svg>
-          {t('supplierInvoices.create')}
-        </button>
+        <div className="flex gap-3">
+          <button
+            onClick={handleUploadOcr}
+            data-cy="upload-invoice-button"
+            className="inline-flex items-center px-4 py-2 bg-green-600 text-white rounded-sm hover:bg-green-700 transition-colors"
+          >
+            <svg className="w-5 h-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" />
+            </svg>
+            {t('ocrUpload.uploadButton')}
+          </button>
+          <button
+            onClick={handleCreate}
+            data-cy="create-supplier-invoice-button"
+            className="inline-flex items-center px-4 py-2 bg-blue-600 text-white rounded-sm hover:bg-blue-700 transition-colors"
+          >
+            <svg className="w-5 h-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+            </svg>
+            {t('supplierInvoices.create')}
+          </button>
+        </div>
       </div>
 
       {/* Filters */}
@@ -372,6 +395,15 @@ export default function SupplierInvoices() {
           isOpen={showModal}
           onClose={handleCloseModal}
           invoice={editingInvoice}
+        />
+      )}
+
+      {/* OCR Upload Modal */}
+      {showOcrModal && (
+        <OcrUploadModal
+          isOpen={showOcrModal}
+          onClose={() => setShowOcrModal(false)}
+          onInvoiceCreated={handleOcrInvoiceCreated}
         />
       )}
 

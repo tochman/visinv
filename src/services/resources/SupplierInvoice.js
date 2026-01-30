@@ -473,6 +473,160 @@ class SupplierInvoiceResource extends BaseResource {
 
     return this.show(id);
   }
+
+  /**
+   * Upload a document to Supabase Storage for a supplier invoice
+   * US-263: Supplier Invoice & Receipt OCR Upload
+   * @param {string} organizationId - Organization ID
+   * @param {File} file - File to upload
+   * @param {string} fileName - Original filename
+   * @returns {Promise<{data: Object|null, error: Error|null}>}
+   */
+  async uploadDocument(organizationId, file, fileName) {
+    const { user, error: authError } = await this.getCurrentUser();
+    if (authError || !user) {
+      return { data: null, error: authError || new Error('Not authenticated') };
+    }
+
+    // Generate unique filename with timestamp
+    const timestamp = Date.now();
+    const sanitizedFileName = fileName.replace(/[^a-zA-Z0-9.-]/g, '_');
+    const storagePath = `${organizationId}/${timestamp}_${sanitizedFileName}`;
+
+    const { data: uploadData, error: uploadError } = await this.supabase
+      .storage
+      .from('supplier-documents')
+      .upload(storagePath, file, {
+        cacheControl: '3600',
+        upsert: false,
+      });
+
+    if (uploadError) {
+      return { data: null, error: uploadError };
+    }
+
+    // Get public URL
+    const { data: { publicUrl } } = this.supabase
+      .storage
+      .from('supplier-documents')
+      .getPublicUrl(storagePath);
+
+    return {
+      data: {
+        path: storagePath,
+        url: publicUrl,
+        filename: fileName,
+      },
+      error: null,
+    };
+  }
+
+  /**
+   * Delete a document from Supabase Storage
+   * @param {string} storagePath - Storage path of the document
+   * @returns {Promise<{data: Object|null, error: Error|null}>}
+   */
+  async deleteDocument(storagePath) {
+    const { user, error: authError } = await this.getCurrentUser();
+    if (authError || !user) {
+      return { data: null, error: authError || new Error('Not authenticated') };
+    }
+
+    const { error: deleteError } = await this.supabase
+      .storage
+      .from('supplier-documents')
+      .remove([storagePath]);
+
+    if (deleteError) {
+      return { data: null, error: deleteError };
+    }
+
+    return { data: { deleted: true }, error: null };
+  }
+
+  /**
+   * Call the AI extraction Edge Function
+   * US-263: Supplier Invoice & Receipt OCR Upload
+   * @param {Object} params - Extraction parameters
+   * @param {string} params.fileBase64 - Base64 encoded file content
+   * @param {string} params.fileType - MIME type of the file
+   * @param {string} params.organizationId - Organization ID
+   * @param {Array} params.existingSuppliers - List of existing suppliers for matching
+   * @returns {Promise<{data: Object|null, error: Error|null}>}
+   */
+  async extractInvoiceData({ fileBase64, fileType, organizationId, existingSuppliers }) {
+    const { user, error: authError } = await this.getCurrentUser();
+    if (authError || !user) {
+      return { data: null, error: authError || new Error('Not authenticated') };
+    }
+
+    try {
+      const { data, error } = await this.supabase.functions.invoke('extract-invoice-data', {
+        body: {
+          fileBase64,
+          fileType,
+          organizationId,
+          existingSuppliers: existingSuppliers?.map((s) => ({
+            id: s.id,
+            name: s.name,
+            organization_number: s.organization_number,
+          })),
+        },
+      });
+
+      if (error) {
+        return { data: null, error };
+      }
+
+      return { data: data.data, error: null };
+    } catch (err) {
+      return { data: null, error: err };
+    }
+  }
+
+  /**
+   * Create a supplier invoice from OCR-extracted data
+   * US-263: Supplier Invoice & Receipt OCR Upload
+   * @param {Object} extractedData - Data extracted from OCR
+   * @param {Object} options - Additional options
+   * @param {string} options.organizationId - Organization ID
+   * @param {Object} options.attachment - Attachment info from uploadDocument
+   * @returns {Promise<{data: Object|null, error: Error|null}>}
+   */
+  async createFromOcr(extractedData, options = {}) {
+    const { organizationId, attachment, supplierId } = options;
+
+    // Map extracted data to invoice format
+    const invoiceData = {
+      organization_id: organizationId,
+      supplier_id: supplierId || extractedData.supplier?.id,
+      invoice_number: extractedData.invoice?.invoice_number,
+      invoice_date: extractedData.invoice?.invoice_date,
+      due_date: extractedData.invoice?.due_date,
+      description: extractedData.invoice?.description,
+      currency: extractedData.invoice?.currency || 'SEK',
+      payment_reference: extractedData.invoice?.payment_reference,
+      subtotal_amount: parseFloat(extractedData.totals?.subtotal) || 0,
+      vat_amount: parseFloat(extractedData.totals?.vat_amount) || 0,
+      total_amount: parseFloat(extractedData.totals?.total_amount) || 0,
+      attachment_url: attachment?.url,
+      attachment_filename: attachment?.filename,
+      lines: extractedData.line_items?.map((item, index) => ({
+        account_id: item.account_id,
+        description: item.description,
+        quantity: parseFloat(item.quantity) || 1,
+        unit_price: parseFloat(item.unit_price) || 0,
+        amount: parseFloat(item.amount) || 0,
+        vat_rate: parseFloat(item.vat_rate) || 0,
+        vat_amount: parseFloat(item.vat_amount) || 0,
+        cost_center: item.cost_center,
+        project_code: item.project_code,
+        line_order: index,
+      })),
+    };
+
+    return this.create(invoiceData);
+  }
 }
 
 export const SupplierInvoice = new SupplierInvoiceResource();

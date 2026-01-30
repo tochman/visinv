@@ -454,6 +454,85 @@
     "createSuccess": "Leverantörsfaktura skapad",
     "updateSuccess": "Leverantörsfaktura uppdaterad"
   },
+  "ocrUpload": {
+    "title": "Ladda upp fakturadokument",
+    "uploadButton": "Ladda upp & skanna",
+    "processButton": "Bearbeta dokument",
+    "confirmAndCreate": "Bekräfta & skapa faktura",
+    "nextKontering": "Nästa: Kontering",
+    "nextSupplier": "Nästa: Välj leverantör",
+    "steps": {
+      "review": "Granska data",
+      "supplier": "Leverantör",
+      "kontering": "Kontering"
+    },
+    "selectSupplier": "Välj eller skapa leverantör",
+    "selectSupplierDescription": "Välj en befintlig leverantör eller skapa en ny baserat på den extraherade informationen.",
+    "extractedSupplierInfo": "Extraherad från dokument",
+    "searchSuppliers": "Sök leverantörer",
+    "searchSuppliersPlaceholder": "Skriv för att söka...",
+    "noSuppliersFound": "Inga matchande leverantörer hittades",
+    "exactMatch": "Exakt matchning",
+    "partialMatch": "Möjlig matchning",
+    "createNewSupplier": "Skapa ny leverantör",
+    "willCreateSupplier": "Kommer att skapa: {{name}}",
+    "assignAccounts": "Kontering",
+    "assignAccountsDescription": "Granska och tilldela kontokoder till varje fakturarad. AI-förslag visas under varje rad.",
+    "setAllAccounts": "Sätt samma konto för alla",
+    "setAllAccountsHint": "Tillämpa ett konto på alla rader, justera sedan enskilda rader vid behov",
+    "selectAccount": "Konto",
+    "selectAccountPlaceholder": "-- Välj konto --",
+    "aiSuggestion": "AI-förslag",
+    "unknownSupplier": "Okänd leverantör",
+    "noDescription": "Ingen beskrivning",
+    "dropzone": {
+      "title": "Släpp din faktura här",
+      "subtitle": "eller klicka för att bläddra bland filer",
+      "fileTypes": "Stödjer: PDF, JPEG, PNG (max 10MB)"
+    },
+    "processing": {
+      "idle": "Redo",
+      "uploading": "Laddar upp dokument...",
+      "extracting": "Extraherar text från dokument...",
+      "analyzing": "Analyserar fakturadata med AI...",
+      "matching": "Matchar leverantörsinformation...",
+      "complete": "Bearbetning klar",
+      "pleaseWait": "Detta kan ta en stund..."
+    },
+    "documentPreview": "Dokumentförhandsvisning",
+    "extractedData": "Extraherad data",
+    "expandPreview": "Expandera",
+    "clickToExpand": "Klicka för att expandera",
+    "loadingPdf": "Laddar PDF...",
+    "openInNewTab": "Öppna i ny flik",
+    "noPreview": "Ingen förhandsvisning tillgänglig",
+    "overallConfidence": "Extraktionssäkerhet",
+    "supplierInfo": "Leverantörsinformation",
+    "matchedSupplier": "Matchad via {{type}}",
+    "matchType": {
+      "organization_number": "organisationsnummer",
+      "name": "namn"
+    },
+    "invoiceDetails": "Fakturadetaljer",
+    "paymentReference": "Betalningsreferens (OCR)",
+    "lineItem": "Fakturarad",
+    "suggestedAccount": "AI-förslag",
+    "category": "Kategori",
+    "totals": "Summor",
+    "confidence": {
+      "high": "Hög säkerhet",
+      "medium": "Medium säkerhet",
+      "low": "Låg säkerhet - vänligen verifiera"
+    },
+    "errors": {
+      "invalidFileType": "Ogiltig filtyp. Ladda upp en PDF- eller bildfil.",
+      "fileTooLarge": "Filen är för stor. Maxstorlek är 10MB.",
+      "processingFailed": "Kunde inte bearbeta dokumentet. Försök igen.",
+      "extractionFailed": "Kunde inte extrahera fakturadata.",
+      "aiServiceError": "AI-tjänsten är tillfälligt otillgänglig.",
+      "pdfConversionFailed": "Kunde inte bearbeta PDF-filen. Försök med en annan fil."
+    }
+  },
   "products": {
     "create": "Lägg till produkt",
     "edit": "Redigera produkt",
@@ -607,6 +686,7 @@
     "delete": "Ta bort",
     "edit": "Redigera",
     "create": "Skapa",
+    "creating": "Skapar...",
     "update": "Uppdatera",
     "select": "Välj",
     "confirm": "Bekräfta",

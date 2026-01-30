@@ -2229,7 +2229,7 @@ The Swedish Tax Authority (Skatteverket) provides APIs for digital submission of
   - Audit trail of approvals
 - **Status:** Not Started
 
-**US-263: Supplier Invoice & Receipt OCR Upload**
+**US-263: Supplier Invoice & Receipt OCR Upload** ✅
 - As a **user**, in order to **simplify my accounting**, I would like to **upload a supplier invoice or receipt and extract information from it**.
 - **Acceptance Criteria:**
   - **OCR Processing:**
@@ -2272,7 +2272,17 @@ The Swedish Tax Authority (Skatteverket) provides APIs for digital submission of
   - Storage: Supabase Storage for uploaded documents
   - Performance: Consider Edge Function to off-load browser processing for large documents
   - Progressive enhancement: Show loading states during OCR/AI processing
-- **Status:** Not Started
+- **Status:** Completed
+- **Implementation Notes:**
+  - Supabase Edge Function `extract-invoice-data` handles OCR/AI processing using OpenAI GPT-4o
+  - Storage bucket `supplier-documents` with RLS policies for document storage
+  - Components: `OcrUploadModal`, `DocumentPreview`, `ExtractedDataForm`
+  - Redux slice: `supplierInvoiceOcrSlice` manages upload/extraction state
+  - Supports drag-drop upload, side-by-side document preview with zoom
+  - AI extracts supplier details, invoice info, line items with BAS account suggestions
+  - Confidence indicators for extracted fields, editable form for review
+  - Integration with SupplierInvoiceModal for pre-populated form creation
+  - Full i18n support (Swedish/English)
 
 #### Invoicing & Accounting Integration
 
