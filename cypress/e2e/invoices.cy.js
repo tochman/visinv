@@ -800,7 +800,15 @@ describe("Invoice Management", () => {
         // Override the default organization intercept with manual mode
         cy.intercept('GET', '**/rest/v1/organization_members*is_default=eq.true*', {
           statusCode: 200,
-          body: { organizations: manualOrganization }
+          body: {
+            id: 'test-org-member-id',
+            user_id: 'test-admin-user-id',
+            organization_id: manualOrganization.id,
+            role: 'owner',
+            is_default: true,
+            joined_at: new Date().toISOString(),
+            organizations: manualOrganization
+          }
         }).as('getDefaultOrganization');
 
         // Dispatch organization with manual mode to Redux
