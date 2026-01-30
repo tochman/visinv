@@ -2357,6 +2357,126 @@ The Swedish Tax Authority (Skatteverket) provides APIs for digital submission of
   - Integration with SupplierInvoiceModal for pre-populated form creation
   - Full i18n support (Swedish/English)
 
+**US-264: Email-Based Supplier Invoice Reception**
+- As an **organization**, in order to **streamline the collection of supplier invoices**, I would like to **receive supplier invoices via email and have them automatically stored for processing**.
+- **Acceptance Criteria:**
+  - **Organization Email Slug:**
+    - Each organization has a unique, downcased, snake-cased slug stored in the database
+    - Slug generation rules: Remove special characters, replace spaces with underscores, convert to lowercase
+    - Example: "Communitas Labs Inc" → "communitas_labs"
+    - Slug must be unique across all organizations
+    - Slug can be edited by organization owner (with uniqueness validation)
+  - **Dedicated Email Address:**
+    - Each organization receives a dedicated email address: `{slug}@dortal.resend.app`
+    - Email address displayed in organization settings for distribution to suppliers
+    - Copy-to-clipboard functionality for easy sharing
+    - Email address updated automatically when slug is changed
+  - **Email Reception & Attachment Processing:**
+    - System receives emails sent to organization's email address via Resend webhooks
+    - Parse email for attachments (PDF, JPEG, PNG formats)
+    - Store each attachment in Supabase Storage bucket `supplier-inbox`
+    - Create database record in `supplier_inbox_items` table with metadata:
+      - Organization ID
+      - Email sender (supplier email address)
+      - Email subject
+      - Received date/time
+      - Attachment file name and storage path
+      - Processing status: `new`, `processed`, `archived`
+      - File size and content type
+    - Handle multiple attachments in single email (create separate inbox items)
+    - Validate file types and size limits (max 10MB per attachment)
+  - **Email Notification:**
+    - Send email notification to organization admin/owner when new supplier invoice received
+    - Notification includes: sender email, subject, attachment count
+    - Notification links to supplier invoice inbox view
+    - Use Resend for sending notifications
+    - Option to enable/disable notifications in organization settings
+  - **Inbox Badge & Count:**
+    - Display badge in navigation menu showing count of unprocessed supplier invoices
+    - Badge shows count of items with status `new`
+    - Badge updates in real-time when new invoices arrive
+    - Badge visible only to users with access to supplier invoices
+    - Clear/minimal design (e.g., small red circle with number)
+  - **Supplier Invoice Inbox View:**
+    - New page/view: `/supplier-invoices/inbox`
+    - List of received supplier invoice attachments
+    - Columns: Date received, sender email, subject, file name, status
+    - Filter by status: new, processed, archived
+    - Sort by date (newest first by default)
+    - Search/filter by sender email or subject
+    - Preview thumbnail for image attachments
+    - Action buttons per item:
+      - "Process" - Opens OCR Upload & Scan (US-263) with attachment pre-loaded
+      - "Download" - Download original attachment
+      - "Archive" - Mark as archived (remove from new count)
+      - "Delete" - Remove from inbox
+    - Bulk actions: Archive selected, delete selected
+    - Empty state message when no invoices in inbox
+  - **Integration with Upload & Scan:**
+    - Clicking "Process" on inbox item opens OCR Upload Modal (from US-263)
+    - Attachment automatically loaded into OCR processing
+    - Upon successful processing and saving, mark inbox item as `processed`
+    - Link created between `supplier_inbox_items` and `supplier_invoices` tables
+    - Option to return to inbox after processing to handle next invoice
+  - **Security & Privacy:**
+    - RLS policies ensure users only see inbox items for their organization
+    - Email webhook endpoint validates requests from Resend
+    - Sender email and subject stored for audit purposes
+    - Automatic cleanup of processed items after configurable period (e.g., 90 days)
+- **Technical Considerations:**
+  - **Resend Inbound Email Setup:**
+    - Configure Resend domain for inbound email handling
+    - Set up webhook endpoint to receive inbound emails
+    - Parse email payload for attachments and metadata
+  - **Supabase Edge Function:**
+    - Create `process-inbound-supplier-invoice` Edge Function
+    - Handles Resend webhook payload
+    - Validates organization slug from recipient email
+    - Downloads attachments from email payload
+    - Uploads to Supabase Storage
+    - Creates inbox item records
+    - Triggers notification email
+  - **Database Schema:**
+    - `organizations` table: Add `email_slug` column (unique, indexed)
+    - New table: `supplier_inbox_items` with columns for metadata
+    - Foreign key relationship to `supplier_invoices` (nullable, set when processed)
+  - **Storage:**
+    - New bucket: `supplier-inbox` with RLS policies
+    - File naming convention: `{org_id}/{timestamp}_{original_filename}`
+    - Automatic expiration policy for old files
+  - **Real-time Updates:**
+    - Use Supabase real-time subscriptions for inbox badge count updates
+    - Update count when new items arrive or status changes
+  - **UI Components:**
+    - `SupplierInboxBadge` - Navigation badge component
+    - `SupplierInboxPage` - Main inbox view
+    - `InboxItemRow` - Individual inbox item display
+    - `InboxItemActions` - Action buttons per item
+    - Organization settings: Email slug field with validation
+- **User Experience Flow:**
+  1. Organization owner configures email slug in settings
+  2. Owner shares `{slug}@dortal.resend.app` with suppliers
+  3. Supplier sends invoice via email with PDF/image attachment
+  4. System receives email, stores attachment, creates inbox item
+  5. Organization receives email notification
+  6. User logs in, sees badge with count in navigation
+  7. User navigates to Supplier Invoice Inbox
+  8. User clicks "Process" on invoice
+  9. OCR modal opens with document pre-loaded
+  10. User reviews extracted data, makes adjustments, saves
+  11. Invoice marked as processed, badge count decreases
+  12. User repeats for remaining invoices
+- **i18n Requirements:**
+  - Swedish/English translations for all UI text
+  - Email notification template in both languages
+  - Error messages for invalid slugs, file types, size limits
+- **Status:** Not Started
+- **Dependencies:**
+  - US-263 (Supplier Invoice & Receipt OCR Upload) - Must be completed first
+  - US-260 (Supplier Invoice Registration) - Core functionality
+  - Resend account with inbound email capability
+  - Supabase Edge Functions enabled
+
 #### Invoicing & Accounting Integration
 
 **US-280: Invoice Accounting Integration**
@@ -2599,7 +2719,7 @@ The Swedish Tax Authority (Skatteverket) provides APIs for digital submission of
 - US-230 to US-235: Financial Reports (Balance Sheet, Income Statement, VAT, etc.)
 - US-240 to US-243: Bank Accounts & Reconciliation
 - US-250 to US-252: Fiscal Year Management
-- US-260 to US-262: Supplier Management (Leverantörer)
+- US-260 to US-264: Supplier Management (Leverantörer)
 - US-280 to US-282: Invoice & Accounting Integration
 
 **Navigation & UI (US-401 to US-404)**: Application architecture
