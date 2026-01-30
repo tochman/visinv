@@ -23,7 +23,7 @@ describe('Organization Logo Upload', () => {
     // Setup common intercepts
     cy.setupCommonIntercepts({ clients: [], products: [] });
     
-    // Intercept organization fetch
+    // Intercept organization fetch (will override login's default org mock)
     cy.intercept('GET', '**/rest/v1/organization_members?*', {
       statusCode: 200,
       body: [{
@@ -34,13 +34,15 @@ describe('Organization Logo Upload', () => {
       }],
     }).as('getOrganizations');
 
-    // Login (already visits '/' - do NOT call cy.visit() after this)
-    cy.login('admin');
+    // Login with skipOrgMock since we're setting up our own org mock above
+    cy.login('admin', { skipOrgMock: true });
     cy.wait('@getClients');
+    
+    // Wait for organization to load
+    cy.wait('@getOrganizations');
     
     // Navigate to settings using the sidebar
     cy.getByCy('sidebar-nav-settings').click();
-    cy.wait('@getOrganizations');
     
     // Click on Organization Settings tab (should be default, but ensure)
     cy.get('[data-cy="tab-settings"]').click();
