@@ -39,8 +39,21 @@ export default function Header() {
           <div className="flex items-center space-x-3">
             <Link 
               to="/settings"
-              className="text-right hover:opacity-80 transition-opacity"
+              className="flex items-center space-x-3 hover:opacity-80 transition-opacity"
             >
+              {profile?.avatar_url ? (
+                <img 
+                  src={profile.avatar_url} 
+                  alt={profile.full_name || user?.email}
+                  className="w-8 h-8 rounded-full object-cover ring-2 ring-gray-200 dark:ring-gray-700"
+                />
+              ) : (
+                <div className="w-8 h-8 rounded-full bg-gray-300 dark:bg-gray-600 flex items-center justify-center ring-2 ring-gray-200 dark:ring-gray-700">
+                  <span className="text-sm font-medium text-gray-700 dark:text-gray-300">
+                    {(profile?.full_name || user?.email || '?')[0].toUpperCase()}
+                  </span>
+                </div>
+              )}
               <p className="text-sm font-medium text-gray-900 dark:text-white">
                 {profile?.full_name || user?.email}
               </p>
