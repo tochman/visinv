@@ -639,7 +639,6 @@
     "logoDeleteError": "Det gick inte att ta bort logotypen",
     "confirmDeleteLogo": "Ta bort din företagslogotyp?",
     "logoWillAppear": "Denna logotyp kommer att visas på dina fakturor och dokument",
-    "settings": "Organisationsinställningar",
     "members": "Medlemmar",
     "addMember": "Lägg till medlem",
     "role": "Roll",
@@ -759,19 +758,6 @@
     "avatarDeleteSuccess": "Profilbilden har tagits bort",
     "avatarDeleteError": "Det gick inte att ta bort profilbilden",
     "confirmDeleteAvatar": "Ta bort din profilbild?"
-  },
-  "organization": {
-    "logo": "Företagslogotyp",
-    "uploadLogo": "Ladda upp logotyp",
-    "changeLogo": "Ändra logotyp",
-    "removeLogo": "Ta bort logotyp",
-    "logoHint": "Rekommenderat: Transparent PNG, max 2MB (JPEG, PNG, SVG, WebP)",
-    "logoUploadSuccess": "Logotypen har laddats upp",
-    "logoUploadError": "Det gick inte att ladda upp logotypen",
-    "logoDeleteSuccess": "Logotypen har tagits bort",
-    "logoDeleteError": "Det gick inte att ta bort logotypen",
-    "confirmDeleteLogo": "Ta bort din företagslogotyp?",
-    "logoWillAppear": "Denna logotyp kommer att visas på dina fakturor och dokument"
   },
   "accounts": {
     "title": "Kontoplan",
