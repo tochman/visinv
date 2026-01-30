@@ -235,19 +235,23 @@ Features are organized into logical categories and prioritized into development 
 
 **US-020: Payment Recording** ✅
 - As a **user**, in order to **keep accurate financial records**, I would like to **record payments received against invoices**.
-- **Status:** Implemented
+- **Status:** ✅ Complete - All sub-features fully implemented and tested
   - **US-020-A: Single Payment Recording** ✅ - Record a single payment with amount, date, method, reference, and notes
   - **US-020-B: Partial Payment Support** ✅ - Support multiple partial payments against one invoice, track remaining balance
   - **US-020-C: Payment History** ✅ - View complete payment history for each invoice with dates, amounts, and methods
   - **US-020-D: Automatic Status Updates** ✅ - Automatically mark invoice as 'paid' when fully paid, revert to 'sent' if payment deleted
-  - **US-020-E: Payment Confirmation Dialog** - Show confirmation dialog when marking invoice as paid from list view
-  - **US-020-F: Payment Recording from Invoice Detail** - Record payment from within invoice detail/edit view
-  - **US-020-G: Enhanced Payment Method Selection** - Support Swedish payment methods with proper categorization
-  - Database: payments table with invoice_id FK, amount, payment_date, payment_method, reference, notes
-  - Backend: Payment resource with validation against remaining balance, Invoice methods for balance calculation
-  - UI: PaymentModal for recording payments with real-time balance validation, InvoiceDetail with payment history
+  - **US-020-E: Payment Confirmation Dialog** ✅ - Show confirmation dialog when marking invoice as paid from list view
+  - **US-020-F: Payment Recording from Invoice Detail** ✅ - Record payment from within invoice detail/edit view
+  - **US-020-G: Enhanced Payment Method Selection** ✅ - Support Swedish payment methods (bankgiro, plusgiro, swish, bank_transfer, card, cash, autogiro, other)
+- **Implementation:**
+  - Database: payments table (migration 027) with invoice_id FK, amount, payment_date, payment_method, reference, notes, organization_id
+  - Resource: Payment.js with create(), byInvoice(), getTotalPaid(), validation against remaining balance
+  - Components: PaymentModal (full payment recording), PaymentConfirmationDialog (quick dialog from list)
+  - UI: InvoiceDetail with payment history table, Invoices.jsx with Mark as Paid button
+  - Validation: Prevents overpayment, calculates remaining balance, requires payment method
+  - Audit: InvoiceEvent integration logs all payment activities
   - i18n: Full English/Swedish translations for payment terminology
-  - Features: Prevent overpayment, calculate remaining balance, support 6 payment methods (bank_transfer, swish, card, cash, check, other)
+- **Tests:** 18 Cypress E2E tests in payments.cy.js covering all scenarios (recording, validation, history, partial payments, dialog, errors)
   - Tests: 12 Cypress E2E tests covering recording, validation, history, partial payments
 
 **US-020-E: Payment Confirmation Dialog**
@@ -741,14 +745,34 @@ Features are organized into logical categories and prioritized into development 
 
 ### Internationalization
 
-**US-033: Swedish Language Support**
+**US-033: Swedish Language Support** ✅
 - As a **Swedish user**, in order to **use the platform in my native language**, I would like to **switch the interface to Swedish**.
+- **Status:** ✅ Complete
+- **Implementation:**
+  - i18next configuration with Swedish as default language
+  - Translation file: src/i18n/locales/sv.json with 1,257 lines of Swedish translations
+  - Complete UI coverage: invoices, clients, products, payments, organizations, settings, reports, etc.
+  - Header toggle button with 🇸🇪 Svenska flag
+  - Persists selection in localStorage
 
-**US-034: English Language Support**
+**US-034: English Language Support** ✅
 - As an **English-speaking user**, in order to **use the platform comfortably**, I would like to **use the interface in English**.
+- **Status:** ✅ Complete
+- **Implementation:**
+  - Translation file: src/i18n/locales/en.json with 1,276 lines of English translations
+  - English set as fallback language
+  - Complete parity with Swedish translations (all keys exist in both languages)
+  - Header toggle button with 🇬🇧 English flag
 
-**US-035: Localized Invoice Templates**
+**US-035: Localized Invoice Templates** ✅
 - As a **user**, in order to **send invoices in my client's language**, I would like to **create invoices with localized content and date formats**.
+- **Status:** ✅ Complete
+- **Implementation:**
+  - Locale-aware date formatting with toLocaleDateString('sv-SE' or 'en-US') based on i18n.language
+  - Currency formatting with formatCurrency() Handlebars helper in templateService.js
+  - Invoice PDFs generated with proper localization via invoicePdfService.js
+  - Financial reports (Balance Sheet, Income Statement, VAT Report) use locale-specific formatting
+  - All template placeholders and helpers respect current language setting
 
 ---
 
@@ -1065,15 +1089,30 @@ Features are organized into logical categories and prioritized into development 
   - Export to PDF/Excel
 - **Visualization:** Charts and graphs for trends
 
-**US-088: Tax Reports**
+**US-088: Tax Reports** 🚧
 - As a **user**, in order to **prepare for tax filing**, I would like to **generate tax reports showing revenue, VAT collected, and expenses**.
-- **Features:**
-  - VAT/sales tax summary by rate (0%, 6%, 12%, 25%)
-  - Revenue by category or client
-  - Deductible expenses
-  - Date range selection (fiscal year, quarter, custom)
-  - Export to formats compatible with tax software
-- **Compliance:** Support for Swedish tax reporting (Bokföringslagen, BAS)
+- **Status:** 🚧 Partially Implemented (~40% complete)
+- **Implemented Features:**
+  - ✅ VAT/sales tax summary by rate (0%, 6%, 12%, 25%) - **US-233 VAT Report (Momsrapport)**
+  - ✅ Date range selection (fiscal year, quarter, monthly, custom)
+  - ✅ PDF export with professional formatting (financialReportPdfService.js)
+  - ✅ Output VAT and Input VAT breakdown
+  - ✅ Net VAT payable/receivable calculation
+  - ✅ Transaction drilldown capability
+  - ✅ Full Swedish/English i18n support
+  - ✅ 59 E2E tests in financial-reports.cy.js
+- **Not Yet Implemented:**
+  - ❌ Revenue by category or client (dashboard has overview only)
+  - ❌ Deductible expenses tracking (no expense module yet)
+  - ❌ Export to tax software formats (SIE, etc.)
+  - ⚠️ BAS compliance (Chart of Accounts has BAS codes, but not integrated into tax reports)
+- **Implementation:**
+  - Component: VATReport.jsx (512 lines) with Redux integration
+  - Service: financialReportPdfService.js for PDF generation
+  - Detail levels: Summary, Standard, Detailed
+  - Skatteverket-compliant format for Swedish VAT filing
+- **Compliance:** VAT Report meets Swedish tax reporting requirements (Bokföringslagen)
+- **Next Steps:** Implement expense tracking, revenue breakdowns, and tax software export formats
 
 **US-089: Cash Flow Forecasting**
 - As a **premium user**, in order to **plan for the future**, I would like to **forecast cash flow based on outstanding invoices and recurring revenue**.
