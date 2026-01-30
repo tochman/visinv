@@ -301,7 +301,10 @@
       "exceedsBalance": "Betalningsbeloppet överstiger återstående saldo",
       "required": "Detta fält är obligatoriskt",
       "invalidAmount": "Ange ett giltigt belopp"
-    }
+    },
+    "emailSentSuccessfully": "Betalningsbekräftelse skickad till kund via e-post",
+    "emailSendFailed": "Kunde inte skicka betalningsbekräftelse via e-post",
+    "sendingEmail": "Skickar bekräftelse via e-post..."
   },
   "reminder": {
     "sendReminder": "Skicka påminnelse",

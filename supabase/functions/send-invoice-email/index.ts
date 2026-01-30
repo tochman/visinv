@@ -1,5 +1,6 @@
-// Supabase Edge Function for sending invoice emails using Resend
+// Supabase Edge Function for sending invoice and payment confirmation emails using Resend
 // US-008: Invoice Email Delivery
+// US-028: Payment Confirmation Emails
 
 import { serve } from 'https://deno.land/std@0.168.0/http/server.ts'
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.39.0'
@@ -16,7 +17,7 @@ serve(async (req) => {
   }
 
   try {
-    const { invoiceId } = await req.json()
+    const { invoiceId, paymentId, emailType = 'invoice' } = await req.json()
 
     if (!invoiceId) {
       return new Response(
@@ -25,16 +26,14 @@ serve(async (req) => {
       )
     }
 
-    // Get Resend API key from environment
-    const resendApiKey = Deno.env.get('RESEND_API_KEY')
-    if (!resendApiKey) {
+    if (emailType === 'payment' && !paymentId) {
       return new Response(
-        JSON.stringify({ error: 'Resend API key not configured' }),
-        { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        JSON.stringify({ error: 'Payment ID is required for payment confirmation emails' }),
+        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       )
     }
 
-    // Initialize Supabase client
+// Initialize Supabase client
     const supabaseUrl = Deno.env.get('SUPABASE_URL')!
     const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!
     const supabase = createClient(supabaseUrl, supabaseServiceKey)
@@ -66,122 +65,231 @@ serve(async (req) => {
       )
     }
 
-    // Generate invoice HTML for PDF (reusing generate-pdf logic)
-    const invoiceHtml = generateInvoiceHtml(invoice)
-
-    // Generate PDF using Browserless or fallback
-    let pdfBuffer: ArrayBuffer | null = null
-    const browserlessApiKey = Deno.env.get('BROWSERLESS_API_KEY')
-
-    if (browserlessApiKey) {
-      try {
-        const pdfResponse = await fetch('https://chrome.browserless.io/pdf', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Basic ${btoa(browserlessApiKey + ':')}`,
-          },
-          body: JSON.stringify({
-            html: invoiceHtml,
-            options: {
-              format: 'A4',
-              printBackground: true,
-              margin: { top: '0', right: '0', bottom: '0', left: '0' }
-            }
-          })
-        })
-
-        if (pdfResponse.ok) {
-          pdfBuffer = await pdfResponse.arrayBuffer()
-        }
-      } catch (err) {
-        console.error('PDF generation failed:', err)
-      }
+    // Handle payment confirmation email
+    if (emailType === 'payment') {
+      return await sendPaymentConfirmation(supabase, resendApiKey, invoice, paymentId, corsHeaders)
     }
 
-    // Prepare email content
-    const subject = `Invoice ${invoice.invoice_number} from ${invoice.organization?.name || 'VisInv'}`
-    const emailHtml = `
-      <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
-        <h2>Invoice ${invoice.invoice_number}</h2>
-        <p>Dear ${invoice.client.name},</p>
-        <p>Please find attached invoice ${invoice.invoice_number} dated ${formatDate(invoice.issue_date)}.</p>
-        
-        <div style="background: #f5f5f5; padding: 15px; margin: 20px 0; border-radius: 5px;">
-          <p style="margin: 5px 0;"><strong>Invoice Number:</strong> ${invoice.invoice_number}</p>
-          <p style="margin: 5px 0;"><strong>Issue Date:</strong> ${formatDate(invoice.issue_date)}</p>
-          <p style="margin: 5px 0;"><strong>Due Date:</strong> ${formatDate(invoice.due_date)}</p>
-          <p style="margin: 5px 0;"><strong>Amount:</strong> ${formatCurrency(invoice.total_amount, invoice.currency)}</p>
-        </div>
-
-        ${invoice.organization?.name ? `
-        <p>If you have any questions, please contact us:</p>
-        <p>
-          ${invoice.organization.name}<br>
-          ${invoice.organization.email || ''}<br>
-          ${invoice.organization.phone || ''}
-        </p>
-        ` : ''}
-
-        <p>Best regards,<br>${invoice.organization?.name || 'VisInv'}</p>
-      </div>
-    `
-
-    // Prepare Resend email payload
-    const emailPayload: any = {
-      from: invoice.organization?.email || 'invoices@visinv.app',
-      to: invoice.client.email,
-      subject,
-      html: emailHtml,
-    }
-
-    // Add PDF attachment if generated
-    if (pdfBuffer) {
-      const base64Pdf = btoa(String.fromCharCode(...new Uint8Array(pdfBuffer)))
-      emailPayload.attachments = [{
-        filename: `invoice-${invoice.invoice_number}.pdf`,
-        content: base64Pdf,
-      }]
-    }
-
-    // Send email via Resend
-    const resendResponse = await fetch('https://api.resend.com/emails', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${resendApiKey}`,
-      },
-      body: JSON.stringify(emailPayload),
-    })
-
-    if (!resendResponse.ok) {
-      const errorData = await resendResponse.json()
-      console.error('Resend error:', errorData)
-      return new Response(
-        JSON.stringify({ error: 'Failed to send email', details: errorData }),
-        { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-      )
-    }
-
-    const emailResult = await resendResponse.json()
-
-    return new Response(
-      JSON.stringify({ 
-        success: true, 
-        messageId: emailResult.id,
-        to: invoice.client.email 
-      }),
-      { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-    )
+    // Handle invoice email (default)
+    return await sendInvoiceEmail(supabase, resendApiKey, invoice, corsHeaders)
 
   } catch (error) {
-    console.error('Error sending invoice email:', error)
+    console.error('Error sending email:', error)
     return new Response(
       JSON.stringify({ error: error.message || 'Internal server error' }),
       { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     )
   }
 })
+
+// Send invoice email
+async function sendInvoiceEmail(supabase: any, resendApiKey: string, invoice: any, corsHeaders: any) {
+  // Generate invoice HTML for PDF (reusing generate-pdf logic)
+  const invoiceHtml = generateInvoiceHtml(invoice)
+
+  // Generate PDF using Browserless or fallback
+  let pdfBuffer: ArrayBuffer | null = null
+  const browserlessApiKey = Deno.env.get('BROWSERLESS_API_KEY')
+
+  if (browserlessApiKey) {
+    try {
+      const pdfResponse = await fetch('https://chrome.browserless.io/pdf', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Basic ${btoa(browserlessApiKey + ':')}`,
+        },
+        body: JSON.stringify({
+          html: invoiceHtml,
+          options: {
+            format: 'A4',
+            printBackground: true,
+            margin: { top: '0', right: '0', bottom: '0', left: '0' }
+          }
+        })
+      })
+
+      if (pdfResponse.ok) {
+        pdfBuffer = await pdfResponse.arrayBuffer()
+      }
+    } catch (err) {
+      console.error('PDF generation failed:', err)
+    }
+  }
+
+  // Prepare email content
+  const subject = `Invoice ${invoice.invoice_number} from ${invoice.organization?.name || 'VisInv'}`
+  const emailHtml = `
+    <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+      <h2>Invoice ${invoice.invoice_number}</h2>
+      <p>Dear ${invoice.client.name},</p>
+      <p>Please find attached invoice ${invoice.invoice_number} dated ${formatDate(invoice.issue_date)}.</p>
+      
+      <div style="background: #f5f5f5; padding: 15px; margin: 20px 0; border-radius: 5px;">
+        <p style="margin: 5px 0;"><strong>Invoice Number:</strong> ${invoice.invoice_number}</p>
+        <p style="margin: 5px 0;"><strong>Issue Date:</strong> ${formatDate(invoice.issue_date)}</p>
+        <p style="margin: 5px 0;"><strong>Due Date:</strong> ${formatDate(invoice.due_date)}</p>
+        <p style="margin: 5px 0;"><strong>Amount:</strong> ${formatCurrency(invoice.total_amount, invoice.currency)}</p>
+      </div>
+
+      ${invoice.organization?.name ? `
+      <p>If you have any questions, please contact us:</p>
+      <p>
+        ${invoice.organization.name}<br>
+        ${invoice.organization.email || ''}<br>
+        ${invoice.organization.phone || ''}
+      </p>
+      ` : ''}
+
+      <p>Best regards,<br>${invoice.organization?.name || 'VisInv'}</p>
+    </div>
+  `
+
+  // Prepare Resend email payload
+  const emailPayload: any = {
+    from: invoice.organization?.email || 'invoices@visinv.app',
+    to: invoice.client.email,
+    subject,
+    html: emailHtml,
+  }
+
+  // Add PDF attachment if generated
+  if (pdfBuffer) {
+    const base64Pdf = btoa(String.fromCharCode(...new Uint8Array(pdfBuffer)))
+    emailPayload.attachments = [{
+      filename: `invoice-${invoice.invoice_number}.pdf`,
+      content: base64Pdf,
+    }]
+  }
+
+  // Send email via Resend
+  const resendResponse = await fetch('https://api.resend.com/emails', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${resendApiKey}`,
+    },
+    body: JSON.stringify(emailPayload),
+  })
+
+  if (!resendResponse.ok) {
+    const errorData = await resendResponse.json()
+    console.error('Resend error:', errorData)
+    return new Response(
+      JSON.stringify({ error: 'Failed to send email', details: errorData }),
+      { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+    )
+  }
+
+  const emailResult = await resendResponse.json()
+
+  return new Response(
+    JSON.stringify({ 
+      success: true, 
+      messageId: emailResult.id,
+      to: invoice.client.email 
+    }),
+    { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+  )
+}
+
+// Send payment confirmation email
+async function sendPaymentConfirmation(supabase: any, resendApiKey: string, invoice: any, paymentId: string, corsHeaders: any) {
+  // Fetch payment details
+  const { data: payment, error: paymentError } = await supabase
+    .from('payments')
+    .select('*')
+    .eq('id', paymentId)
+    .single()
+
+  if (paymentError || !payment) {
+    return new Response(
+      JSON.stringify({ error: 'Payment not found' }),
+      { status: 404, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+    )
+  }
+
+  // Calculate remaining balance
+  const { data: allPayments } = await supabase
+    .from('payments')
+    .select('amount')
+    .eq('invoice_id', invoice.id)
+
+  const totalPaid = allPayments?.reduce((sum: number, p: any) => sum + parseFloat(p.amount), 0) || 0
+  const remainingBalance = parseFloat(invoice.total_amount) - totalPaid
+
+  // Prepare email content  const subject = `Payment Confirmation - Invoice ${invoice.invoice_number}`
+  const emailHtml = `
+    <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+      <h2 style="color: #10b981;">✓ Payment Received</h2>
+      <p>Dear ${invoice.client.name},</p>
+      <p>We have received your payment for invoice ${invoice.invoice_number}. Thank you for your payment!</p>
+      
+      <div style="background: #f0fdf4; border-left: 4px solid #10b981; padding: 15px; margin: 20px 0;">
+        <h3 style="margin-top: 0; color: #059669;">Payment Details</h3>
+        <p style="margin: 5px 0;"><strong>Invoice Number:</strong> ${invoice.invoice_number}</p>
+        <p style="margin: 5px 0;"><strong>Payment Date:</strong> ${formatDate(payment.payment_date)}</p>
+        <p style="margin: 5px 0;"><strong>Amount Paid:</strong> ${formatCurrency(payment.amount, invoice.currency)}</p>
+        ${payment.payment_method ? `<p style="margin: 5px 0;"><strong>Payment Method:</strong> ${formatPaymentMethod(payment.payment_method)}</p>` : ''}
+        ${payment.reference ? `<p style="margin: 5px 0;"><strong>Reference:</strong> ${payment.reference}</p>` : ''}
+      </div>
+
+      <div style="background: #f5f5f5; padding: 15px; margin: 20px 0; border-radius: 5px;">
+        <h3 style="margin-top: 0;">Invoice Summary</h3>
+        <p style="margin: 5px 0;"><strong>Original Amount:</strong> ${formatCurrency(invoice.total_amount, invoice.currency)}</p>
+        <p style="margin: 5px 0;"><strong>Total Paid:</strong> ${formatCurrency(totalPaid, invoice.currency)}</p>
+        <p style="margin: 5px 0;"><strong>Remaining Balance:</strong> ${formatCurrency(remainingBalance, invoice.currency)}</p>
+        ${remainingBalance <= 0 ? `<p style="margin: 10px 0 0 0; color: #10b981; font-weight: bold;">✓ Fully Paid</p>` : ''}
+      </div>
+
+      ${invoice.organization?.name ? `
+      <p>If you have any questions about this payment, please contact us:</p>
+      <p>
+        ${invoice.organization.name}<br>
+        ${invoice.organization.email || ''}<br>
+        ${invoice.organization.phone || ''}
+      </p>
+      ` : ''}
+
+      <p>Best regards,<br>${invoice.organization?.name || 'VisInv'}</p>
+    </div>
+  `
+
+  // Send email via Resend
+  const resendResponse = await fetch('https://api.resend.com/emails', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${resendApiKey}`,
+    },
+    body: JSON.stringify({
+      from: invoice.organization?.email || 'invoices@visinv.app',
+      to: invoice.client.email,
+      subject,
+      html: emailHtml,
+    }),
+  })
+
+  if (!resendResponse.ok) {
+    const errorData = await resendResponse.json()
+    console.error('Resend error:', errorData)
+    return new Response(
+      JSON.stringify({ error: 'Failed to send payment confirmation', details: errorData }),
+      { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+    )
+  }
+
+  const emailResult = await resendResponse.json()
+
+  return new Response(
+    JSON.stringify({ 
+      success: true, 
+      messageId: emailResult.id,
+      to: invoice.client.email 
+    }),
+    { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+  )
+}
 
 // Helper functions
 function formatDate(dateStr: string): string {
@@ -193,6 +301,18 @@ function formatDate(dateStr: string): string {
 function formatCurrency(amount: string | number, currency: string = 'SEK'): string {
   const num = typeof amount === 'string' ? parseFloat(amount) : amount
   return `${num.toFixed(2)} ${currency}`
+}
+
+function formatPaymentMethod(method: string): string {
+  const methods: Record<string, string> = {
+    'bank_transfer': 'Bank Transfer',
+    'bankgiro': 'Bankgiro',
+    'swish': 'Swish',
+    'card': 'Credit/Debit Card',
+    'cash': 'Cash',
+    'other': 'Other'
+  }
+  return methods[method] || method
 }
 
 function generateInvoiceHtml(invoice: any): string {

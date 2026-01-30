@@ -1,9 +1,11 @@
 import { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Payment } from '../../services/resources';
+import { useToast } from '../../context/ToastContext';
 
 export default function PaymentModal({ isOpen, onClose, invoice, onPaymentRecorded }) {
   const { t } = useTranslation();
+  const toast = useToast();
   
   const [formData, setFormData] = useState({
     amount: '',
@@ -76,7 +78,7 @@ export default function PaymentModal({ isOpen, onClose, invoice, onPaymentRecord
       }
 
       // Create payment
-      const { data, error: paymentError } = await Payment.create({
+      const { data, error: paymentError, emailSent, emailError } = await Payment.create({
         invoice_id: invoice.id,
         amount: amount,
         payment_date: formData.payment_date,
@@ -89,6 +91,13 @@ export default function PaymentModal({ isOpen, onClose, invoice, onPaymentRecord
         setError(paymentError.message);
         setLoading(false);
         return;
+      }
+
+      // Show email status
+      if (emailSent) {
+        toast.success(t('payment.emailSentSuccessfully'));
+      } else if (emailError) {
+        toast.warning(`${t('common.warning')}: ${t('payment.emailSendFailed')}`);
       }
 
       // Success - call callback and close

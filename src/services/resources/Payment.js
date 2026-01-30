@@ -1,5 +1,6 @@
 import { BaseResource } from './BaseResource';
 import { InvoiceEvent } from './InvoiceEvent';
+import { emailService } from '../emailService';
 
 /**
  * Payment Resource
@@ -34,12 +35,12 @@ class PaymentResource extends BaseResource {
    * @param {string} paymentData.payment_method - Payment method
    * @param {string} paymentData.reference - Payment reference (optional)
    * @param {string} paymentData.notes - Payment notes (optional)
-   * @returns {Promise<{data: Object|null, error: Error|null}>}
+   * @returns {Promise<{data: Object|null, error: Error|null, emailSent: boolean}>}
    */
   async create(paymentData) {
     const { user, error: authError } = await this.getCurrentUser();
     if (authError || !user) {
-      return { data: null, error: authError || new Error('Not authenticated') };
+      return { data: null, error: authError || new Error('Not authenticated'), emailSent: false };
     }
 
     // Get invoice to retrieve organization_id and invoice_number
@@ -50,7 +51,7 @@ class PaymentResource extends BaseResource {
       .single();
 
     if (invoiceError || !invoice) {
-      return { data: null, error: invoiceError || new Error('Invoice not found') };
+      return { data: null, error: invoiceError || new Error('Invoice not found'), emailSent: false };
     }
 
     // Validate payment amount doesn't exceed remaining balance
@@ -60,7 +61,8 @@ class PaymentResource extends BaseResource {
     if (parseFloat(paymentData.amount) > remainingBalance) {
       return { 
         data: null, 
-        error: new Error(`Payment amount exceeds remaining balance of ${remainingBalance.toFixed(2)}`) 
+        error: new Error(`Payment amount exceeds remaining balance of ${remainingBalance.toFixed(2)}`),
+        emailSent: false
       };
     }
 
@@ -75,6 +77,10 @@ class PaymentResource extends BaseResource {
       .select()
       .single();
 
+    if (error) {
+      return { data: null, error, emailSent: false };
+    }
+
     // Log payment event for audit trail (US-022-E)
     if (data) {
       await InvoiceEvent.logPayment(paymentData.invoice_id, invoice.invoice_number, {
@@ -82,9 +88,19 @@ class PaymentResource extends BaseResource {
         payment_method: paymentData.payment_method,
         payment_date: paymentData.payment_date,
       });
+
+      // Send payment confirmation email (US-028)
+      const emailResult = await emailService.sendPaymentConfirmationEmail(data.id, paymentData.invoice_id);
+      
+      return { 
+        data, 
+        error: null, 
+        emailSent: emailResult.success,
+        emailError: emailResult.error 
+      };
     }
 
-    return { data, error };
+    return { data, error: null, emailSent: false };
   }
 
   /**

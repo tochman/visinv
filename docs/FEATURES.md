@@ -713,8 +713,16 @@ Features are organized into logical categories and prioritized into development 
 **US-027: Overdue Reminders**
 - As a **premium user**, in order to **improve payment collection**, I would like to **automatically send email reminders for overdue invoices**.
 
-**US-028: Payment Confirmation Emails**
+**US-028: Payment Confirmation Emails** ✅ **Complete**
 - As a **user**, in order to **confirm transactions**, I would like to **automatically send payment confirmation emails to clients**.
+- **Implementation:** Edge Function extended to support payment emails, emailService.sendPaymentConfirmationEmail() method, automatic email sending from Payment.create(), toast notifications for email status, English + Swedish translations
+- **Status:** ✅ Feature implemented and deployed
+- **Files:** 
+  - `supabase/functions/send-invoice-email/index.ts` - Payment email handler
+  - `src/services/emailService.js` - sendPaymentConfirmationEmail()
+  - `src/services/resources/Payment.js` - Email integration
+  - `src/components/invoices/PaymentModal.jsx` - Toast notifications
+  - `src/i18n/locales/en.json`, `src/i18n/locales/sv.json` - Translations
 
 ---
 

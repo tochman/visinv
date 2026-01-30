@@ -312,7 +312,10 @@
       "exceedsBalance": "Payment amount exceeds remaining balance",
       "required": "This field is required",
       "invalidAmount": "Please enter a valid amount"
-    }
+    },
+    "emailSentSuccessfully": "Payment confirmation emailed to client successfully",
+    "emailSendFailed": "Failed to send payment confirmation email",
+    "sendingEmail": "Sending confirmation email..."
   },
   "reminder": {
     "sendReminder": "Send Reminder",
