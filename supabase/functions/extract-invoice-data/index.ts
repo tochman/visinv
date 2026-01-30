@@ -14,14 +14,36 @@ const corsHeaders = {
 const OPENAI_API_URL = 'https://api.openai.com/v1/chat/completions'
 
 // Prompt for invoice data extraction
-const EXTRACTION_PROMPT = `You are an expert at extracting information from supplier invoices and receipts. 
-Analyze the following text extracted from an invoice/receipt document and extract the relevant information.
+const EXTRACTION_PROMPT = `You are an expert at extracting information from Swedish supplier invoices and receipts. 
+Analyze the document and extract the relevant information.
+
+IMPORTANT NOTES FOR SWEDISH INVOICES:
+
+1. INVOICE NUMBER (Fakturanummer) - This can be tricky to identify:
+   - Sometimes labeled "Fakturanr", "Fakturanummer", "Invoice no", "Fakt.nr"
+   - OFTEN the invoice number is the SAME as the OCR/payment reference number
+   - If you see "Fakturanr: Se ovan" or "Se betalningsreferens", the invoice number IS the OCR number
+   - Look for "Anges vid betalning" (to be quoted when paying) - this number is usually BOTH the invoice number AND payment reference
+   - The number after "Anges vid betalning" or in a box labeled similarly should be used as invoice_number
+   - If there's only an OCR number visible and no separate invoice number, use the OCR as invoice_number
+   - Some invoices use customer number + date as invoice reference
+
+2. PAYMENT REFERENCE (OCR):
+   - Usually a long number (10-25 digits) 
+   - Often in a highlighted box or under "Anges vid betalning", "OCR", "Betalningsreferens"
+   - This should ALSO be stored in payment_reference field
+   - If the same number serves as both invoice number and OCR, put it in BOTH fields
+
+3. SUPPLIER vs BUYER:
+   - The SUPPLIER is the company SENDING the invoice (their details are usually at the top/header)
+   - The BUYER/CUSTOMER ("Köpare", "Kund") is who receives the invoice - IGNORE buyer details
+   - Extract ONLY the supplier/sender company information
 
 Return a JSON object with the following structure (use null for fields that cannot be found):
 {
   "supplier": {
-    "name": "Company name",
-    "organization_number": "Organization/registration number (Swedish format: XXXXXX-XXXX)",
+    "name": "Company name (the company SENDING the invoice)",
+    "organization_number": "Organization/registration number (Swedish format: XXXXXX-XXXX or 10 digits)",
     "vat_number": "VAT/tax number (Swedish format: SExxxxxxxxxx01)",
     "address": "Street address",
     "postal_code": "Postal code",
@@ -29,16 +51,16 @@ Return a JSON object with the following structure (use null for fields that cann
     "country": "Country",
     "email": "Email address",
     "phone": "Phone number",
-    "bankgiro": "Bankgiro number",
+    "bankgiro": "Bankgiro number (format: XXX-XXXX)",
     "plusgiro": "Plusgiro number",
     "iban": "IBAN number",
     "bic": "BIC/SWIFT code"
   },
   "invoice": {
-    "invoice_number": "Invoice number/reference",
+    "invoice_number": "Invoice number - see notes above about Swedish conventions",
     "invoice_date": "Invoice date (YYYY-MM-DD format)",
-    "due_date": "Due date (YYYY-MM-DD format)",
-    "payment_reference": "OCR number or payment reference",
+    "due_date": "Due date/Förfallodatum (YYYY-MM-DD format)",
+    "payment_reference": "OCR number or payment reference (often same as invoice_number)",
     "currency": "Currency code (default SEK)",
     "description": "Brief description of what the invoice is for"
   },
@@ -70,27 +92,26 @@ Return a JSON object with the following structure (use null for fields that cann
 }
 
 For Swedish invoices, common expense accounts include:
-- 4010: Office supplies (Kontorsmaterial)
-- 5010: Rent (Lokalhyra)
-- 5410: Consumables (Förbrukningsinventarier)
-- 5420: Software/IT (Programvara)
-- 5460: Consumables under SEK 5000 (Förbrukningsinventarier under 5000 kr)
-- 5800: Travel expenses (Resekostnader)
-- 5831: Taxis (Taxi)
-- 5910: Advertising (Annonsering)
-- 6110: Office supplies (Kontorsmaterial)
-- 6212: Mobile phone (Mobiltelefon)
-- 6230: IT services (Datakommunikation)
-- 6250: Postage (Porto)
-- 6310: Company insurance (Företagsförsäkringar)
-- 6530: External services (Redovisningstjänster)
-- 6540: Legal services (Juridiska tjänster)
-- 6570: Banking fees (Bankavgifter)
-- 7510: Payroll costs (Löner)
+- 4010: Inköp material och varor (Purchase of materials and goods)
+- 5010: Lokalhyra (Rent)
+- 5410: Förbrukningsinventarier (Consumables)
+- 5420: Programvara (Software/IT)
+- 5460: Förbrukningsinventarier under 5000 kr
+- 5800: Resekostnader (Travel expenses)
+- 5831: Taxi
+- 5910: Annonsering (Advertising)
+- 6110: Kontorsmaterial (Office supplies)
+- 6212: Mobiltelefon (Mobile phone)
+- 6230: Datakommunikation (IT services)
+- 6250: Porto (Postage)
+- 6310: Företagsförsäkringar (Company insurance)
+- 6530: Redovisningstjänster (Accounting services)
+- 6540: Juridiska tjänster (Legal services)
+- 6570: Bankavgifter (Banking fees)
+- 7510: Löner (Payroll costs)
 
 Be precise with amounts. If VAT is shown separately, calculate the rates accurately.
-Parse Swedish date formats (YYYY-MM-DD, DD/MM/YYYY, etc.) to YYYY-MM-DD.
-Look for OCR numbers (often labeled "OCR" or starting with numbers like 123456...).
+Parse Swedish date formats (YYYY-MM-DD, DD/MM/YYYY, YYMMDD, etc.) to YYYY-MM-DD.
 
 IMPORTANT: Return ONLY the JSON object, no additional text or markdown.`
 
