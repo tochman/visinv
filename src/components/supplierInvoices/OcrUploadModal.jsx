@@ -564,7 +564,7 @@ export default function OcrUploadModal({ isOpen, onClose, onInvoiceCreated }) {
         onClick={() => fileInputRef.current?.click()}
         data-cy="ocr-upload-dropzone"
         className={`
-          border-2 border-dashed rounded-lg p-8 text-center cursor-pointer
+          border-2 border-dashed rounded-sm p-8 text-center cursor-pointer
           transition-colors duration-200
           ${dragActive
             ? 'border-blue-500 bg-blue-50 dark:bg-blue-900/20'
@@ -754,7 +754,7 @@ export default function OcrUploadModal({ isOpen, onClose, onInvoiceCreated }) {
           onClick={() => setIsPreviewExpanded(false)}
           data-cy="expanded-preview-modal"
         >
-          <div className="max-w-4xl max-h-[90vh] overflow-auto bg-white dark:bg-gray-800 rounded-lg p-4">
+          <div className="max-w-4xl max-h-[90vh] overflow-auto bg-white dark:bg-gray-800 rounded-sm p-4">
             <DocumentPreview
               preview={filePreview}
               fileName={file?.name}
@@ -816,7 +816,7 @@ export default function OcrUploadModal({ isOpen, onClose, onInvoiceCreated }) {
 
           {/* Extracted Supplier Info */}
           {extractedSupplier.name && (
-            <div className="mb-4 p-4 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg">
+            <div className="mb-4 p-4 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-sm">
               <h4 className="text-sm font-medium text-blue-800 dark:text-blue-300 mb-2">
                 {t('ocrUpload.extractedSupplierInfo')}
               </h4>
@@ -865,7 +865,7 @@ export default function OcrUploadModal({ isOpen, onClose, onInvoiceCreated }) {
                 <div
                   key={supplier.id}
                   onClick={() => setSelectedSupplierId(supplier.id)}
-                  className={`p-3 border rounded-lg cursor-pointer transition-colors ${
+                  className={`p-3 border rounded-sm cursor-pointer transition-colors ${
                     selectedSupplierId === supplier.id
                       ? 'border-blue-500 bg-blue-50 dark:bg-blue-900/30'
                       : 'border-gray-200 dark:border-gray-700 hover:border-blue-300 dark:hover:border-blue-600'
@@ -915,7 +915,7 @@ export default function OcrUploadModal({ isOpen, onClose, onInvoiceCreated }) {
           <div className="mt-4 pt-4 border-t border-gray-200 dark:border-gray-700">
             <div
               onClick={() => setSelectedSupplierId('new')}
-              className={`p-3 border rounded-lg cursor-pointer transition-colors ${
+              className={`p-3 border rounded-sm cursor-pointer transition-colors ${
                 selectedSupplierId === 'new'
                   ? 'border-green-500 bg-green-50 dark:bg-green-900/30'
                   : 'border-gray-200 dark:border-gray-700 hover:border-green-300 dark:hover:border-green-600'
@@ -976,7 +976,7 @@ export default function OcrUploadModal({ isOpen, onClose, onInvoiceCreated }) {
             className="fixed inset-0 z-50 bg-black/80 flex items-center justify-center"
             onClick={() => setIsPreviewExpanded(false)}
           >
-            <div className="max-w-4xl max-h-[90vh] overflow-auto bg-white dark:bg-gray-800 rounded-lg p-4">
+            <div className="max-w-4xl max-h-[90vh] overflow-auto bg-white dark:bg-gray-800 rounded-sm p-4">
               <DocumentPreview
                 preview={filePreview}
                 fileName={file?.name}
@@ -1034,7 +1034,7 @@ export default function OcrUploadModal({ isOpen, onClose, onInvoiceCreated }) {
           />
           
           {/* Invoice Summary */}
-          <div className="mt-4 p-3 bg-gray-50 dark:bg-gray-700/50 rounded-lg">
+          <div className="mt-4 p-3 bg-gray-50 dark:bg-gray-700/50 rounded-sm">
             <h4 className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
               {extractedData?.supplier?.name || t('ocrUpload.unknownSupplier')}
             </h4>
@@ -1058,7 +1058,7 @@ export default function OcrUploadModal({ isOpen, onClose, onInvoiceCreated }) {
 
           {/* Quick Set All Accounts */}
           {lineItems.length > 1 && (
-            <div className="mb-4 p-3 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg">
+            <div className="mb-4 p-3 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-sm">
               <div className="flex flex-col sm:flex-row sm:items-center gap-2">
                 <label className="text-sm font-medium text-blue-800 dark:text-blue-300 whitespace-nowrap">
                   {t('ocrUpload.setAllAccounts')}:
@@ -1089,7 +1089,7 @@ export default function OcrUploadModal({ isOpen, onClose, onInvoiceCreated }) {
             {lineItems.map((item, index) => (
               <div
                 key={index}
-                className="p-4 border border-gray-200 dark:border-gray-600 rounded-lg bg-gray-50 dark:bg-gray-700/30"
+                className="p-4 border border-gray-200 dark:border-gray-600 rounded-sm bg-gray-50 dark:bg-gray-700/30"
                 data-cy={`kontering-line-${index}`}
               >
                 <div className="flex flex-col lg:flex-row lg:items-center gap-4">
@@ -1134,7 +1134,7 @@ export default function OcrUploadModal({ isOpen, onClose, onInvoiceCreated }) {
           </div>
 
           {/* Totals */}
-          <div className="mt-6 p-4 bg-gray-100 dark:bg-gray-700 rounded-lg">
+          <div className="mt-6 p-4 bg-gray-100 dark:bg-gray-700 rounded-sm">
             <div className="flex justify-between text-sm">
               <span className="text-gray-600 dark:text-gray-300">{t('invoices.subtotal')}:</span>
               <span className="font-medium text-gray-900 dark:text-white">
@@ -1183,7 +1183,7 @@ export default function OcrUploadModal({ isOpen, onClose, onInvoiceCreated }) {
             className="fixed inset-0 z-50 bg-black/80 flex items-center justify-center"
             onClick={() => setIsPreviewExpanded(false)}
           >
-            <div className="max-w-4xl max-h-[90vh] overflow-auto bg-white dark:bg-gray-800 rounded-lg p-4">
+            <div className="max-w-4xl max-h-[90vh] overflow-auto bg-white dark:bg-gray-800 rounded-sm p-4">
               <DocumentPreview
                 preview={filePreview}
                 fileName={file?.name}
@@ -1221,7 +1221,7 @@ export default function OcrUploadModal({ isOpen, onClose, onInvoiceCreated }) {
 
         {/* Modal */}
         <div className={`
-          relative bg-white dark:bg-gray-800 rounded-lg shadow-xl 
+          relative bg-white dark:bg-gray-800 rounded-sm shadow-xl 
           ${(step === 'review' || step === 'supplier' || step === 'kontering') ? 'w-full max-w-6xl h-[85vh]' : 'w-full max-w-lg'}
           transform transition-all
         `}>

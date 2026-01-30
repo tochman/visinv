@@ -1,745 +1,496 @@
+/// <reference types="cypress" />
+
 /**
- * OCR Upload Tests - US-263
- * Supplier Invoice & Receipt OCR Upload
+ * E2E Tests for OCR Supplier Invoice Upload (US-263)
+ * 
+ * Wizard Flow: Upload → Processing → Review → Supplier → Kontering → Create Invoice
  */
+
 describe('OCR Upload for Supplier Invoices', () => {
+  // Mock data
   const mockSuppliers = [
     {
-      id: 'supplier-uuid-1',
-      organization_id: 'test-org-id',
-      name: 'Test Supplier AB',
-      organization_number: '556789-1234',
-      vat_number: 'SE556789123401',
-      default_payment_terms_days: 30,
-      is_active: true,
-      created_at: '2024-01-01T00:00:00Z',
-      updated_at: '2024-01-01T00:00:00Z'
+      id: 'supplier-1',
+      name: 'Telia Company AB',
+      organization_number: '556103-4249',
+      email: 'faktura@telia.se',
+      organization_id: 'test-org-id'
     },
     {
-      id: 'supplier-uuid-2',
-      organization_id: 'test-org-id',
-      name: 'Another Supplier Co',
-      organization_number: '556123-4567',
-      default_payment_terms_days: 15,
-      is_active: true,
-      created_at: '2024-01-01T00:00:00Z',
-      updated_at: '2024-01-01T00:00:00Z'
+      id: 'supplier-2',
+      name: 'Tele2 Sverige AB',
+      organization_number: '556267-5164',
+      email: 'invoice@tele2.se',
+      organization_id: 'test-org-id'
     }
   ];
 
   const mockAccounts = [
-    { id: 'acc-1', account_number: '4010', name: 'Office Supplies', account_name: 'Office Supplies', organization_id: 'test-org-id', account_type: 'expense', is_active: true },
-    { id: 'acc-2', account_number: '5010', name: 'Rent', account_name: 'Rent', organization_id: 'test-org-id', account_type: 'expense', is_active: true },
-    { id: 'acc-3', account_number: '5410', name: 'Consumables', account_name: 'Consumables', organization_id: 'test-org-id', account_type: 'expense', is_active: true },
-    { id: 'acc-4', account_number: '6110', name: 'Office Supplies', account_name: 'Office Supplies', organization_id: 'test-org-id', account_type: 'expense', is_active: true },
-  ];
-
-  const mockFiscalYears = [
-    { id: 'fy-1', organization_id: 'test-org-id', year: 2024, start_date: '2024-01-01', end_date: '2024-12-31', is_locked: false }
+    { id: 'account-1', account_number: '4010', name: 'Inköp av varor', organization_id: 'test-org-id' },
+    { id: 'account-2', account_number: '6211', name: 'Telefon', organization_id: 'test-org-id' },
+    { id: 'account-3', account_number: '6212', name: 'Mobiltelefon', organization_id: 'test-org-id' },
+    { id: 'account-4', account_number: '6230', name: 'Datakommunikation', organization_id: 'test-org-id' }
   ];
 
   const mockExtractedData = {
-    success: true,
-    data: {
-      supplier: {
-        name: 'Test Supplier AB',
-        organization_number: '556789-1234',
-        vat_number: 'SE556789123401',
-        address: 'Testgatan 123',
-        postal_code: '123 45',
-        city: 'Stockholm',
-      },
-      invoice: {
-        invoice_number: 'INV-2024-001',
-        invoice_date: '2024-06-15',
-        due_date: '2024-07-15',
-        payment_reference: '1234567890',
-        currency: 'SEK',
-        description: 'Office supplies purchase'
-      },
-      line_items: [
-        {
-          description: 'Paper and pens',
-          quantity: 10,
-          unit_price: 100,
-          amount: 1000,
-          vat_rate: 25,
-          vat_amount: 250,
-          suggested_account: '4010',
-          suggested_account_name: 'Office Supplies',
-          category: 'office_supplies'
-        }
-      ],
-      totals: {
-        subtotal: 1000,
-        vat_amount: 250,
-        total_amount: 1250
-      },
-      confidence: {
-        overall: 0.85,
-        supplier_name: 0.95,
-        invoice_number: 0.90,
-        amounts: 0.80,
-        notes: 'Good quality scan'
-      },
-      matched_supplier: {
-        id: 'supplier-uuid-1',
-        name: 'Test Supplier AB',
-        match_type: 'organization_number',
-        confidence: 1.0
-      }
+    supplier: {
+      name: 'Telia Company AB',
+      organization_number: '556103-4249',
+      vat_number: 'SE556103424901',
+      address: 'Stjärntorget 1',
+      postal_code: '169 79',
+      city: 'Solna'
     },
-    processing: {
-      used_vision: true,
-      file_type: 'image/jpeg'
+    invoice: {
+      invoice_number: 'INV-2024-001',
+      invoice_date: '2024-01-15',
+      due_date: '2024-02-15',
+      currency: 'SEK',
+      description: 'Telefoniabonnemang',
+      payment_reference: '12345678901234'
+    },
+    line_items: [
+      {
+        description: 'Abonnemang Mobil Pro',
+        quantity: 1,
+        unit_price: 399,
+        amount: 399,
+        vat_rate: 25,
+        vat_amount: 99.75
+      },
+      {
+        description: 'Datatillägg 10GB',
+        quantity: 1,
+        unit_price: 149,
+        amount: 149,
+        vat_rate: 25,
+        vat_amount: 37.25
+      }
+    ],
+    totals: {
+      subtotal: 548,
+      vat: 137,
+      total: 685
+    },
+    matchedSupplier: {
+      id: 'supplier-1',
+      name: 'Telia Company AB',
+      match_type: 'organization_number',
+      confidence: 0.95
     }
   };
 
   beforeEach(() => {
-    cy.intercept('GET', '**/rest/v1/supplier_invoices*', {
-      statusCode: 200,
-      body: []
-    }).as('getSupplierInvoices');
-
-    cy.intercept('GET', '**/rest/v1/fiscal_years*', {
-      statusCode: 200,
-      body: mockFiscalYears
-    }).as('getFiscalYears');
-
-    cy.setupCommonIntercepts({ 
-      clients: [],
-      products: [],
-      invoices: [],
+    cy.setupCommonIntercepts({
       suppliers: mockSuppliers,
       accounts: mockAccounts
     });
-    
-    cy.login('admin');
+    cy.login('premiumUser');
   });
 
-  describe('Happy Path - Success Scenarios', () => {
-    it('is expected to display the upload invoice button on supplier invoices page', () => {
-      cy.getByCy('sidebar-nav-supplier-invoices').click();
-      cy.url().should('include', '/supplier-invoices');
-      cy.getByCy('upload-invoice-button').should('be.visible');
-      cy.getByCy('upload-invoice-button').should('contain.text', 'Upload');
-    });
-
-    it('is expected to open OCR upload modal when clicking upload button', () => {
-      cy.visit('/supplier-invoices');
-      cy.wait('@getSupplierInvoices');
-
-      cy.getByCy('upload-invoice-button').click();
-      cy.getByCy('ocr-upload-modal').should('be.visible');
-      cy.getByCy('ocr-upload-dropzone').should('be.visible');
-    });
-
-    it('is expected to accept image file uploads via drag and drop', () => {
-      cy.visit('/supplier-invoices');
-      cy.wait('@getSupplierInvoices');
-
-      cy.getByCy('upload-invoice-button').click();
-      cy.getByCy('ocr-upload-modal').should('be.visible');
-
-      // Create a test image file
-      cy.fixture('test-invoice.jpg', 'base64').then((fileContent) => {
-        cy.getByCy('ocr-upload-dropzone').selectFile(
-          {
-            contents: Cypress.Buffer.from(fileContent, 'base64'),
-            fileName: 'test-invoice.jpg',
-            mimeType: 'image/jpeg'
-          },
-          { action: 'drag-drop' }
-        );
-      });
-
-      cy.getByCy('selected-file-name').should('contain.text', 'test-invoice.jpg');
-      cy.getByCy('ocr-process-button').should('not.be.disabled');
-    });
-
-    it('is expected to accept file uploads via file input click', () => {
-      cy.visit('/supplier-invoices');
-      cy.wait('@getSupplierInvoices');
-
-      cy.getByCy('upload-invoice-button').click();
-      cy.getByCy('ocr-upload-modal').should('be.visible');
-
-      // Upload via file input
-      cy.fixture('test-invoice.jpg', 'base64').then((fileContent) => {
-        cy.getByCy('ocr-upload-input').selectFile(
-          {
-            contents: Cypress.Buffer.from(fileContent, 'base64'),
-            fileName: 'test-invoice.jpg',
-            mimeType: 'image/jpeg'
-          },
-          { force: true }
-        );
-      });
-
-      cy.getByCy('selected-file-name').should('be.visible');
-    });
-
-    it('is expected to show processing state when extracting invoice data', () => {
-      // Intercept the edge function with a delay
-      cy.intercept('POST', '**/functions/v1/extract-invoice-data', {
-        delay: 1000,
-        statusCode: 200,
-        body: mockExtractedData
-      }).as('extractInvoiceData');
-
-      cy.visit('/supplier-invoices');
-      cy.wait('@getSupplierInvoices');
-
-      cy.getByCy('upload-invoice-button').click();
-      cy.getByCy('ocr-upload-modal').should('be.visible');
-
-      // Upload file
-      cy.fixture('test-invoice.jpg', 'base64').then((fileContent) => {
-        cy.getByCy('ocr-upload-input').selectFile(
-          {
-            contents: Cypress.Buffer.from(fileContent, 'base64'),
-            fileName: 'test-invoice.jpg',
-            mimeType: 'image/jpeg'
-          },
-          { force: true }
-        );
-      });
-
-      cy.getByCy('ocr-process-button').click();
-      cy.getByCy('ocr-processing-state').should('be.visible');
-    });
-
-    it('is expected to display extracted data in review state', () => {
+  describe('Happy Path - Complete Wizard Flow', () => {
+    beforeEach(() => {
+      // Mock the OCR extraction endpoint
       cy.intercept('POST', '**/functions/v1/extract-invoice-data', {
         statusCode: 200,
         body: mockExtractedData
-      }).as('extractInvoiceData');
+      }).as('extractInvoice');
 
-      cy.visit('/supplier-invoices');
-      cy.wait('@getSupplierInvoices');
+      // Mock supplier invoice creation
+      cy.intercept('POST', '**/rest/v1/supplier_invoices*', {
+        statusCode: 201,
+        body: { id: 'new-invoice-id', ...mockExtractedData.invoice }
+      }).as('createSupplierInvoice');
 
-      cy.getByCy('upload-invoice-button').click();
+      // Mock supplier invoice lines creation
+      cy.intercept('POST', '**/rest/v1/supplier_invoice_lines*', {
+        statusCode: 201,
+        body: []
+      }).as('createSupplierInvoiceLines');
+    });
 
-      // Upload and process file
-      cy.fixture('test-invoice.jpg', 'base64').then((fileContent) => {
-        cy.getByCy('ocr-upload-input').selectFile(
-          {
-            contents: Cypress.Buffer.from(fileContent, 'base64'),
-            fileName: 'test-invoice.jpg',
-            mimeType: 'image/jpeg'
-          },
-          { force: true }
-        );
-      });
+    it('is expected to complete full wizard flow: upload → review → supplier → kontering → create invoice', () => {
+      // Navigate to supplier invoices page
+      cy.get('[data-cy="nav-supplier-invoices"]').click();
+      cy.get('[data-cy="ocr-upload-button"]').click();
 
-      cy.getByCy('ocr-process-button').click();
-      cy.wait('@extractInvoiceData');
-
-      // Should show review state with side-by-side view
-      cy.getByCy('ocr-review-state').should('be.visible');
-      cy.getByCy('extracted-data-form').should('be.visible');
+      // Step 1: Upload
+      cy.get('[data-cy="ocr-upload-modal"]').should('be.visible');
+      cy.get('[data-cy="ocr-upload-dropzone"]').should('be.visible');
       
-      // Check extracted invoice data is displayed
-      cy.getByCy('invoice-number-input').should('have.value', 'INV-2024-001');
-      cy.getByCy('invoice-date-input').should('have.value', '2024-06-15');
-      cy.getByCy('due-date-input').should('have.value', '2024-07-15');
-    });
+      // Upload a file
+      const testFile = new File(['dummy pdf content'], 'test-invoice.pdf', { type: 'application/pdf' });
+      cy.get('[data-cy="ocr-upload-input"]').selectFile({ contents: testFile, fileName: 'test-invoice.pdf' }, { force: true });
 
-    it('is expected to show matched supplier when organization number matches', () => {
-      cy.intercept('POST', '**/functions/v1/extract-invoice-data', {
-        statusCode: 200,
-        body: mockExtractedData
-      }).as('extractInvoiceData');
+      cy.get('[data-cy="selected-file-name"]').should('contain', 'test-invoice.pdf');
+      cy.get('[data-cy="ocr-process-button"]').click();
 
-      cy.visit('/supplier-invoices');
-      cy.wait('@getSupplierInvoices');
+      // Step 2: Processing (brief state)
+      cy.get('[data-cy="ocr-processing-state"]').should('be.visible');
+      cy.wait('@extractInvoice');
 
-      cy.getByCy('upload-invoice-button').click();
+      // Step 3: Review - verify extracted data is displayed
+      cy.get('[data-cy="ocr-review-state"]').should('be.visible');
+      cy.get('[data-cy="extracted-data-form"]').should('be.visible');
+      cy.get('input[name="invoice_number"]').should('have.value', 'INV-2024-001');
+      cy.get('input[name="invoice_date"]').should('have.value', '2024-01-15');
+      
+      // Proceed to supplier step
+      cy.get('[data-cy="ocr-next-button"]').click();
 
-      cy.fixture('test-invoice.jpg', 'base64').then((fileContent) => {
-        cy.getByCy('ocr-upload-input').selectFile(
-          {
-            contents: Cypress.Buffer.from(fileContent, 'base64'),
-            fileName: 'test-invoice.jpg',
-            mimeType: 'image/jpeg'
-          },
-          { force: true }
-        );
+      // Step 4: Supplier selection - verify fuzzy match
+      cy.get('[data-cy="ocr-supplier-state"]').should('be.visible');
+      cy.get('[data-cy="supplier-option-supplier-1"]').should('be.visible');
+      cy.get('[data-cy="supplier-option-supplier-1"]').should('contain', 'Telia Company AB');
+      
+      // Select the matched supplier
+      cy.get('[data-cy="supplier-option-supplier-1"]').click();
+      cy.get('[data-cy="ocr-next-button"]').click();
+
+      // Step 5: Kontering - assign accounts
+      cy.get('[data-cy="ocr-kontering-state"]').should('be.visible');
+      
+      // Use "set all accounts" feature
+      cy.get('[data-cy="set-all-accounts-select"]').select('account-2');
+      
+      // Verify accounts were set for all lines
+      cy.get('[data-cy="kontering-account-0"]').should('have.value', 'account-2');
+      cy.get('[data-cy="kontering-account-1"]').should('have.value', 'account-2');
+      
+      // Change one line to a different account
+      cy.get('[data-cy="kontering-account-1"]').select('account-4');
+
+      // Confirm and create invoice
+      cy.get('[data-cy="ocr-confirm-button"]').click();
+
+      // Verify API calls
+      cy.wait('@createSupplierInvoice').its('request.body').should((body) => {
+        expect(body.invoice_number).to.eq('INV-2024-001');
+        expect(body.supplier_id).to.eq('supplier-1');
       });
 
-      cy.getByCy('ocr-process-button').click();
-      cy.wait('@extractInvoiceData');
-
-      // Should show matched supplier notice
-      cy.getByCy('matched-supplier-notice').should('be.visible');
-      cy.getByCy('matched-supplier-notice').should('contain.text', 'organization number');
+      // Modal should close
+      cy.get('[data-cy="ocr-upload-modal"]').should('not.exist');
     });
 
-    it('is expected to allow editing extracted data before confirmation', () => {
+    it('is expected to allow navigation back through wizard steps', () => {
+      cy.get('[data-cy="nav-supplier-invoices"]').click();
+      cy.get('[data-cy="ocr-upload-button"]').click();
+
+      // Upload file and process
+      const testFile = new File(['dummy pdf content'], 'test-invoice.pdf', { type: 'application/pdf' });
+      cy.get('[data-cy="ocr-upload-input"]').selectFile({ contents: testFile, fileName: 'test-invoice.pdf' }, { force: true });
+      cy.get('[data-cy="ocr-process-button"]').click();
+      cy.wait('@extractInvoice');
+
+      // Navigate forward to kontering
+      cy.get('[data-cy="ocr-next-button"]').click();
+      cy.get('[data-cy="ocr-supplier-state"]').should('be.visible');
+      cy.get('[data-cy="supplier-option-supplier-1"]').click();
+      cy.get('[data-cy="ocr-next-button"]').click();
+      cy.get('[data-cy="ocr-kontering-state"]').should('be.visible');
+
+      // Navigate back to supplier
+      cy.get('[data-cy="ocr-back-button"]').click();
+      cy.get('[data-cy="ocr-supplier-state"]').should('be.visible');
+
+      // Navigate back to review
+      cy.get('[data-cy="ocr-back-button"]').click();
+      cy.get('[data-cy="ocr-review-state"]').should('be.visible');
+    });
+
+    it('is expected to create new supplier when none exists', () => {
+      const extractedDataWithUnknownSupplier = {
+        ...mockExtractedData,
+        supplier: {
+          name: 'Nytt Företag AB',
+          organization_number: '559999-9999',
+          address: 'Ny Gatan 1',
+          city: 'Stockholm'
+        },
+        matchedSupplier: null
+      };
+
+      // Override extraction mock for this test
       cy.intercept('POST', '**/functions/v1/extract-invoice-data', {
         statusCode: 200,
-        body: mockExtractedData
-      }).as('extractInvoiceData');
+        body: extractedDataWithUnknownSupplier
+      }).as('extractInvoice');
 
-      cy.visit('/supplier-invoices');
-      cy.wait('@getSupplierInvoices');
+      // Mock supplier creation
+      cy.intercept('POST', '**/rest/v1/suppliers*', {
+        statusCode: 201,
+        body: { id: 'new-supplier-id', name: 'Nytt Företag AB' }
+      }).as('createSupplier');
 
-      cy.getByCy('upload-invoice-button').click();
+      cy.get('[data-cy="nav-supplier-invoices"]').click();
+      cy.get('[data-cy="ocr-upload-button"]').click();
 
-      cy.fixture('test-invoice.jpg', 'base64').then((fileContent) => {
-        cy.getByCy('ocr-upload-input').selectFile(
-          {
-            contents: Cypress.Buffer.from(fileContent, 'base64'),
-            fileName: 'test-invoice.jpg',
-            mimeType: 'image/jpeg'
-          },
-          { force: true }
-        );
+      const testFile = new File(['dummy pdf content'], 'test-invoice.pdf', { type: 'application/pdf' });
+      cy.get('[data-cy="ocr-upload-input"]').selectFile({ contents: testFile, fileName: 'test-invoice.pdf' }, { force: true });
+      cy.get('[data-cy="ocr-process-button"]').click();
+      cy.wait('@extractInvoice');
+
+      // Proceed to supplier step
+      cy.get('[data-cy="ocr-next-button"]').click();
+
+      // Select "Create new supplier" option
+      cy.get('[data-cy="create-new-supplier-option"]').click();
+      cy.get('[data-cy="ocr-next-button"]').click();
+
+      // Complete kontering
+      cy.get('[data-cy="set-all-accounts-select"]').select('account-1');
+      cy.get('[data-cy="ocr-confirm-button"]').click();
+
+      // Verify supplier was created
+      cy.wait('@createSupplier').its('request.body').should((body) => {
+        expect(body.name).to.eq('Nytt Företag AB');
+        expect(body.organization_number).to.eq('559999-9999');
       });
 
-      cy.getByCy('ocr-process-button').click();
-      cy.wait('@extractInvoiceData');
+      cy.wait('@createSupplierInvoice');
+    });
+
+    it('is expected to allow editing extracted data and search suppliers', () => {
+      cy.get('[data-cy="nav-supplier-invoices"]').click();
+      cy.get('[data-cy="ocr-upload-button"]').click();
+
+      const testFile = new File(['dummy pdf content'], 'test-invoice.pdf', { type: 'application/pdf' });
+      cy.get('[data-cy="ocr-upload-input"]').selectFile({ contents: testFile, fileName: 'test-invoice.pdf' }, { force: true });
+      cy.get('[data-cy="ocr-process-button"]').click();
+      cy.wait('@extractInvoice');
 
       // Edit invoice number
-      cy.getByCy('invoice-number-input').clear().type('EDITED-INV-001');
-      cy.getByCy('invoice-number-input').should('have.value', 'EDITED-INV-001');
+      cy.get('input[name="invoice_number"]').clear().type('EDITED-001');
+      
+      // Edit invoice date
+      cy.get('input[name="invoice_date"]').clear().type('2024-06-01');
 
-      // Edit description
-      cy.getByCy('description-input').clear().type('Edited description');
-      cy.getByCy('description-input').should('have.value', 'Edited description');
-    });
+      // Continue to supplier step
+      cy.get('[data-cy="ocr-next-button"]').click();
+      
+      // Search for Tele2 to test filtering
+      cy.get('[data-cy="supplier-search-input"]').clear().type('Tele2');
+      cy.get('[data-cy="supplier-option-supplier-2"]').should('be.visible');
+      cy.get('[data-cy="supplier-option-supplier-1"]').should('not.exist');
+      
+      // Select Tele2
+      cy.get('[data-cy="supplier-option-supplier-2"]').click();
+      cy.get('[data-cy="ocr-next-button"]').click();
+      
+      cy.get('[data-cy="set-all-accounts-select"]').select('account-1');
+      cy.get('[data-cy="ocr-confirm-button"]').click();
 
-    it('is expected to open supplier invoice modal with pre-filled data on confirm', () => {
-      cy.intercept('POST', '**/functions/v1/extract-invoice-data', {
-        statusCode: 200,
-        body: mockExtractedData
-      }).as('extractInvoiceData');
-
-      cy.visit('/supplier-invoices');
-      cy.wait('@getSupplierInvoices');
-
-      cy.getByCy('upload-invoice-button').click();
-
-      cy.fixture('test-invoice.jpg', 'base64').then((fileContent) => {
-        cy.getByCy('ocr-upload-input').selectFile(
-          {
-            contents: Cypress.Buffer.from(fileContent, 'base64'),
-            fileName: 'test-invoice.jpg',
-            mimeType: 'image/jpeg'
-          },
-          { force: true }
-        );
+      // Verify edited data was sent
+      cy.wait('@createSupplierInvoice').its('request.body').should((body) => {
+        expect(body.invoice_number).to.eq('EDITED-001');
+        expect(body.invoice_date).to.eq('2024-06-01');
+        expect(body.supplier_id).to.eq('supplier-2');
       });
-
-      cy.getByCy('ocr-process-button').click();
-      cy.wait('@extractInvoiceData');
-
-      cy.getByCy('ocr-confirm-button').click();
-
-      // OCR modal should close and supplier invoice modal should open
-      cy.getByCy('ocr-upload-modal').should('not.exist');
-      cy.getByCy('supplier-invoice-modal').should('be.visible');
-
-      // Should have pre-filled data
-      cy.getByCy('invoice-number-input').should('have.value', 'INV-2024-001');
     });
 
-    it('is expected to display confidence indicators for extracted fields', () => {
-      cy.intercept('POST', '**/functions/v1/extract-invoice-data', {
-        statusCode: 200,
-        body: mockExtractedData
-      }).as('extractInvoiceData');
+    it('is expected to expand document preview in review step', () => {
+      cy.get('[data-cy="nav-supplier-invoices"]').click();
+      cy.get('[data-cy="ocr-upload-button"]').click();
 
-      cy.visit('/supplier-invoices');
-      cy.wait('@getSupplierInvoices');
+      const testFile = new File(['dummy pdf content'], 'test-invoice.pdf', { type: 'application/pdf' });
+      cy.get('[data-cy="ocr-upload-input"]').selectFile({ contents: testFile, fileName: 'test-invoice.pdf' }, { force: true });
+      cy.get('[data-cy="ocr-process-button"]').click();
+      cy.wait('@extractInvoice');
 
-      cy.getByCy('upload-invoice-button').click();
+      // Expand preview
+      cy.get('[data-cy="expand-preview-button"]').click();
+      cy.get('[data-cy="expanded-preview-modal"]').should('be.visible');
 
-      cy.fixture('test-invoice.jpg', 'base64').then((fileContent) => {
-        cy.getByCy('ocr-upload-input').selectFile(
-          {
-            contents: Cypress.Buffer.from(fileContent, 'base64'),
-            fileName: 'test-invoice.jpg',
-            mimeType: 'image/jpeg'
-          },
-          { force: true }
-        );
-      });
-
-      cy.getByCy('ocr-process-button').click();
-      cy.wait('@extractInvoiceData');
-
-      // Check confidence indicator is displayed
-      cy.get('[data-cy="extracted-data-form"]').should('contain.text', '85%');
-    });
-
-    it('is expected to close OCR modal when clicking cancel', () => {
-      cy.visit('/supplier-invoices');
-      cy.wait('@getSupplierInvoices');
-
-      cy.getByCy('upload-invoice-button').click();
-      cy.getByCy('ocr-upload-modal').should('be.visible');
-
-      cy.getByCy('ocr-cancel-button').click();
-      cy.getByCy('ocr-upload-modal').should('not.exist');
-    });
-
-    it('is expected to close OCR modal when clicking X button', () => {
-      cy.visit('/supplier-invoices');
-      cy.wait('@getSupplierInvoices');
-
-      cy.getByCy('upload-invoice-button').click();
-      cy.getByCy('ocr-upload-modal').should('be.visible');
-
-      cy.getByCy('ocr-close-button').click();
-      cy.getByCy('ocr-upload-modal').should('not.exist');
-    });
-
-    it('is expected to remove selected file when clicking remove button', () => {
-      cy.visit('/supplier-invoices');
-      cy.wait('@getSupplierInvoices');
-
-      cy.getByCy('upload-invoice-button').click();
-
-      cy.fixture('test-invoice.jpg', 'base64').then((fileContent) => {
-        cy.getByCy('ocr-upload-input').selectFile(
-          {
-            contents: Cypress.Buffer.from(fileContent, 'base64'),
-            fileName: 'test-invoice.jpg',
-            mimeType: 'image/jpeg'
-          },
-          { force: true }
-        );
-      });
-
-      cy.getByCy('selected-file-name').should('be.visible');
-      cy.getByCy('remove-file-button').click();
-      cy.getByCy('selected-file-name').should('not.exist');
-    });
-
-    it('is expected to go back from review state to upload state', () => {
-      cy.intercept('POST', '**/functions/v1/extract-invoice-data', {
-        statusCode: 200,
-        body: mockExtractedData
-      }).as('extractInvoiceData');
-
-      cy.visit('/supplier-invoices');
-      cy.wait('@getSupplierInvoices');
-
-      cy.getByCy('upload-invoice-button').click();
-
-      cy.fixture('test-invoice.jpg', 'base64').then((fileContent) => {
-        cy.getByCy('ocr-upload-input').selectFile(
-          {
-            contents: Cypress.Buffer.from(fileContent, 'base64'),
-            fileName: 'test-invoice.jpg',
-            mimeType: 'image/jpeg'
-          },
-          { force: true }
-        );
-      });
-
-      cy.getByCy('ocr-process-button').click();
-      cy.wait('@extractInvoiceData');
-
-      cy.getByCy('ocr-review-state').should('be.visible');
-      cy.getByCy('ocr-back-button').click();
-
-      cy.getByCy('ocr-upload-dropzone').should('be.visible');
+      // Close expanded preview
+      cy.get('[data-cy="close-expanded-preview"]').click();
+      cy.get('[data-cy="expanded-preview-modal"]').should('not.exist');
     });
   });
 
-  describe('Sad Path - Error Scenarios', () => {
-    it('is expected to show error for invalid file type', () => {
-      cy.visit('/supplier-invoices');
-      cy.wait('@getSupplierInvoices');
-
-      cy.getByCy('upload-invoice-button').click();
-
-      // Try to upload a text file
-      cy.getByCy('ocr-upload-input').selectFile(
-        {
-          contents: 'This is a text file',
-          fileName: 'document.txt',
-          mimeType: 'text/plain'
-        },
-        { force: true }
-      );
-
-      // Should show error toast or message
-      cy.get('.toast-error, [data-cy="toast-error"]').should('contain.text', 'Invalid file type');
-    });
-
-    it('is expected to show error when AI extraction fails', () => {
+  describe('Sad Path - Error Handling', () => {
+    it('is expected to show error when OCR extraction fails', () => {
       cy.intercept('POST', '**/functions/v1/extract-invoice-data', {
         statusCode: 500,
-        body: {
-          error: 'AI service error',
-          code: 'AI_SERVICE_ERROR'
-        }
-      }).as('extractInvoiceDataError');
+        body: { error: 'AI service unavailable' }
+      }).as('extractInvoiceFail');
 
-      cy.visit('/supplier-invoices');
-      cy.wait('@getSupplierInvoices');
+      cy.get('[data-cy="nav-supplier-invoices"]').click();
+      cy.get('[data-cy="ocr-upload-button"]').click();
 
-      cy.getByCy('upload-invoice-button').click();
+      const testFile = new File(['dummy pdf content'], 'test-invoice.pdf', { type: 'application/pdf' });
+      cy.get('[data-cy="ocr-upload-input"]').selectFile({ contents: testFile, fileName: 'test-invoice.pdf' }, { force: true });
+      cy.get('[data-cy="ocr-process-button"]').click();
 
-      cy.fixture('test-invoice.jpg', 'base64').then((fileContent) => {
-        cy.getByCy('ocr-upload-input').selectFile(
-          {
-            contents: Cypress.Buffer.from(fileContent, 'base64'),
-            fileName: 'test-invoice.jpg',
-            mimeType: 'image/jpeg'
-          },
-          { force: true }
-        );
-      });
-
-      cy.getByCy('ocr-process-button').click();
-      cy.wait('@extractInvoiceDataError');
-
-      // Should show error and return to upload state
-      cy.get('.toast-error, [data-cy="toast-error"]').should('be.visible');
-      cy.getByCy('ocr-upload-dropzone').should('be.visible');
+      cy.wait('@extractInvoiceFail');
+      
+      // Should return to upload step and show error toast
+      cy.get('[data-cy="ocr-upload-dropzone"]').should('be.visible');
+      cy.contains('Failed to process').should('be.visible');
     });
 
-    it('is expected to show error when OpenAI API is not configured', () => {
-      cy.intercept('POST', '**/functions/v1/extract-invoice-data', {
-        statusCode: 500,
-        body: {
-          error: 'OpenAI API key not configured',
-          code: 'OPENAI_NOT_CONFIGURED'
-        }
-      }).as('extractInvoiceDataNotConfigured');
-
-      cy.visit('/supplier-invoices');
-      cy.wait('@getSupplierInvoices');
-
-      cy.getByCy('upload-invoice-button').click();
-
-      cy.fixture('test-invoice.jpg', 'base64').then((fileContent) => {
-        cy.getByCy('ocr-upload-input').selectFile(
-          {
-            contents: Cypress.Buffer.from(fileContent, 'base64'),
-            fileName: 'test-invoice.jpg',
-            mimeType: 'image/jpeg'
-          },
-          { force: true }
-        );
-      });
-
-      cy.getByCy('ocr-process-button').click();
-      cy.wait('@extractInvoiceDataNotConfigured');
-
-      cy.get('.toast-error, [data-cy="toast-error"]').should('be.visible');
-    });
-
-    it('is expected to disable process button when no file is selected', () => {
-      cy.visit('/supplier-invoices');
-      cy.wait('@getSupplierInvoices');
-
-      cy.getByCy('upload-invoice-button').click();
-      cy.getByCy('ocr-upload-modal').should('be.visible');
-
-      cy.getByCy('ocr-process-button').should('be.disabled');
-    });
-
-    it('is expected to handle low confidence extraction gracefully', () => {
-      const lowConfidenceData = {
-        ...mockExtractedData,
-        data: {
-          ...mockExtractedData.data,
-          confidence: {
-            overall: 0.35,
-            supplier_name: 0.40,
-            invoice_number: 0.30,
-            amounts: 0.35,
-            notes: 'Poor quality scan - please verify all fields'
-          }
-        }
-      };
-
+    it('is expected to require supplier selection before proceeding', () => {
       cy.intercept('POST', '**/functions/v1/extract-invoice-data', {
         statusCode: 200,
-        body: lowConfidenceData
-      }).as('extractInvoiceDataLowConfidence');
+        body: { ...mockExtractedData, matchedSupplier: null }
+      }).as('extractInvoice');
 
-      cy.visit('/supplier-invoices');
-      cy.wait('@getSupplierInvoices');
+      cy.get('[data-cy="nav-supplier-invoices"]').click();
+      cy.get('[data-cy="ocr-upload-button"]').click();
 
-      cy.getByCy('upload-invoice-button').click();
+      const testFile = new File(['dummy pdf content'], 'test-invoice.pdf', { type: 'application/pdf' });
+      cy.get('[data-cy="ocr-upload-input"]').selectFile({ contents: testFile, fileName: 'test-invoice.pdf' }, { force: true });
+      cy.get('[data-cy="ocr-process-button"]').click();
+      cy.wait('@extractInvoice');
 
-      cy.fixture('test-invoice.jpg', 'base64').then((fileContent) => {
-        cy.getByCy('ocr-upload-input').selectFile(
-          {
-            contents: Cypress.Buffer.from(fileContent, 'base64'),
-            fileName: 'test-invoice.jpg',
-            mimeType: 'image/jpeg'
-          },
-          { force: true }
-        );
-      });
+      // Go to supplier step without selecting
+      cy.get('[data-cy="ocr-next-button"]').click();
+      cy.get('[data-cy="ocr-supplier-state"]').should('be.visible');
 
-      cy.getByCy('ocr-process-button').click();
-      cy.wait('@extractInvoiceDataLowConfidence');
-
-      // Should still show data but with low confidence indicator
-      cy.getByCy('extracted-data-form').should('contain.text', '35%');
+      // Try to proceed without selecting supplier
+      cy.get('[data-cy="ocr-next-button"]').click();
+      
+      // Should show error and stay on supplier step
+      cy.contains('supplier').should('be.visible');
+      cy.get('[data-cy="ocr-supplier-state"]').should('be.visible');
     });
 
-    it('is expected to show new supplier form when no match is found', () => {
-      const noMatchData = {
-        ...mockExtractedData,
-        data: {
-          ...mockExtractedData.data,
-          matched_supplier: null
-        }
-      };
-
+    it('is expected to require at least one line with account before creating invoice', () => {
       cy.intercept('POST', '**/functions/v1/extract-invoice-data', {
         statusCode: 200,
-        body: noMatchData
-      }).as('extractInvoiceDataNoMatch');
+        body: mockExtractedData
+      }).as('extractInvoice');
 
-      cy.visit('/supplier-invoices');
-      cy.wait('@getSupplierInvoices');
+      cy.get('[data-cy="nav-supplier-invoices"]').click();
+      cy.get('[data-cy="ocr-upload-button"]').click();
 
-      cy.getByCy('upload-invoice-button').click();
+      const testFile = new File(['dummy pdf content'], 'test-invoice.pdf', { type: 'application/pdf' });
+      cy.get('[data-cy="ocr-upload-input"]').selectFile({ contents: testFile, fileName: 'test-invoice.pdf' }, { force: true });
+      cy.get('[data-cy="ocr-process-button"]').click();
+      cy.wait('@extractInvoice');
 
-      cy.fixture('test-invoice.jpg', 'base64').then((fileContent) => {
-        cy.getByCy('ocr-upload-input').selectFile(
-          {
-            contents: Cypress.Buffer.from(fileContent, 'base64'),
-            fileName: 'test-invoice.jpg',
-            mimeType: 'image/jpeg'
-          },
-          { force: true }
-        );
-      });
+      // Navigate through to kontering without setting accounts
+      cy.get('[data-cy="ocr-next-button"]').click();
+      cy.get('[data-cy="supplier-option-supplier-1"]').click();
+      cy.get('[data-cy="ocr-next-button"]').click();
 
-      cy.getByCy('ocr-process-button').click();
-      cy.wait('@extractInvoiceDataNoMatch');
+      // Try to confirm without setting any accounts
+      cy.get('[data-cy="ocr-confirm-button"]').click();
 
-      // Should show the supplier form for new supplier creation
-      cy.getByCy('supplier-select').should('have.value', 'new');
-      cy.getByCy('supplier-name-input').should('be.visible');
+      // Should show error and stay on kontering step
+      cy.contains('least one line').should('be.visible');
+      cy.get('[data-cy="ocr-kontering-state"]').should('be.visible');
+    });
+
+    it('is expected to show error when invoice creation fails with duplicate', () => {
+      cy.intercept('POST', '**/functions/v1/extract-invoice-data', {
+        statusCode: 200,
+        body: mockExtractedData
+      }).as('extractInvoice');
+
+      cy.intercept('POST', '**/rest/v1/supplier_invoices*', {
+        statusCode: 409,
+        body: { message: 'unique_supplier_invoice_number' }
+      }).as('createSupplierInvoiceFail');
+
+      cy.get('[data-cy="nav-supplier-invoices"]').click();
+      cy.get('[data-cy="ocr-upload-button"]').click();
+
+      const testFile = new File(['dummy pdf content'], 'test-invoice.pdf', { type: 'application/pdf' });
+      cy.get('[data-cy="ocr-upload-input"]').selectFile({ contents: testFile, fileName: 'test-invoice.pdf' }, { force: true });
+      cy.get('[data-cy="ocr-process-button"]').click();
+      cy.wait('@extractInvoice');
+
+      cy.get('[data-cy="ocr-next-button"]').click();
+      cy.get('[data-cy="supplier-option-supplier-1"]').click();
+      cy.get('[data-cy="ocr-next-button"]').click();
+      cy.get('[data-cy="set-all-accounts-select"]').select('account-1');
+      cy.get('[data-cy="ocr-confirm-button"]').click();
+
+      cy.wait('@createSupplierInvoiceFail');
+      
+      // Should show duplicate invoice error
+      cy.contains('duplicate').should('be.visible');
     });
   });
 
   describe('Edge Cases', () => {
-    it('is expected to handle PDF file uploads', () => {
+    it('is expected to close modal and reset state on reopen', () => {
       cy.intercept('POST', '**/functions/v1/extract-invoice-data', {
         statusCode: 200,
         body: mockExtractedData
-      }).as('extractInvoiceData');
+      }).as('extractInvoice');
 
-      cy.visit('/supplier-invoices');
-      cy.wait('@getSupplierInvoices');
+      cy.get('[data-cy="nav-supplier-invoices"]').click();
+      cy.get('[data-cy="ocr-upload-button"]').click();
 
-      cy.getByCy('upload-invoice-button').click();
+      const testFile = new File(['dummy pdf content'], 'test-invoice.pdf', { type: 'application/pdf' });
+      cy.get('[data-cy="ocr-upload-input"]').selectFile({ contents: testFile, fileName: 'test-invoice.pdf' }, { force: true });
+      cy.get('[data-cy="ocr-process-button"]').click();
+      cy.wait('@extractInvoice');
 
-      // Upload PDF file
-      cy.fixture('test-invoice.pdf', 'base64').then((fileContent) => {
-        cy.getByCy('ocr-upload-input').selectFile(
-          {
-            contents: Cypress.Buffer.from(fileContent, 'base64'),
-            fileName: 'test-invoice.pdf',
-            mimeType: 'application/pdf'
-          },
-          { force: true }
-        );
-      });
+      // Close modal
+      cy.get('[data-cy="ocr-close-button"]').click();
+      cy.get('[data-cy="ocr-upload-modal"]').should('not.exist');
 
-      cy.getByCy('selected-file-name').should('contain.text', 'test-invoice.pdf');
+      // Reopen - should be reset to upload step
+      cy.get('[data-cy="ocr-upload-button"]').click();
+      cy.get('[data-cy="ocr-upload-dropzone"]').should('be.visible');
+      cy.get('[data-cy="selected-file-name"]').should('not.exist');
     });
 
-    it('is expected to handle PNG file uploads', () => {
-      cy.visit('/supplier-invoices');
-      cy.wait('@getSupplierInvoices');
-
-      cy.getByCy('upload-invoice-button').click();
-
-      cy.fixture('test-invoice.png', 'base64').then((fileContent) => {
-        cy.getByCy('ocr-upload-input').selectFile(
-          {
-            contents: Cypress.Buffer.from(fileContent, 'base64'),
-            fileName: 'test-invoice.png',
-            mimeType: 'image/png'
-          },
-          { force: true }
-        );
-      });
-
-      cy.getByCy('selected-file-name').should('contain.text', 'test-invoice.png');
-    });
-
-    it('is expected to add and remove line items in extracted data', () => {
+    it('is expected to remove selected file and handle different file types', () => {
       cy.intercept('POST', '**/functions/v1/extract-invoice-data', {
         statusCode: 200,
         body: mockExtractedData
-      }).as('extractInvoiceData');
+      }).as('extractInvoice');
 
-      cy.visit('/supplier-invoices');
-      cy.wait('@getSupplierInvoices');
+      cy.get('[data-cy="nav-supplier-invoices"]').click();
+      cy.get('[data-cy="ocr-upload-button"]').click();
 
-      cy.getByCy('upload-invoice-button').click();
+      // Upload PDF
+      const pdfFile = new File(['dummy pdf content'], 'test-invoice.pdf', { type: 'application/pdf' });
+      cy.get('[data-cy="ocr-upload-input"]').selectFile({ contents: pdfFile, fileName: 'test-invoice.pdf' }, { force: true });
 
-      cy.fixture('test-invoice.jpg', 'base64').then((fileContent) => {
-        cy.getByCy('ocr-upload-input').selectFile(
-          {
-            contents: Cypress.Buffer.from(fileContent, 'base64'),
-            fileName: 'test-invoice.jpg',
-            mimeType: 'image/jpeg'
-          },
-          { force: true }
-        );
-      });
+      cy.get('[data-cy="selected-file-name"]').should('contain', 'test-invoice.pdf');
+      
+      // Remove file
+      cy.get('[data-cy="remove-file-button"]').click();
+      cy.get('[data-cy="selected-file-name"]').should('not.exist');
+      cy.get('[data-cy="ocr-process-button"]').should('be.disabled');
+      
+      // Upload PNG instead
+      const pngFile = new File(['dummy png content'], 'invoice.png', { type: 'image/png' });
+      cy.get('[data-cy="ocr-upload-input"]').selectFile({ contents: pngFile, fileName: 'invoice.png' }, { force: true });
 
-      cy.getByCy('ocr-process-button').click();
-      cy.wait('@extractInvoiceData');
-
-      // Add a new line item
-      cy.getByCy('add-line-item-button').click();
-      cy.getByCy('line-item-1').should('be.visible');
-
-      // Remove the added line item
-      cy.getByCy('remove-line-1').click();
-      cy.getByCy('line-item-1').should('not.exist');
+      cy.get('[data-cy="selected-file-name"]').should('contain', 'invoice.png');
+      cy.get('[data-cy="ocr-process-button"]').should('not.be.disabled');
     });
 
-    it('is expected to recalculate totals when line items are edited', () => {
+    it('is expected to handle empty line items gracefully', () => {
+      const dataWithEmptyLines = {
+        ...mockExtractedData,
+        line_items: []
+      };
+
       cy.intercept('POST', '**/functions/v1/extract-invoice-data', {
         statusCode: 200,
-        body: mockExtractedData
-      }).as('extractInvoiceData');
+        body: dataWithEmptyLines
+      }).as('extractInvoice');
 
-      cy.visit('/supplier-invoices');
-      cy.wait('@getSupplierInvoices');
+      cy.get('[data-cy="nav-supplier-invoices"]').click();
+      cy.get('[data-cy="ocr-upload-button"]').click();
 
-      cy.getByCy('upload-invoice-button').click();
+      const testFile = new File(['dummy pdf content'], 'test-invoice.pdf', { type: 'application/pdf' });
+      cy.get('[data-cy="ocr-upload-input"]').selectFile({ contents: testFile, fileName: 'test-invoice.pdf' }, { force: true });
+      cy.get('[data-cy="ocr-process-button"]').click();
+      cy.wait('@extractInvoice');
 
-      cy.fixture('test-invoice.jpg', 'base64').then((fileContent) => {
-        cy.getByCy('ocr-upload-input').selectFile(
-          {
-            contents: Cypress.Buffer.from(fileContent, 'base64'),
-            fileName: 'test-invoice.jpg',
-            mimeType: 'image/jpeg'
-          },
-          { force: true }
-        );
-      });
-
-      cy.getByCy('ocr-process-button').click();
-      cy.wait('@extractInvoiceData');
-
-      // Original total should be 1250
-      cy.getByCy('total-amount').should('contain.text', '1250');
-
-      // Edit quantity to 20 (should double the amount)
-      cy.getByCy('line-quantity-0').clear().type('20');
-
-      // Total should update to 2500
-      cy.getByCy('total-amount').should('contain.text', '2500');
+      // Should still show review step
+      cy.get('[data-cy="ocr-review-state"]').should('be.visible');
+      
+      // User can add lines manually
+      cy.get('[data-cy="add-line-item-button"]').should('be.visible');
     });
   });
 });

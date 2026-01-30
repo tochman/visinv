@@ -244,7 +244,7 @@ export default function ExtractedDataForm({
     <div className="space-y-6" data-cy="extracted-data-form">
       {/* Overall Confidence */}
       {formData.confidence?.overall && (
-        <div className="p-3 bg-gray-50 dark:bg-gray-700/50 rounded-lg">
+        <div className="p-3 bg-gray-50 dark:bg-gray-700/50 rounded-sm">
           <div className="flex items-center justify-between">
             <span className="text-sm font-medium text-gray-700 dark:text-gray-300">
               {t('ocrUpload.overallConfidence')}
@@ -307,7 +307,7 @@ export default function ExtractedDataForm({
 
           {/* New supplier form */}
           {showSupplierForm && (
-            <div className="grid grid-cols-2 gap-3 mt-4 p-3 bg-gray-50 dark:bg-gray-700/30 rounded-lg">
+            <div className="grid grid-cols-2 gap-3 mt-4 p-3 bg-gray-50 dark:bg-gray-700/30 rounded-sm">
               <div className="col-span-2">
                 <EditableField
                   label={t('suppliers.name')}
@@ -423,7 +423,7 @@ export default function ExtractedDataForm({
           {formData.line_items.map((item, index) => (
             <div
               key={index}
-              className="p-3 bg-gray-50 dark:bg-gray-700/30 rounded-lg"
+              className="p-3 bg-gray-50 dark:bg-gray-700/30 rounded-sm"
               data-cy={`line-item-${index}`}
             >
               <div className="flex justify-between items-start mb-2">
@@ -532,7 +532,7 @@ export default function ExtractedDataForm({
         <h4 className="text-sm font-semibold text-gray-900 dark:text-white mb-3">
           {t('ocrUpload.totals')}
         </h4>
-        <div className="bg-gray-50 dark:bg-gray-700/30 rounded-lg p-4">
+        <div className="bg-gray-50 dark:bg-gray-700/30 rounded-sm p-4">
           <div className="flex items-center justify-between">
             <ConfidenceIndicator confidence={formData.confidence?.amounts || 0.5} showLabel />
           </div>

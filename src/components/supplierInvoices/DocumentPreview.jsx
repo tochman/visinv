@@ -83,7 +83,7 @@ export default function DocumentPreview({ preview, fileName, expanded = false, o
       <div
         ref={containerRef}
         className={`
-          relative overflow-auto rounded-lg border border-gray-200 dark:border-gray-700
+          relative overflow-auto rounded-sm border border-gray-200 dark:border-gray-700
           ${expanded ? 'max-h-[80vh]' : 'max-h-80'}
         `}
         data-cy="document-preview-image"
@@ -100,7 +100,7 @@ export default function DocumentPreview({ preview, fileName, expanded = false, o
         
         {/* Zoom controls */}
         {expanded && (
-          <div className="absolute bottom-4 right-4 flex space-x-2 bg-white dark:bg-gray-800 rounded-lg shadow-lg p-2">
+          <div className="absolute bottom-4 right-4 flex space-x-2 bg-white dark:bg-gray-800 rounded-sm shadow-lg p-2">
             <button
               onClick={() => handleZoom('out')}
               disabled={zoomLevel <= 0.5}
@@ -149,7 +149,7 @@ export default function DocumentPreview({ preview, fileName, expanded = false, o
       <div
         ref={containerRef}
         className={`
-          relative overflow-auto rounded-lg border border-gray-200 dark:border-gray-700
+          relative overflow-auto rounded-sm border border-gray-200 dark:border-gray-700
           ${expanded ? 'max-h-[80vh]' : 'max-h-80'}
         `}
         data-cy="document-preview-pdf"
@@ -177,7 +177,7 @@ export default function DocumentPreview({ preview, fileName, expanded = false, o
 
         {/* PDF Controls */}
         {pdfLoaded && totalPages > 1 && (
-          <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2 flex items-center space-x-4 bg-white dark:bg-gray-800 rounded-lg shadow-lg px-4 py-2">
+          <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2 flex items-center space-x-4 bg-white dark:bg-gray-800 rounded-sm shadow-lg px-4 py-2">
             <button
               onClick={() => {
                 const newPage = Math.max(1, pdfPage - 1);
@@ -212,7 +212,7 @@ export default function DocumentPreview({ preview, fileName, expanded = false, o
 
         {/* Zoom controls for expanded mode */}
         {expanded && pdfLoaded && (
-          <div className="absolute bottom-4 right-4 flex space-x-2 bg-white dark:bg-gray-800 rounded-lg shadow-lg p-2">
+          <div className="absolute bottom-4 right-4 flex space-x-2 bg-white dark:bg-gray-800 rounded-sm shadow-lg p-2">
             <button
               onClick={() => handleZoom('out')}
               disabled={zoomLevel <= 0.5}
@@ -270,7 +270,7 @@ export default function DocumentPreview({ preview, fileName, expanded = false, o
   // No preview available
   return (
     <div
-      className="flex items-center justify-center h-64 rounded-lg border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-900"
+      className="flex items-center justify-center h-64 rounded-sm border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-900"
       data-cy="document-preview-empty"
     >
       <div className="text-center">
