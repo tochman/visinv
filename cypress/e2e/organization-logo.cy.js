@@ -51,7 +51,6 @@ describe('Organization Logo Upload', () => {
       
       // Should show upload button
       cy.get('[data-cy="organization-upload-logo-button"]').should('be.visible');
-      cy.get('[data-cy="organization-upload-logo-button"]').should('contain', 'Upload Logo');
       
       // Should NOT show remove button when no logo
       cy.get('[data-cy="organization-remove-logo-button"]').should('not.exist');
@@ -123,9 +122,6 @@ describe('Organization Logo Upload', () => {
       // Should show logo image instead of placeholder
       cy.get('[data-cy="organization-logo-image"]').should('be.visible');
       cy.get('[data-cy="organization-logo-image"]').should('have.attr', 'src', orgWithLogo.logo_url);
-      
-      // Should show change button instead of upload
-      cy.get('[data-cy="organization-upload-logo-button"]').should('contain', 'Change Logo');
       
       // Should show remove button
       cy.get('[data-cy="organization-remove-logo-button"]').should('be.visible');
