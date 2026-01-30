@@ -402,8 +402,11 @@
     "errors": {
       "duplicateOrgNumber": "En leverantör med detta organisationsnummer finns redan",
       "nameRequired": "Leverantörsnamn krävs",
-      "noOrganization": "Ingen organisation vald"
-    }
+      "noOrganization": "Ingen organisation vald",
+      "hasInvoices": "Kan inte ta bort denna leverantör eftersom det finns befintliga fakturor. Ta bort eller flytta fakturorna först.",
+      "deleteFailed": "Kunde inte ta bort leverantör"
+    },
+    "showInactive": "Visa inaktiva leverantörer"
   },
   "supplierInvoices": {
     "title": "Leverantörsfakturor",

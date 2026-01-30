@@ -41,7 +41,8 @@ export default function Suppliers() {
       setDeleteConfirm(null);
     } catch (err) {
       console.error('Failed to delete supplier:', err);
-      // Error will be shown from Redux state
+      // Close the delete confirm modal on error
+      setDeleteConfirm(null);
     }
   };
 
@@ -112,7 +113,7 @@ export default function Suppliers() {
             data-cy="show-inactive-checkbox"
           />
           <label htmlFor="showInactive" className="text-sm text-gray-700 dark:text-gray-300">
-            Show inactive suppliers
+            {t('suppliers.showInactive')}
           </label>
         </div>
       </div>
@@ -120,7 +121,11 @@ export default function Suppliers() {
       {/* Error */}
       {error && (
         <div data-cy="suppliers-error" className="mb-6 p-4 bg-red-50 dark:bg-red-900/30 border border-red-200 dark:border-red-800 rounded-sm">
-          <p className="text-red-600 dark:text-red-400">{error}</p>
+          <p className="text-red-600 dark:text-red-400">
+            {error.includes('supplier_invoices') || error.includes('foreign key constraint')
+              ? t('suppliers.errors.hasInvoices')
+              : t('suppliers.errors.deleteFailed')}
+          </p>
         </div>
       )}
 

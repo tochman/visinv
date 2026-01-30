@@ -414,8 +414,11 @@
     "errors": {
       "duplicateOrgNumber": "A supplier with this organization number already exists",
       "nameRequired": "Supplier name is required",
-      "noOrganization": "No organization selected"
-    }
+      "noOrganization": "No organization selected",
+      "hasInvoices": "Cannot delete this supplier because they have existing invoices. Please delete or reassign the invoices first.",
+      "deleteFailed": "Failed to delete supplier"
+    },
+    "showInactive": "Show inactive suppliers"
   },
   "supplierInvoices": {
     "title": "Supplier Invoices",
