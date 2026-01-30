@@ -25,6 +25,8 @@ describe('Swedish Compliance - Mandatory Fields', () => {
   describe('US-061: Organization Mandatory Fields', () => {
     beforeEach(() => {
       cy.getByCy('sidebar-nav-settings').click();
+      // Click on Organization Settings tab (Profile is default)
+      cy.getByCy('tab-settings').click();
     });
 
     it('is expected to validate and show errors for empty required fields', () => {
@@ -160,11 +162,13 @@ describe('Swedish Compliance - Mandatory Fields', () => {
   describe('US-067: F-skatt Display - LEGAL REQUIREMENT', () => {
     it('is expected to show F-skatt status in organization settings', () => {
       cy.getByCy('sidebar-nav-settings').click();
+      cy.getByCy('tab-settings').click();
       cy.getByCy('org-f-skatt-approved').should('exist');
     });
 
     it('is expected to have F-skatt checkbox available for editing', () => {
       cy.getByCy('sidebar-nav-settings').click();
+      cy.getByCy('tab-settings').click();
       cy.getByCy('edit-organization').click();
       
       // Verify the F-skatt checkbox exists and can be interacted with
@@ -174,6 +178,7 @@ describe('Swedish Compliance - Mandatory Fields', () => {
 
     it('is expected to allow toggling F-skatt checkbox', () => {
       cy.getByCy('sidebar-nav-settings').click();
+      cy.getByCy('tab-settings').click();
       cy.getByCy('edit-organization').click();
       
       // Get initial state
@@ -190,6 +195,7 @@ describe('Swedish Compliance - Mandatory Fields', () => {
 
     it('is expected to include F-skatt in organization form structure', () => {
       cy.getByCy('sidebar-nav-settings').click();
+      cy.getByCy('tab-settings').click();
       cy.getByCy('edit-organization').click();
       
       // Verify F-skatt field is part of the organization settings
@@ -204,12 +210,14 @@ describe('Swedish Compliance - Mandatory Fields', () => {
       // This test verifies that migration 013 is applied
       // The database has NOT NULL constraints on mandatory fields
       cy.getByCy('sidebar-nav-settings').click();
+      cy.getByCy('tab-settings').click();
       // If we can view settings, the migration has been applied
       cy.getByCy('clients-page-title', { timeout: 1000 }).should('not.exist');
     });
 
     it('is expected to require all organization mandatory fields are filled', () => {
       cy.getByCy('sidebar-nav-settings').click();
+      cy.getByCy('tab-settings').click();
       cy.getByCy('edit-organization').click();
       
       // Verify all mandatory fields exist (they have validation from react-hook-form)

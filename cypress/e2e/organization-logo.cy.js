@@ -36,7 +36,6 @@ describe('Organization Logo Upload', () => {
 
     // Login and navigate to settings
     cy.login('admin');
-    cy.wait('@getClients');
     
     cy.visit('/settings');
     cy.wait('@getOrganizations');
