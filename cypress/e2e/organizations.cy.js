@@ -195,6 +195,13 @@ describe('Organization Management', () => {
 
   describe('Organization Settings Page', () => {
     beforeEach(() => {
+      cy.setupCommonIntercepts({
+        invoices: [],
+        clients: [],
+        products: [],
+        templates: []
+      });
+      
       cy.fixture('organizations').then((data) => {
         // Login with custom organization data
         cy.login('admin', { customOrganization: data.mockOrganization })
