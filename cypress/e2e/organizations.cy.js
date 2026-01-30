@@ -207,6 +207,9 @@ describe('Organization Management', () => {
         cy.login('admin', { customOrganization: data.mockOrganization })
         cy.getByCy('sidebar-nav-settings').click()
         
+        // Click on Organization Settings tab
+        cy.getByCy('tab-settings').click()
+        
         // Wait for page to load
         cy.getByCy('edit-organization', { timeout: 10000 }).should('be.visible')
       })
