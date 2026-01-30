@@ -642,7 +642,8 @@ describe("Invoice Management", () => {
         // Arrange
         cy.getByCy("sidebar-nav-settings").click();
         cy.url().should("include", "/settings");
-        cy.wait("@getOrganizations");
+        // Click on Organization Settings tab (Profile is default)
+        cy.getByCy("tab-settings").click();
         cy.getByCy("edit-organization").should("be.visible").click();
 
         // Wait for edit mode to stabilize
@@ -682,7 +683,8 @@ describe("Invoice Management", () => {
         // Arrange - Ensure automatic mode
         cy.getByCy("sidebar-nav-settings").click();
         cy.url().should("include", "/settings");
-        cy.wait("@getOrganizations");
+        // Click on Organization Settings tab (Profile is default)
+        cy.getByCy("tab-settings").click();
         cy.getByCy("edit-organization").should("be.visible").click();
 
         // Wait for edit mode to stabilize
