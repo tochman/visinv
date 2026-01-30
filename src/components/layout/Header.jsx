@@ -1,14 +1,14 @@
 import { useDispatch, useSelector } from 'react-redux';
 import { useTranslation } from 'react-i18next';
 import { signOut } from '../../features/auth/authSlice';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 import ThemeToggle from '../common/ThemeToggle';
 
 export default function Header() {
   const { t, i18n } = useTranslation();
   const dispatch = useDispatch();
   const navigate = useNavigate();
-  const { user } = useSelector((state) => state.auth);
+  const { user, profile } = useSelector((state) => state.auth);
 
   const handleSignOut = async () => {
     await dispatch(signOut());
@@ -37,9 +37,14 @@ export default function Header() {
           </button>
 
           <div className="flex items-center space-x-3">
-            <div className="text-right">
-              <p className="text-sm font-medium text-gray-900 dark:text-white">{user?.email}</p>
-            </div>
+            <Link 
+              to="/settings"
+              className="text-right hover:opacity-80 transition-opacity"
+            >
+              <p className="text-sm font-medium text-gray-900 dark:text-white">
+                {profile?.full_name || user?.email}
+              </p>
+            </Link>
             <button
               onClick={handleSignOut}
               className="px-4 py-2 text-sm font-medium text-white bg-red-600 hover:bg-red-700 rounded-sm"
