@@ -37,8 +37,8 @@ describe('US-401: Hierarchical Sidebar Navigation', () => {
     it('is expected to show section headers with toggle buttons', () => {
       cy.getByCy('nav-section-toggle-invoicing').should('be.visible');
       cy.getByCy('nav-section-toggle-accounting').should('be.visible');
-      cy.getByCy('nav-section-toggle-time-projects').should('be.visible');
-      cy.getByCy('nav-section-toggle-administration').should('be.visible');
+      cy.getByCy('nav-section-toggle-time-projects').scrollIntoView().should('be.visible');
+      cy.getByCy('nav-section-toggle-administration').scrollIntoView().should('be.visible');
     });
   });
 
@@ -93,8 +93,8 @@ describe('US-401: Hierarchical Sidebar Navigation', () => {
     it('is expected to contain accounts and SIE import links', () => {
       // Accounting section is auto-expanded via localStorage set in cy.login()
       cy.getByCy('nav-section-content-accounting').should('be.visible');
-      cy.getByCy('sidebar-nav-accounts').should('be.visible');
-      cy.get('[data-cy="sidebar-nav-import/sie"]').should('be.visible');
+      cy.getByCy('sidebar-nav-accounts').scrollIntoView().should('be.visible');
+      cy.get('[data-cy="sidebar-nav-import/sie"]').scrollIntoView().should('be.visible');
     });
 
     it('is expected to show "Coming Soon" message for Time & Projects section', () => {
@@ -112,12 +112,12 @@ describe('US-401: Hierarchical Sidebar Navigation', () => {
       });
 
       it('is expected to be expanded by default', () => {
-        cy.getByCy('nav-section-content-administration').should('be.visible');
+        cy.getByCy('nav-section-content-administration').scrollIntoView().should('be.visible');
       });
 
       it('is expected to contain settings and teams links', () => {
-        cy.getByCy('sidebar-nav-settings').should('be.visible');
-        cy.getByCy('sidebar-nav-teams').should('be.visible');
+        cy.getByCy('sidebar-nav-settings').scrollIntoView().should('be.visible');
+        cy.getByCy('sidebar-nav-teams').scrollIntoView().should('be.visible');
       });
 
       it('is expected to not show admin link for non-admin users', () => {

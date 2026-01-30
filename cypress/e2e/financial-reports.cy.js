@@ -379,8 +379,8 @@ describe('Financial Reports', () => {
         cy.getByCy('show-details').should('not.be.checked')
       })
 
-      it('is expected to display print button', () => {
-        cy.getByCy('print-btn').should('be.visible')
+      it('is expected to display export PDF button', () => {
+        cy.getByCy('export-pdf-btn').should('be.visible')
       })
     })
 
@@ -596,8 +596,8 @@ describe('Financial Reports', () => {
         cy.getByCy('show-details').should('not.be.checked')
       })
 
-      it('is expected to display print button', () => {
-        cy.getByCy('print-btn').should('be.visible')
+      it('is expected to display export PDF button', () => {
+        cy.getByCy('export-pdf-btn').should('be.visible')
       })
     })
 
@@ -803,8 +803,9 @@ describe('Financial Reports', () => {
 
     /**
      * Setup intercepts for VAT report tests
+     * @param {Array} journalEntryLines - Optional mock journal entry lines for VAT calculation
      */
-    const setupVatReportIntercepts = () => {
+    const setupVatReportIntercepts = (journalEntryLines = []) => {
       cy.intercept('GET', '**/rest/v1/fiscal_years*', {
         statusCode: 200,
         body: [testFiscalYear, previousFiscalYear]
@@ -812,8 +813,72 @@ describe('Financial Reports', () => {
 
       cy.intercept('GET', '**/rest/v1/journal_entry_lines*', {
         statusCode: 200,
-        body: []
+        body: journalEntryLines
       }).as('getJournalEntryLines')
+    }
+
+    /**
+     * Create mock journal entry lines that produce a specific VAT result
+     * @param {number} outputVat25 - Output VAT at 25% (credit - debit for account 2610)
+     * @param {number} inputVatDeductible - Input VAT deductible (debit - credit for account 2640)
+     * @returns {Array} Journal entry lines
+     */
+    const createMockVatLines = (outputVat25, inputVatDeductible) => {
+      const lines = []
+      
+      if (outputVat25 !== 0) {
+        lines.push({
+          id: 'line-output-1',
+          account_id: 'acc-2610',
+          debit_amount: 0,
+          credit_amount: outputVat25,
+          description: 'Output VAT 25%',
+          account: {
+            id: 'acc-2610',
+            account_number: '2610',
+            name: 'Utgående moms 25%',
+            name_en: 'Output VAT 25%',
+            account_type: 'liability'
+          },
+          journal_entry: {
+            id: 'je-1',
+            organization_id: 'test-org-id',
+            fiscal_year_id: 'fy-1',
+            entry_date: '2025-02-15',
+            verification_number: 'V001',
+            description: 'Test entry',
+            status: 'posted'
+          }
+        })
+      }
+      
+      if (inputVatDeductible !== 0) {
+        lines.push({
+          id: 'line-input-1',
+          account_id: 'acc-2640',
+          debit_amount: inputVatDeductible,
+          credit_amount: 0,
+          description: 'Input VAT deductible',
+          account: {
+            id: 'acc-2640',
+            account_number: '2640',
+            name: 'Ingående moms',
+            name_en: 'Input VAT',
+            account_type: 'asset'
+          },
+          journal_entry: {
+            id: 'je-2',
+            organization_id: 'test-org-id',
+            fiscal_year_id: 'fy-1',
+            entry_date: '2025-02-15',
+            verification_number: 'V002',
+            description: 'Test purchase',
+            status: 'posted'
+          }
+        })
+      }
+      
+      return lines
     }
 
     describe('Navigation', () => {
@@ -871,8 +936,8 @@ describe('Financial Reports', () => {
         cy.getByCy('show-transactions').should('not.be.checked')
       })
 
-      it('is expected to display print button', () => {
-        cy.getByCy('print-btn').should('be.visible')
+      it('is expected to display export PDF button', () => {
+        cy.getByCy('export-pdf-btn').should('be.visible')
       })
     })
 
@@ -993,48 +1058,29 @@ describe('Financial Reports', () => {
     })
 
     describe('VAT Calculation Scenarios', () => {
-      beforeEach(() => {
-        setupVatReportIntercepts()
+      it('is expected to show VAT payable when output exceeds input', () => {
+        // Create mock lines: Output VAT 50000, Input VAT 20000 -> Net VAT = 30000 (payable)
+        const mockLines = createMockVatLines(50000, 20000)
+        setupVatReportIntercepts(mockLines)
+        
         cy.get('[data-cy="sidebar-nav-reports/vat-report"]').click()
         cy.wait('@getFiscalYears')
-      })
-
-      it('is expected to show VAT payable when output exceeds input', () => {
-        const payableData = {
-          ...mockVatReportData,
-          outputVat: { ...mockVatReportData.outputVat, total: 50000 },
-          inputVat: { ...mockVatReportData.inputVat, total: 20000 },
-          netVat: 30000
-        }
-
-        cy.window().then((win) => {
-          win.store.dispatch({
-            type: 'financialReports/fetchVatReport/fulfilled',
-            payload: payableData,
-            meta: { arg: { startDate: '2025-01-01', endDate: '2025-03-31' } }
-          })
-        })
+        cy.wait('@getJournalEntryLines')
 
         cy.getByCy('net-vat-row').scrollIntoView().should('exist')
         cy.contains(/VAT Payable|Moms att betala/i).should('exist')
       })
 
       it('is expected to show VAT receivable when input exceeds output', () => {
-        const receivableData = {
-          ...mockVatReportData,
-          outputVat: { ...mockVatReportData.outputVat, total: 10000 },
-          inputVat: { ...mockVatReportData.inputVat, total: 25000 },
-          netVat: -15000
-        }
+        // Create mock lines: Output VAT 10000, Input VAT 25000 -> Net VAT = -15000 (receivable)
+        const mockLines = createMockVatLines(10000, 25000)
+        setupVatReportIntercepts(mockLines)
+        
+        cy.get('[data-cy="sidebar-nav-reports/vat-report"]').click()
+        cy.wait('@getFiscalYears')
+        cy.wait('@getJournalEntryLines')
 
-        cy.window().then((win) => {
-          win.store.dispatch({
-            type: 'financialReports/fetchVatReport/fulfilled',
-            payload: receivableData,
-            meta: { arg: { startDate: '2025-01-01', endDate: '2025-03-31' } }
-          })
-        })
-
+        // The component should show "VAT Receivable" (en) or "Moms att få tillbaka" (sv) when netVat < 0
         cy.getByCy('net-vat-row').scrollIntoView().should('exist')
         cy.contains(/VAT Receivable|Moms att få tillbaka/i).should('exist')
       })

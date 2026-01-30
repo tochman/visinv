@@ -169,7 +169,7 @@ describe('General Ledger (US-220)', () => {
     })
 
     it('is expected to have General Ledger link in Accounting section of sidebar', () => {
-      cy.get('[data-cy="sidebar-nav-general-ledger"]').should('be.visible')
+      cy.get('[data-cy="sidebar-nav-general-ledger"]').scrollIntoView().should('be.visible')
     })
 
     it('is expected to navigate to /general-ledger route', () => {

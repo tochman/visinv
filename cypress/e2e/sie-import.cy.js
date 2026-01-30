@@ -67,7 +67,7 @@ describe('SIE File Import (US-122)', () => {
     it('is expected to have SIE Import link in Accounting section of sidebar', () => {
       // The SIE Import link is in the Accounting section
       // data-cy is sidebar-nav-import/sie due to path /import/sie
-      cy.get('[data-cy="sidebar-nav-import/sie"]').should('be.visible')
+      cy.get('[data-cy="sidebar-nav-import/sie"]').scrollIntoView().should('be.visible')
     })
 
     it('is expected to navigate to /import/sie route', () => {
@@ -178,10 +178,18 @@ describe('SIE File Import (US-122)', () => {
         body: {}
       }).as('updateJournalEntry')
 
+      // Navigate to dashboard first to clear any state, then back to SIE import
+      cy.getByCy('sidebar-nav-dashboard').click()
+      cy.get('[data-cy="sidebar-nav-import/sie"]').scrollIntoView().click()
+      cy.getByCy('sie-drop-zone', { timeout: 10000 }).should('be.visible')
+
       uploadSIEFile(sampleSIE4, 'test-accounts.se')
       cy.getByCy('parse-file-button').should('not.be.disabled').click()
       cy.getByCy('proceed-to-preview-button').click()
       cy.getByCy('import-button').click()
+
+      // Wait for the import API calls to complete
+      cy.wait('@importAccounts')
 
       // Check for successful import result with increased timeout
       cy.getByCy('import-accounts-result', { timeout: 15000 }).should('contain', '5 accounts imported')
@@ -631,6 +639,7 @@ INVALID CONTENT HERE
     })
 
     it('is expected to import fiscal years successfully', () => {
+      // Set up intercepts BEFORE any actions
       cy.intercept('GET', '**/rest/v1/accounts?select=account_number*', {
         statusCode: 200,
         body: []
@@ -654,7 +663,7 @@ INVALID CONTENT HERE
       }).as('importFiscalYears')
 
       // Mock accounts fetch for opening balance import
-      cy.intercept('GET', '**/rest/v1/accounts*', {
+      cy.intercept('GET', '**/rest/v1/accounts?*order=*', {
         statusCode: 200,
         body: []
       }).as('getAccountsForOB')
@@ -665,6 +674,12 @@ INVALID CONTENT HERE
         body: []
       }).as('importJournalEntries')
 
+      // Navigate to dashboard first to clear any state, then back to SIE import
+      cy.getByCy('sidebar-nav-dashboard').click()
+      cy.get('[data-cy="sidebar-nav-import/sie"]').scrollIntoView().click()
+      cy.getByCy('sie-drop-zone', { timeout: 10000 }).should('be.visible')
+
+      // Now do the user actions
       uploadSIEFile(sieWithFiscalYears, 'test-fiscal-years.se')
       cy.getByCy('parse-file-button').click()
       cy.getByCy('proceed-to-preview-button').click()
@@ -672,7 +687,13 @@ INVALID CONTENT HERE
       // Wait for preview step to be ready before clicking import
       cy.getByCy('preview-step-ready', { timeout: 10000 }).should('exist')
       
+      // Verify fiscal years checkbox is checked before import
+      cy.getByCy('import-fiscal-years-checkbox').should('be.checked')
+      
       cy.getByCy('import-button').click()
+
+      // Wait for the fiscal years import call
+      cy.wait('@importFiscalYears')
 
       cy.getByCy('import-fiscal-years-result', { timeout: 15000 }).should('be.visible')
     })
@@ -803,6 +824,11 @@ INVALID CONTENT HERE
         statusCode: 200,
         body: {}
       }).as('updateJournalEntry')
+
+      // Navigate to dashboard first to clear any state, then back to SIE import
+      cy.getByCy('sidebar-nav-dashboard').click()
+      cy.get('[data-cy="sidebar-nav-import/sie"]').scrollIntoView().click()
+      cy.getByCy('sie-drop-zone', { timeout: 10000 }).should('be.visible')
 
       uploadSIEFile(sieWithJournalEntries, 'test-vouchers.se')
       cy.getByCy('parse-file-button').click()
@@ -977,6 +1003,11 @@ INVALID CONTENT HERE
         statusCode: 200,
         body: 1
       }).as('getVerificationNumber')
+
+      // Navigate to dashboard first to clear any state, then back to SIE import
+      cy.getByCy('sidebar-nav-dashboard').click()
+      cy.get('[data-cy="sidebar-nav-import/sie"]').scrollIntoView().click()
+      cy.getByCy('sie-drop-zone', { timeout: 10000 }).should('be.visible')
 
       uploadSIEFile(sieWithMissingFiscalYear, 'test-missing-fy.se')
       cy.getByCy('parse-file-button').click()
