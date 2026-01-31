@@ -1,10 +1,12 @@
 import { BaseResource } from './BaseResource';
 import { uploadLogo, deleteLogo } from '../storage';
+import { OrganizationEmailSlugHistory } from './OrganizationEmailSlugHistory';
 
 /**
  * Organization Resource
  * Handles all organization-related data operations
  * US-053: Organization Logo Upload
+ * US-264a: Organization Email Slug Management
  */
 class OrganizationResource extends BaseResource {
   constructor() {
@@ -310,6 +312,62 @@ class OrganizationResource extends BaseResource {
     // https://xxx.supabase.co/storage/v1/object/public/logos/user-id/logo.jpg
     const match = url.match(/\/logos\/(.*)/);
     return match ? match[1] : null;
+  }
+
+  /**
+   * Update organization email slug
+   * US-264a: Organization Email Slug Management
+   * @param {string} orgId - Organization ID
+   * @param {string} newSlug - New email slug
+   * @returns {Promise<{data: Object|null, error: Error|null}>}
+   */
+  async updateEmailSlug(orgId, newSlug) {
+    const { user, error: authError } = await this.getCurrentUser();
+    if (authError || !user) {
+      return { data: null, error: authError || new Error('Not authenticated') };
+    }
+
+    // Validate slug format
+    const validation = OrganizationEmailSlugHistory.validateSlugFormat(newSlug);
+    if (!validation.valid) {
+      return { data: null, error: new Error(validation.error) };
+    }
+
+    // Check if slug is available
+    const { available, error: availabilityError } = await OrganizationEmailSlugHistory.isSlugAvailable(newSlug, orgId);
+    if (availabilityError) {
+      return { data: null, error: availabilityError };
+    }
+    if (!available) {
+      return { data: null, error: new Error('This email address is already in use') };
+    }
+
+    // Update the organization (trigger will handle history)
+    const { data, error } = await this.update(orgId, {
+      email_slug: newSlug
+    });
+
+    return { data, error };
+  }
+
+  /**
+   * Get email slug history for an organization
+   * US-264a: Organization Email Slug Management
+   * @param {string} orgId - Organization ID
+   * @returns {Promise<{data: Array|null, error: Error|null}>}
+   */
+  async getEmailSlugHistory(orgId) {
+    return OrganizationEmailSlugHistory.getByOrganization(orgId);
+  }
+
+  /**
+   * Generate a suggested email slug from organization name
+   * US-264a: Organization Email Slug Management
+   * @param {string} name - Organization name
+   * @returns {string} - Suggested slug
+   */
+  generateEmailSlug(name) {
+    return OrganizationEmailSlugHistory.generateSlug(name);
   }
 }
 

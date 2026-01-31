@@ -696,7 +696,46 @@
     "noOrganization": "Ingen organisation hittades. Vänligen skapa en för att komma igång.",
     "noMembers": "Inga medlemmar hittades.",
     "saved": "Organisationen har sparats.",
-    "requiredForInvoices": "Organisationsinformation krävs för att skapa fakturor."
+    "requiredForInvoices": "Organisationsinformation krävs för att skapa fakturor.",
+    "emailSlug": {
+      "title": "E-post för leverantörsfakturor",
+      "description": "Ta emot leverantörsfakturor direkt via e-post. Dela denna adress med dina leverantörer för att deras fakturor automatiskt ska läggas till i din inkorg.",
+      "currentAddress": "Din e-postadress",
+      "notConfigured": "E-postadress ej konfigurerad",
+      "infoText": "Leverantörer kan skicka fakturor till denna adress. Fakturorna visas i din leverantörsfaktura-inkorg för behandling.",
+      "previousAddresses": "Tidigare adresser (fortfarande aktiva)",
+      "stillActive": "fortfarande aktiv",
+      "historyNote": "Tidigare e-postadresser förblir aktiva och vidarebefordrar fakturor till din organisation.",
+      "changeTitle": "Ändra e-postadress",
+      "newSlug": "Nytt adressprefix",
+      "slugPlaceholder": "foretagsnamn",
+      "generate": "Generera",
+      "preview": "Förhandsgranskning",
+      "available": "Denna adress är tillgänglig",
+      "oldAddress": "Nuvarande adress",
+      "newAddress": "Ny adress",
+      "confirmTitle": "Vänligen bekräfta",
+      "confirmWarning1": "Din primära e-postadress kommer att ändras",
+      "confirmWarning2": "Den gamla adressen förblir aktiv och vidarebefordrar fakturor",
+      "confirmWarning3": "Vi rekommenderar att du meddelar dina leverantörer om den nya adressen",
+      "confirmButton": "Ändra adress",
+      "rules": {
+        "title": "Adresskrav:",
+        "lowercase": "Endast gemener (a-z)",
+        "length": "3-50 tecken",
+        "characters": "Endast bokstäver, siffror och understreck"
+      },
+      "errors": {
+        "Slug cannot be empty": "Adressprefix kan inte vara tomt",
+        "Slug must be at least 3 characters": "Adressen måste vara minst 3 tecken",
+        "Slug cannot exceed 50 characters": "Adressen kan inte överstiga 50 tecken",
+        "Slug can only contain lowercase letters, numbers, and underscores": "Endast gemener, siffror och understreck tillåtna",
+        "Slug cannot start or end with an underscore": "Kan inte börja eller sluta med understreck",
+        "Slug cannot contain consecutive underscores": "Kan inte innehålla upprepade understreck",
+        "notAvailable": "Denna adress används redan",
+        "checkFailed": "Kunde inte verifiera tillgänglighet"
+      }
+    }
   },
   "proficiency": {
     "title": "Erfarenhetsnivå",
@@ -775,7 +814,10 @@
     "more": "till",
     "close": "Stäng",
     "submitting": "Skickar...",
-    "all": "Alla"
+    "all": "Alla",
+    "copy": "Kopiera",
+    "copied": "Kopierat!",
+    "continue": "Fortsätt"
   },
   "profile": {
     "title": "Profilinställningar",

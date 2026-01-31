@@ -708,7 +708,46 @@
     "noOrganization": "No organization found. Please create one to get started.",
     "noMembers": "No members found.",
     "saved": "Organization saved successfully.",
-    "requiredForInvoices": "Organization information is required to create invoices."
+    "requiredForInvoices": "Organization information is required to create invoices.",
+    "emailSlug": {
+      "title": "Supplier Invoice Email",
+      "description": "Receive supplier invoices directly via email. Share this address with your suppliers to have their invoices automatically added to your inbox.",
+      "currentAddress": "Your email address",
+      "notConfigured": "Email address not configured",
+      "infoText": "Suppliers can send invoices to this address. The invoices will appear in your Supplier Invoice Inbox for processing.",
+      "previousAddresses": "Previous addresses (still active)",
+      "stillActive": "still active",
+      "historyNote": "Previous email addresses remain active and will forward invoices to your organization.",
+      "changeTitle": "Change Email Address",
+      "newSlug": "New address prefix",
+      "slugPlaceholder": "company_name",
+      "generate": "Generate",
+      "preview": "Preview",
+      "available": "This address is available",
+      "oldAddress": "Current address",
+      "newAddress": "New address",
+      "confirmTitle": "Please confirm",
+      "confirmWarning1": "Your primary email address will change",
+      "confirmWarning2": "The old address will remain active and forward invoices",
+      "confirmWarning3": "We recommend notifying your suppliers of the new address",
+      "confirmButton": "Change Address",
+      "rules": {
+        "title": "Address requirements:",
+        "lowercase": "Lowercase letters only (a-z)",
+        "length": "3-50 characters",
+        "characters": "Letters, numbers, and underscores only"
+      },
+      "errors": {
+        "Slug cannot be empty": "Address prefix cannot be empty",
+        "Slug must be at least 3 characters": "Address must be at least 3 characters",
+        "Slug cannot exceed 50 characters": "Address cannot exceed 50 characters",
+        "Slug can only contain lowercase letters, numbers, and underscores": "Only lowercase letters, numbers, and underscores allowed",
+        "Slug cannot start or end with an underscore": "Cannot start or end with an underscore",
+        "Slug cannot contain consecutive underscores": "Cannot contain consecutive underscores",
+        "notAvailable": "This address is already in use",
+        "checkFailed": "Could not verify availability"
+      }
+    }
   },
   "proficiency": {
     "title": "Experience Level",
@@ -787,7 +826,10 @@
     "more": "more",
     "close": "Close",
     "submitting": "Submitting...",
-    "all": "All"
+    "all": "All",
+    "copy": "Copy",
+    "copied": "Copied!",
+    "continue": "Continue"
   },
   "profile": {
     "title": "Profile Settings",

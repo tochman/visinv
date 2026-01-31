@@ -10,6 +10,7 @@ export { Invite } from './Invite';
 export { JournalEntry } from './JournalEntry';
 export { JournalEntryTemplate } from './JournalEntryTemplate';
 export { Organization } from './Organization';
+export { OrganizationEmailSlugHistory } from './OrganizationEmailSlugHistory';
 export { Payment } from './Payment';
 export { Product } from './Product';
 export { ProductPrice } from './ProductPrice';

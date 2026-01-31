@@ -42,7 +42,8 @@ const users = {
       bank_iban: 'SE1234567890123456789012',
       invoice_numbering_mode: 'auto',
       invoice_prefix: 'INV-',
-      next_invoice_number: 1
+      next_invoice_number: 1,
+      email_slug: 'test_premium_organization_ab'
     }
   },
   visitor: null
@@ -125,6 +126,7 @@ Cypress.Commands.add('login', (userType = 'user', options = {}) => {
       city: '',
       postal_code: '',
       email: '',
+      email_slug: 'test_organization',
       created_by: userData.id,
       created_at: new Date().toISOString(),
       updated_at: new Date().toISOString()

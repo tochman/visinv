@@ -73,12 +73,40 @@ export const deleteOrganization = createAsyncThunk(
   }
 );
 
+/**
+ * Update organization email slug
+ * US-264a: Organization Email Slug Management
+ */
+export const updateEmailSlug = createAsyncThunk(
+  'organizations/updateEmailSlug',
+  async ({ id, slug }, { rejectWithValue }) => {
+    const { data, error } = await Organization.updateEmailSlug(id, slug);
+    if (error) return rejectWithValue(error.message);
+    return { id, email_slug: slug };
+  }
+);
+
+/**
+ * Fetch email slug history for an organization
+ * US-264a: Organization Email Slug Management
+ */
+export const fetchEmailSlugHistory = createAsyncThunk(
+  'organizations/fetchEmailSlugHistory',
+  async (organizationId, { rejectWithValue }) => {
+    const { data, error } = await Organization.getEmailSlugHistory(organizationId);
+    if (error) return rejectWithValue(error.message);
+    return { organizationId, history: data };
+  }
+);
+
 const organizationsSlice = createSlice({
   name: 'organizations',
   initialState: {
     items: [],
     currentOrganization: null,
+    emailSlugHistory: [],
     loading: false,
+    slugHistoryLoading: false,
     error: null,
   },
   reducers: {
@@ -87,6 +115,9 @@ const organizationsSlice = createSlice({
     },
     clearError: (state) => {
       state.error = null;
+    },
+    clearEmailSlugHistory: (state) => {
+      state.emailSlugHistory = [];
     },
   },
   extraReducers: (builder) => {
@@ -155,9 +186,33 @@ const organizationsSlice = createSlice({
         if (state.currentOrganization?.id === action.payload) {
           state.currentOrganization = null;
         }
+      })
+      
+      // Update email slug
+      .addCase(updateEmailSlug.fulfilled, (state, action) => {
+        const index = state.items.findIndex(org => org.id === action.payload.id);
+        if (index !== -1) {
+          state.items[index] = { ...state.items[index], email_slug: action.payload.email_slug };
+        }
+        if (state.currentOrganization?.id === action.payload.id) {
+          state.currentOrganization = { ...state.currentOrganization, email_slug: action.payload.email_slug };
+        }
+      })
+      
+      // Fetch email slug history
+      .addCase(fetchEmailSlugHistory.pending, (state) => {
+        state.slugHistoryLoading = true;
+      })
+      .addCase(fetchEmailSlugHistory.fulfilled, (state, action) => {
+        state.slugHistoryLoading = false;
+        state.emailSlugHistory = action.payload.history || [];
+      })
+      .addCase(fetchEmailSlugHistory.rejected, (state) => {
+        state.slugHistoryLoading = false;
+        state.emailSlugHistory = [];
       });
   },
 });
 
-export const { setCurrentOrganization, clearError } = organizationsSlice.actions;
+export const { setCurrentOrganization, clearError, clearEmailSlugHistory } = organizationsSlice.actions;
 export default organizationsSlice.reducer;

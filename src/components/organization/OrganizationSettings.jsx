@@ -4,6 +4,7 @@ import { useForm } from 'react-hook-form';
 import { useOrganization } from '../../contexts/OrganizationContext';
 import { Organization } from '../../services/resources/Organization';
 import { ArrowUpTrayIcon, TrashIcon } from '@heroicons/react/24/outline';
+import EmailSlugSettings from './EmailSlugSettings';
 
 export default function OrganizationSettings() {
   const { t } = useTranslation();
@@ -668,6 +669,14 @@ export default function OrganizationSettings() {
           </div>
         </div>
       </form>
+
+      {/* Email Slug Settings - Outside the form */}
+      <div className="bg-white dark:bg-gray-800 rounded-sm shadow dark:shadow-gray-900/20 p-4 sm:p-6 mt-6">
+        <EmailSlugSettings 
+          organization={currentOrganization} 
+          onSlugUpdated={refreshOrganizations}
+        />
+      </div>
     </div>
   );
 }
