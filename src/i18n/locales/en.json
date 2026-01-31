@@ -1663,16 +1663,18 @@
       }
     },
     "footer": {
-      "description": "Professional invoice and accounting software built for Swedish businesses.",
+      "tagline": "Professional invoice and accounting management for Swedish businesses",
       "product": "Product",
       "features": "Features",
       "pricing": "Pricing",
+      "getStarted": "Get started free",
       "company": "Company",
+      "about": "About us",
+      "contact": "Contact",
+      "legal": "Legal",
       "privacy": "Privacy Policy",
       "terms": "Terms of Service",
-      "contact": "Contact",
-      "email": "Email",
-      "rights": "All rights reserved."
+      "communitasNote": "Svethna is a SaaS service created and operated by"
     }
   }
 }

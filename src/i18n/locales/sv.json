@@ -1645,16 +1645,18 @@
       }
     },
     "footer": {
-      "description": "Professionell faktura- och bokföringsprogramvara byggd för svenska företag.",
+      "tagline": "Professionell faktura- och bokföringshantering för svenska företag",
       "product": "Produkt",
       "features": "Funktioner",
       "pricing": "Priser",
+      "getStarted": "Kom igång gratis",
       "company": "Företag",
+      "about": "Om oss",
+      "contact": "Kontakt",
+      "legal": "Juridiskt",
       "privacy": "Integritetspolicy",
       "terms": "Användarvillkor",
-      "contact": "Kontakt",
-      "email": "E-post",
-      "rights": "Alla rättigheter förbehållna."
+      "communitasNote": "Svethna är en SaaS-tjänst skapad och drivs av"
     }
   }
 }
