@@ -486,154 +486,150 @@ export default function JournalEntries() {
       {!loading && filteredEntries.length > 0 && (
         <div
           data-cy="journal-entries-list"
-          className="bg-white dark:bg-gray-800 rounded-sm shadow dark:shadow-gray-900/20 overflow-hidden"
+          className="bg-white dark:bg-gray-800 rounded-sm shadow dark:shadow-gray-900/20 overflow-hidden lg:overflow-x-auto"
         >
-          <div className="overflow-x-auto">
-            <table data-cy="journal-entries-table" className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
-              <thead className="bg-gray-50 dark:bg-gray-900/50">
-                <tr>
-                  {/* Checkbox column for bulk selection */}
-                  <th className="px-4 py-3 text-center w-10">
-                    {draftEntries.length > 0 && (
-                      <input
-                        type="checkbox"
-                        checked={allDraftsSelected}
-                        onChange={toggleAllDraftEntries}
-                        data-cy="select-all-drafts-checkbox"
-                        className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
-                        title={t('journalEntries.selectAllDrafts')}
-                      />
-                    )}
-                  </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-                    {t('journalEntries.verificationNumber')}
-                  </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-                    {t('journalEntries.date')}
-                  </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-                    {t('journalEntries.description')}
-                  </th>
-                  <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-                    {t('journalEntries.debit')}
-                  </th>
-                  <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-                    {t('journalEntries.credit')}
-                  </th>
-                  <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-                    {t('journalEntries.status')}
-                  </th>
-                  <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-                    {t('common.actions')}
-                  </th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-gray-200 dark:divide-gray-700">
-                {filteredEntries.map((entry) => {
-                  const totals = calculateEntryTotals(entry);
-                  const isSelected = selectedEntries.has(entry.id);
-                  return (
-                    <tr
-                      key={entry.id}
-                      data-cy={`journal-entry-row-${entry.verification_number}`}
-                      className={`hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors ${isSelected ? 'bg-blue-50 dark:bg-blue-900/20' : ''}`}
-                    >
-                      {/* Checkbox cell */}
-                      <td className="px-4 py-4 text-center">
+          <table data-cy="journal-entries-table" className="responsive-table min-w-full divide-y divide-gray-200 dark:divide-gray-700">
+            <thead className="bg-gray-50 dark:bg-gray-900/50">
+              <tr>
+                <th className="px-4 py-3 text-center w-10">
+                  {draftEntries.length > 0 && (
+                    <input
+                      type="checkbox"
+                      checked={allDraftsSelected}
+                      onChange={toggleAllDraftEntries}
+                      data-cy="select-all-drafts-checkbox"
+                      className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+                      title={t('journalEntries.selectAllDrafts')}
+                    />
+                  )}
+                </th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                  {t('journalEntries.verificationNumber')}
+                </th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                  {t('journalEntries.date')}
+                </th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                  {t('journalEntries.description')}
+                </th>
+                <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                  {t('journalEntries.debit')}
+                </th>
+                <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                  {t('journalEntries.credit')}
+                </th>
+                <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                  {t('journalEntries.status')}
+                </th>
+                <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                  {t('common.actions')}
+                </th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-gray-200 dark:divide-gray-700">
+              {filteredEntries.map((entry) => {
+                const totals = calculateEntryTotals(entry);
+                const isSelected = selectedEntries.has(entry.id);
+                return (
+                  <tr
+                    key={entry.id}
+                    data-cy={`journal-entry-row-${entry.verification_number}`}
+                    className={`hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors ${isSelected ? 'bg-blue-50 dark:bg-blue-900/20' : ''}`}
+                  >
+                    <td data-label="select" className="px-4 py-4 text-center">
+                      {entry.status === 'draft' && (
+                        <input
+                          type="checkbox"
+                          checked={isSelected}
+                          onChange={() => toggleEntrySelection(entry.id)}
+                          data-cy={`select-entry-${entry.verification_number}`}
+                          className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+                        />
+                      )}
+                    </td>
+                    <td data-label={t('journalEntries.verificationNumber')} className="px-6 py-4 whitespace-nowrap">
+                      <span className="font-mono text-sm text-gray-900 dark:text-white">
+                        #{entry.verification_number}
+                      </span>
+                    </td>
+                    <td data-label={t('journalEntries.date')} className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white">
+                      {entry.entry_date}
+                    </td>
+                    <td data-label={t('journalEntries.description')} className="px-6 py-4">
+                      <span className="text-sm text-gray-900 dark:text-white">
+                        {entry.description || '-'}
+                      </span>
+                    </td>
+                    <td data-label={t('journalEntries.debit')} className="px-6 py-4 whitespace-nowrap text-sm text-right font-mono text-gray-900 dark:text-white">
+                      {totals.totalDebit}
+                    </td>
+                    <td data-label={t('journalEntries.credit')} className="px-6 py-4 whitespace-nowrap text-sm text-right font-mono text-gray-900 dark:text-white">
+                      {totals.totalCredit}
+                    </td>
+                    <td data-label={t('journalEntries.status')} className="px-6 py-4 whitespace-nowrap text-center">
+                      <span
+                        data-cy={`entry-status-${entry.status}`}
+                        className={`inline-flex px-2 py-1 text-xs font-medium rounded-sm ${STATUS_BADGES[entry.status]}`}
+                      >
+                        {t(`journalEntries.status${entry.status.charAt(0).toUpperCase() + entry.status.slice(1)}`)}
+                      </span>
+                    </td>
+                    <td data-label="" className="px-6 py-4 whitespace-nowrap text-right">
+                      <div className="flex items-center justify-end gap-2">
                         {entry.status === 'draft' && (
-                          <input
-                            type="checkbox"
-                            checked={isSelected}
-                            onChange={() => toggleEntrySelection(entry.id)}
-                            data-cy={`select-entry-${entry.verification_number}`}
-                            className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
-                          />
-                        )}
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap">
-                        <span className="font-mono text-sm text-gray-900 dark:text-white">
-                          #{entry.verification_number}
-                        </span>
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white">
-                        {entry.entry_date}
-                      </td>
-                      <td className="px-6 py-4">
-                        <span className="text-sm text-gray-900 dark:text-white truncate max-w-xs block">
-                          {entry.description || '-'}
-                        </span>
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-right font-mono text-gray-900 dark:text-white">
-                        {totals.totalDebit}
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-right font-mono text-gray-900 dark:text-white">
-                        {totals.totalCredit}
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-center">
-                        <span
-                          data-cy={`entry-status-${entry.status}`}
-                          className={`inline-flex px-2 py-1 text-xs font-medium rounded-sm ${STATUS_BADGES[entry.status]}`}
-                        >
-                          {t(`journalEntries.status${entry.status.charAt(0).toUpperCase() + entry.status.slice(1)}`)}
-                        </span>
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-right">
-                        <div className="flex items-center justify-end gap-2">
-                          {entry.status === 'draft' && (
-                            <>
-                              <button
-                                onClick={() => handleEditEntry(entry)}
-                                data-cy={`edit-entry-${entry.verification_number}`}
-                                className="p-1.5 text-gray-500 hover:text-blue-600 dark:text-gray-400 dark:hover:text-blue-400"
-                                title={t('common.edit')}
-                              >
-                                <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
-                                </svg>
-                              </button>
-                              <button
-                                onClick={() => handlePostEntry(entry)}
-                                data-cy={`post-entry-${entry.verification_number}`}
-                                className="p-1.5 text-gray-500 hover:text-green-600 dark:text-gray-400 dark:hover:text-green-400"
-                                title={t('journalEntries.post')}
-                              >
-                                <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                                </svg>
-                              </button>
-                              <button
-                                onClick={() => handleDeleteEntry(entry)}
-                                data-cy={`delete-entry-${entry.verification_number}`}
-                                className="p-1.5 text-gray-500 hover:text-red-600 dark:text-gray-400 dark:hover:text-red-400"
-                                title={t('common.delete')}
-                              >
-                                <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                                </svg>
-                              </button>
-                            </>
-                          )}
-                          {entry.status === 'posted' && (
+                          <>
                             <button
-                              onClick={() => handleViewEntry(entry)}
-                              data-cy={`view-entry-${entry.verification_number}`}
+                              onClick={() => handleEditEntry(entry)}
+                              data-cy={`edit-entry-${entry.verification_number}`}
                               className="p-1.5 text-gray-500 hover:text-blue-600 dark:text-gray-400 dark:hover:text-blue-400"
-                              title={t('common.view')}
+                              title={t('common.edit')}
                             >
                               <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
                               </svg>
                             </button>
-                          )}
-                        </div>
-                      </td>
-                    </tr>
-                  );
-                })}
-              </tbody>
-            </table>
-          </div>
+                            <button
+                              onClick={() => handlePostEntry(entry)}
+                              data-cy={`post-entry-${entry.verification_number}`}
+                              className="p-1.5 text-gray-500 hover:text-green-600 dark:text-gray-400 dark:hover:text-green-400"
+                              title={t('journalEntries.post')}
+                            >
+                              <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                              </svg>
+                            </button>
+                            <button
+                              onClick={() => handleDeleteEntry(entry)}
+                              data-cy={`delete-entry-${entry.verification_number}`}
+                              className="p-1.5 text-gray-500 hover:text-red-600 dark:text-gray-400 dark:hover:text-red-400"
+                              title={t('common.delete')}
+                            >
+                              <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                              </svg>
+                            </button>
+                          </>
+                        )}
+                        {entry.status === 'posted' && (
+                          <button
+                            onClick={() => handleViewEntry(entry)}
+                            data-cy={`view-entry-${entry.verification_number}`}
+                            className="p-1.5 text-gray-500 hover:text-blue-600 dark:text-gray-400 dark:hover:text-blue-400"
+                            title={t('common.view')}
+                          >
+                            <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                            </svg>
+                          </button>
+                        )}
+                      </div>
+                    </td>
+                  </tr>
+                );
+              })}
+            </tbody>
+          </table>
         </div>
       )}
 

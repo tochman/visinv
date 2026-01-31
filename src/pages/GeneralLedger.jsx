@@ -409,11 +409,11 @@ export default function GeneralLedger() {
                     <button
                       type="button"
                       onClick={() => toggleAccountExpanded(accountData.account.id)}
-                      className="w-full p-4 flex items-center justify-between hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors"
+                      className="w-full p-4 flex flex-col lg:flex-row lg:items-center justify-between hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors gap-3"
                     >
                       <div className="flex items-center gap-3">
                         <svg
-                          className={`w-4 h-4 text-gray-500 transition-transform ${
+                          className={`w-4 h-4 text-gray-500 transition-transform flex-shrink-0 ${
                             expandedAccounts.has(accountData.account.id) ? 'rotate-90' : ''
                           }`}
                           fill="none"
@@ -436,22 +436,22 @@ export default function GeneralLedger() {
                           </p>
                         </div>
                       </div>
-                      <div className="flex items-center gap-6 text-sm">
-                        <div className="text-right">
+                      <div className="grid grid-cols-3 gap-2 lg:gap-6 text-sm w-full lg:w-auto">
+                        <div className="text-left lg:text-right">
                           <p className="text-xs text-gray-500 dark:text-gray-400">{t('generalLedger.debit')}</p>
-                          <p className="font-medium text-gray-900 dark:text-white">
+                          <p className="font-medium text-gray-900 dark:text-white text-sm lg:text-base">
                             {formatAmount(accountData.totalDebit)}
                           </p>
                         </div>
-                        <div className="text-right">
+                        <div className="text-left lg:text-right">
                           <p className="text-xs text-gray-500 dark:text-gray-400">{t('generalLedger.credit')}</p>
-                          <p className="font-medium text-gray-900 dark:text-white">
+                          <p className="font-medium text-gray-900 dark:text-white text-sm lg:text-base">
                             {formatAmount(accountData.totalCredit)}
                           </p>
                         </div>
-                        <div className="text-right min-w-[100px]">
+                        <div className="text-left lg:text-right">
                           <p className="text-xs text-gray-500 dark:text-gray-400">{t('generalLedger.balance')}</p>
-                          <p className={`font-semibold ${
+                          <p className={`font-semibold text-sm lg:text-base text-sm lg:text-base ${
                             accountData.closingBalance >= 0
                               ? 'text-gray-900 dark:text-white'
                               : 'text-red-600 dark:text-red-400'
@@ -464,8 +464,8 @@ export default function GeneralLedger() {
 
                     {/* Expanded Transactions */}
                     {expandedAccounts.has(accountData.account.id) && (
-                      <div className="border-t border-gray-200 dark:border-gray-700">
-                        <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
+                      <div className="border-t border-gray-200 dark:border-gray-700 lg:overflow-x-auto">
+                        <table className="responsive-table min-w-full divide-y divide-gray-200 dark:divide-gray-700">
                           <thead className="bg-gray-50 dark:bg-gray-900/50">
                             <tr>
                               <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">
@@ -495,22 +495,22 @@ export default function GeneralLedger() {
                                 className="hover:bg-gray-50 dark:hover:bg-gray-700/50 cursor-pointer"
                                 onClick={() => handleDrillDown(entry.journalEntryId)}
                               >
-                                <td className="px-4 py-2 text-sm text-gray-900 dark:text-white whitespace-nowrap">
+                                <td data-label={t('generalLedger.date')} className="px-4 py-2 text-sm text-gray-900 dark:text-white whitespace-nowrap">
                                   {formatDate(entry.entryDate)}
                                 </td>
-                                <td className="px-4 py-2 text-sm text-gray-900 dark:text-white whitespace-nowrap">
+                                <td data-label={t('generalLedger.verificationNo')} className="px-4 py-2 text-sm text-gray-900 dark:text-white whitespace-nowrap">
                                   <span className="font-mono">{entry.verificationNumber}</span>
                                 </td>
-                                <td className="px-4 py-2 text-sm text-gray-600 dark:text-gray-300 max-w-xs truncate">
+                                <td data-label={t('generalLedger.description')} className="px-4 py-2 text-sm text-gray-600 dark:text-gray-300">
                                   {entry.lineDescription || entry.entryDescription || '-'}
                                 </td>
-                                <td className="px-4 py-2 text-sm text-right font-medium text-gray-900 dark:text-white whitespace-nowrap">
+                                <td data-label={t('generalLedger.debit')} className="px-4 py-2 text-sm text-right font-medium text-gray-900 dark:text-white whitespace-nowrap">
                                   {entry.debit > 0 ? formatAmount(entry.debit) : '-'}
                                 </td>
-                                <td className="px-4 py-2 text-sm text-right font-medium text-gray-900 dark:text-white whitespace-nowrap">
+                                <td data-label={t('generalLedger.credit')} className="px-4 py-2 text-sm text-right font-medium text-gray-900 dark:text-white whitespace-nowrap">
                                   {entry.credit > 0 ? formatAmount(entry.credit) : '-'}
                                 </td>
-                                <td className={`px-4 py-2 text-sm text-right font-medium whitespace-nowrap ${
+                                <td data-label={t('generalLedger.balance')} className={`px-4 py-2 text-sm text-right font-medium whitespace-nowrap ${
                                   entry.balance >= 0
                                     ? 'text-gray-900 dark:text-white'
                                     : 'text-red-600 dark:text-red-400'

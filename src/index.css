@@ -140,40 +140,100 @@ body {
 .animate-delay-400 { animation-delay: 0.4s; opacity: 0; }
 .animate-delay-500 { animation-delay: 0.5s; opacity: 0; }
 
-/* Mobile table improvements */
-@media (max-width: 768px) {
-  /* Make tables more mobile-friendly with better scrolling */
+/* ========================================
+   RESPONSIVE TABLE SYSTEM
+   Use class "responsive-table" on table element
+   ======================================== */
+
+/* Mobile: Transform table to stacked cards */
+@media (max-width: 1023px) {
+  .responsive-table {
+    border: 0;
+  }
+  
+  .responsive-table thead {
+    display: none;
+  }
+  
+  .responsive-table tr {
+    display: block;
+    margin-bottom: 1rem;
+    padding: 1rem;
+    background: white;
+    border-radius: 0.375rem;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  }
+  
+  .dark .responsive-table tr {
+    background: rgb(31 41 55);
+  }
+  
+  .responsive-table tbody {
+    display: block;
+  }
+  
+  .responsive-table td {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0.5rem 0 !important;
+    border: none !important;
+    border-bottom: 1px solid rgb(229 231 235) !important;
+    text-align: right;
+  }
+  
+  .dark .responsive-table td {
+    border-bottom-color: rgb(55 65 81) !important;
+  }
+  
+  .responsive-table td:last-child {
+    border-bottom: none !important;
+    padding-top: 0.75rem !important;
+  }
+  
+  .responsive-table td::before {
+    content: attr(data-label);
+    font-weight: 600;
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    color: rgb(107 114 128);
+    text-align: left;
+    padding-right: 1rem;
+  }
+  
+  .dark .responsive-table td::before {
+    color: rgb(156 163 175);
+  }
+  
+  /* Actions cell - full width buttons */
+  .responsive-table td[data-label=""]::before,
+  .responsive-table td:not([data-label])::before {
+    display: none;
+  }
+  
+  .responsive-table td[data-label=""] {
+    justify-content: center;
+  }
+  
+  /* Hide checkbox column label on mobile */
+  .responsive-table td[data-label="select"]::before {
+    display: none;
+  }
+  
+  .responsive-table td[data-label="select"] {
+    justify-content: flex-start;
+    padding-bottom: 0.75rem !important;
+  }
+
+  /* Better scrolling for non-responsive tables */
   .overflow-x-auto {
     -webkit-overflow-scrolling: touch;
-    scrollbar-width: thin;
-    scrollbar-color: rgba(156, 163, 175, 0.5) transparent;
   }
-  
-  .overflow-x-auto::-webkit-scrollbar {
-    height: 6px;
-  }
-  
-  .overflow-x-auto::-webkit-scrollbar-track {
-    background: transparent;
-  }
-  
-  .overflow-x-auto::-webkit-scrollbar-thumb {
-    background-color: rgba(156, 163, 175, 0.5);
-    border-radius: 3px;
-  }
-  
-  /* Reduce padding on table cells for mobile */
-  table td, table th {
-    padding-left: 0.75rem !important;
-    padding-right: 0.75rem !important;
-  }
-  
-  /* Compact font sizes for mobile tables */
-  table {
-    font-size: 0.875rem;
-  }
-  
-  table thead th {
-    font-size: 0.75rem;
+}
+
+/* Desktop: Normal table display */
+@media (min-width: 1024px) {
+  .responsive-table td::before {
+    display: none;
   }
 }

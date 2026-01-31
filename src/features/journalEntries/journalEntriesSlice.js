@@ -1,4 +1,4 @@
-import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
+import { createSlice, createAsyncThunk, createSelector } from '@reduxjs/toolkit';
 import { JournalEntry } from '../../services/resources';
 
 /**
@@ -444,24 +444,24 @@ export const selectLedgerAccountId = (state) => state.journalEntries.ledger.acco
 export const selectLedgerLoading = (state) => state.journalEntries.ledger.loading;
 export const selectLedgerError = (state) => state.journalEntries.ledger.error;
 
-// Ledger totals selector
-export const selectLedgerTotals = (state) => {
-  const entries = state.journalEntries.ledger.entries;
-  const openingBalance = state.journalEntries.ledger.openingBalance;
-  
-  const totalDebit = entries.reduce((sum, e) => sum + e.debit, 0);
-  const totalCredit = entries.reduce((sum, e) => sum + e.credit, 0);
-  const closingBalance = entries.length > 0 
-    ? entries[entries.length - 1].balance 
-    : openingBalance;
-  
-  return {
-    openingBalance: Math.round(openingBalance * 100) / 100,
-    totalDebit: Math.round(totalDebit * 100) / 100,
-    totalCredit: Math.round(totalCredit * 100) / 100,
-    closingBalance: Math.round(closingBalance * 100) / 100,
-  };
-};
+// Ledger totals selector (memoized to prevent unnecessary rerenders)
+export const selectLedgerTotals = createSelector(
+  [selectLedgerEntries, selectLedgerOpeningBalance],
+  (entries, openingBalance) => {
+    const totalDebit = entries.reduce((sum, e) => sum + e.debit, 0);
+    const totalCredit = entries.reduce((sum, e) => sum + e.credit, 0);
+    const closingBalance = entries.length > 0 
+      ? entries[entries.length - 1].balance 
+      : openingBalance;
+    
+    return {
+      openingBalance: Math.round(openingBalance * 100) / 100,
+      totalDebit: Math.round(totalDebit * 100) / 100,
+      totalCredit: Math.round(totalCredit * 100) / 100,
+      closingBalance: Math.round(closingBalance * 100) / 100,
+    };
+  }
+);
 
 // All accounts ledger selectors (US-220 - show all accounts by default)
 export const selectAllAccountsLedger = (state) => state.journalEntries.allAccountsLedger.accounts;
