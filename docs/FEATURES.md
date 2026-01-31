@@ -2464,22 +2464,25 @@ The Swedish Tax Authority (Skatteverket) provides APIs for digital submission of
 - **i18n Requirements:** All prompts in English and Swedish
 - **Status:** Not Started
 
-**US-129: Journey-Focused Proficiency Labels** *(depends on US-124)*
+**US-129: Journey-Focused Proficiency Labels** *(depends on US-124)* ✅
 - As a **user**, in order to **feel empowered rather than judged**, I would like **proficiency labels that focus on my journey**.
 - **Acceptance Criteria:**
   - Rename levels to journey-focused names:
-    - "Novice" → "Getting Started"
-    - "Basic" → "Building Confidence"  
-    - "Proficient" → "Taking Control"
-    - "Expert" → "Full Power"
-  - Update all UI copy to feel empowering, not condescending
-  - Emphasize that progression is positive and encouraged
-  - Keep internal enum values unchanged (backward compatible)
+    - "Novice" → "Getting Started" ✅
+    - "Basic" → "Building Confidence" ✅
+    - "Proficient" → "Taking Control" ✅
+    - "Expert" → "Full Power" ✅
+  - Update all UI copy to feel empowering, not condescending ✅
+  - Emphasize that progression is positive and encouraged ✅
+  - Keep internal enum values unchanged (backward compatible) ✅
 - **Technical Considerations:**
   - Labels are UI-only change (translations)
   - Internal values remain: novice, basic, proficient, expert
 - **i18n Requirements:** New label names in English and Swedish
-- **Status:** Not Started
+- **Status:** ✅ Complete
+- **Implementation Notes:**
+  - Updated `src/i18n/locales/en.json` - proficiency.levels.*.name and description
+  - Updated `src/i18n/locales/sv.json` - Swedish translations (Kom igång, Bygga självförtroende, Ta kontroll, Full kraft)
 
 **US-130: Hybrid Proficiency Overrides** *(depends on US-124)*
 - As a **user**, in order to **access expert features in specific areas while keeping simplified UI elsewhere**, I would like **per-feature proficiency overrides**.

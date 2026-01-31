@@ -722,20 +722,20 @@
     },
     "levels": {
       "novice": {
-        "name": "Novice",
-        "description": "New to invoicing software"
+        "name": "Getting Started",
+        "description": "Beginning your invoicing journey - we'll guide you every step"
       },
       "basic": {
-        "name": "Basic",
-        "description": "Familiar with basic features"
+        "name": "Building Confidence",
+        "description": "Growing comfortable with the essentials"
       },
       "proficient": {
-        "name": "Proficient",
-        "description": "Experienced with most features"
+        "name": "Taking Control",
+        "description": "Ready to explore the full toolkit"
       },
       "expert": {
-        "name": "Expert",
-        "description": "Advanced user, power features"
+        "name": "Full Power",
+        "description": "Unlocking every feature and shortcut"
       }
     }
   },

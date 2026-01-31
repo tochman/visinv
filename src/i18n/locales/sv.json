@@ -710,20 +710,20 @@
     },
     "levels": {
       "novice": {
-        "name": "Nybörjare",
-        "description": "Ny på faktureringsprogram"
+        "name": "Kom igång",
+        "description": "Börja din faktureringsresa - vi guidar dig hela vägen"
       },
       "basic": {
-        "name": "Grundläggande",
-        "description": "Bekant med grundläggande funktioner"
+        "name": "Bygga självförtroende",
+        "description": "Bli bekväm med grunderna"
       },
       "proficient": {
-        "name": "Erfaren",
-        "description": "Erfarenhet av de flesta funktioner"
+        "name": "Ta kontroll",
+        "description": "Redo att utforska hela verktygslådan"
       },
       "expert": {
-        "name": "Expert",
-        "description": "Avancerad användare, kraftfulla funktioner"
+        "name": "Full kraft",
+        "description": "Lås upp alla funktioner och genvägar"
       }
     }
   },
