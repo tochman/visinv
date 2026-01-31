@@ -395,7 +395,8 @@ export default function Accounts() {
           data-cy="accounts-list"
           className="bg-white dark:bg-gray-800 rounded-sm shadow dark:shadow-gray-900/20 overflow-hidden"
         >
-          <div className="overflow-x-auto">
+          {/* Desktop Table View */}
+          <div className="hidden md:block overflow-x-auto">
             <table
               data-cy="accounts-table"
               className="min-w-full divide-y divide-gray-200 dark:divide-gray-700"
@@ -569,6 +570,113 @@ export default function Accounts() {
                 ))}
               </tbody>
             </table>
+          </div>
+          
+          {/* Mobile Card View */}
+          <div className="md:hidden divide-y divide-gray-200 dark:divide-gray-700">
+            {filteredAccounts.map((account) => (
+              <div
+                key={account.id}
+                data-cy={`account-card-${account.account_number}`}
+                className={`p-4 ${
+                  !account.is_active ? 'opacity-50' : ''
+                }`}
+              >
+                <div className="mb-3">
+                  <span
+                    data-cy="account-number"
+                    className={`font-mono font-medium ${
+                      account.account_type === 'header'
+                        ? 'text-gray-900 dark:text-white font-bold'
+                        : 'text-gray-700 dark:text-gray-300'
+                    }`}
+                  >
+                    {account.account_number}
+                  </span>
+                  <div
+                    data-cy="account-name"
+                    className={`mt-1 ${
+                      account.account_type === 'header'
+                        ? 'font-semibold text-gray-900 dark:text-white'
+                        : 'text-gray-700 dark:text-gray-300'
+                    }`}
+                  >
+                    {getAccountName(account)}
+                  </div>
+                </div>
+                
+                <div className="grid grid-cols-2 gap-2 text-sm mb-3">
+                  <div>
+                    <div className="text-gray-500 dark:text-gray-400 text-xs">{t('accounts.class')}</div>
+                    <span
+                      data-cy="account-class"
+                      className={`inline-flex px-2 py-1 text-xs font-medium rounded-full ${getClassBadge(
+                        account.account_class
+                      )}`}
+                    >
+                      {t(`accounts.classes.${account.account_class}`)}
+                    </span>
+                  </div>
+                  <div>
+                    <div className="text-gray-500 dark:text-gray-400 text-xs">{t('accounts.status')}</div>
+                    <span
+                      className={`inline-flex px-2 py-1 text-xs font-medium rounded-full ${
+                        account.is_active
+                          ? 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400'
+                          : 'bg-gray-100 text-gray-800 dark:bg-gray-900/30 dark:text-gray-400'
+                      }`}
+                    >
+                      {account.is_active ? t('accounts.active') : t('accounts.inactive')}
+                    </span>
+                  </div>
+                  <div>
+                    <div className="text-gray-500 dark:text-gray-400 text-xs">{t('accounts.balance')}</div>
+                    {summariesLoading ? (
+                      <div className="inline-block w-4 h-4 border-2 border-gray-300 border-t-blue-600 rounded-full animate-spin" />
+                    ) : account.summary ? (
+                      <div className="font-mono font-medium text-gray-900 dark:text-white">
+                        {new Intl.NumberFormat('sv-SE', {
+                          style: 'currency',
+                          currency: 'SEK',
+                          minimumFractionDigits: 0,
+                        }).format(account.summary.balance)}
+                      </div>
+                    ) : (
+                      <span className="text-gray-400 dark:text-gray-500 text-xs">—</span>
+                    )}
+                  </div>
+                  <div>
+                    <div className="text-gray-500 dark:text-gray-400 text-xs">{t('accounts.transactions')}</div>
+                    <div className="text-gray-900 dark:text-white">
+                      {account.summary?.transaction_count || 0}
+                    </div>
+                  </div>
+                </div>
+                
+                {!account.is_system && (
+                  <div className="flex gap-2">
+                    <button
+                      onClick={() => handleEditAccount(account)}
+                      data-cy={`edit-account-${account.account_number}-mobile`}
+                      className="flex-1 px-3 py-2 text-sm bg-blue-600 text-white rounded-sm hover:bg-blue-700"
+                    >
+                      {t('common.edit')}
+                    </button>
+                    <button
+                      onClick={() => handleToggleActive(account)}
+                      data-cy={`toggle-account-${account.account_number}-mobile`}
+                      className={`flex-1 px-3 py-2 text-sm rounded-sm ${
+                        account.is_active
+                          ? 'bg-red-600 hover:bg-red-700'
+                          : 'bg-green-600 hover:bg-green-700'
+                      } text-white`}
+                    >
+                      {account.is_active ? t('accounts.deactivate') : t('accounts.activate')}
+                    </button>
+                  </div>
+                )}
+              </div>
+            ))}
           </div>
 
           {/* Summary Footer */}

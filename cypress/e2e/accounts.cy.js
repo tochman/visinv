@@ -209,7 +209,7 @@ describe('Chart of Accounts (Kontoplan)', () => {
       cy.wait('@getAccountsWithInactive')
 
       // Now inactive account should be visible with reduced opacity
-      cy.getByCy('account-row-9999').should('be.visible')
+      cy.getByCy('account-row-9999').scrollIntoView().should('be.visible')
       cy.getByCy('account-row-9999').should('have.class', 'opacity-50')
       cy.getByCy('account-row-9999').find('[data-cy="account-status-inactive"]').should('be.visible')
     })
@@ -222,7 +222,7 @@ describe('Chart of Accounts (Kontoplan)', () => {
     })
 
     it('is expected to show deactivate button for non-system accounts', () => {
-      cy.getByCy('toggle-account-5010').should('be.visible')
+      cy.getByCy('toggle-account-5010').scrollIntoView().should('be.visible')
       cy.getByCy('toggle-account-5010').should('contain', 'Deactivate')
     })
 
@@ -280,7 +280,7 @@ describe('Chart of Accounts (Kontoplan)', () => {
       cy.getByCy('include-inactive-checkbox').check()
       cy.wait('@getAccountsWithInactive')
 
-      cy.getByCy('toggle-account-9999').should('be.visible')
+      cy.getByCy('toggle-account-9999').scrollIntoView().should('be.visible')
       cy.getByCy('toggle-account-9999').should('contain', 'Activate')
     })
 
