@@ -23,23 +23,38 @@ const corsHeaders = {
 // Email domain for receiving supplier invoices
 const RECEIVING_DOMAIN = 'dortal.resend.app'
 
-interface EmailAttachment {
+// Resend webhook attachment metadata (does NOT include content)
+interface WebhookAttachment {
+  id: string
   filename: string
-  content: string // Base64 encoded
   content_type: string
-  size: number
+  content_disposition: string
+  content_id?: string
+}
+
+// Resend API attachment response with download URL
+interface ResendAttachment {
+  id: string
+  filename: string
+  content_type: string
+  content_disposition: string
+  content_id?: string
+  download_url: string
+  expires_at: string
 }
 
 interface InboundEmail {
+  email_id: string // ID to fetch attachment content
   from: string
   to: string | string[]
   subject: string
   text?: string
   html?: string
-  attachments?: EmailAttachment[]
+  attachments?: WebhookAttachment[]
   headers?: Record<string, string>
   message_id?: string
   date?: string
+  created_at?: string
 }
 
 interface WebhookPayload {
@@ -107,6 +122,41 @@ function generateStoragePath(organizationId: string, filename: string): string {
   const random = Math.random().toString(36).substring(2, 8)
   const safeFilename = filename.replace(/[^a-zA-Z0-9.-]/g, '_')
   return `${organizationId}/${timestamp}-${random}-${safeFilename}`
+}
+
+/**
+ * Fetch attachment details with download URLs from Resend API
+ */
+async function fetchResendAttachments(emailId: string, resendApiKey: string): Promise<ResendAttachment[]> {
+  const response = await fetch(`https://api.resend.com/emails/receiving/${emailId}/attachments`, {
+    headers: {
+      'Authorization': `Bearer ${resendApiKey}`,
+      'Content-Type': 'application/json',
+    },
+  })
+  
+  if (!response.ok) {
+    const errorText = await response.text()
+    console.error(`Resend API error: ${response.status} - ${errorText}`)
+    throw new Error(`Failed to fetch attachments from Resend: ${response.status}`)
+  }
+  
+  const data = await response.json()
+  return data.data || []
+}
+
+/**
+ * Download attachment content from Resend's signed URL
+ */
+async function downloadAttachment(downloadUrl: string): Promise<{ buffer: ArrayBuffer, size: number }> {
+  const response = await fetch(downloadUrl)
+  
+  if (!response.ok) {
+    throw new Error(`Failed to download attachment: ${response.status}`)
+  }
+  
+  const buffer = await response.arrayBuffer()
+  return { buffer, size: buffer.byteLength }
 }
 
 /**
@@ -228,6 +278,15 @@ serve(async (req: Request) => {
   const supabaseUrl = Deno.env.get('SUPABASE_URL')!
   const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!
   const webhookSecret = Deno.env.get('RESEND_WEBHOOK_SECRET')
+  const resendApiKey = Deno.env.get('RESEND_API_KEY')
+  
+  if (!resendApiKey) {
+    console.error('RESEND_API_KEY not configured')
+    return new Response(
+      JSON.stringify({ error: 'Server configuration error' }),
+      { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+    )
+  }
   
   const supabase = createClient(supabaseUrl, supabaseServiceKey)
 
@@ -348,13 +407,13 @@ serve(async (req: Request) => {
       )
     }
 
-    // Process attachments
-    const attachments = email.attachments || []
-    const validAttachments = attachments.filter(att => 
-      isAllowedFileType(att.filename, att.content_type) && att.size <= MAX_FILE_SIZE
+    // Process attachments - webhook only has metadata, need to fetch content from Resend API
+    const webhookAttachments = email.attachments || []
+    const validWebhookAttachments = webhookAttachments.filter(att => 
+      isAllowedFileType(att.filename, att.content_type)
     )
 
-    if (validAttachments.length === 0) {
+    if (validWebhookAttachments.length === 0) {
       // Create inbox item with no_attachment status
       const { data: inboxItem, error: insertError } = await supabase
         .from('supplier_inbox_items')
@@ -363,7 +422,7 @@ serve(async (req: Request) => {
           status: 'no_attachment',
           sender_email: senderEmail,
           subject: email.subject || '(No subject)',
-          received_at: email.date || payload.created_at,
+          received_at: email.created_at || payload.created_at,
           email_body: (email.text || '').substring(0, 1000),
         })
         .select()
@@ -383,54 +442,107 @@ serve(async (req: Request) => {
       )
     }
 
-    // Process each valid attachment
-    const createdItems = []
+    // Fetch attachment download URLs from Resend API
+    console.log(`Fetching attachments for email: ${email.email_id}`)
+    let resendAttachments: ResendAttachment[] = []
     
-    for (const attachment of validAttachments) {
-      // Generate storage path
-      const storagePath = generateStoragePath(organization.id, attachment.filename)
+    try {
+      resendAttachments = await fetchResendAttachments(email.email_id, resendApiKey)
+      console.log(`Retrieved ${resendAttachments.length} attachments from Resend API`)
+    } catch (fetchErr) {
+      console.error('Failed to fetch attachments from Resend:', fetchErr)
+      await logWebhook(supabase, 'email.received', payload, false, `Failed to fetch attachments: ${fetchErr}`)
       
-      // Decode base64 and upload to storage
-      const fileBuffer = Uint8Array.from(atob(attachment.content), c => c.charCodeAt(0))
-      
-      const { error: uploadError } = await supabase.storage
-        .from('supplier-inbox')
-        .upload(storagePath, fileBuffer, {
-          contentType: attachment.content_type,
-          upsert: false
-        })
-
-      if (uploadError) {
-        console.error('Upload error:', uploadError)
-        continue // Skip this attachment but continue with others
-      }
-
-      // Create inbox item
+      // Still create an inbox item but without the file
       const { data: inboxItem, error: insertError } = await supabase
         .from('supplier_inbox_items')
         .insert({
           organization_id: organization.id,
-          status: 'new',
+          status: 'no_attachment',
           sender_email: senderEmail,
           subject: email.subject || '(No subject)',
-          received_at: email.date || payload.created_at,
-          email_body: (email.text || '').substring(0, 1000),
-          file_name: attachment.filename,
-          content_type: attachment.content_type,
-          file_size: attachment.size,
-          storage_path: storagePath,
+          received_at: email.created_at || payload.created_at,
+          email_body: `[Attachment fetch failed] ${(email.text || '').substring(0, 900)}`,
         })
         .select()
         .single()
+      
+      return new Response(
+        JSON.stringify({ 
+          error: 'Failed to fetch attachments',
+          inbox_item_id: inboxItem?.id
+        }),
+        { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      )
+    }
 
-      if (insertError) {
-        console.error('Insert error:', insertError)
-        // Try to clean up uploaded file
-        await supabase.storage.from('supplier-inbox').remove([storagePath])
+    // Process each attachment that has a valid type
+    const createdItems = []
+    
+    for (const attachment of resendAttachments) {
+      // Check if this attachment type is allowed
+      if (!isAllowedFileType(attachment.filename, attachment.content_type)) {
+        console.log(`Skipping disallowed file type: ${attachment.filename} (${attachment.content_type})`)
         continue
       }
+      
+      try {
+        // Download the attachment content
+        console.log(`Downloading attachment: ${attachment.filename}`)
+        const { buffer, size } = await downloadAttachment(attachment.download_url)
+        
+        // Check file size
+        if (size > MAX_FILE_SIZE) {
+          console.log(`Skipping oversized attachment: ${attachment.filename} (${size} bytes)`)
+          continue
+        }
+        
+        // Generate storage path
+        const storagePath = generateStoragePath(organization.id, attachment.filename)
+        
+        // Upload to Supabase storage
+        const { error: uploadError } = await supabase.storage
+          .from('supplier-inbox')
+          .upload(storagePath, buffer, {
+            contentType: attachment.content_type,
+            upsert: false
+          })
 
-      createdItems.push(inboxItem)
+        if (uploadError) {
+          console.error('Upload error:', uploadError)
+          continue // Skip this attachment but continue with others
+        }
+
+        // Create inbox item
+        const { data: inboxItem, error: insertError } = await supabase
+          .from('supplier_inbox_items')
+          .insert({
+            organization_id: organization.id,
+            status: 'new',
+            sender_email: senderEmail,
+            subject: email.subject || '(No subject)',
+            received_at: email.created_at || payload.created_at,
+            email_body: (email.text || '').substring(0, 1000),
+            file_name: attachment.filename,
+            content_type: attachment.content_type,
+            file_size: size,
+            storage_path: storagePath,
+          })
+          .select()
+          .single()
+
+        if (insertError) {
+          console.error('Insert error:', insertError)
+          // Try to clean up uploaded file
+          await supabase.storage.from('supplier-inbox').remove([storagePath])
+          continue
+        }
+
+        createdItems.push(inboxItem)
+      } catch (attachErr) {
+        console.error(`Failed to process attachment ${attachment.filename}:`, attachErr)
+        continue
+      }
     }
 
     if (createdItems.length === 0) {

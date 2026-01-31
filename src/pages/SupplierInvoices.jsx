@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { useTranslation } from 'react-i18next';
+import { useSearchParams, useNavigate } from 'react-router-dom';
 import {
   fetchSupplierInvoices,
   deleteSupplierInvoice,
@@ -11,12 +12,17 @@ import {
 import { fetchSuppliers } from '../features/suppliers/suppliersSlice';
 import { fetchAccounts } from '../features/accounts/accountsSlice';
 import { fetchFiscalYears } from '../features/fiscalYears/fiscalYearsSlice';
+import { SupplierInboxItem } from '../services/resources';
 import SupplierInvoiceModal from '../components/supplierInvoices/SupplierInvoiceModal';
 import OcrUploadModal from '../components/supplierInvoices/OcrUploadModal';
+import { useToast } from '../context/ToastContext';
 
 export default function SupplierInvoices() {
   const { t } = useTranslation();
   const dispatch = useDispatch();
+  const [searchParams, setSearchParams] = useSearchParams();
+  const navigate = useNavigate();
+  const toast = useToast();
   
   const currentOrganization = useSelector((state) => state.organizations?.currentOrganization);
   const invoices = useSelector((state) => state.supplierInvoices?.items || []);
@@ -30,6 +36,11 @@ export default function SupplierInvoices() {
   const [statusFilter, setStatusFilter] = useState('all');
   const [confirmAction, setConfirmAction] = useState(null);
   const [showOcrModal, setShowOcrModal] = useState(false);
+  
+  // State for inbox item processing
+  const [inboxItem, setInboxItem] = useState(null);
+  const [preloadedFile, setPreloadedFile] = useState(null);
+  const [loadingInboxItem, setLoadingInboxItem] = useState(false);
 
   useEffect(() => {
     if (currentOrganization?.id) {
@@ -39,6 +50,75 @@ export default function SupplierInvoices() {
       dispatch(fetchFiscalYears(currentOrganization.id));
     }
   }, [dispatch, currentOrganization?.id]);
+
+  // Handle inbox query parameter - load inbox item and open OCR modal
+  useEffect(() => {
+    const inboxId = searchParams.get('inbox');
+    if (inboxId && currentOrganization?.id && !loadingInboxItem && !inboxItem) {
+      loadInboxItem(inboxId);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [searchParams, currentOrganization?.id]);
+
+  const loadInboxItem = async (inboxId) => {
+    setLoadingInboxItem(true);
+    try {
+      // Fetch the inbox item
+      const { data: item, error: itemError } = await SupplierInboxItem.show(inboxId);
+      if (itemError) throw itemError;
+      
+      if (!item) {
+        toast.error(t('supplierInbox.errors.itemNotFound') || 'Inbox item not found');
+        clearInboxParam();
+        return;
+      }
+
+      // Check if item can be processed
+      if (item.status === 'processed') {
+        toast.info(t('supplierInbox.errors.alreadyProcessed') || 'This item has already been processed');
+        clearInboxParam();
+        return;
+      }
+
+      if (!item.storage_path) {
+        toast.error(t('supplierInbox.errors.noAttachment') || 'This item has no attachment');
+        clearInboxParam();
+        return;
+      }
+
+      // Download the file
+      const { blob, error: downloadError } = await SupplierInboxItem.downloadFile(item.storage_path);
+      if (downloadError) throw downloadError;
+
+      // Set state and open modal
+      setInboxItem(item);
+      setPreloadedFile({
+        blob,
+        fileName: item.file_name || 'document',
+        contentType: item.content_type || 'application/pdf',
+      });
+      setShowOcrModal(true);
+    } catch (err) {
+      console.error('Failed to load inbox item:', err);
+      toast.error(t('supplierInbox.errors.loadFailed') || 'Failed to load inbox item');
+      clearInboxParam();
+    } finally {
+      setLoadingInboxItem(false);
+    }
+  };
+
+  const clearInboxParam = () => {
+    const newParams = new URLSearchParams(searchParams);
+    newParams.delete('inbox');
+    setSearchParams(newParams, { replace: true });
+    setInboxItem(null);
+    setPreloadedFile(null);
+  };
+
+  const handleReturnToInbox = () => {
+    clearInboxParam();
+    navigate('/supplier-invoices/inbox');
+  };
 
   // Filter invoices
   const filteredInvoices = invoices.filter((invoice) => {
@@ -63,8 +143,20 @@ export default function SupplierInvoices() {
   };
 
   const handleOcrInvoiceCreated = () => {
-    // Invoice was created directly from OCR wizard - just close the modal
+    // Refresh the invoices list
+    if (currentOrganization?.id) {
+      dispatch(fetchSupplierInvoices({ organizationId: currentOrganization.id }));
+    }
+    // If not from inbox, close the modal
+    if (!inboxItem) {
+      setShowOcrModal(false);
+    }
+    // If from inbox, the modal will handle showing the success step
+  };
+
+  const handleOcrModalClose = () => {
     setShowOcrModal(false);
+    clearInboxParam();
   };
 
   const handleEdit = (invoice) => {
@@ -402,9 +494,27 @@ export default function SupplierInvoices() {
       {showOcrModal && (
         <OcrUploadModal
           isOpen={showOcrModal}
-          onClose={() => setShowOcrModal(false)}
+          onClose={handleOcrModalClose}
           onInvoiceCreated={handleOcrInvoiceCreated}
+          preloadedFile={preloadedFile}
+          fromInboxItemId={inboxItem?.id}
+          onReturnToInbox={inboxItem ? handleReturnToInbox : null}
         />
+      )}
+
+      {/* Loading indicator for inbox item */}
+      {loadingInboxItem && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
+          <div className="bg-white dark:bg-gray-800 rounded-lg p-6 flex items-center gap-4">
+            <svg className="animate-spin h-6 w-6 text-blue-600" fill="none" viewBox="0 0 24 24">
+              <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+              <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
+            </svg>
+            <span className="text-gray-700 dark:text-gray-300">
+              {t('supplierInbox.loadingDocument') || 'Loading document...'}
+            </span>
+          </div>
+        </div>
       )}
 
       {/* Confirmation Dialog */}

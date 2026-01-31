@@ -17,6 +17,19 @@ const OPENAI_API_URL = 'https://api.openai.com/v1/chat/completions'
 const EXTRACTION_PROMPT = `You are an expert at extracting information from Swedish supplier invoices and receipts. 
 Analyze the document and extract the relevant information.
 
+CRITICAL: HANDLING DIFFICULT DOCUMENTS
+This document may be a store receipt, thermal print, or poor quality scan. Please:
+- Carefully examine the ENTIRE image, including edges and corners
+- The image may be ROTATED or FLIPPED (horizontally/vertically) - mentally rotate if needed
+- If text appears mirrored/backwards, read it as if viewing in a mirror
+- Low contrast or faded text is common - look very carefully at faint characters
+- Thermal receipts often have faded text, especially dates and totals at the bottom
+- Store receipts typically have: store name at top, items in middle, totals at bottom
+- For receipts: the organization number is often at the very top or bottom in small print
+- Swedish store receipts usually show "KONTANT", "KORT", or payment method at the end
+- The total is often labeled "ATT BETALA", "TOTALT", "SUMMA" or just appears as the largest amount
+- Look for "Org.nr", "Org nr", "Organisationsnummer" for the org number
+
 IMPORTANT NOTES FOR SWEDISH INVOICES:
 
 1. INVOICE NUMBER (Fakturanummer) - This can be tricky to identify:
@@ -113,7 +126,13 @@ For Swedish invoices, common expense accounts include:
 Be precise with amounts. If VAT is shown separately, calculate the rates accurately.
 Parse Swedish date formats (YYYY-MM-DD, DD/MM/YYYY, YYMMDD, etc.) to YYYY-MM-DD.
 
-IMPORTANT: Return ONLY the JSON object, no additional text or markdown.`
+CRITICAL RULES:
+1. You MUST ALWAYS return a valid JSON object - NEVER return text explanations
+2. If you cannot read the document at all, return this exact JSON:
+   {"error": "unreadable", "confidence": {"overall": 0, "notes": "Document is unreadable or blank"}}
+3. If you can partially read it, fill in what you can and set low confidence scores
+4. NEVER say "I'm unable to" or "I cannot" - just return JSON with null values and low confidence
+5. Return ONLY the JSON object, no additional text, no markdown code blocks`
 
 // Function to extract text using OCR (Tesseract.js via Supabase)
 async function extractTextFromImage(imageBase64: string): Promise<string> {
@@ -142,7 +161,14 @@ async function extractInvoiceDataWithAI(
       content: [
         {
           type: 'text',
-          text: `Extract invoice data from this document image. ${ocrText ? `Additional OCR text for reference: ${ocrText}` : ''}`
+          text: `Extract invoice/receipt data from this document image. 
+IMPORTANT: The image may be a store receipt, thermal print, or low-quality scan. It could be:
+- Rotated or flipped (horizontally/vertically) - correct mentally and read the text
+- Faded or low contrast - examine carefully
+- A narrow thermal receipt with small text at the top/bottom
+
+Look carefully at ALL parts of the image, especially corners and edges where important info often appears.
+${ocrText ? `Additional OCR text for reference: ${ocrText}` : ''}`
         },
         {
           type: 'image_url',
@@ -199,7 +225,28 @@ async function extractInvoiceDataWithAI(
     jsonContent = jsonContent.slice(0, -3)
   }
 
-  return JSON.parse(jsonContent.trim())
+  // Check if the response is actually JSON or an error message
+  const trimmed = jsonContent.trim()
+  if (!trimmed.startsWith('{') && !trimmed.startsWith('[')) {
+    // AI returned text instead of JSON - likely couldn't read the document
+    console.error('AI returned non-JSON response:', trimmed.substring(0, 200))
+    
+    // Try to extract any useful info from the text response
+    if (trimmed.toLowerCase().includes('unable') || 
+        trimmed.toLowerCase().includes('cannot') ||
+        trimmed.toLowerCase().includes("can't") ||
+        trimmed.toLowerCase().includes('sorry')) {
+      throw new Error('UNREADABLE_DOCUMENT: The document could not be read. Please try uploading a clearer image with better lighting and contrast.')
+    }
+    throw new Error('INVALID_RESPONSE: AI did not return valid invoice data')
+  }
+
+  try {
+    return JSON.parse(trimmed)
+  } catch (parseError) {
+    console.error('JSON parse error. Content:', trimmed.substring(0, 500))
+    throw new Error('PARSE_ERROR: Failed to parse AI response as JSON')
+  }
 }
 
 // Convert PDF to images using pdf.js (for PDF processing)
@@ -220,11 +267,31 @@ serve(async (req) => {
   }
 
   try {
-    // Verify authorization header exists (Supabase handles JWT validation)
+    // Verify authorization - get the JWT from header and validate with Supabase
     const authHeader = req.headers.get('Authorization')
-    if (!authHeader) {
+    if (!authHeader || !authHeader.startsWith('Bearer ')) {
       return new Response(
-        JSON.stringify({ error: 'Missing authorization header' }),
+        JSON.stringify({ error: 'Missing or invalid authorization header' }),
+        { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      )
+    }
+
+    // Verify the JWT by creating a Supabase client with it
+    const supabaseUrl = Deno.env.get('SUPABASE_URL')!
+    const supabaseAnonKey = Deno.env.get('SUPABASE_ANON_KEY')!
+    
+    const supabase = createClient(supabaseUrl, supabaseAnonKey, {
+      global: {
+        headers: { Authorization: authHeader }
+      }
+    })
+
+    // Verify the user is authenticated
+    const { data: { user }, error: authError } = await supabase.auth.getUser()
+    if (authError || !user) {
+      console.error('Auth error:', authError)
+      return new Response(
+        JSON.stringify({ error: 'Invalid or expired authentication token' }),
         { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       )
     }
@@ -315,12 +382,22 @@ serve(async (req) => {
     
     let errorMessage = 'Failed to extract invoice data'
     let errorCode = 'EXTRACTION_FAILED'
+    let statusCode = 500
     
-    if (error.message.includes('JSON')) {
-      errorMessage = 'Failed to parse extracted data'
+    // Handle specific error types
+    if (error.message.startsWith('UNREADABLE_DOCUMENT:')) {
+      errorMessage = error.message.replace('UNREADABLE_DOCUMENT: ', '')
+      errorCode = 'UNREADABLE_DOCUMENT'
+      statusCode = 422 // Unprocessable Entity
+    } else if (error.message.startsWith('PARSE_ERROR:')) {
+      errorMessage = 'Failed to parse the AI response. Please try again.'
       errorCode = 'PARSE_ERROR'
+    } else if (error.message.startsWith('INVALID_RESPONSE:')) {
+      errorMessage = 'The AI could not extract data from this document. Please try a clearer image.'
+      errorCode = 'INVALID_RESPONSE'
+      statusCode = 422
     } else if (error.message.includes('OpenAI')) {
-      errorMessage = 'AI service error'
+      errorMessage = 'AI service error. Please try again.'
       errorCode = 'AI_SERVICE_ERROR'
     }
 
@@ -330,7 +407,6 @@ serve(async (req) => {
         code: errorCode,
         details: error.message
       }),
-      { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-    )
+      { status: statusCode, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }    )
   }
 })

@@ -65,6 +65,12 @@ export const proficiencyFeatures = {
     proficient: 'visible',
     expert: 'visible',
   },
+  'nav.supplierInbox': {
+    novice: 'hidden',
+    basic: 'visible',
+    proficient: 'visible',
+    expert: 'visible',
+  },
   'nav.templates': {
     novice: 'hidden', // Use defaults
     basic: 'visible',

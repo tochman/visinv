@@ -8,7 +8,7 @@ import {
   ArrowDownTrayIcon,
   ArchiveBoxIcon,
   TrashIcon,
-  EyeIcon,
+  DocumentPlusIcon,
   ExclamationTriangleIcon,
   InformationCircleIcon,
   DocumentDuplicateIcon,
@@ -297,7 +297,7 @@ export default function InboxItemRow({ item, isSelected, onSelect, onRefresh }) 
               className="p-2 text-blue-600 hover:bg-blue-50 dark:hover:bg-blue-900/30 rounded-lg transition-colors"
               data-cy="inbox-item-process"
             >
-              <EyeIcon className="h-5 w-5" />
+              <DocumentPlusIcon className="h-5 w-5" />
             </button>
           )}
 

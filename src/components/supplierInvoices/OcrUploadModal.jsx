@@ -16,6 +16,7 @@ import {
 import { createSupplierInvoice } from '../../features/supplierInvoices/supplierInvoicesSlice';
 import { createSupplier } from '../../features/suppliers/suppliersSlice';
 import { fetchAccounts } from '../../features/accounts/accountsSlice';
+import { markInboxItemProcessed } from '../../features/supplierInbox/supplierInboxSlice';
 import DocumentPreview from './DocumentPreview';
 import ExtractedDataForm from './ExtractedDataForm';
 
@@ -74,7 +75,14 @@ const pdfToImage = async (pdfFile) => {
   return dataUrl.split(',')[1];
 };
 
-export default function OcrUploadModal({ isOpen, onClose, onInvoiceCreated }) {
+export default function OcrUploadModal({ 
+  isOpen, 
+  onClose, 
+  onInvoiceCreated,
+  preloadedFile = null,  // { blob: Blob, fileName: string, contentType: string }
+  fromInboxItemId = null, // ID of inbox item being processed
+  onReturnToInbox = null, // Callback to navigate back to inbox
+}) {
   const { t } = useTranslation();
   const dispatch = useDispatch();
   const { currentOrganization } = useOrganization();
@@ -97,6 +105,8 @@ export default function OcrUploadModal({ isOpen, onClose, onInvoiceCreated }) {
   const [creatingSupplier, setCreatingSupplier] = useState(false);
   const [supplierMatches, setSupplierMatches] = useState([]); // Fuzzy matched suppliers
   const [supplierSearchQuery, setSupplierSearchQuery] = useState('');
+  const [isFromInbox, setIsFromInbox] = useState(false);
+  const [preloadingFile, setPreloadingFile] = useState(false);
 
   const suppliers = useSelector((state) => state.suppliers?.suppliers || []);
   const accounts = useSelector((state) => state.accounts?.items || []);
@@ -121,6 +131,8 @@ export default function OcrUploadModal({ isOpen, onClose, onInvoiceCreated }) {
     setSupplierSearchQuery('');
     setStep('upload');
     setIsPreviewExpanded(false);
+    setIsFromInbox(false);
+    setPreloadingFile(false);
     dispatch(clearOcrData());
     onClose();
   }, [dispatch, onClose]);
@@ -179,6 +191,30 @@ export default function OcrUploadModal({ isOpen, onClose, onInvoiceCreated }) {
       }
     }
   }, [t, toast]);
+
+  // Handle preloaded file from inbox (must be after handleFileSelect is defined)
+  useEffect(() => {
+    if (isOpen && preloadedFile && !file) {
+      setIsFromInbox(true);
+      setPreloadingFile(true);
+      
+      // Convert blob to File object
+      const fileObject = new File(
+        [preloadedFile.blob], 
+        preloadedFile.fileName, 
+        { type: preloadedFile.contentType }
+      );
+      
+      // Use the existing handleFileSelect logic
+      handleFileSelect(fileObject).then(() => {
+        setPreloadingFile(false);
+      }).catch((err) => {
+        console.error('Failed to load preloaded file:', err);
+        setPreloadingFile(false);
+        toast.error(t('ocrUpload.errors.preloadFailed') || 'Failed to load document');
+      });
+    }
+  }, [isOpen, preloadedFile, file, handleFileSelect, t, toast]);
 
   // Handle file input change
   const handleInputChange = (e) => {
@@ -529,15 +565,34 @@ export default function OcrUploadModal({ isOpen, onClose, onInvoiceCreated }) {
         })),
       };
 
-      await dispatch(createSupplierInvoice(invoiceData)).unwrap();
+      const result = await dispatch(createSupplierInvoice(invoiceData)).unwrap();
+      
+      // If this was from inbox, mark the inbox item as processed
+      if (fromInboxItemId && result?.id) {
+        try {
+          await dispatch(markInboxItemProcessed({ 
+            id: fromInboxItemId, 
+            supplierInvoiceId: result.id 
+          })).unwrap();
+        } catch (markErr) {
+          console.error('Failed to mark inbox item as processed:', markErr);
+          // Don't fail the whole operation if marking fails
+        }
+      }
+      
       toast.success(t('supplierInvoices.createSuccess'));
       
       // Call callback if provided
       if (onInvoiceCreated) {
-        onInvoiceCreated();
+        onInvoiceCreated(result);
       }
       
-      handleClose();
+      // If from inbox, show option to return to inbox instead of closing
+      if (isFromInbox && onReturnToInbox) {
+        setStep('success');
+      } else {
+        handleClose();
+      }
     } catch (err) {
       const errorMsg = typeof err === 'string' ? err : err?.message || 'An error occurred';
       let displayError = errorMsg;
@@ -1205,6 +1260,44 @@ export default function OcrUploadModal({ isOpen, onClose, onInvoiceCreated }) {
     );
   };
 
+  // Render success step (shown after processing inbox item)
+  const renderSuccessStep = () => (
+    <div className="p-8 text-center" data-cy="ocr-success-state">
+      <div className="mx-auto flex items-center justify-center h-16 w-16 rounded-full bg-green-100 dark:bg-green-900/30 mb-6">
+        <svg className="h-8 w-8 text-green-600 dark:text-green-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+        </svg>
+      </div>
+      <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-2">
+        {t('ocrUpload.success.title') || 'Invoice Created Successfully'}
+      </h3>
+      <p className="text-gray-600 dark:text-gray-400 mb-6">
+        {t('ocrUpload.success.description') || 'The supplier invoice has been saved and the inbox item has been marked as processed.'}
+      </p>
+      <div className="flex flex-col sm:flex-row gap-3 justify-center">
+        {onReturnToInbox && (
+          <button
+            onClick={() => {
+              handleClose();
+              onReturnToInbox();
+            }}
+            className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors"
+            data-cy="return-to-inbox-button"
+          >
+            {t('ocrUpload.success.returnToInbox') || 'Return to Inbox'}
+          </button>
+        )}
+        <button
+          onClick={handleClose}
+          className="px-4 py-2 border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 rounded-md hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
+          data-cy="close-success-button"
+        >
+          {t('common.close')}
+        </button>
+      </div>
+    </div>
+  );
+
   if (!isOpen) return null;
 
   return (
@@ -1298,6 +1391,7 @@ export default function OcrUploadModal({ isOpen, onClose, onInvoiceCreated }) {
             {step === 'review' && renderReviewStep()}
             {step === 'supplier' && renderSupplierStep()}
             {step === 'kontering' && renderKonteringStep()}
+            {step === 'success' && renderSuccessStep()}
           </div>
         </div>
       </div>

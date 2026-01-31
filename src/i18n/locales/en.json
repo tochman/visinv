@@ -553,7 +553,13 @@
       "processingFailed": "Failed to process document. Please try again.",
       "extractionFailed": "Failed to extract invoice data.",
       "aiServiceError": "AI service is temporarily unavailable.",
-      "pdfConversionFailed": "Failed to process PDF. Please try a different file."
+      "pdfConversionFailed": "Failed to process PDF. Please try a different file.",
+      "preloadFailed": "Failed to load the document from inbox."
+    },
+    "success": {
+      "title": "Invoice Created Successfully",
+      "description": "The supplier invoice has been saved and the inbox item has been marked as processed.",
+      "returnToInbox": "Return to Inbox"
     }
   },
   "products": {
@@ -1440,6 +1446,13 @@
       "noSlugTitle": "Email inbox not configured",
       "noSlugDescription": "Set up your organization's email slug in Organization Settings to start receiving invoices via email.",
       "goToSettings": "Go to Settings"
+    },
+    "loadingDocument": "Loading document...",
+    "errors": {
+      "itemNotFound": "Inbox item not found",
+      "alreadyProcessed": "This item has already been processed",
+      "noAttachment": "This item has no attachment to process",
+      "loadFailed": "Failed to load inbox item"
     }
   }
 }

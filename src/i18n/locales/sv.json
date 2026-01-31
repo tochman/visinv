@@ -541,7 +541,13 @@
       "processingFailed": "Kunde inte bearbeta dokumentet. Försök igen.",
       "extractionFailed": "Kunde inte extrahera fakturadata.",
       "aiServiceError": "AI-tjänsten är tillfälligt otillgänglig.",
-      "pdfConversionFailed": "Kunde inte bearbeta PDF-filen. Försök med en annan fil."
+      "pdfConversionFailed": "Kunde inte bearbeta PDF-filen. Försök med en annan fil.",
+      "preloadFailed": "Kunde inte ladda dokumentet från inkorgen."
+    },
+    "success": {
+      "title": "Faktura skapad",
+      "description": "Leverantörsfakturan har sparats och inkorgsposten har markerats som behandlad.",
+      "returnToInbox": "Tillbaka till inkorgen"
     }
   },
   "products": {
@@ -1421,6 +1427,13 @@
       "noSlugTitle": "E-postinkorg ej konfigurerad",
       "noSlugDescription": "Ställ in din organisations e-post-slug i Organisationsinställningar för att börja ta emot fakturor via e-post.",
       "goToSettings": "Gå till Inställningar"
+    },
+    "loadingDocument": "Laddar dokument...",
+    "errors": {
+      "itemNotFound": "Inkorgobjekt hittades inte",
+      "alreadyProcessed": "Detta objekt har redan behandlats",
+      "noAttachment": "Detta objekt har ingen bilaga att behandla",
+      "loadFailed": "Kunde inte ladda inkorgobjekt"
     }
   }
 }

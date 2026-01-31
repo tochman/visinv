@@ -268,7 +268,7 @@ class SupplierInboxItemResource extends BaseResource {
   /**
    * Download the file for an inbox item
    * @param {string} storagePath - Storage path of the file
-   * @returns {Promise<{data: Blob|null, error: Error|null}>}
+   * @returns {Promise<{blob: Blob|null, error: Error|null}>}
    */
   async downloadFile(storagePath) {
     const { data, error } = await this.supabase
@@ -276,7 +276,7 @@ class SupplierInboxItemResource extends BaseResource {
       .from('supplier-inbox')
       .download(storagePath);
 
-    return { data, error };
+    return { blob: data, error };
   }
 }
 

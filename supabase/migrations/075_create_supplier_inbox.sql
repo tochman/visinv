@@ -262,3 +262,52 @@ COMMENT ON COLUMN supplier_inbox_items.status IS 'Workflow status: new (unproces
 COMMENT ON COLUMN supplier_inbox_items.is_duplicate_of IS 'Reference to original item if this is a detected duplicate';
 COMMENT ON TABLE webhook_logs IS 'Logs for debugging webhook processing failures';
 COMMENT ON TABLE email_rate_limits IS 'Rate limiting for inbound emails per sender per organization';
+
+-- ============================================
+-- STORAGE BUCKET FOR SUPPLIER INBOX
+-- ============================================
+-- Note: This creates the bucket via SQL. Run this in Supabase SQL Editor.
+
+INSERT INTO storage.buckets (id, name, public, file_size_limit, allowed_mime_types)
+VALUES (
+  'supplier-inbox',
+  'supplier-inbox',
+  false,
+  10485760, -- 10MB limit
+  ARRAY['application/pdf', 'image/png', 'image/jpeg', 'image/jpg', 'image/gif', 'image/webp', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet', 'application/vnd.ms-excel']
+)
+ON CONFLICT (id) DO NOTHING;
+
+-- ============================================
+-- STORAGE BUCKET RLS POLICIES
+-- ============================================
+
+-- Allow service role to upload (Edge Function uses service role)
+-- No policy needed - service role bypasses RLS
+
+-- Allow authenticated users to read files for their organizations
+CREATE POLICY "Users can view inbox files for their organizations"
+ON storage.objects FOR SELECT
+USING (
+  bucket_id = 'supplier-inbox'
+  AND (
+    -- Extract org ID from path: {org_id}/timestamp-random-filename
+    (storage.foldername(name))[1]::uuid IN (
+      SELECT organization_id FROM organization_members 
+      WHERE user_id = auth.uid()
+    )
+  )
+);
+
+-- Allow authenticated users to delete files for their organizations
+CREATE POLICY "Users can delete inbox files for their organizations"
+ON storage.objects FOR DELETE
+USING (
+  bucket_id = 'supplier-inbox'
+  AND (
+    (storage.foldername(name))[1]::uuid IN (
+      SELECT organization_id FROM organization_members 
+      WHERE user_id = auth.uid()
+    )
+  )
+);
