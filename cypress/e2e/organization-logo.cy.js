@@ -196,18 +196,22 @@ describe('Organization Logo Upload', () => {
         }],
       }).as('getOrganizationsNoLogo');
 
-      // Stub window.confirm to return true
-      cy.window().then((win) => {
-        cy.stub(win, 'confirm').returns(true);
-      });
-
-      // Click remove button
+      // Click remove button to open confirm dialog
       cy.get('[data-cy="organization-remove-logo-button"]').click();
+
+      // Dialog should be visible
+      cy.get('[data-cy="confirm-dialog"]').should('exist');
+
+      // Click confirm button
+      cy.get('[data-cy="confirm-dialog-confirm"]').click();
 
       // Wait for operations
       cy.wait('@getOrganization');
       cy.wait('@deleteLogo');
       cy.wait('@updateOrganizationRemove');
+
+      // Dialog should close
+      cy.get('[data-cy="confirm-dialog"]').should('not.exist');
 
       // Should show success message
       cy.get('[data-cy="success-message"]').should('be.visible');
@@ -359,13 +363,14 @@ describe('Organization Logo Upload', () => {
         body: { error: 'Delete failed' },
       }).as('deleteLogoFail');
 
-      // Stub window.confirm
-      cy.window().then((win) => {
-        cy.stub(win, 'confirm').returns(true);
-      });
-
-      // Try to delete
+      // Click remove button to open confirm dialog
       cy.get('[data-cy="organization-remove-logo-button"]').click();
+
+      // Dialog should be visible
+      cy.get('[data-cy="confirm-dialog"]').should('exist');
+
+      // Click confirm button
+      cy.get('[data-cy="confirm-dialog-confirm"]').click();
 
       cy.wait('@getOrganization');
       cy.wait('@deleteLogoFail');
@@ -396,13 +401,17 @@ describe('Organization Logo Upload', () => {
       cy.wait('@getOrganizationsWithLogo');
       cy.get('[data-cy="tab-settings"]').click();
 
-      // Stub window.confirm to return false (cancel)
-      cy.window().then((win) => {
-        cy.stub(win, 'confirm').returns(false);
-      });
-
-      // Click remove button
+      // Click remove button to open confirm dialog
       cy.get('[data-cy="organization-remove-logo-button"]').click();
+
+      // Dialog should be visible
+      cy.get('[data-cy="confirm-dialog"]').should('exist');
+
+      // Click cancel button
+      cy.get('[data-cy="confirm-dialog-cancel"]').click();
+
+      // Dialog should close
+      cy.get('[data-cy="confirm-dialog"]').should('not.exist');
 
       // Logo should still be visible (delete was cancelled)
       cy.get('[data-cy="organization-logo-image"]').should('be.visible');

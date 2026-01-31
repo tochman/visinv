@@ -261,7 +261,7 @@ describe('Client Management', () => {
     })
 
     it('is expected to open edit modal with prefilled values', () => {
-      cy.getByCy(`edit-client-${existingClient.id}`).click()
+      cy.getByCy(`edit-client-${existingClient.id}-desktop`).filter(':visible').click()
       cy.getByCy('client-modal').should('be.visible')
       // Language is set to 'en' in login command
       cy.getByCy('client-modal-title').should('contain', 'Edit')
@@ -281,7 +281,7 @@ describe('Client Management', () => {
     })
 
     it('is expected to update a client successfully', () => {
-      cy.getByCy(`edit-client-${existingClient.id}`).click()
+      cy.getByCy(`edit-client-${existingClient.id}-desktop`).click()
       cy.getByCy('client-modal').should('be.visible')
 
       // Modify some fields (using force: true to avoid sticky header coverage issues)
@@ -294,7 +294,7 @@ describe('Client Management', () => {
     })
 
     it('is expected to preserve unmodified fields when updating', () => {
-      cy.getByCy(`edit-client-${existingClient.id}`).click()
+      cy.getByCy(`edit-client-${existingClient.id}-desktop`).filter(':visible').click()
       cy.getByCy('client-modal').should('be.visible')
 
       // Only change the name

@@ -227,13 +227,17 @@ describe('Profile Avatar Upload', () => {
       cy.get('[data-cy="tab-profile"]').click();
       cy.wait('@getProfileWithAvatar');
 
-      // Stub window.confirm to return false (cancel)
-      cy.window().then((win) => {
-        cy.stub(win, 'confirm').returns(false);
-      });
-
-      // Click remove button
+      // Click remove button to open confirm dialog
       cy.get('[data-cy="profile-remove-avatar-button"]').click();
+
+      // Dialog should be visible
+      cy.get('[data-cy="confirm-dialog"]').should('exist');
+
+      // Click cancel button
+      cy.get('[data-cy="confirm-dialog-cancel"]').click();
+
+      // Dialog should close
+      cy.get('[data-cy="confirm-dialog"]').should('not.exist');
 
       // Avatar should still be visible (delete was cancelled)
       cy.get('[data-cy="profile-avatar-image"]').should('exist');

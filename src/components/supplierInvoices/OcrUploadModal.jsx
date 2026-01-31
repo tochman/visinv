@@ -107,6 +107,7 @@ export default function OcrUploadModal({
   const [supplierSearchQuery, setSupplierSearchQuery] = useState('');
   const [isFromInbox, setIsFromInbox] = useState(false);
   const [preloadingFile, setPreloadingFile] = useState(false);
+  const [reviewValidationAttempted, setReviewValidationAttempted] = useState(false);
 
   const suppliers = useSelector((state) => state.suppliers?.suppliers || []);
   const accounts = useSelector((state) => state.accounts?.items || []);
@@ -133,6 +134,7 @@ export default function OcrUploadModal({
     setIsPreviewExpanded(false);
     setIsFromInbox(false);
     setPreloadingFile(false);
+    setReviewValidationAttempted(false);
     dispatch(clearOcrData());
     onClose();
   }, [dispatch, onClose]);
@@ -374,8 +376,50 @@ export default function OcrUploadModal({
     return matches;
   }, [extractedData?.supplier, suppliers]);
 
+  // Validate required fields for review step - returns object with field names as keys
+  const validateReviewStep = useCallback(() => {
+    const errors = {};
+    const invoice = extractedData?.invoice || {};
+    
+    if (!invoice.invoice_number?.trim()) {
+      errors.invoice_number = true;
+    }
+    if (!invoice.invoice_date) {
+      errors.invoice_date = true;
+    }
+    if (!invoice.due_date) {
+      errors.due_date = true;
+    }
+    
+    return errors;
+  }, [extractedData]);
+
+  // Get list of missing field names for error message
+  const getMissingFieldNames = useCallback((errors) => {
+    const fieldNames = [];
+    if (errors.invoice_number) fieldNames.push(t('supplierInvoices.invoiceNumber'));
+    if (errors.invoice_date) fieldNames.push(t('supplierInvoices.invoiceDate'));
+    if (errors.due_date) fieldNames.push(t('supplierInvoices.dueDate'));
+    return fieldNames;
+  }, [t]);
+
+  // Check if there are any validation errors
+  const reviewValidationErrors = validateReviewStep();
+  const hasReviewErrors = Object.keys(reviewValidationErrors).length > 0;
+
   // Proceed to supplier step (from review)
   const handleProceedToSupplier = () => {
+    setReviewValidationAttempted(true);
+    
+    // Validate required fields
+    if (hasReviewErrors) {
+      const fieldNames = getMissingFieldNames(reviewValidationErrors);
+      toast.error(t('ocrUpload.errors.requiredFields', { 
+        fields: fieldNames.join(', ') 
+      }));
+      return;
+    }
+    
     const matches = findMatchingSuppliers();
     setSupplierMatches(matches);
     setSupplierSearchQuery(extractedData?.supplier?.name || '');
@@ -779,6 +823,7 @@ export default function OcrUploadModal({
           matchedSupplier={matchedSupplier}
           onDataUpdate={handleDataUpdate}
           showSupplierSection={false}
+          validationErrors={reviewValidationAttempted ? reviewValidationErrors : {}}
         />
         
         {/* Action buttons */}

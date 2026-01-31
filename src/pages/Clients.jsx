@@ -140,7 +140,8 @@ export default function Clients() {
       {/* Client List */}
       {!loading && filteredClients.length > 0 && (
         <div data-cy="clients-list" className="bg-white dark:bg-gray-800 rounded-sm shadow dark:shadow-gray-900/20 overflow-hidden">
-          <div className="overflow-x-auto">
+          {/* Desktop Table View */}
+          <div className="hidden md:block overflow-x-auto">
             <table data-cy="clients-table" className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
               <thead className="bg-gray-50 dark:bg-gray-900/50">
                 <tr>
@@ -184,14 +185,14 @@ export default function Clients() {
                     <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                       <button
                         onClick={() => handleEdit(client)}
-                        data-cy={`edit-client-${client.id}`}
+                        data-cy={`edit-client-${client.id}-desktop`}
                         className="text-blue-600 dark:text-blue-400 hover:text-blue-900 dark:hover:text-blue-300 mr-4"
                       >
                         {t('common.edit')}
                       </button>
                       <button
                         onClick={() => setDeleteConfirm(client.id)}
-                        data-cy={`delete-client-${client.id}`}
+                        data-cy={`delete-client-${client.id}-desktop`}
                         className="text-red-600 dark:text-red-400 hover:text-red-900 dark:hover:text-red-300"
                       >
                         {t('common.delete')}
@@ -201,6 +202,74 @@ export default function Clients() {
                 ))}
               </tbody>
             </table>
+          </div>
+          
+          {/* Mobile Card View */}
+          <div className="md:hidden divide-y divide-gray-200 dark:divide-gray-700">
+            {filteredClients.map((client) => (
+              <div 
+                key={client.id} 
+                data-cy={`client-card-${client.id}`}
+                className="p-4 hover:bg-gray-50 dark:hover:bg-gray-700/50"
+              >
+                <div className="flex justify-between items-start mb-3">
+                  <div>
+                    <div data-cy="client-name" className="font-medium text-gray-900 dark:text-white mb-1">
+                      {client.name}
+                    </div>
+                    {client.contact_person && (
+                      <div className="text-sm text-gray-500 dark:text-gray-400">{client.contact_person}</div>
+                    )}
+                  </div>
+                </div>
+                
+                <div className="space-y-2 text-sm mb-3">
+                  {client.email && (
+                    <div>
+                      <span className="text-gray-500 dark:text-gray-400">{t('clients.email')}: </span>
+                      <span data-cy="client-email" className="text-gray-900 dark:text-white">{client.email}</span>
+                    </div>
+                  )}
+                  {client.phone && (
+                    <div>
+                      <span className="text-gray-500 dark:text-gray-400">{t('clients.phone')}: </span>
+                      <span className="text-gray-900 dark:text-white">{client.phone}</span>
+                    </div>
+                  )}
+                  {(client.city || client.country) && (
+                    <div>
+                      <span className="text-gray-500 dark:text-gray-400">{t('clients.location')}: </span>
+                      <span className="text-gray-900 dark:text-white">
+                        {[client.city, client.country].filter(Boolean).join(', ')}
+                      </span>
+                    </div>
+                  )}
+                  {client.organization_number && (
+                    <div>
+                      <span className="text-gray-500 dark:text-gray-400">{t('clients.orgNumber')}: </span>
+                      <span className="text-gray-900 dark:text-white">{client.organization_number}</span>
+                    </div>
+                  )}
+                </div>
+                
+                <div className="flex gap-2">
+                  <button
+                    onClick={() => handleEdit(client)}
+                    data-cy={`edit-client-${client.id}-mobile`}
+                    className="flex-1 px-3 py-2 text-sm bg-blue-600 text-white rounded-sm hover:bg-blue-700"
+                  >
+                    {t('common.edit')}
+                  </button>
+                  <button
+                    onClick={() => setDeleteConfirm(client.id)}
+                    data-cy={`delete-client-${client.id}-mobile`}
+                    className="flex-1 px-3 py-2 text-sm bg-red-600 text-white rounded-sm hover:bg-red-700"
+                  >
+                    {t('common.delete')}
+                  </button>
+                </div>
+              </div>
+            ))}
           </div>
         </div>
       )}

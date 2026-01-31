@@ -5,6 +5,7 @@ import { useOrganization } from '../../contexts/OrganizationContext';
 import { Organization } from '../../services/resources/Organization';
 import { ArrowUpTrayIcon, TrashIcon } from '@heroicons/react/24/outline';
 import EmailSlugSettings from './EmailSlugSettings';
+import ConfirmDialog from '../common/ConfirmDialog';
 
 export default function OrganizationSettings() {
   const { t } = useTranslation();
@@ -14,6 +15,7 @@ export default function OrganizationSettings() {
   const [error, setError] = useState(null);
   const [successMessage, setSuccessMessage] = useState('');
   const [uploadingLogo, setUploadingLogo] = useState(false);
+  const [showDeleteLogoDialog, setShowDeleteLogoDialog] = useState(false);
   const logoInputRef = useRef(null);
 
   const { register, handleSubmit, formState: { errors }, reset } = useForm({
@@ -97,13 +99,10 @@ export default function OrganizationSettings() {
   };
 
   const handleLogoRemove = async () => {
-    if (!window.confirm(t('organization.confirmDeleteLogo'))) {
-      return;
-    }
-
     setUploadingLogo(true);
     setError(null);
     setSuccessMessage('');
+    setShowDeleteLogoDialog(false);
 
     const { data, error: deleteError } = await Organization.deleteLogoImage(currentOrganization.id);
 
@@ -220,7 +219,7 @@ export default function OrganizationSettings() {
                     {currentOrganization?.logo_url && (
                       <button
                         type="button"
-                        onClick={handleLogoRemove}
+                        onClick={() => setShowDeleteLogoDialog(true)}
                         disabled={uploadingLogo}
                         title={t('organization.removeLogo')}
                         className="p-2 border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 disabled:opacity-50 rounded-sm transition-colors"
@@ -677,6 +676,18 @@ export default function OrganizationSettings() {
           onSlugUpdated={refreshOrganizations}
         />
       </div>
+
+      {/* Delete Logo Confirmation Dialog */}
+      <ConfirmDialog
+        isOpen={showDeleteLogoDialog}
+        onClose={() => setShowDeleteLogoDialog(false)}
+        onConfirm={handleLogoRemove}
+        title={t('organization.removeLogo')}
+        message={t('organization.confirmDeleteLogo')}
+        confirmText={t('common.delete')}
+        variant="danger"
+        loading={uploadingLogo}
+      />
     </div>
   );
 }

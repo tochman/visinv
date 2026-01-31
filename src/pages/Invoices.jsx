@@ -402,7 +402,8 @@ export default function Invoices() {
       {/* Invoice List */}
       {!loading && filteredInvoices.length > 0 && (
         <div data-cy="invoices-list" className="bg-white dark:bg-gray-800 rounded-sm shadow dark:shadow-gray-900/20 overflow-hidden">
-          <div className="overflow-x-auto">
+          {/* Desktop Table View */}
+          <div className="hidden md:block overflow-x-auto">
             <table data-cy="invoices-table" className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
               <thead className="bg-gray-50 dark:bg-gray-900/50">
                 <tr>
@@ -656,6 +657,115 @@ export default function Invoices() {
                 ))}
               </tbody>
             </table>
+          </div>
+          
+          {/* Mobile Card View */}
+          <div className="md:hidden divide-y divide-gray-200 dark:divide-gray-700">
+            {filteredInvoices.map((invoice) => (
+              <div 
+                key={invoice.id}
+                data-cy={`invoice-card-${invoice.id}`}
+                className={`p-4 hover:bg-gray-50 dark:hover:bg-gray-700/50 ${getOverdueClass(invoice)}`}
+              >
+                {/* Header */}
+                <div className="flex justify-between items-start mb-3">
+                  <div className="flex-1">
+                    <div className="font-medium text-gray-900 dark:text-white mb-1">
+                      {invoice.invoice_number}
+                    </div>
+                    <div className="text-sm text-gray-600 dark:text-gray-400">
+                      {invoice.client?.name || '-'}
+                    </div>
+                  </div>
+                  <div className="flex gap-1">
+                    <button
+                      onClick={() => handlePreviewPDF(invoice)}
+                      className="p-2 text-indigo-600 hover:text-indigo-900 dark:text-indigo-400 dark:hover:text-indigo-300"
+                      title={t('invoice.preview')}
+                    >
+                      <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                      </svg>
+                    </button>
+                  </div>
+                </div>
+                
+                {/* Details Grid */}
+                <div className="grid grid-cols-2 gap-3 text-sm mb-3">
+                  <div>
+                    <div className="text-gray-500 dark:text-gray-400 text-xs mb-1">{t('invoice.issueDate')}</div>
+                    <div className="text-gray-900 dark:text-white">{formatDate(invoice.issue_date)}</div>
+                  </div>
+                  <div>
+                    <div className="text-gray-500 dark:text-gray-400 text-xs mb-1">{t('invoice.dueDate')}</div>
+                    <div className="text-gray-900 dark:text-white">{formatDate(invoice.due_date)}</div>
+                  </div>
+                  <div className="col-span-2">
+                    <div className="text-gray-500 dark:text-gray-400 text-xs mb-1">{t('invoice.total')}</div>
+                    <div className="text-lg font-semibold text-gray-900 dark:text-white">
+                      {formatCurrency(invoice.total_amount, invoice.currency)}
+                    </div>
+                  </div>
+                </div>
+                
+                {/* Status Badges */}
+                <div className="flex gap-2 flex-wrap mb-3">
+                  <span className={`px-2 py-1 text-xs font-medium rounded-full ${getStatusColor(invoice.status)}`}>
+                    {t(`invoice.statuses.${invoice.status}`)}
+                  </span>
+                  {invoice.invoice_type === 'CREDIT' && (
+                    <span className={`px-2 py-1 text-xs font-medium rounded-full ${getTypeColor('CREDIT')}`}>
+                      {t('invoices.creditNote')}
+                    </span>
+                  )}
+                  {invoice.is_recurring && (
+                    <span className="px-2 py-1 text-xs font-medium rounded-full bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300">
+                      <ArrowPathIcon className="h-3 w-3 inline mr-1" />
+                      {t('invoices.recurring')}
+                    </span>
+                  )}
+                  {invoice.reminder_sent_at && (
+                    <span className="px-2 py-1 text-xs font-medium rounded-full bg-purple-100 text-purple-800 dark:bg-purple-900/30 dark:text-purple-300">
+                      {t('reminder.reminderSent')} ({invoice.reminder_count || 1})
+                    </span>
+                  )}
+                </div>
+                
+                {isOverdue(invoice) && (
+                  <div className="text-xs text-red-600 dark:text-red-400 mb-3">
+                    {t('reminder.overdueBy')} {getDaysOverdue(invoice)} {getDaysOverdue(invoice) === 1 ? t('reminder.day') : t('reminder.days')}
+                  </div>
+                )}
+                
+                {/* Actions */}
+                <div className="flex gap-2 flex-wrap">
+                  <button
+                    onClick={() => handleDownloadPDF(invoice)}
+                    disabled={generatingPDF === invoice.id}
+                    className="flex-1 px-3 py-2 text-sm bg-purple-600 text-white rounded-sm hover:bg-purple-700 disabled:opacity-50"
+                  >
+                    {generatingPDF === invoice.id ? t('common.loading') : t('invoice.downloadPDF')}
+                  </button>
+                  {invoice.status === 'draft' && (
+                    <button
+                      onClick={() => handleMarkAsSent(invoice.id)}
+                      className="flex-1 px-3 py-2 text-sm bg-blue-600 text-white rounded-sm hover:bg-blue-700"
+                    >
+                      {t('invoice.markAsSent')}
+                    </button>
+                  )}
+                  {invoice.status === 'sent' && (
+                    <button
+                      onClick={() => handleMarkAsPaid(invoice)}
+                      className="flex-1 px-3 py-2 text-sm bg-green-600 text-white rounded-sm hover:bg-green-700"
+                    >
+                      {t('invoice.markAsPaid')}
+                    </button>
+                  )}
+                </div>
+              </div>
+            ))}
           </div>
         </div>
       )}

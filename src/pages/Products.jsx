@@ -197,7 +197,8 @@ export default function Products() {
       {/* Product List */}
       {!loading && filteredProducts.length > 0 && (
         <div data-cy="products-list" className="bg-white dark:bg-gray-800 rounded-sm shadow dark:shadow-gray-900/20">
-          <div className="overflow-x-auto overflow-y-visible">
+          {/* Desktop Table View */}
+          <div className="hidden md:block overflow-x-auto overflow-y-visible">
             <table data-cy="products-table" className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
               <thead className="bg-gray-50 dark:bg-gray-900/50">
                 <tr>
@@ -258,14 +259,14 @@ export default function Products() {
                     <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                       <button
                         onClick={() => handleEdit(product)}
-                        data-cy={`edit-product-${product.id}`}
+                        data-cy={`edit-product-${product.id}-desktop`}
                         className="text-blue-600 dark:text-blue-400 hover:text-blue-900 dark:hover:text-blue-300 mr-4"
                       >
                         {t('common.edit')}
                       </button>
                       <button
                         onClick={() => setDeleteConfirm(product.id)}
-                        data-cy={`delete-product-${product.id}`}
+                        data-cy={`delete-product-${product.id}-desktop`}
                         className="text-red-600 dark:text-red-400 hover:text-red-900 dark:hover:text-red-300"
                       >
                         {t('common.delete')}
@@ -275,6 +276,70 @@ export default function Products() {
                 ))}
               </tbody>
             </table>
+          </div>
+          
+          {/* Mobile Card View */}
+          <div className="md:hidden divide-y divide-gray-200 dark:divide-gray-700">
+            {filteredProducts.map((product) => (
+              <div 
+                key={product.id}
+                data-cy={`product-card-${product.id}`}
+                className="p-4 hover:bg-gray-50 dark:hover:bg-gray-700/50"
+              >
+                <div className="mb-3">
+                  <div data-cy="product-name" className="font-medium text-gray-900 dark:text-white mb-1">
+                    {product.name}
+                  </div>
+                  {product.description && (
+                    <div data-cy="product-description" className="text-sm text-gray-600 dark:text-gray-400">
+                      {product.description}
+                    </div>
+                  )}
+                </div>
+                
+                <div className="space-y-2 text-sm mb-3">
+                  {product.sku && (
+                    <div>
+                      <span className="text-gray-500 dark:text-gray-400">{t('products.sku')}: </span>
+                      <span data-cy="product-sku" className="text-gray-900 dark:text-white">{product.sku}</span>
+                    </div>
+                  )}
+                  <div>
+                    <span className="text-gray-500 dark:text-gray-400">{t('products.prices')}: </span>
+                    <div data-cy="product-prices" className="mt-1">
+                      {renderPrices(product.prices, product.id)}
+                    </div>
+                  </div>
+                  <div className="flex gap-4">
+                    <div>
+                      <span className="text-gray-500 dark:text-gray-400">{t('products.unit')}: </span>
+                      <span data-cy="product-unit" className="text-gray-900 dark:text-white">{product.unit}</span>
+                    </div>
+                    <div>
+                      <span className="text-gray-500 dark:text-gray-400">{t('products.taxRate')}: </span>
+                      <span data-cy="product-tax-rate" className="text-gray-900 dark:text-white">{product.tax_rate}%</span>
+                    </div>
+                  </div>
+                </div>
+                
+                <div className="flex gap-2">
+                  <button
+                    onClick={() => handleEdit(product)}
+                    data-cy={`edit-product-${product.id}-mobile`}
+                    className="flex-1 px-3 py-2 text-sm bg-blue-600 text-white rounded-sm hover:bg-blue-700"
+                  >
+                    {t('common.edit')}
+                  </button>
+                  <button
+                    onClick={() => setDeleteConfirm(product.id)}
+                    data-cy={`delete-product-${product.id}-mobile`}
+                    className="flex-1 px-3 py-2 text-sm bg-red-600 text-white rounded-sm hover:bg-red-700"
+                  >
+                    {t('common.delete')}
+                  </button>
+                </div>
+              </div>
+            ))}
           </div>
         </div>
       )}

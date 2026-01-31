@@ -542,7 +542,8 @@
       "extractionFailed": "Kunde inte extrahera fakturadata.",
       "aiServiceError": "AI-tjänsten är tillfälligt otillgänglig.",
       "pdfConversionFailed": "Kunde inte bearbeta PDF-filen. Försök med en annan fil.",
-      "preloadFailed": "Kunde inte ladda dokumentet från inkorgen."
+      "preloadFailed": "Kunde inte ladda dokumentet från inkorgen.",
+      "requiredFields": "Fyll i obligatoriska fält: {{fields}}"
     },
     "success": {
       "title": "Faktura skapad",

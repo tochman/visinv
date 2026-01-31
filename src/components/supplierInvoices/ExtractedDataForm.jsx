@@ -41,7 +41,8 @@ function EditableField({
   type = 'text',
   required = false,
   placeholder,
-  dataCy 
+  dataCy,
+  hasError = false 
 }) {
   return (
     <div className="space-y-1">
@@ -57,9 +58,12 @@ function EditableField({
         value={value || ''}
         onChange={(e) => onChange(e.target.value)}
         placeholder={placeholder}
-        className="w-full px-3 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-sm 
+        className={`w-full px-3 py-2 text-sm border rounded-sm 
                    focus:ring-2 focus:ring-blue-500 focus:border-transparent
-                   bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+                   bg-white dark:bg-gray-700 text-gray-900 dark:text-white
+                   ${hasError 
+                     ? 'border-red-500 dark:border-red-400' 
+                     : 'border-gray-300 dark:border-gray-600'}`}
         data-cy={dataCy}
       />
     </div>
@@ -77,7 +81,8 @@ export default function ExtractedDataForm({
   onDataUpdate, 
   onSupplierChange,
   selectedSupplierId: externalSelectedSupplierId,
-  showSupplierSection = true // New prop to control supplier section visibility
+  showSupplierSection = true, // Prop to control supplier section visibility
+  validationErrors = {} // Object with field names as keys for validation errors
 }) {
   const { t } = useTranslation();
   const suppliers = useSelector((state) => state.suppliers?.suppliers || []);
@@ -368,6 +373,7 @@ export default function ExtractedDataForm({
             confidence={formData.confidence?.invoice_number}
             required
             dataCy="invoice-number-input"
+            hasError={validationErrors.invoice_number}
           />
           <EditableField
             label={t('supplierInvoices.invoiceDate')}
@@ -376,6 +382,7 @@ export default function ExtractedDataForm({
             type="date"
             required
             dataCy="invoice-date-input"
+            hasError={validationErrors.invoice_date}
           />
           <EditableField
             label={t('supplierInvoices.dueDate')}
@@ -384,6 +391,7 @@ export default function ExtractedDataForm({
             type="date"
             required
             dataCy="due-date-input"
+            hasError={validationErrors.due_date}
           />
           <EditableField
             label={t('ocrUpload.paymentReference')}

@@ -179,7 +179,9 @@ export default function Suppliers() {
       {/* Suppliers Table */}
       {!loading && filteredSuppliers.length > 0 && (
         <div data-cy="suppliers-list" className="bg-white dark:bg-gray-800 rounded-sm shadow-sm overflow-hidden animate-fade-in-up animate-delay-200">
-          <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
+          {/* Desktop Table View */}
+          <div className="hidden md:block overflow-x-auto">
+            <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
             <thead className="bg-gray-50 dark:bg-gray-700">
               <tr>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
@@ -237,14 +239,14 @@ export default function Suppliers() {
                   <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                     <button
                       onClick={() => handleEdit(supplier)}
-                      data-cy={`edit-supplier-${supplier.id}`}
+                      data-cy={`edit-supplier-${supplier.id}-desktop`}
                       className="text-blue-600 dark:text-blue-400 hover:text-blue-900 dark:hover:text-blue-300 mr-4"
                     >
                       {t('common.edit')}
                     </button>
                     <button
                       onClick={() => setDeleteConfirm(supplier.id)}
-                      data-cy={`delete-supplier-${supplier.id}`}
+                      data-cy={`delete-supplier-${supplier.id}-desktop`}
                       className="text-red-600 dark:text-red-400 hover:text-red-900 dark:hover:text-red-300"
                     >
                       {t('common.delete')}
@@ -254,6 +256,74 @@ export default function Suppliers() {
               ))}
             </tbody>
           </table>
+          </div>
+          
+          {/* Mobile Card View */}
+          <div className="md:hidden divide-y divide-gray-200 dark:divide-gray-700">
+            {filteredSuppliers.map((supplier) => (
+              <div 
+                key={supplier.id}
+                data-cy={`supplier-card-${supplier.id}`}
+                className="p-4 hover:bg-gray-50 dark:hover:bg-gray-700/50"
+              >
+                <div className="flex justify-between items-start mb-3">
+                  <div>
+                    <div className="font-medium text-gray-900 dark:text-white mb-1">
+                      {supplier.name}
+                    </div>
+                    {supplier.organization_number && (
+                      <div className="text-sm text-gray-500 dark:text-gray-400">{supplier.organization_number}</div>
+                    )}
+                  </div>
+                  <span className={`px-2 py-1 text-xs font-semibold rounded-full ${
+                    supplier.is_active 
+                      ? 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400'
+                      : 'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-400'
+                  }`}>
+                    {supplier.is_active ? t('suppliers.isActive') : t('suppliers.inactive')}
+                  </span>
+                </div>
+                
+                <div className="space-y-2 text-sm mb-3">
+                  {supplier.email && (
+                    <div>
+                      <span className="text-gray-500 dark:text-gray-400">{t('suppliers.email')}: </span>
+                      <span className="text-gray-900 dark:text-white">{supplier.email}</span>
+                    </div>
+                  )}
+                  {supplier.phone && (
+                    <div>
+                      <span className="text-gray-500 dark:text-gray-400">{t('suppliers.phone')}: </span>
+                      <span className="text-gray-900 dark:text-white">{supplier.phone}</span>
+                    </div>
+                  )}
+                  {supplier.city && (
+                    <div>
+                      <span className="text-gray-500 dark:text-gray-400">{t('suppliers.location')}: </span>
+                      <span className="text-gray-900 dark:text-white">{supplier.city}</span>
+                    </div>
+                  )}
+                </div>
+                
+                <div className="flex gap-2">
+                  <button
+                    onClick={() => handleEdit(supplier)}
+                    data-cy={`edit-supplier-${supplier.id}-mobile`}
+                    className="flex-1 px-3 py-2 text-sm bg-blue-600 text-white rounded-sm hover:bg-blue-700"
+                  >
+                    {t('common.edit')}
+                  </button>
+                  <button
+                    onClick={() => setDeleteConfirm(supplier.id)}
+                    data-cy={`delete-supplier-${supplier.id}-mobile`}
+                    className="flex-1 px-3 py-2 text-sm bg-red-600 text-white rounded-sm hover:bg-red-700"
+                  >
+                    {t('common.delete')}
+                  </button>
+                </div>
+              </div>
+            ))}
+          </div>
         </div>
       )}
 

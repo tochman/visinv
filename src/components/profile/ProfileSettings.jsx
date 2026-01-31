@@ -5,6 +5,7 @@ import { Profile } from '../../services/resources/Profile';
 import { updateProficiency } from '../../features/auth/authSlice';
 import { useToast } from '../../context/ToastContext';
 import ProficiencySelector from '../common/ProficiencySelector';
+import ConfirmDialog from '../common/ConfirmDialog';
 import { ArrowUpTrayIcon, TrashIcon } from '@heroicons/react/24/outline';
 
 export default function ProfileSettings() {
@@ -18,6 +19,7 @@ export default function ProfileSettings() {
   const [savingProficiency, setSavingProficiency] = useState(false);
   const [isEditingName, setIsEditingName] = useState(false);
   const [fullName, setFullName] = useState('');
+  const [showDeleteAvatarDialog, setShowDeleteAvatarDialog] = useState(false);
   const fileInputRef = useRef(null);
 
   // Fetch profile on mount
@@ -69,11 +71,8 @@ export default function ProfileSettings() {
   };
 
   const handleAvatarRemove = async () => {
-    if (!window.confirm(t('profile.confirmDeleteAvatar'))) {
-      return;
-    }
-
     setUploading(true);
+    setShowDeleteAvatarDialog(false);
 
     const { data, error: deleteError } = await Profile.deleteAvatarImage();
 
@@ -203,7 +202,7 @@ export default function ProfileSettings() {
                   {profile?.avatar_url && (
                     <button
                       type="button"
-                      onClick={handleAvatarRemove}
+                      onClick={() => setShowDeleteAvatarDialog(true)}
                       disabled={uploading}
                       title={t('profile.removeAvatar')}
                       className="p-2 border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 disabled:opacity-50 rounded-sm transition-colors"
@@ -316,6 +315,18 @@ export default function ProfileSettings() {
           </div>
         </div>
       </div>
+
+      {/* Delete Avatar Confirmation Dialog */}
+      <ConfirmDialog
+        isOpen={showDeleteAvatarDialog}
+        onClose={() => setShowDeleteAvatarDialog(false)}
+        onConfirm={handleAvatarRemove}
+        title={t('profile.removeAvatar')}
+        message={t('profile.confirmDeleteAvatar')}
+        confirmText={t('common.delete')}
+        variant="danger"
+        loading={uploading}
+      />
     </div>
   );
 }

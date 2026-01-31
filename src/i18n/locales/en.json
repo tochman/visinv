@@ -554,7 +554,8 @@
       "extractionFailed": "Failed to extract invoice data.",
       "aiServiceError": "AI service is temporarily unavailable.",
       "pdfConversionFailed": "Failed to process PDF. Please try a different file.",
-      "preloadFailed": "Failed to load the document from inbox."
+      "preloadFailed": "Failed to load the document from inbox.",
+      "requiredFields": "Please fill in required fields: {{fields}}"
     },
     "success": {
       "title": "Invoice Created Successfully",
