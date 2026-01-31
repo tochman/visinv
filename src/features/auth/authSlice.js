@@ -1,5 +1,6 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
 import { authService, supabase } from '../../services/supabase';
+import { Profile } from '../../services/resources';
 
 // Helper to fetch user profile
 const fetchUserProfile = async (userId) => {
@@ -67,6 +68,19 @@ export const checkSession = createAsyncThunk(
   }
 );
 
+/**
+ * Update user proficiency level
+ * US-124: User Proficiency Level & Adaptive UI
+ */
+export const updateProficiency = createAsyncThunk(
+  'auth/updateProficiency',
+  async (level, { rejectWithValue }) => {
+    const { data, error } = await Profile.updateProficiency(level);
+    if (error) return rejectWithValue(error.message);
+    return data;
+  }
+);
+
 const authSlice = createSlice({
   name: 'auth',
   initialState: {
@@ -78,6 +92,7 @@ const authSlice = createSlice({
     isAuthenticated: false,
     isAdmin: false,
     initialized: false, // Track if we've checked the session
+    proficiency: 'basic', // US-124: Default proficiency level
   },
   reducers: {
     setUser: (state, action) => {
@@ -89,6 +104,10 @@ const authSlice = createSlice({
     },
     clearError: (state) => {
       state.error = null;
+    },
+    // US-124: Set proficiency directly (for onboarding before profile exists)
+    setProficiency: (state, action) => {
+      state.proficiency = action.payload;
     },
   },
   extraReducers: (builder) => {
@@ -105,6 +124,7 @@ const authSlice = createSlice({
         state.profile = action.payload.profile;
         state.isAuthenticated = true;
         state.isAdmin = action.payload.profile?.is_admin || false;
+        state.proficiency = action.payload.profile?.proficiency_level || 'basic';
       })
       .addCase(signIn.rejected, (state, action) => {
         state.loading = false;
@@ -131,6 +151,7 @@ const authSlice = createSlice({
         state.session = null;
         state.isAuthenticated = false;
         state.isAdmin = false;
+        state.proficiency = 'basic';
       })
       // Check Session
       .addCase(checkSession.pending, (state) => {
@@ -145,6 +166,7 @@ const authSlice = createSlice({
           state.profile = action.payload.profile;
           state.isAuthenticated = true;
           state.isAdmin = action.payload.profile?.is_admin || false;
+          state.proficiency = action.payload.profile?.proficiency_level || 'basic';
         } else {
           state.isAuthenticated = false;
         }
@@ -153,9 +175,14 @@ const authSlice = createSlice({
         state.loading = false;
         state.initialized = true;
         state.isAuthenticated = false;
+      })
+      // Update Proficiency (US-124)
+      .addCase(updateProficiency.fulfilled, (state, action) => {
+        state.profile = action.payload;
+        state.proficiency = action.payload.proficiency_level;
       });
   },
 });
 
-export const { setUser, setSession, clearError } = authSlice.actions;
+export const { setUser, setSession, clearError, setProficiency } = authSlice.actions;
 export default authSlice.reducer;

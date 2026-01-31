@@ -1,14 +1,19 @@
 import React, { useState } from 'react';
 import { useTranslation } from 'react-i18next';
+import { useDispatch } from 'react-redux';
 import { useOrganization } from '../../contexts/OrganizationContext';
 import { XMarkIcon } from '@heroicons/react/24/outline';
+import ProficiencySelector from '../common/ProficiencySelector';
+import { updateProficiency } from '../../features/auth/authSlice';
 
 const OrganizationSetupWizard = ({ onClose, onComplete, isModal = false }) => {
   const { t } = useTranslation();
+  const dispatch = useDispatch();
   const { createOrganization } = useOrganization();
   const [step, setStep] = useState(1);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
+  const [proficiencyLevel, setProficiencyLevel] = useState('basic');
 
   const [formData, setFormData] = useState({
     // Step 1: Basic Information
@@ -82,6 +87,9 @@ const OrganizationSetupWizard = ({ onClose, onComplete, isModal = false }) => {
         setLoading(false);
         return;
       }
+
+      // US-124: Save proficiency level to user profile
+      await dispatch(updateProficiency(proficiencyLevel)).unwrap();
 
       if (onComplete) {
         onComplete(data);
@@ -380,6 +388,30 @@ const OrganizationSetupWizard = ({ onClose, onComplete, isModal = false }) => {
     </div>
   );
 
+  // US-124: Step 5 - Experience Level (Proficiency)
+  const renderStep5 = () => (
+    <div className="space-y-4">
+      <div className="text-center mb-6">
+        <h3 className="text-lg font-medium text-gray-900 dark:text-white">
+          {t('proficiency.wizard.title')}
+        </h3>
+        <p className="mt-2 text-sm text-gray-500 dark:text-gray-400">
+          {t('proficiency.wizard.description')}
+        </p>
+      </div>
+      
+      <ProficiencySelector
+        value={proficiencyLevel}
+        onChange={setProficiencyLevel}
+        showDescription={true}
+      />
+      
+      <p className="text-xs text-gray-400 dark:text-gray-500 text-center mt-4">
+        {t('proficiency.wizard.canChangeLater')}
+      </p>
+    </div>
+  );
+
   const renderStepContent = () => {
     switch (step) {
       case 1:
@@ -390,16 +422,21 @@ const OrganizationSetupWizard = ({ onClose, onComplete, isModal = false }) => {
         return renderStep3();
       case 4:
         return renderStep4();
+      case 5:
+        return renderStep5();
       default:
         return null;
     }
   };
+
+  const totalSteps = 5;
 
   const stepTitles = [
     t('organization.setupWizard.step1'),
     t('organization.setupWizard.step2'),
     t('organization.setupWizard.step3'),
     t('organization.setupWizard.step4'),
+    t('organization.setupWizard.step5'),
   ];
 
   return (
@@ -446,7 +483,7 @@ const OrganizationSetupWizard = ({ onClose, onComplete, isModal = false }) => {
           <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2">
             <div
               className="bg-blue-600 h-2 rounded-full transition-all duration-300"
-              style={{ width: `${(step / 4) * 100}%` }}
+              style={{ width: `${(step / totalSteps) * 100}%` }}
             />
           </div>
         </div>
@@ -474,7 +511,7 @@ const OrganizationSetupWizard = ({ onClose, onComplete, isModal = false }) => {
             {step === 1 ? t('common.cancel') : t('common.back')}
           </button>
 
-          {step < 4 ? (
+          {step < totalSteps ? (
             <button
               type="button"
               onClick={handleNext}

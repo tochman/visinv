@@ -702,12 +702,42 @@
       "step2": "Address & Contact",
       "step3": "Banking & Tax",
       "step4": "Invoice Settings",
+      "step5": "Experience Level",
       "complete": "Complete Setup"
     },
     "noOrganization": "No organization found. Please create one to get started.",
     "noMembers": "No members found.",
     "saved": "Organization saved successfully.",
     "requiredForInvoices": "Organization information is required to create invoices."
+  },
+  "proficiency": {
+    "title": "Experience Level",
+    "subtitle": "Help us tailor your experience",
+    "description": "Select your experience level with invoicing and accounting software. This helps us customize the interface to match your needs.",
+    "canChangeLater": "You can change this anytime in settings",
+    "wizard": {
+      "title": "What's your experience level?",
+      "description": "This helps us tailor the interface to your needs.",
+      "canChangeLater": "You can change this anytime in your profile settings"
+    },
+    "levels": {
+      "novice": {
+        "name": "Novice",
+        "description": "New to invoicing software"
+      },
+      "basic": {
+        "name": "Basic",
+        "description": "Familiar with basic features"
+      },
+      "proficient": {
+        "name": "Proficient",
+        "description": "Experienced with most features"
+      },
+      "expert": {
+        "name": "Expert",
+        "description": "Advanced user, power features"
+      }
+    }
   },
   "privacy": {
     "title": "Privacy Settings",

@@ -690,12 +690,42 @@
       "step2": "Adress & kontakt",
       "step3": "Bank & skatt",
       "step4": "Fakturainställningar",
+      "step5": "Erfarenhetsnivå",
       "complete": "Slutför konfiguration"
     },
     "noOrganization": "Ingen organisation hittades. Vänligen skapa en för att komma igång.",
     "noMembers": "Inga medlemmar hittades.",
     "saved": "Organisationen har sparats.",
     "requiredForInvoices": "Organisationsinformation krävs för att skapa fakturor."
+  },
+  "proficiency": {
+    "title": "Erfarenhetsnivå",
+    "subtitle": "Hjälp oss anpassa din upplevelse",
+    "description": "Välj din erfarenhetsnivå med fakturerings- och bokföringsprogram. Detta hjälper oss anpassa gränssnittet efter dina behov.",
+    "canChangeLater": "Du kan ändra detta när som helst i inställningarna",
+    "wizard": {
+      "title": "Vilken är din erfarenhetsnivå?",
+      "description": "Detta hjälper oss anpassa gränssnittet efter dina behov.",
+      "canChangeLater": "Du kan ändra detta när som helst i dina profilinställningar"
+    },
+    "levels": {
+      "novice": {
+        "name": "Nybörjare",
+        "description": "Ny på faktureringsprogram"
+      },
+      "basic": {
+        "name": "Grundläggande",
+        "description": "Bekant med grundläggande funktioner"
+      },
+      "proficient": {
+        "name": "Erfaren",
+        "description": "Erfarenhet av de flesta funktioner"
+      },
+      "expert": {
+        "name": "Expert",
+        "description": "Avancerad användare, kraftfulla funktioner"
+      }
+    }
   },
   "privacy": {
     "title": "Integritetsinställningar",

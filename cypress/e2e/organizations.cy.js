@@ -86,7 +86,7 @@ describe('Organization Management', () => {
       cy.contains('Set Up Your Organization').should('be.visible')
     })
 
-    it('is expected to display all 4 steps in wizard', () => {
+    it('is expected to display all 5 steps in wizard', () => {
       cy.getByCy('organization-wizard', { timeout: 10000 }).should('be.visible')
       cy.contains('Basic Information').should('be.visible')
       cy.getByCy('org-name-input').should('be.visible')
@@ -119,6 +119,73 @@ describe('Organization Management', () => {
       // Should be on step 1 with data preserved
       cy.getByCy('org-name-input').should('have.value', 'Test Company AB')
     })
+
+    it('is expected to show proficiency selector in step 5', () => {
+      cy.getByCy('organization-wizard', { timeout: 10000 }).should('be.visible')
+      
+      // Navigate through steps 1-4
+      // Step 1: Basic Information
+      cy.getByCy('org-name-input').type('Test Company AB')
+      cy.getByCy('org-number-input').type('556677-8899')
+      cy.getByCy('vat-number-input').type('SE556677889901')
+      cy.getByCy('next-step-button').click()
+      
+      // Step 2: Address & Contact
+      cy.getByCy('org-address-input').type('Storgatan 1')
+      cy.getByCy('org-postal-code-input').type('11122')
+      cy.getByCy('org-city-input').type('Stockholm')
+      cy.getByCy('org-municipality-input').type('Stockholm')
+      cy.getByCy('org-email-input').type('info@testcompany.se')
+      cy.getByCy('org-phone-input').type('+46 8 123 456')
+      cy.getByCy('next-step-button').click()
+      
+      // Step 3: Banking & Tax
+      cy.getByCy('org-bank-giro-input').type('123-4567')
+      cy.getByCy('org-f-skatt-checkbox').check()
+      cy.getByCy('next-step-button').click()
+      
+      // Step 4: Invoice Settings
+      cy.getByCy('org-invoice-prefix-input').type('INV')
+      cy.getByCy('next-step-button').click()
+      
+      // Step 5: Experience Level
+      cy.getByCy('proficiency-selector').should('be.visible')
+      cy.getByCy('proficiency-option-novice').scrollIntoView().should('be.visible')
+      cy.getByCy('proficiency-option-basic').scrollIntoView().should('be.visible')
+      cy.getByCy('proficiency-option-proficient').scrollIntoView().should('be.visible')
+      cy.getByCy('proficiency-option-expert').scrollIntoView().should('be.visible')
+    })
+
+    it('is expected to allow selecting proficiency level', () => {
+      cy.getByCy('organization-wizard', { timeout: 10000 }).should('be.visible')
+      
+      // Navigate through steps 1-4
+      cy.getByCy('org-name-input').type('Test Company AB')
+      cy.getByCy('org-number-input').type('556677-8899')
+      cy.getByCy('vat-number-input').type('SE556677889901')
+      cy.getByCy('next-step-button').click()
+      
+      cy.getByCy('org-address-input').type('Storgatan 1')
+      cy.getByCy('org-postal-code-input').type('11122')
+      cy.getByCy('org-city-input').type('Stockholm')
+      cy.getByCy('org-municipality-input').type('Stockholm')
+      cy.getByCy('org-email-input').type('info@testcompany.se')
+      cy.getByCy('org-phone-input').type('+46 8 123 456')
+      cy.getByCy('next-step-button').click()
+      
+      cy.getByCy('org-bank-giro-input').type('123-4567')
+      cy.getByCy('org-f-skatt-checkbox').check()
+      cy.getByCy('next-step-button').click()
+      
+      cy.getByCy('org-invoice-prefix-input').type('INV')
+      cy.getByCy('next-step-button').click()
+      
+      // Step 5: Select expert level
+      cy.getByCy('proficiency-option-expert').click()
+      
+      // Verify expert is selected (has ring class indicating selection)
+      cy.getByCy('proficiency-option-expert').should('have.class', 'ring-2')
+    })
     
     it('is expected to complete wizard and create organization', () => {
       cy.getByCy('organization-wizard', { timeout: 10000 }).should('be.visible')
@@ -144,6 +211,17 @@ describe('Organization Management', () => {
       
       // Step 4: Invoice Settings
       cy.getByCy('org-invoice-prefix-input').type('INV')
+      cy.getByCy('next-step-button').click()
+      
+      // Step 5: Experience Level (Proficiency)
+      cy.getByCy('proficiency-selector').should('be.visible')
+      cy.getByCy('proficiency-option-basic').click()
+      
+      // Mock the profile update for proficiency
+      cy.intercept('PATCH', '**/rest/v1/profiles?*', {
+        statusCode: 200,
+        body: {}
+      }).as('updateProfile')
       
       // Override the organization members intercept to return the new org after creation
       // This intercept takes precedence over the one set in beforeEach
@@ -181,6 +259,9 @@ describe('Organization Management', () => {
       
       // Should create organization (member is added via database trigger)
       cy.wait('@createOrganization')
+      
+      // Should update profile with proficiency
+      cy.wait('@updateProfile')
       
       // After creation, the context reloads organizations
       cy.wait('@getOrganizationsAfterCreate')

@@ -142,6 +142,24 @@ class ProfileResource extends BaseResource {
     const match = url.match(/\/avatars\/(.*)/);
     return match ? match[1] : null;
   }
+
+  /**
+   * Update proficiency level for current user
+   * US-124: User Proficiency Level & Adaptive UI
+   * @param {string} level - One of: 'novice', 'basic', 'proficient', 'expert'
+   * @returns {Promise<{data: Object|null, error: Error|null}>}
+   */
+  async updateProficiency(level) {
+    const validLevels = ['novice', 'basic', 'proficient', 'expert'];
+    if (!validLevels.includes(level)) {
+      return { data: null, error: new Error(`Invalid proficiency level: ${level}. Must be one of: ${validLevels.join(', ')}`) };
+    }
+
+    return this.updateCurrent({
+      proficiency_level: level,
+      proficiency_set_at: new Date().toISOString(),
+    });
+  }
 }
 
 // Export singleton instance
