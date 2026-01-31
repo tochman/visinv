@@ -2388,17 +2388,17 @@ The Swedish Tax Authority (Skatteverket) provides APIs for digital submission of
       ```
     - Documentation: Update ARCHITECTURE.md with proficiency system patterns
   - **Audit Checklist (Initial Focus):**
-    - [ ] Invoice creation form (US-019, US-020)
-    - [ ] Supplier invoice form (US-260)
-    - [ ] OCR/AI extraction review (US-263)
-    - [ ] Client management (US-004)
-    - [ ] Product management (US-005)
-    - [ ] Journal entries (US-210-215)
-    - [ ] Chart of accounts (US-201-203)
-    - [ ] Reports (US-230-235)
-    - [ ] Navigation sidebar (US-401)
-    - [ ] Dashboard widgets (US-402)
-    - [ ] Organization settings
+    - [x] Invoice creation form (US-019, US-020)
+    - [x] Supplier invoice form (US-260)
+    - [ ] OCR/AI extraction review (US-263) - mapped, not yet implemented
+    - [x] Client management (US-004)
+    - [x] Product management (US-005)
+    - [x] Journal entries (US-210-215)
+    - [x] Chart of accounts (US-201-203)
+    - [x] Reports (US-230-235)
+    - [x] Navigation sidebar (US-401)
+    - [x] Dashboard widgets (US-402)
+    - [x] Organization settings
     - [ ] Supplier inbox (US-264c) - when implemented
   - **Implementation Notes:**
     - Start with high-impact areas (invoice creation, supplier invoices, OCR)
@@ -2414,8 +2414,12 @@ The Swedish Tax Authority (Skatteverket) provides APIs for digital submission of
   - Verify config file loads without errors
   - Spot-check 2-3 key features adapt correctly per level
 - **i18n Requirements:** None (internal/developer-facing)
-- **Status:** Not Started
+- **Status:** ✅ Complete
 - **Dependencies:** US-124 (Proficiency Level infrastructure)
+- **Files:**
+  - `src/config/proficiencyFeatures.js` - Main configuration with feature mappings
+  - `src/hooks/useProficiency.js` - Updated hook with config integration
+  - `docs/ARCHITECTURE.md` - Added Proficiency System documentation
 
 **US-126: System-Suggested Proficiency Level** *(depends on US-124)*
 - As a **user**, in order to **use the optimal UI complexity for my actual skill level**, I would like the **system to suggest a proficiency level based on my behavior**.

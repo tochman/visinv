@@ -516,3 +516,113 @@ Potential improvements to the Resource pattern:
 - **Validation** - Schema validation before sending to Supabase
 - **Events** - Emit events on CRUD operations
 - **Retry Logic** - Automatic retry on network failures
+
+---
+
+## Proficiency System (Adaptive UI)
+
+The proficiency system enables adaptive UI based on user's self-assessed experience level (US-124, US-125).
+
+### Proficiency Levels
+
+| Level | Internal Key | Display Name (EN) | Display Name (SV) | Description |
+|-------|-------------|-------------------|-------------------|-------------|
+| 1 | `novice` | Getting Started | Kom igång | Maximum guidance, simplified UI |
+| 2 | `basic` | Building Confidence | Bygga självförtroende | Growing comfortable with essentials |
+| 3 | `proficient` | Taking Control | Ta kontroll | Full toolkit access |
+| 4 | `expert` | Full Power | Full kraft | All features, minimal hand-holding |
+
+### Configuration File
+
+All proficiency-based feature mappings are defined in `src/config/proficiencyFeatures.js`:
+
+```javascript
+// Feature visibility
+export const proficiencyFeatures = {
+  'nav.journalEntries': { novice: 'hidden', basic: 'hidden', proficient: 'visible', expert: 'visible' },
+  'invoice.accountCoding': { novice: 'hidden', basic: 'simplified', proficient: 'standard', expert: 'advanced' },
+  // ... more features
+};
+
+// AI behavior thresholds
+export const aiThresholds = {
+  autoAccept: { novice: 0.85, basic: 0.95, proficient: 1.1, expert: 1.1 },
+};
+
+// Confirmation dialogs
+export const confirmations = {
+  'delete.invoice': { novice: true, basic: true, proficient: true, expert: false },
+};
+```
+
+### Display Modes
+
+| Mode | Description | Use Case |
+|------|-------------|----------|
+| `hidden` | Feature not shown | Advanced features for novices |
+| `disabled` | Shown but not interactive | Premium features for free tier |
+| `collapsed` | Available but collapsed | Optional fields |
+| `simplified` | Simplified version | AI-assisted for novices |
+| `standard` | Normal display | Default for most features |
+| `expanded` | Prominent/expanded | Expert quick-access |
+| `advanced` | Full options shown | Power user mode |
+
+### Using in Components
+
+Use the `useProficiency` hook to access proficiency-aware features:
+
+```jsx
+import useProficiency from '../hooks/useProficiency';
+
+function InvoiceForm() {
+  const { showFeature, getUIMode, isCollapsed, needsConfirmation } = useProficiency();
+  
+  return (
+    <form>
+      {/* Hide account coding for novices */}
+      {showFeature('invoice.accountCoding') && (
+        <AccountCodingField mode={getUIMode('invoice.accountCoding')} />
+      )}
+      
+      {/* Collapse optional fields based on proficiency */}
+      <CollapsibleSection 
+        defaultOpen={!isCollapsed('invoice.notes')}
+        label="Notes"
+      >
+        <NotesField />
+      </CollapsibleSection>
+      
+      {/* Conditional confirmation */}
+      <DeleteButton 
+        showConfirmation={needsConfirmation('delete.invoice')}
+      />
+    </form>
+  );
+}
+```
+
+### Hook API Reference
+
+```javascript
+const {
+  level,              // Current level: 'novice' | 'basic' | 'proficient' | 'expert'
+  isNovice,           // Boolean shortcuts
+  isBasic,
+  isProficient,
+  isExpert,
+  isAtLeast,          // isAtLeast('proficient') => true if proficient or expert
+  showFeature,        // showFeature('nav.journalEntries') => boolean
+  getUIMode,          // getUIMode('invoice.accountCoding') => 'hidden' | 'simplified' | etc.
+  isCollapsed,        // isCollapsed('invoice.notes') => boolean
+  getAiThreshold,     // getAiThreshold() => 0.85 (for novice)
+  needsConfirmation,  // needsConfirmation('delete.invoice') => boolean
+  getUiSetting,       // getUiSetting('listPreviewCount') => 5 (for novice)
+} = useProficiency();
+```
+
+### Adding New Features
+
+1. Add feature to `proficiencyFeatures` in `src/config/proficiencyFeatures.js`
+2. Add to appropriate category in `featureCategories` for documentation
+3. Use `showFeature()` or `getUIMode()` in component
+4. Test with different proficiency levels
