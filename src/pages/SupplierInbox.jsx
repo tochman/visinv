@@ -186,7 +186,7 @@ export default function SupplierInbox() {
               key={filter.value || 'all'}
               onClick={() => handleStatusFilter(filter.value)}
               data-cy={`inbox-filter-${filter.value || 'all'}`}
-              className={`px-4 py-2 text-sm font-medium rounded-md transition-colors ${
+              className={`px-4 py-2 text-sm font-medium rounded-sm transition-colors ${
                 filters.status === filter.value
                   ? 'bg-white dark:bg-gray-700 text-gray-900 dark:text-white shadow-sm'
                   : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white'

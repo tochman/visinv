@@ -107,8 +107,21 @@ export default function Dashboard() {
                    dashboardStats.overdueCount > 0 || 
                    dashboardStats.activeCount > 0;
 
+  // Render wizard as overlay when needed
   if (shouldShowWizard || showWizard) {
-    return <OrganizationSetupWizard onComplete={handleWizardComplete} />;
+    return (
+      <>
+        {/* Placeholder content to maintain layout */}
+        <div>
+          <h1 className="text-2xl font-semibold text-gray-900 dark:text-white mb-6">
+            {t('dashboard.title')}
+          </h1>
+        </div>
+        
+        {/* Wizard overlay - renders on top */}
+        <OrganizationSetupWizard onComplete={handleWizardComplete} />
+      </>
+    );
   }
 
   return (

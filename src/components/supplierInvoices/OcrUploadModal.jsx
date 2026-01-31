@@ -1326,7 +1326,7 @@ export default function OcrUploadModal({
               handleClose();
               onReturnToInbox();
             }}
-            className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors"
+            className="px-4 py-2 bg-blue-600 text-white rounded-sm hover:bg-blue-700 transition-colors"
             data-cy="return-to-inbox-button"
           >
             {t('ocrUpload.success.returnToInbox') || 'Return to Inbox'}
@@ -1334,7 +1334,7 @@ export default function OcrUploadModal({
         )}
         <button
           onClick={handleClose}
-          className="px-4 py-2 border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 rounded-md hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
+          className="px-4 py-2 border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 rounded-sm hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
           data-cy="close-success-button"
         >
           {t('common.close')}

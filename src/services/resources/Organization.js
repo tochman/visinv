@@ -7,10 +7,16 @@ import { OrganizationEmailSlugHistory } from './OrganizationEmailSlugHistory';
  * Handles all organization-related data operations
  * US-053: Organization Logo Upload
  * US-264a: Organization Email Slug Management
+ * US-283, US-284, US-285: Swedish Accounting Frameworks
  */
 class OrganizationResource extends BaseResource {
   constructor() {
     super('organizations');
+    
+    // Valid framework options
+    this.FRAMEWORKS = ['k1', 'k2', 'k3', 'k4'];
+    this.KONTOPLAN_VARIANTS = ['bas2024', 'bas_handel', 'bas_service', 'custom'];
+    this.ACCOUNTING_METHODS = ['accrual', 'cash'];
   }
 
   /**
@@ -368,6 +374,72 @@ class OrganizationResource extends BaseResource {
    */
   generateEmailSlug(name) {
     return OrganizationEmailSlugHistory.generateSlug(name);
+  }
+
+  /**
+   * Log framework change to audit trail
+   * US-289: Framework change history
+   * @param {string} orgId - Organization ID
+   * @param {string} changeType - Type of change ('framework', 'method', 'kontoplan')
+   * @param {string} fieldName - Field that changed
+   * @param {string} oldValue - Old value
+   * @param {string} newValue - New value
+   * @param {string} reason - Reason for change (optional)
+   * @returns {Promise<{data: Object|null, error: Error|null}>}
+   */
+  async logFrameworkChange(orgId, changeType, fieldName, oldValue, newValue, reason = null) {
+    const { user, error: authError } = await this.getCurrentUser();
+    if (authError || !user) {
+      return { data: null, error: authError };
+    }
+
+    const { data, error } = await this.supabase
+      .from('framework_change_history')
+      .insert({
+        organization_id: orgId,
+        user_id: user.id,
+        change_type: changeType,
+        field_name: fieldName,
+        old_value: oldValue,
+        new_value: newValue,
+        change_reason: reason
+      })
+      .select()
+      .single();
+
+    return { data, error };
+  }
+
+  /**
+   * Get framework change history for organization
+   * US-289: Framework change audit trail
+   * @param {string} orgId - Organization ID
+   * @returns {Promise<{data: Array|null, error: Error|null}>}
+   */
+  async getFrameworkHistory(orgId) {
+    const { data, error } = await this.supabase
+      .from('framework_change_history')
+      .select('*')
+      .eq('organization_id', orgId)
+      .order('changed_at', { ascending: false });
+
+    return { data, error };
+  }
+
+  /**
+   * Get framework requirements for accounts
+   * US-286: Framework-specific account requirements
+   * @param {string} framework - Framework ('k1', 'k2', 'k3', 'k4')
+   * @returns {Promise<{data: Array|null, error: Error|null}>}
+   */
+  async getFrameworkRequirements(framework) {
+    const { data, error } = await this.supabase
+      .from('account_framework_requirements')
+      .select('*')
+      .eq('framework', framework)
+      .eq('is_required', true);
+
+    return { data, error };
   }
 }
 

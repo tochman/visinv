@@ -3210,11 +3210,159 @@ The Swedish Tax Authority (Skatteverket) provides APIs for digital submission of
   - US-264a/b/c/d: Email-Based Invoice Reception (sub-stories)
 - US-265: Invoice Recipient Validation (AI enhancement)
 - US-280 to US-282: Invoice & Accounting Integration
+- US-283 to US-290: Swedish Accounting Frameworks & Configuration
 
 **Navigation & UI (US-401 to US-404)**: Application architecture
 - US-401: Hierarchical Sidebar Navigation
 - US-402: Module-Based Dashboard
 - US-403: Global Search
 - US-404: Quick Actions Menu
+
+---
+
+## Swedish Accounting Frameworks & Configuration
+
+**US-291: Adaptive Setup Wizard Based on Proficiency** ✅
+**As a** user setting up a new organization  
+**I want** the setup wizard to adapt its complexity based on my accounting proficiency  
+**So that** beginners get simplified guidance while experts retain full control
+
+**Acceptance Criteria:**
+- [x] Proficiency selection moved to Step 2 (after basic company info)
+- [x] Wizard adapts based on proficiency level:
+  - **Novice/Basic**: Pre-selects sensible defaults (K2, BAS 2024, accrual), minimal choices, strong recommendations
+  - **Intermediate**: Shows explanations with recommendations, allows changes  
+  - **Advanced/Expert**: Full control, all options visible, technical details, links to regulations
+- [x] Framework selection step (K-regelverk) simplified for novices:
+  - Novice: "We recommend K2 (standard for Swedish SMBs)" - option to accept or review
+  - Expert: Full framework comparison with eligibility criteria
+- [x] Kontoplan selection adapted:
+  - Novice: "We'll set up BAS 2024 (standard Swedish chart of accounts)"
+  - Expert: Choose between BAS variants or import custom
+- [x] Accounting method choice adapted:
+  - Novice: "We recommend accrual accounting (faktureringsmetoden)" with simple explanation
+  - Expert: Detailed comparison of accrual vs cash methods with legal constraints
+- [x] Wizard can skip framework details entirely for novices (use defaults)
+- [x] "Learn more" links available at each step for those who want details
+- [x] User can always change settings later in organization settings
+
+**Implementation Notes:**
+- Store proficiency in state immediately after Step 2
+- Use conditional rendering based on proficiency level
+- Default values for novice: `k2`, `bas2024`, `accrual`
+- Advanced users see all options from US-283, US-284, US-285
+- Provide "View advanced options" toggle for intermediate users
+
+**Related:** US-124, US-283, US-284, US-285
+
+**Status:** ✅ Complete
+
+---
+
+### US-283: Select K-Regelverk During Organization Setup
+- As a **Swedish business owner setting up my organization**, in order to **ensure compliance with appropriate accounting complexity**, I would like to **select which K-regelverk (K1, K2, K3, or K4) applies to my business**.
+- **Options:**
+  - **K1** - Microcompany: Revenue < 3M SEK, < 3 employees, balance < 1.5M SEK
+  - **K2** - Small/Medium company: Most SMBs (default recommendation)
+  - **K3** - Larger company: More complex reporting requirements
+  - **K4** - Listed company: IFRS standards
+- **Implementation:**
+  - Database: `accounting_framework` enum column in organizations table
+  - UI: K-regelverk selection step in organization setup wizard
+  - Validation: Framework requirements stored and enforced
+  - Recommendation engine suggests framework based on company size inputs
+  - Can be changed later in settings with migration warnings
+- **Impact:** Affects required accounts, report formats, disclosure requirements
+- **Status:** Planning
+
+### US-284: Choose Chart of Accounts (Kontoplan) Variant
+- As a **business owner in a specific industry**, in order to **have relevant accounts pre-configured**, I would like to **choose a kontoplan variant suitable for my business type**.
+- **Options:**
+  - **BAS 2024** - Standard (default, currently implemented)
+  - **BAS Handel** - Retail/Trade companies
+  - **BAS Tjänsteföretag** - Service companies
+  - **Custom** - Import own kontoplan (CSV format)
+- **Implementation:**
+  - Database: `chart_of_accounts_variant` column in organizations table
+  - Seed data files for each variant (bas2024.json, bas_handel.json, bas_service.json)
+  - CSV import functionality for custom kontoplaner
+  - Account seeding uses selected variant
+- **Status:** Planning (BAS 2024 currently implemented as default)
+
+### US-285: Select Accounting Method (Fakturering vs Kontant)
+- As a **small business owner**, in order to **use the simplest method allowed**, I would like to **choose between invoice-based (faktureringsmetoden) and cash-based (kontantmetoden) accounting**.
+- **Options:**
+  - **Faktureringsmetoden (Accrual)**: Revenue when invoice sent, expense when invoice received (default, most common)
+  - **Kontantmetoden (Cash)**: Revenue when payment received, expense when payment made (only for companies < 3M SEK revenue)
+- **Implementation:**
+  - Database: `accounting_method` enum column: `accrual`, `cash`
+  - Eligibility validation: Kontantmetoden only if revenue < 3M SEK
+  - Revenue/expense recognition timing adapts to selected method
+  - Dashboard metrics respect method (invoiced vs paid)
+- **Impact:** Changes when transactions are recorded, affects receivables/payables importance
+- **Status:** Planning
+
+### US-286: Display Framework-Specific Account Requirements
+- As an **accountant setting up the chart of accounts**, in order to **ensure compliance**, I would like to **see which accounts are required vs optional for my chosen K-regelverk**.
+- **Implementation:**
+  - Database: `account_requirements` table mapping accounts to frameworks
+  - UI: Required accounts marked with badge/icon in accounts list
+  - Validation: Cannot delete required accounts, warning on deactivation
+  - Tooltips explain why account is required
+- **Status:** Planning
+
+### US-287: Framework-Specific Financial Report Templates
+- As a **business owner with K3 framework**, in order to **meet regulatory requirements**, I would like to **generate financial reports that meet K3 disclosure requirements**.
+- **Report Adaptations:**
+  - **K1**: Simplified format, minimal disclosures
+  - **K2**: Standard format (current implementation)
+  - **K3**: Detailed format with fair value disclosures, related party transactions, contingent liabilities
+  - **K4**: IFRS-compliant format
+- **Implementation:**
+  - Report templates for each framework (k1/, k2/, k3/, k4/)
+  - FinancialReport.js checks organization.accounting_framework
+  - Conditional sections based on framework
+- **Status:** Planning (K2 standard currently implemented)
+
+### US-288: Accounting Method Impact on Dashboards
+- As a **user with cash-based accounting**, in order to **see accurate cash position**, I would like to **see financial metrics based on cash flows, not invoices**.
+- **Dashboard Changes:**
+  - Accrual: Show invoiced revenue (even if unpaid)
+  - Cash: Show only paid revenue
+  - Method indicator visible on dashboard
+  - Accounts receivable/payable less prominent for cash method
+  - Cash flow metrics emphasized for cash method
+- **Status:** Planning
+
+### US-289: Framework Migration Warning System
+- As a **system administrator**, in order to **understand implications before making changes**, I would like to **be warned about impact when changing accounting framework**.
+- **Warnings For:**
+  - Changing K-regelverk: Impact on required accounts, report formats, data migration needs
+  - Changing accounting method: Effect on existing transactions, revenue recognition changes
+  - Changing kontoplan: Data warning if accounts exist
+- **Implementation:**
+  - Warning modal with detailed impact explanation
+  - Confirmation checkbox: "I understand the implications"
+  - Option to schedule change for new fiscal year
+  - Audit log records all framework changes
+- **Status:** Planning
+
+### US-290: Framework Setup Wizard Guidance
+- As a **new user unfamiliar with Swedish accounting**, in order to **select correct options**, I would like to **receive guided help choosing the right framework**.
+- **Wizard Features:**
+  - Interactive questionnaire (revenue, employees, industry, listed status)
+  - Recommendation engine based on answers
+  - Explanations for each recommendation
+  - Links to official Swedish Accounting Board (BFN) resources
+  - Can override recommendations with confirmation
+  - Progress saved in localStorage
+- **Recommendation Logic:**
+  - Revenue < 3M SEK + employees < 3 → K1
+  - Revenue < 80M SEK → K2
+  - Listed company → K4
+  - Otherwise → K3
+- **Status:** Planning
+
+---
 
 

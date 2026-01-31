@@ -645,6 +645,8 @@
     "bankIban": "IBAN",
     "bankBic": "BIC/SWIFT",
     "fSkattApproved": "F-skatt Approved",
+    "vatRegistered": "VAT Registered",
+    "employerTaxRegistered": "Employer Tax Registered",
     "invoiceNumberPrefix": "Invoice Number Prefix",
     "invoiceNumberingMode": "Invoice Numbering Mode",
     "numberingModes": {
@@ -703,14 +705,22 @@
         "associate": "Can create invoices, clients, and products"
       }
     },
+    "estimatedRevenue": "Estimated Annual Revenue",
+    "estimatedRevenueHelp": "Approximate yearly revenue in SEK",
+    "employeeCount": "Number of Employees",
+    "employeeCountHelp": "Full-time equivalent employees",
     "setupWizard": {
       "title": "Set Up Your Organization",
       "subtitle": "Let's get your company information configured",
       "step1": "Basic Information",
-      "step2": "Address & Contact",
-      "step3": "Banking & Tax",
-      "step4": "Invoice Settings",
-      "step5": "Experience Level",
+      "step2": "Experience Level",
+      "step3": "Accounting Framework",
+      "step4": "Chart of Accounts",
+      "step5": "Address & Contact",
+      "step6": "Banking & Tax",
+      "step7": "Invoice Settings",
+      "companyInfo": "Company Information",
+      "companyInfoDesc": "Tell us about your company size to help us recommend the right accounting framework.",
       "complete": "Complete Setup"
     },
     "noOrganization": "No organization found. Please create one to get started.",
@@ -765,6 +775,7 @@
     "wizard": {
       "title": "What's your experience level?",
       "description": "This helps us tailor the interface to your needs.",
+      "adaptiveDescription": "This helps us customize the setup process - beginners get simplified guidance, while experts get full control.",
       "canChangeLater": "You can change this anytime in your profile settings"
     },
     "levels": {
@@ -791,6 +802,99 @@
     "cookiePreferences": "Cookie Preferences",
     "cookieDescription": "Manage how we use cookies and similar technologies to improve your experience.",
     "manageCookieSettings": "Manage Cookie Settings"
+  },
+  "framework": {
+    "title": "Accounting Framework",
+    "selectFramework": "Select Accounting Framework (K-regelverk)",
+    "simplified": {
+      "title": "Accounting Setup",
+      "description": "We'll configure the standard accounting setup used by most Swedish SMBs.",
+      "guidedDescription": "Answer a few simple questions and we'll help you choose the right settings.",
+      "recommendedSetup": "Recommended Setup",
+      "recommendationText": "Based on your company size, we recommend this standard configuration which covers 90% of Swedish businesses.",
+      "basedOnAnswers": "Based on your answers, we recommend:",
+      "showAdvancedOptions": "Show advanced options (for experts)",
+      "advancedWarning": "Only change these if you have specific accounting requirements or guidance from an accountant."
+    },
+    "questions": {
+      "revenueQuestion": "What annual revenue do you expect your business to have?",
+      "revenueLow": "Less than 3 million SEK",
+      "revenueMedium": "3-80 million SEK",
+      "revenueHigh": "More than 80 million SEK",
+      "employeeQuestion": "How many employees does or will your business have?",
+      "employeesNone": "None or 1-2 people",
+      "employeesSmall": "3-50 employees",
+      "employeesLarge": "More than 50 employees"
+    },
+    "k1": {
+      "title": "K1 - Micro Companies",
+      "description": "Simplified accounting for very small businesses",
+      "criteria1": "Annual revenue < 3M SEK",
+      "criteria2": "Fewer than 3 employees",
+      "criteria3": "Balance sheet < 1.5M SEK",
+      "feature1": "Simplest accounting rules",
+      "feature2": "Minimal disclosure requirements",
+      "feature3": "Cash accounting allowed"
+    },
+    "k2": {
+      "title": "K2 - Small/Medium Companies",
+      "description": "Standard framework for Swedish SMBs",
+      "criteria1": "Most Swedish small businesses",
+      "criteria2": "Standard accounting complexity",
+      "criteria3": "Default recommendation",
+      "feature1": "Simplified depreciation rules",
+      "feature2": "Standard reporting requirements",
+      "feature3": "Suitable for most SMBs"
+    },
+    "k3": {
+      "title": "K3 - Larger Companies",
+      "description": "More detailed reporting requirements",
+      "criteria1": "Larger companies",
+      "criteria2": "More complex operations",
+      "criteria3": "Revenue typically > 80M SEK",
+      "feature1": "Fair value accounting",
+      "feature2": "Detailed disclosure requirements",
+      "feature3": "Related party transactions"
+    },
+    "k4": {
+      "title": "K4 - Listed Companies",
+      "description": "IFRS-based standards",
+      "criteria1": "Publicly listed companies",
+      "criteria2": "IFRS compliant",
+      "criteria3": "Most complex requirements",
+      "feature1": "Full IFRS compliance",
+      "feature2": "Maximum disclosure",
+      "feature3": "International standards"
+    },
+    "recommendation": "Recommended for your business",
+    "recommended": "Recommended",
+    "criteria": "Criteria",
+    "features": "Features",
+    "warnings": "Eligibility Warnings",
+    "considerInstead": "Consider using",
+    "instead": "instead",
+    "accountingMethod": "Accounting Method"
+  },
+  "accountingMethod": {
+    "title": "Accounting Method",
+    "choiceAvailable": "Accrual or Cash (you can choose)",
+    "accrual": {
+      "title": "Accrual Accounting (Faktureringsmetoden)",
+      "description": "Record revenue when invoiced and expenses when bills received. Standard method for most businesses."
+    },
+    "cash": {
+      "title": "Cash Accounting (Kontantmetoden)",
+      "description": "Record revenue when paid and expenses when paid. Only available for companies with revenue under 3M SEK."
+    }
+  },
+  "kontoplan": {
+    "title": "Chart of Accounts",
+    "selectTitle": "Select Chart of Accounts",
+    "selectDescription": "Choose the account structure that best fits your business type.",
+    "simplified": {
+      "allSet": "All Set!",
+      "usingStandard": "We've configured the standard Swedish chart of accounts (BAS 2024) for you."
+    }
   },
   "common": {
     "save": "Save",
@@ -839,6 +943,8 @@
     "copied": "Copied!",
     "continue": "Continue",
     "refresh": "Refresh",
+    "recommended": "Recommended",
+    "notEligible": "Not Eligible",
     "selected": "selected",
     "clearSelection": "Clear selection",
     "sendTo": "Send to",

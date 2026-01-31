@@ -634,6 +634,8 @@
     "bankIban": "IBAN",
     "bankBic": "BIC/SWIFT",
     "fSkattApproved": "Godkänd för F-skatt",
+    "vatRegistered": "Registrerad för moms",
+    "employerTaxRegistered": "Registrerad för arbetsgivaravgift",
     "invoiceNumberPrefix": "Fakturanummerprefix",
     "invoiceNumberingMode": "Fakturanumreringssystem",
     "numberingModes": {
@@ -692,14 +694,22 @@
         "associate": "Kan skapa fakturor, kunder och produkter"
       }
     },
+    "estimatedRevenue": "Uppskattad årsomsättning",
+    "estimatedRevenueHelp": "Ungefärlig årsomsättning i SEK",
+    "employeeCount": "Antal anställda",
+    "employeeCountHelp": "Heltidsekvivalenta anställda",
     "setupWizard": {
       "title": "Konfigurera din organisation",
       "subtitle": "Låt oss ställa in din företagsinformation",
       "step1": "Grundläggande information",
-      "step2": "Adress & kontakt",
-      "step3": "Bank & skatt",
-      "step4": "Fakturainställningar",
-      "step5": "Erfarenhetsnivå",
+      "step2": "Erfarenhetsnivå",
+      "step3": "Bokföringsregler",
+      "step4": "Kontoplan",
+      "step5": "Adress & kontakt",
+      "step6": "Bank & skatt",
+      "step7": "Fakturainställningar",
+      "companyInfo": "Företagsinformation",
+      "companyInfoDesc": "Berätta om ditt företags storlek för att hjälpa oss rekommendera rätt bokföringsregler.",
       "complete": "Slutför konfiguration"
     },
     "noOrganization": "Ingen organisation hittades. Vänligen skapa en för att komma igång.",
@@ -754,6 +764,7 @@
     "wizard": {
       "title": "Vilken är din erfarenhetsnivå?",
       "description": "Detta hjälper oss anpassa gränssnittet efter dina behov.",
+      "adaptiveDescription": "Detta hjälper oss att anpassa konfigurationsprocessen - nybörjare får förenklad vägledning medan experter får full kontroll.",
       "canChangeLater": "Du kan ändra detta när som helst i dina profilinställningar"
     },
     "levels": {
@@ -780,6 +791,99 @@
     "cookiePreferences": "Cookie-inställningar",
     "cookieDescription": "Hantera hur vi använder cookies och liknande tekniker för att förbättra din upplevelse.",
     "manageCookieSettings": "Hantera cookie-inställningar"
+  },
+  "framework": {
+    "title": "Bokföringsregler",
+    "selectFramework": "Välj bokföringsregler (K-regelverk)",
+    "simplified": {
+      "title": "Bokföringsinställning",
+      "description": "Vi konfigurerar standardinställningen som används av de flesta svenska små- och medelstora företag.",
+      "guidedDescription": "Svara på några enkla frågor så hjälper vi dig att välja rätt inställningar.",
+      "recommendedSetup": "Rekommenderad inställning",
+      "recommendationText": "Baserat på ditt företags storlek rekommenderar vi denna standardkonfiguration som passar 90% av svenska företag.",
+      "basedOnAnswers": "Baserat på dina svar rekommenderar vi:",
+      "showAdvancedOptions": "Visa avancerade alternativ",
+      "advancedWarning": "Ändra endast dessa om du har specifika bokföringskrav eller vägledning från en revisor."
+    },
+    "questions": {
+      "revenueQuestion": "Hur stor omsättning förväntar du att ditt företag kommer ha per år?",
+      "revenueLow": "Mindre än 3 miljoner SEK",
+      "revenueMedium": "3-80 miljoner SEK",
+      "revenueHigh": "Mer än 80 miljoner SEK",
+      "employeeQuestion": "Hur många anställda har eller planerar ditt företag att ha?",
+      "employeesNone": "Ingen eller 1-2 personer",
+      "employeesSmall": "3-50 anställda",
+      "employeesLarge": "Fler än 50 anställda"
+    },
+    "k1": {
+      "title": "K1 - Mikroföretag",
+      "description": "Förenklad bokföring för mycket små företag",
+      "criteria1": "Årsomsättning < 3M SEK",
+      "criteria2": "Färre än 3 anställda",
+      "criteria3": "Balansomslutning < 1,5M SEK",
+      "feature1": "Enklast bokföringsregler",
+      "feature2": "Minimala upplysningskrav",
+      "feature3": "Kontantmetoden tillåten"
+    },
+    "k2": {
+      "title": "K2 - Små/medelstora företag",
+      "description": "Standardregler för svenska små- och medelstora företag",
+      "criteria1": "Mest svenska småföretag",
+      "criteria2": "Standard bokföringskomplexitet",
+      "criteria3": "Standardrekommendation",
+      "feature1": "Förenklade avskrivningsregler",
+      "feature2": "Standard rapporteringskrav",
+      "feature3": "Passar de flesta små- och medelstora företag"
+    },
+    "k3": {
+      "title": "K3 - Större företag",
+      "description": "Mer detaljerade rapporteringskrav",
+      "criteria1": "Större företag",
+      "criteria2": "Mer komplexa verksamheter",
+      "criteria3": "Omsättning typiskt > 80M SEK",
+      "feature1": "Verkligt värde-redovisning",
+      "feature2": "Detaljerade upplysningskrav",
+      "feature3": "Transaktioner med närstående"
+    },
+    "k4": {
+      "title": "K4 - Noterade företag",
+      "description": "IFRS-baserade standarder",
+      "criteria1": "Börsnoterade företag",
+      "criteria2": "IFRS-efterlevnad",
+      "criteria3": "Mest komplexa krav",
+      "feature1": "Full IFRS-efterlevnad",
+      "feature2": "Maximala upplysningskrav",
+      "feature3": "Internationella standarder"
+    },
+    "recommendation": "Rekommenderat för ditt företag",
+    "recommended": "Rekommenderad",
+    "criteria": "Kriterier",
+    "features": "Funktioner",
+    "warnings": "Behörighetsvarningar",
+    "considerInstead": "Överväg att använda",
+    "instead": "istället",
+    "accountingMethod": "Bokföringsmetod"
+  },
+  "accountingMethod": {
+    "title": "Bokföringsmetod",
+    "choiceAvailable": "Fakturering eller Kontant (du kan välja)",
+    "accrual": {
+      "title": "Faktureringsmetoden",
+      "description": "Registrera intäkter när faktura skickas och utgifter när faktura tas emot. Standardmetod för de flesta företag."
+    },
+    "cash": {
+      "title": "Kontantmetoden",
+      "description": "Registrera intäkter när betalning tas emot och utgifter när betalning görs. Endast tillgängligt för företag med omsättning under 3M SEK."
+    }
+  },
+  "kontoplan": {
+    "title": "Kontoplan",
+    "selectTitle": "Välj kontoplan",
+    "selectDescription": "Välj den kontostruktur som passar ditt företags typ bäst.",
+    "simplified": {
+      "allSet": "Klart!",
+      "usingStandard": "Vi har konfigurerat den svenska standardkontoplanen (BAS 2024) åt dig."
+    }
   },
   "common": {
     "save": "Spara",
@@ -828,6 +932,8 @@
     "copied": "Kopierat!",
     "continue": "Fortsätt",
     "refresh": "Uppdatera",
+    "recommended": "Rekommenderad",
+    "notEligible": "Inte berättigad",
     "selected": "valda",
     "clearSelection": "Rensa urval",
     "sendTo": "Skicka till",

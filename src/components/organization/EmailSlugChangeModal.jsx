@@ -149,7 +149,7 @@ export default function EmailSlugChangeModal({
                         value={newSlug}
                         onChange={handleInputChange}
                         placeholder={t('organization.emailSlug.slugPlaceholder')}
-                        className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 dark:bg-gray-700 dark:text-white ${
+                        className={`w-full px-3 py-2 border rounded-sm focus:outline-none focus:ring-2 dark:bg-gray-700 dark:text-white ${
                           validationError 
                             ? 'border-red-300 dark:border-red-600 focus:ring-red-500' 
                             : isAvailable === true
@@ -167,7 +167,7 @@ export default function EmailSlugChangeModal({
                     <button
                       type="button"
                       onClick={handleGenerateSlug}
-                      className="px-3 py-2 text-sm text-blue-600 dark:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded-md transition-colors whitespace-nowrap"
+                      className="px-3 py-2 text-sm text-blue-600 dark:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded-sm transition-colors whitespace-nowrap"
                       data-cy="generate-slug"
                     >
                       {t('organization.emailSlug.generate')}
@@ -208,7 +208,7 @@ export default function EmailSlugChangeModal({
 
                 {/* External Error */}
                 {externalError && (
-                  <div className="p-3 bg-red-50 dark:bg-red-900/20 rounded-md border border-red-200 dark:border-red-800">
+                  <div className="p-3 bg-red-50 dark:bg-red-900/20 rounded-sm border border-red-200 dark:border-red-800">
                     <p className="text-sm text-red-600 dark:text-red-400" data-cy="save-error">
                       {externalError}
                     </p>
@@ -251,7 +251,7 @@ export default function EmailSlugChangeModal({
 
                 {/* External Error in confirmation */}
                 {externalError && (
-                  <div className="p-3 bg-red-50 dark:bg-red-900/20 rounded-md border border-red-200 dark:border-red-800">
+                  <div className="p-3 bg-red-50 dark:bg-red-900/20 rounded-sm border border-red-200 dark:border-red-800">
                     <p className="text-sm text-red-600 dark:text-red-400" data-cy="save-error">
                       {externalError}
                     </p>
@@ -268,7 +268,7 @@ export default function EmailSlugChangeModal({
                 <button
                   type="button"
                   onClick={onClose}
-                  className="px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-md hover:bg-gray-50 dark:hover:bg-gray-600 transition-colors"
+                  className="px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-sm hover:bg-gray-50 dark:hover:bg-gray-600 transition-colors"
                   data-cy="cancel-slug-change"
                 >
                   {t('common.cancel')}
@@ -277,7 +277,7 @@ export default function EmailSlugChangeModal({
                   type="button"
                   onClick={handleProceed}
                   disabled={!canSave}
-                  className="px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-md hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                  className="px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-sm hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
                   data-cy="proceed-slug-change"
                 >
                   {t('common.continue')}
@@ -289,7 +289,7 @@ export default function EmailSlugChangeModal({
                   type="button"
                   onClick={() => setShowConfirmation(false)}
                   disabled={saving}
-                  className="px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-md hover:bg-gray-50 dark:hover:bg-gray-600 transition-colors"
+                  className="px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-sm hover:bg-gray-50 dark:hover:bg-gray-600 transition-colors"
                   data-cy="back-slug-change"
                 >
                   {t('common.back')}
@@ -298,7 +298,7 @@ export default function EmailSlugChangeModal({
                   type="button"
                   onClick={handleConfirm}
                   disabled={saving}
-                  className="px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-md hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                  className="px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-sm hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
                   data-cy="confirm-slug-change"
                 >
                   {saving ? t('common.saving') : t('organization.emailSlug.confirmButton')}
