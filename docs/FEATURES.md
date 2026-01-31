@@ -2241,6 +2241,175 @@ The Swedish Tax Authority (Skatteverket) provides APIs for digital submission of
 - **Tests:** Extend `sie-import.cy.js` with fiscal year and journal entry import tests
 - **Status:** Not Started
 
+---
+
+### Adaptive User Experience
+
+**US-124: User Proficiency Level & Adaptive UI**
+- As a **user**, in order to **have an interface that matches my skill level**, I would like to **set my proficiency level and have the system adapt the UI accordingly**.
+- **User Story:** Enable self-assessment ("självskattning") of accounting and software proficiency to drive adaptive UI that simplifies the experience for novices while giving experts full control.
+- **Proficiency Levels:**
+  | Level | Key (DB) | Swedish | English | Description |
+  |-------|----------|---------|---------|-------------|
+  | 1 | `novice` | Nybörjare | Novice | First-time user, needs maximum guidance, minimal accounting knowledge |
+  | 2 | `basic` | Grundläggande | Basic | "Just enough to get by", some familiarity with invoicing |
+  | 3 | `proficient` | Erfaren | Proficient | Comfortable with accounting concepts, regular user |
+  | 4 | `expert` | Expert | Expert | Full control desired, deep accounting knowledge, power user |
+- **Acceptance Criteria:**
+  - **Onboarding Integration:**
+    - Display proficiency selection during organization setup wizard (after org details, before completion)
+    - Clear explanation of what each level means and how it affects the experience
+    - Visual indicators (icons) for each level
+    - Option to skip (defaults to `basic`)
+    - Can be changed anytime in profile settings
+  - **Profile Settings:**
+    - New "Experience Level" section in profile/settings page
+    - Dropdown or radio buttons to select proficiency level
+    - Explanation text: "This helps us tailor the interface to your needs"
+    - Change takes effect immediately (no page reload required)
+  - **Database Schema:**
+    - Add `proficiency_level` column to `profiles` table (enum: `novice`, `basic`, `proficient`, `expert`)
+    - Default value: `basic`
+    - Add `proficiency_set_at` timestamp (track when user made explicit choice)
+  - **Redux Integration:**
+    - Store proficiency in `authSlice` user profile state
+    - Selector: `selectUserProficiency` returns current level
+    - Action: `updateProficiency` to change level
+  - **Adaptive UI Hook:**
+    - Custom hook: `useProficiency()` returns:
+      - `level`: current proficiency level
+      - `isNovice`, `isBasic`, `isProficient`, `isExpert`: boolean helpers
+      - `showFeature(featureId)`: check if feature should be shown for this level
+      - `getUIMode(featureId)`: returns 'hidden', 'simplified', 'standard', 'advanced'
+    - Feature visibility config stored in separate config file (easy to maintain)
+  - **UI Adaptation Principles:**
+    - **Novice:**
+      - Hide manual account coding (AI handles it automatically)
+      - Simplified forms with fewer optional fields
+      - More tooltips and inline help
+      - Guided workflows with step indicators
+      - AI suggestions auto-accepted for high-confidence extractions
+      - Confirmation dialogs for destructive actions
+      - "Learn more" links to help content
+    - **Basic:**
+      - Show account suggestions but AI pre-selected
+      - Optional/advanced fields collapsed by default
+      - Tooltips available on hover
+      - AI suggestions shown with easy accept/edit
+    - **Proficient:**
+      - Full forms with all fields visible
+      - Manual account coding available
+      - AI suggestions shown as hints (not pre-selected)
+      - Batch operations available
+      - Fewer confirmation dialogs
+    - **Expert:**
+      - All advanced options visible
+      - Keyboard shortcuts enabled
+      - Bulk operations prominent
+      - Minimal hand-holding
+      - Skip confirmations option
+      - Direct database-style views available
+- **Technical Considerations:**
+  - Resource: `Profile.updateProficiency(level)` method
+  - Component: `ProficiencySelector` (reusable for onboarding and settings)
+  - Component: `AdaptiveField` wrapper that shows/hides based on proficiency
+  - Component: `AdaptiveSection` for collapsible advanced sections
+  - Config: `src/config/proficiencyFeatures.js` maps features to visibility per level
+  - Context: `ProficiencyContext` for app-wide access without prop drilling
+  - Migration: Add column to profiles table with default value
+- **E2E Tests:**
+  - Select proficiency during onboarding
+  - Change proficiency in profile settings
+  - Verify UI adapts (e.g., account coding field hidden for novice)
+  - Verify proficiency persists across sessions
+- **i18n Requirements:**
+  - Proficiency level names and descriptions (Swedish/English)
+  - Onboarding step text
+  - Settings section labels
+  - Tooltip explaining adaptive UI
+- **Status:** Not Started
+- **Dependencies:** None (foundational feature)
+
+**US-125: Feature Proficiency Mapping Audit**
+- As a **developer**, in order to **implement adaptive UI consistently**, I need to **audit all existing features and map them to proficiency levels**.
+- **User Story:** Systematically review all implemented features and UI elements to define which proficiency level(s) should see them, creating a comprehensive feature-to-proficiency mapping configuration.
+- **Acceptance Criteria:**
+  - **Audit Scope:**
+    - Review all existing pages and components
+    - Identify features that should be adapted per proficiency level
+    - Document decisions in a structured format
+  - **Feature Categories to Audit:**
+    - **Form Fields:**
+      - Which fields are essential vs. advanced?
+      - Which fields should be auto-filled by AI for novices?
+      - Which fields should be collapsed/expanded by default?
+    - **Navigation Items:**
+      - Which menu items should be hidden for novices?
+      - Which sections should show "Coming Soon" vs. hidden?
+    - **Actions & Buttons:**
+      - Which bulk actions are expert-only?
+      - Which confirmation dialogs can be skipped for experts?
+    - **Data Display:**
+      - Which columns in tables are advanced?
+      - Which dashboard widgets are relevant per level?
+    - **AI Features:**
+      - Confidence thresholds for auto-accept per level
+      - When to show AI suggestions vs. auto-apply
+  - **Deliverables:**
+    - Configuration file: `src/config/proficiencyFeatures.js`
+    - Structure:
+      ```javascript
+      export const proficiencyFeatures = {
+        // Form fields
+        'invoice.accountCoding': { novice: 'hidden', basic: 'simplified', proficient: 'standard', expert: 'standard' },
+        'invoice.advancedOptions': { novice: 'hidden', basic: 'collapsed', proficient: 'collapsed', expert: 'expanded' },
+        
+        // Navigation
+        'nav.journalEntries': { novice: 'hidden', basic: 'visible', proficient: 'visible', expert: 'visible' },
+        'nav.generalLedger': { novice: 'hidden', basic: 'hidden', proficient: 'visible', expert: 'visible' },
+        
+        // AI behavior
+        'ai.autoAcceptThreshold': { novice: 0.8, basic: 0.9, proficient: 1.1, expert: 1.1 }, // 1.1 = never auto-accept
+        'ai.showSuggestions': { novice: false, basic: true, proficient: true, expert: true },
+        
+        // Confirmations
+        'confirm.deleteInvoice': { novice: true, basic: true, proficient: true, expert: false },
+        'confirm.bulkArchive': { novice: true, basic: true, proficient: false, expert: false },
+      }
+      ```
+    - Documentation: Update ARCHITECTURE.md with proficiency system patterns
+  - **Audit Checklist (Initial Focus):**
+    - [ ] Invoice creation form (US-019, US-020)
+    - [ ] Supplier invoice form (US-260)
+    - [ ] OCR/AI extraction review (US-263)
+    - [ ] Client management (US-004)
+    - [ ] Product management (US-005)
+    - [ ] Journal entries (US-210-215)
+    - [ ] Chart of accounts (US-201-203)
+    - [ ] Reports (US-230-235)
+    - [ ] Navigation sidebar (US-401)
+    - [ ] Dashboard widgets (US-402)
+    - [ ] Organization settings
+    - [ ] Supplier inbox (US-264c) - when implemented
+  - **Implementation Notes:**
+    - Start with high-impact areas (invoice creation, supplier invoices, OCR)
+    - Mark features as `'standard'` by default (no change)
+    - Focus on hiding complexity for novices first
+    - Expert features can be added incrementally
+- **Technical Considerations:**
+  - Create centralized config file with TypeScript types for safety
+  - Add helper function: `getFeatureMode(featureId, proficiencyLevel)`
+  - Consider feature flags integration for gradual rollout
+  - Add telemetry to track which proficiency levels use which features
+- **E2E Tests:**
+  - Verify config file loads without errors
+  - Spot-check 2-3 key features adapt correctly per level
+- **i18n Requirements:** None (internal/developer-facing)
+- **Status:** Not Started
+- **Dependencies:** US-124 (Proficiency Level infrastructure)
+
+---
+
 #### Supplier Management (Leverantörer)
 
 **US-260: Supplier Invoice Registration** ✅
@@ -2365,167 +2534,321 @@ The Swedish Tax Authority (Skatteverket) provides APIs for digital submission of
   - Integration with SupplierInvoiceModal for pre-populated form creation
   - Full i18n support (Swedish/English)
 
-**US-264: Email-Based Supplier Invoice Reception**
+**US-264: Email-Based Supplier Invoice Reception** (Epic)
 - As an **organization**, in order to **streamline the collection of supplier invoices**, I would like to **receive supplier invoices via email and have them automatically stored for processing**.
+- **Status:** Not Started (split into sub-stories below)
+- **Dependencies:**
+  - US-263 (Supplier Invoice & Receipt OCR Upload) ✅
+  - US-260 (Supplier Invoice Registration) ✅
+  - Resend account with inbound email capability
+  - Supabase Edge Functions enabled
+
+---
+
+**US-264a: Organization Email Slug Management**
+- As an **organization owner**, in order to **have a dedicated email address for receiving supplier invoices**, I would like to **configure and manage my organization's email slug**.
 - **Acceptance Criteria:**
-  - **Organization Email Slug:**
-    - Each organization has a unique, downcased, snake-cased slug stored in the database
-    - Slug generation rules: Remove special characters, replace spaces with underscores, convert to lowercase
-    - Example: "Communitas Labs Inc" → "communitas_labs"
-    - Slug must be unique across all organizations (including historical slugs)
-    - Slug can be edited by organization owner (with uniqueness validation)
-    - **Slug Change Handling:**
-      - When slug is changed, old slug is preserved in slug history table
-      - Historical slugs remain valid for email delivery (permanent aliases)
-      - All previous slugs route emails to the same organization
-      - Prevents email delivery failures when suppliers use old addresses
-      - UI displays warning before slug change: "Changing your email slug will update your primary email address. Suppliers can still send invoices to your old address, but we recommend notifying them of the new address."
-      - Confirmation required before applying slug change
-      - Organization settings show current slug and all historical slugs (read-only list)
-      - Historical slugs cannot be reused by other organizations
-  - **Dedicated Email Address:**
-    - Each organization receives a dedicated email address: `{slug}@dortal.resend.app`
-    - Primary email address based on current slug
-    - All historical slugs remain valid as email aliases (e.g., `old_slug@dortal.resend.app` still works)
-    - Email address displayed in organization settings for distribution to suppliers
-    - Copy-to-clipboard functionality for easy sharing
-    - Email address updated automatically when slug is changed (primary address changes, old one becomes alias)
-    - Historical email addresses listed in organization settings as "Previous addresses (still active)"
-  - **Email Reception & Attachment Processing:**
-    - System receives emails sent to organization's email address via Resend webhooks
-    - Parse email for attachments (PDF, JPEG, PNG formats)
-    - Store each attachment in Supabase Storage bucket `supplier-inbox`
-    - Create database record in `supplier_inbox_items` table with metadata:
-      - Organization ID
-      - Email sender (supplier email address)
-      - Email subject
-      - Received date/time
-      - Attachment file name and storage path
-      - Processing status: `new`, `processed`, `archived`
-      - File size and content type
-    - Handle multiple attachments in single email (create separate inbox items)
-    - Validate file types and size limits (max 10MB per attachment)
-  - **Email Notification:**
-    - Send email notification to organization admin/owner when new supplier invoice received
-    - Notification includes: sender email, subject, attachment count
-    - Notification links to supplier invoice inbox view
-    - Use Resend for sending notifications
-    - Option to enable/disable notifications in organization settings
-  - **Inbox Badge & Count:**
-    - Display badge in navigation menu showing count of unprocessed supplier invoices
-    - Badge shows count of items with status `new`
-    - Badge updates in real-time when new invoices arrive
-    - Badge visible only to users with access to supplier invoices
-    - Clear/minimal design (e.g., small red circle with number)
-  - **Supplier Invoice Inbox View:**
-    - New page/view: `/supplier-invoices/inbox`
-    - List of received supplier invoice attachments
-    - Columns: Date received, sender email, subject, file name, status
-    - Filter by status: new, processed, archived
-    - Sort by date (newest first by default)
-    - Search/filter by sender email or subject
-    - Preview thumbnail for image attachments
-    - Action buttons per item:
-      - "Process" - Opens OCR Upload & Scan (US-263) with attachment pre-loaded
-      - "Download" - Download original attachment
-      - "Archive" - Mark as archived (remove from new count)
-      - "Delete" - Remove from inbox
-    - Bulk actions: Archive selected, delete selected
-    - Empty state message when no invoices in inbox
-  - **Integration with Upload & Scan:**
-    - Clicking "Process" on inbox item opens OCR Upload Modal (from US-263)
-    - Attachment automatically loaded into OCR processing
-    - Upon successful processing and saving, mark inbox item as `processed`
-    - Link created between `supplier_inbox_items` and `supplier_invoices` tables
-    - Option to return to inbox after processing to handle next invoice
-  - **Security & Privacy:**
-    - RLS policies ensure users only see inbox items for their organization
-    - Email webhook endpoint validates requests from Resend
-    - Sender email and subject stored for audit purposes
-    - Automatic cleanup of processed items after configurable period (e.g., 90 days)
-- **Technical Considerations:**
-  - **Resend Inbound Email Setup:**
-    - Configure Resend domain for inbound email handling
-    - Set up webhook endpoint to receive inbound emails
-    - Parse email payload for attachments and metadata
-  - **Supabase Edge Function:**
-    - Create `process-inbound-supplier-invoice` Edge Function
-    - Handles Resend webhook payload
-    - Validates organization slug from recipient email (checks current slug and slug history)
-    - Looks up organization by slug (current or historical)
-    - Downloads attachments from email payload
-    - Uploads to Supabase Storage
-    - Creates inbox item records
-    - Triggers notification email
   - **Database Schema:**
-    - `organizations` table: Add `email_slug` column (unique, indexed)
-    - New table: `organization_email_slug_history`
+    - Add `email_slug` column to `organizations` table (unique, indexed)
+    - Create `organization_email_slug_history` table:
       - `id` (primary key)
       - `organization_id` (foreign key to organizations)
       - `slug` (unique, indexed) - historical slug value
       - `created_at` - when this slug was first assigned
       - `replaced_at` - when this slug was replaced by a new one
-      - `is_current` (boolean) - true for the active slug, false for historical
     - Unique constraint on `slug` across both current and historical slugs
-    - New table: `supplier_inbox_items` with columns for metadata
-    - Foreign key relationship to `supplier_invoices` (nullable, set when processed)
-  - **Storage:**
-    - New bucket: `supplier-inbox` with RLS policies
-    - File naming convention: `{org_id}/{timestamp}_{original_filename}`
-    - Automatic expiration policy for old files
-  - **Real-time Updates:**
-    - Use Supabase real-time subscriptions for inbox badge count updates
-    - Update count when new items arrive or status changes
-  - **UI Components:**
-    - `SupplierInboxBadge` - Navigation badge component
-    - `SupplierInboxPage` - Main inbox view
-    - `InboxItemRow` - Individual inbox item display
-    - `InboxItemActions` - Action buttons per item
-    - Organization settings: Email slug field with validation
-    - `EmailSlugChangeConfirmation` - Modal warning about slug change implications
-    - `EmailSlugHistory` - Display component showing current and previous email addresses
-- **User Experience Flow:**
-  **Standard Invoice Reception Flow:**
-  1. Organization owner configures email slug in settings
-  2. Owner shares `{slug}@dortal.resend.app` with suppliers
-  3. Supplier sends invoice via email with PDF/image attachment
-  4. System receives email, stores attachment, creates inbox item
-  5. Organization receives email notification
-  6. User logs in, sees badge with count in navigation
-  7. User navigates to Supplier Invoice Inbox
-  8. User clicks "Process" on invoice
-  9. OCR modal opens with document pre-loaded
-  10. User reviews extracted data, makes adjustments, saves
-  11. Invoice marked as processed, badge count decreases
-  12. User repeats for remaining invoices
-  
-  **Slug Change Flow:**
-  1. Organization owner navigates to organization settings
-  2. Owner clicks to edit email slug
-  3. System displays warning modal:
-     - "Changing your email slug will update your primary email address to `new_slug@dortal.resend.app`"
-     - "Your old address `old_slug@dortal.resend.app` will remain active and forward invoices to your organization"
-     - "We recommend notifying your suppliers of the new address for their records"
-     - Checkbox: "I understand that both addresses will work"
-     - "Cancel" and "Confirm Change" buttons
-  4. Owner confirms change
-  5. System updates current slug, creates history record
-  6. Organization settings show new primary email and list of historical addresses
-  7. Both old and new email addresses continue to route invoices to the organization
-  8. Suppliers using old address still get invoices delivered successfully
+    - Database trigger to auto-generate slug from organization name on creation
+  - **Slug Rules:**
+    - Each organization has a unique, downcased, snake-cased slug
+    - Generation rules: Remove special characters, replace spaces with underscores, convert to lowercase
+    - International character handling: Transliterate Swedish characters (å→a, ä→a, ö→o) and other diacritics
+    - Example: "Företag AB" → "foretag_ab", "Communitas Labs Inc" → "communitas_labs"
+    - Maximum length: 50 characters (truncate sensibly at word boundary)
+    - Slug must be unique across all organizations (including historical slugs)
+    - Historical slugs cannot be reused by other organizations
+    - **Collision Handling:** If auto-generated slug already exists, append numeric suffix (`company_name_2`, `company_name_3`, etc.)
+    - **Reserved Slugs:** Block list of system-reserved slugs that cannot be used:
+      - `admin`, `support`, `billing`, `help`, `info`, `noreply`, `postmaster`, `abuse`, `security`, `sales`, `contact`, `system`, `test`
+  - **Organization Settings UI:**
+    - Display dedicated email address: `{slug}@dortal.resend.app`
+    - Copy-to-clipboard functionality for easy sharing
+    - Edit slug button (owner only)
+    - Display list of historical slugs as "Previous addresses (still active)" (read-only)
+  - **Slug Change Flow:**
+    - Confirmation modal before applying slug change with warning:
+      - "Changing your email slug will update your primary email address"
+      - "Your old address will remain active and forward invoices to your organization"
+      - "We recommend notifying your suppliers of the new address"
+    - When slug changes, old slug is preserved in history table
+    - All previous slugs remain valid for email delivery (permanent aliases)
+  - **Validation:**
+    - Uniqueness validation against current slugs and history
+    - Format validation (lowercase, alphanumeric, underscores only)
+    - Minimum length (3 characters)
+- **Technical Considerations:**
+  - Resource: `Organization.updateEmailSlug()` method
+  - New Resource: `OrganizationEmailSlugHistory` for slug history queries
+  - Redux: Update `organizationsSlice` with slug management actions
+  - Components: `EmailSlugSettings`, `EmailSlugChangeModal`, `EmailSlugHistory`
+- **E2E Tests:**
+  - Display current email address in organization settings
+  - Edit slug with validation (happy path)
+  - Slug uniqueness validation error
+  - Historical slugs displayed after change
 - **i18n Requirements:**
-  - Swedish/English translations for all UI text
-  - Email notification template in both languages
-  - Error messages for invalid slugs, file types, size limits
-  - Slug change confirmation modal text in both languages
-  - Warning messages about slug changes and email delivery
-  - Historical email addresses labels ("Previous addresses (still active)")
+  - Slug change confirmation modal text
+  - Warning messages about slug changes
+  - Historical email addresses labels
+  - Validation error messages
 - **Status:** Not Started
-- **Dependencies:**
-  - US-263 (Supplier Invoice & Receipt OCR Upload) - Must be completed first
-  - US-260 (Supplier Invoice Registration) - Core functionality
-  - Resend account with inbound email capability
-  - Supabase Edge Functions enabled
+- **Dependencies:** None
+
+---
+
+**US-264b: Inbound Email Processing (Backend)**
+- As the **system**, in order to **receive and store supplier invoices sent via email**, I need to **process inbound emails from Resend webhooks**.
+- **Acceptance Criteria:**
+  - **Resend Configuration:**
+    - Configure Resend domain for inbound email handling (`dortal.resend.app`)
+    - Set up webhook endpoint URL in Resend dashboard
+  - **Database Schema:**
+    - Create `supplier_inbox_items` table:
+      - `id` (primary key)
+      - `organization_id` (foreign key)
+      - `sender_email` - email sender address
+      - `subject` - email subject line (default "(No subject)" if empty)
+      - `email_body` - email body text (for reference, may contain invoice details)
+      - `received_at` - timestamp
+      - `file_name` - original attachment filename (sanitized)
+      - `storage_path` - path in Supabase Storage
+      - `file_size` - attachment size in bytes
+      - `file_hash` - SHA-256 hash of attachment (for duplicate detection)
+      - `content_type` - MIME type (application/pdf, image/jpeg, image/png)
+      - `status` - enum: `new`, `processed`, `archived`, `duplicate`, `no_attachment`
+      - `is_duplicate_of` - nullable foreign key to original inbox item (if duplicate)
+      - `supplier_invoice_id` (nullable foreign key) - set when processed
+      - `created_at`, `updated_at`
+      - `archived_at`, `archived_by` - audit trail for archiving
+    - RLS policies for organization-based access
+  - **Storage:**
+    - Create `supplier-inbox` storage bucket with RLS policies
+    - File naming: `{org_id}/{uuid}_{timestamp}_{sanitized_filename}` (UUID prevents enumeration)
+    - Sanitize filename: strip path components, special characters, limit length
+  - **Edge Function: `process-inbound-supplier-invoice`**
+    - **Webhook Security:**
+      - Validate webhook signature using Resend's HMAC signature header
+      - Store webhook signing secret in Supabase secrets
+    - Parse recipient email to extract slug (e.g., `test_org@dortal.resend.app` → `test_org`)
+    - Look up organization by slug (check current `email_slug` and `organization_email_slug_history`)
+    - Return 404 if no matching organization found
+    - **Rate Limiting:**
+      - Max 20 emails per sender email address per hour per organization
+      - Log and reject excessive requests (potential spam/abuse)
+    - **Attachment Handling:**
+      - Parse email for attachments (PDF, JPEG, PNG)
+      - Check Content-Length header first, then validate after download (max 10MB per attachment)
+      - If NO attachments: Create inbox item with `status = 'no_attachment'` and store email body for reference
+      - Sanitize filenames before storage (remove path traversal attempts, special chars)
+    - **Duplicate Detection:**
+      - Calculate SHA-256 hash of each attachment
+      - Check if hash exists in `supplier_inbox_items` for same organization (last 90 days)
+      - If duplicate found: Create inbox item with `status = 'duplicate'` and `is_duplicate_of` set
+      - User can still process duplicates if intentional
+    - Upload each attachment to Supabase Storage
+    - Create `supplier_inbox_items` record for each attachment
+    - Handle multiple attachments in single email (create separate inbox items)
+    - **Error Handling:**
+      - Store raw webhook payload in `webhook_logs` table for debugging failed parses
+      - Log malformed emails, invalid file types, oversized files
+  - **Email Notification (Optional):**
+    - Send notification to organization owner when new invoice received
+    - Notification includes: sender email, subject, attachment count
+    - Link to supplier invoice inbox view
+    - Notification toggle in organization settings (`notify_on_inbox_email` boolean)
+  - **Retention Policy:**
+    - Scheduled cleanup job (Edge Function on cron, daily)
+    - Delete inbox items and storage files where:
+      - `status = 'processed'` AND `created_at` older than 90 days
+      - `status = 'archived'` AND `archived_at` older than 90 days
+    - Keep `new` items indefinitely until processed/archived
+- **Technical Considerations:**
+  - Edge Function deployed via Supabase CLI
+  - Webhook signature validation using Resend's documented HMAC method
+  - Error handling for malformed emails, invalid attachments
+  - Logging for debugging webhook issues
+  - Cron job for retention cleanup (pg_cron or Supabase scheduled functions)
+- **E2E Tests:** None (backend webhook - test via integration tests or manual verification)
+- **Status:** Not Started
+- **Dependencies:** US-264a
+
+---
+
+**US-264c: Supplier Invoice Inbox UI**
+- As a **user**, in order to **manage supplier invoices received via email**, I would like to **view, filter, and process items in the supplier invoice inbox**.
+- **Acceptance Criteria:**
+  - **Navigation:**
+    - Add "Inbox" link under Supplier Invoices in navigation
+    - Display badge with count of items where `status = 'new'`
+    - Badge updates when count changes (Supabase real-time subscription)
+    - Badge visible only to users with organization access
+  - **Inbox Page (`/supplier-invoices/inbox`):**
+    - List of received supplier invoice attachments
+    - Columns: Date received, sender email, subject, file name, status
+    - Sort by date (newest first by default)
+    - Filter by status: All, New, Processed, Archived
+    - Search by sender email or subject
+    - Empty state message when no invoices in inbox
+  - **Status Indicators:**
+    - Visual indicators for special statuses:
+      - `duplicate` - Warning icon with tooltip "Potential duplicate - same file received previously"
+      - `no_attachment` - Info icon with tooltip "Email received without attachment"
+    - Link to original item for duplicates
+  - **Sender Recognition:**
+    - If sender email matches existing supplier in system, display supplier name
+    - Quick link to supplier profile
+  - **Item Actions:**
+    - "Process" - Opens OCR Upload Modal (US-263) with attachment pre-loaded
+    - "Download" - Download original attachment from storage
+    - "Archive" - Mark as archived (removes from "new" count)
+    - "Delete" - Remove from inbox (with confirmation, soft delete)
+  - **Bulk Actions:**
+    - Select multiple items via checkboxes
+    - "Archive Selected" - Archive all selected items
+    - "Delete Selected" - Delete all selected (with confirmation)
+  - **Process Integration:**
+    - Clicking "Process" fetches attachment from storage
+    - Opens OCR Upload Modal with document pre-loaded
+    - Upon successful save, mark inbox item as `processed`
+    - Set `supplier_invoice_id` to link inbox item to created invoice
+    - Show "Return to Inbox" option after processing
+- **Technical Considerations:**
+  - Resource: `SupplierInboxItem` with CRUD operations
+  - Redux: `supplierInboxSlice` for state management
+  - Real-time: Subscribe to COUNT of `supplier_inbox_items` for badge (not all rows)
+  - Components: `SupplierInboxPage`, `InboxItemRow`, `InboxBadge`, `InboxItemActions`
+  - Integration: Modify `OcrUploadModal` to accept pre-loaded file from inbox
+  - Responsive design for mobile viewing
+- **E2E Tests:**
+  - Display inbox list with items
+  - Filter by status
+  - Archive item (badge count decreases)
+  - Delete item with confirmation
+  - Duplicate indicator displayed correctly
+- **i18n Requirements:**
+  - Page title and column headers
+  - Status labels (New, Processed, Archived, Duplicate, No Attachment)
+  - Action button labels
+  - Empty state message
+  - Confirmation dialogs
+  - Duplicate/no-attachment warning tooltips
+- **Status:** Not Started
+- **Dependencies:** US-264a, US-264b, US-263 ✅
+
+---
+
+**US-264d: Process Integration (OCR Modal Pre-loading)**
+- As a **user**, in order to **efficiently process supplier invoices from the inbox**, I would like to **have inbox attachments automatically loaded into the OCR modal and marked as processed after saving**.
+- **Acceptance Criteria:**
+  - **Pre-load Attachment:**
+    - Clicking "Process" on inbox item fetches attachment from Supabase Storage
+    - Opens OCR Upload Modal (US-263) with document already loaded
+    - Skip the upload step - go directly to OCR processing
+    - Show loading state while fetching attachment
+  - **Mark as Processed:**
+    - Upon successful save of supplier invoice, update inbox item status to `processed`
+    - Set `supplier_invoice_id` foreign key to link inbox item to created invoice
+    - Badge count decreases automatically (real-time)
+  - **Return to Inbox:**
+    - After saving, show "Return to Inbox" button/option
+    - Allows user to quickly process multiple invoices in sequence
+- **Technical Considerations:**
+  - Modify `OcrUploadModal` to accept `preloadedFile` prop (Blob + metadata)
+  - Add `fromInboxItemId` prop to track which inbox item is being processed
+  - Callback on save to update inbox item status
+  - Resource: `SupplierInboxItem.markAsProcessed(id, supplierInvoiceId)`
+- **E2E Tests:**
+  - (Can be combined with US-264c) Process flow: click Process → OCR modal opens with file → save → item marked as processed
+- **i18n Requirements:**
+  - "Return to Inbox" button label
+  - Loading state text ("Loading document...")
+- **Status:** Not Started
+- **Dependencies:** US-264c, US-263 ✅
+
+---
+
+**User Experience Flow (Complete US-264):**
+
+**Standard Invoice Reception Flow:**
+1. Organization owner configures email slug in settings (US-264a)
+2. Owner shares `{slug}@dortal.resend.app` with suppliers
+3. Supplier sends invoice via email with PDF/image attachment
+4. System receives email, stores attachment, creates inbox item (US-264b)
+5. User logs in, sees badge with count in navigation (US-264c)
+6. User navigates to Supplier Invoice Inbox
+7. User clicks "Process" on invoice (US-264d)
+8. OCR modal opens with document pre-loaded
+9. User reviews extracted data, makes adjustments, saves
+10. Invoice marked as processed, badge count decreases
+
+**Slug Change Flow:**
+1. Organization owner navigates to organization settings
+2. Owner clicks to edit email slug
+3. System displays warning modal with implications
+4. Owner confirms change
+5. System updates current slug, creates history record
+6. Both old and new email addresses continue to route invoices
+
+---
+
+**US-265: Invoice Recipient Validation (AI-Powered)**
+- As a **user**, in order to **catch invoices that may not be intended for my organization**, I would like to **the system to detect and flag when the invoice recipient doesn't match my organization**.
+- **Acceptance Criteria:**
+  - **AI Extraction Enhancement:**
+    - Extract invoice recipient/buyer information from document:
+      - Recipient company name ("Mottagare", "Köpare", "Bill To", "Customer")
+      - Recipient organization number (if present)
+      - Recipient address
+    - Compare extracted recipient against current organization:
+      - Name similarity check (fuzzy matching)
+      - Organization number exact match (if both present)
+  - **Mismatch Detection:**
+    - Flag invoice if recipient name does NOT match organization name
+    - Confidence levels: `match`, `partial_match`, `mismatch`, `not_found`
+    - `match` - Names match or org numbers match
+    - `partial_match` - Partial name similarity (e.g., "Företag" vs "Företag AB")
+    - `mismatch` - Different company name entirely
+    - `not_found` - Could not extract recipient from invoice
+  - **UI Warning:**
+    - Display prominent warning banner in OCR review form when mismatch detected:
+      - "This invoice appears to be addressed to **[Extracted Name]**, not **[Your Org Name]**"
+      - "Please verify this invoice is intended for your organization before saving"
+    - Warning is dismissible - user can acknowledge and proceed
+    - Checkbox: "I confirm this invoice is for my organization" (required to save if mismatch)
+  - **Applies To:**
+    - Manual OCR upload (US-263) - existing flow
+    - Inbox processing (US-264d) - email-received invoices
+- **Technical Considerations:**
+  - Update `extract-invoice-data` Edge Function to extract recipient fields
+  - Add recipient fields to extraction response: `recipient_name`, `recipient_org_number`, `recipient_address`
+  - Add `recipient_match_status` field: `match`, `partial_match`, `mismatch`, `not_found`
+  - Fuzzy matching library (e.g., Levenshtein distance) for name comparison
+  - Store extracted recipient in `supplier_invoices` table for audit
+- **Database Schema:**
+  - Add to `supplier_invoices` table:
+    - `extracted_recipient_name` - what AI found on invoice
+    - `extracted_recipient_org_number` - org number from invoice (if any)
+    - `recipient_match_status` - enum: `match`, `partial_match`, `mismatch`, `not_found`
+    - `recipient_mismatch_acknowledged` - boolean, true if user confirmed despite mismatch
+- **E2E Tests:**
+  - (Can mock AI response) Display warning when recipient mismatch detected
+  - User can acknowledge mismatch and save
+  - No warning when recipient matches
+- **i18n Requirements:**
+  - Mismatch warning banner text (Swedish/English)
+  - Confirmation checkbox label
+  - Match status labels
+- **Status:** Not Started
+- **Dependencies:** US-263 ✅
 
 #### Invoicing & Accounting Integration
 
@@ -2760,7 +3083,9 @@ The Swedish Tax Authority (Skatteverket) provides APIs for digital submission of
 - US-104 to US-109, US-119: Security & Compliance
 - US-110 to US-112: White Label & Multi-tenancy
 - US-113 to US-118: Support & Growth
-- US-121 to US-122: SIE Integration
+- US-120: NPS Survey System
+- US-121 to US-123: SIE Integration
+- US-124 to US-125: Adaptive User Experience (Proficiency-Based UI)
 
 **Accounting Module (US-201 to US-282)**: Full Swedish-compliant bookkeeping
 - US-201 to US-203: Chart of Accounts (BAS standard)
@@ -2770,6 +3095,8 @@ The Swedish Tax Authority (Skatteverket) provides APIs for digital submission of
 - US-240 to US-243: Bank Accounts & Reconciliation
 - US-250 to US-252: Fiscal Year Management
 - US-260 to US-264: Supplier Management (Leverantörer)
+  - US-264a/b/c/d: Email-Based Invoice Reception (sub-stories)
+- US-265: Invoice Recipient Validation (AI enhancement)
 - US-280 to US-282: Invoice & Accounting Integration
 
 **Navigation & UI (US-401 to US-404)**: Application architecture
