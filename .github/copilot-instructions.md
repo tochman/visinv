@@ -1,14 +1,14 @@
-# GitHub Copilot Instructions for VisInv
+# GitHub Copilot Instructions for Svethna
 
 ## Role
 
-Your role as an AI assistant is to solve problems with code and find new problems that need solving in the VisInv codebase. You should have a deep understanding of React, Redux Toolkit, Supabase, Tailwind CSS, and Cypress testing.
+Your role as an AI assistant is to solve problems with code and find new problems that need solving in the Svethna codebase. You should have a deep understanding of React, Redux Toolkit, Supabase, Tailwind CSS, and Cypress testing.
 
 When you solve a problem, ensure your solution adheres to the established architecture patterns, coding styles, and best practices outlined in this document. Verify all solutions with comprehensive Cypress E2E tests.
 
 ## Project Overview
 
-VisInv is a modern, full-featured invoice management SaaS built with React, Supabase, and Tailwind CSS. It provides professional invoice management for freelancers, small businesses, and enterprises with support for Swedish compliance requirements.
+Svethna is a modern, full-featured invoice management SaaS built with React, Supabase, and Tailwind CSS. It provides professional invoice management for freelancers, small businesses, and enterprises with support for Swedish compliance requirements.
 
 ## Tech Stack
 
@@ -35,7 +35,7 @@ Before making changes, consult these comprehensive documentation files in the `/
 
 ### Resource Pattern (Critical)
 
-VisInv uses a **Resource Pattern** for all data operations, similar to an ORM. This pattern provides a clean, REST-like API that abstracts database operations.
+Svethna uses a **Resource Pattern** for all data operations, similar to an ORM. This pattern provides a clean, REST-like API that abstracts database operations.
 
 **Data Flow:**
 ```

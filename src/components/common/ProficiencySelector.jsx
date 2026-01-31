@@ -111,7 +111,7 @@ const ProficiencySelector = ({
                 onClick={() => handleSelect(level.key)}
                 disabled={disabled}
                 className={`
-                  flex flex-col items-center p-3 rounded-lg border-2 transition-all
+                  flex flex-col items-center p-3 rounded-sm border-2 transition-all
                   ${isSelected 
                     ? `${colors.bg} ${colors.border} ring-2 ${colors.ring}` 
                     : 'border-gray-200 dark:border-gray-700 hover:border-gray-300 dark:hover:border-gray-600'
@@ -152,7 +152,7 @@ const ProficiencySelector = ({
             onClick={() => handleSelect(level.key)}
             disabled={disabled}
             className={`
-              w-full flex items-start p-4 rounded-lg border-2 transition-all text-left
+              w-full flex items-start p-4 rounded-sm border-2 transition-all text-left
               ${isSelected 
                 ? `${colors.bg} ${colors.border} ring-2 ${colors.ring}` 
                 : 'border-gray-200 dark:border-gray-700 hover:border-gray-300 dark:hover:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-800'
@@ -161,7 +161,7 @@ const ProficiencySelector = ({
             `}
             data-cy={`proficiency-option-${level.key}`}
           >
-            <div className={`flex-shrink-0 p-2 rounded-lg ${isSelected ? colors.bg : 'bg-gray-100 dark:bg-gray-700'}`}>
+            <div className={`flex-shrink-0 p-2 rounded-sm ${isSelected ? colors.bg : 'bg-gray-100 dark:bg-gray-700'}`}>
               <Icon className={`w-6 h-6 ${isSelected ? colors.icon : 'text-gray-400 dark:text-gray-500'}`} />
             </div>
             <div className="ml-4 flex-1">

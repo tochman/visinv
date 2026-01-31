@@ -392,7 +392,7 @@ US-024 Multi-Currency Support has been **successfully implemented** with:
 - ✅ Comprehensive testing
 - ✅ Full documentation
 
-The feature is **production-ready** and enables VisInv to serve international clients with professional multi-currency invoicing capabilities.
+The feature is **production-ready** and enables Svethna to serve international clients with professional multi-currency invoicing capabilities.
 
 ---
 

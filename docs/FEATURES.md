@@ -1,8 +1,8 @@
-# VisInv - Feature Documentation
+# Svethna - Feature Documentation
 
 ## Overview
 
-This document provides a comprehensive list of user stories for the VisInv platform - a **full-featured Swedish accounting and invoicing solution**. The platform is organized into three major modules:
+This document provides a comprehensive list of user stories for the Svethna platform - a **full-featured Swedish accounting and invoicing solution**. The platform is organized into three major modules:
 
 1. **Invoicing (Fakturering)** - Invoice creation, templates, payments, clients, products
 2. **Accounting (Bokföring)** - General ledger, journal entries, financial reports, Swedish compliance
@@ -1193,7 +1193,7 @@ Features are organized into logical categories and prioritized into development 
 - **Versioning:** Versioned API for backward compatibility
 
 **US-096: Zapier Integration**
-- As a **user**, in order to **connect with other tools**, I would like to **use Zapier to automate workflows between VisInv and 1000+ other apps**.
+- As a **user**, in order to **connect with other tools**, I would like to **use Zapier to automate workflows between Svethna and 1000+ other apps**.
 - **Triggers:** Invoice created, invoice paid, client added, payment received
 - **Actions:** Create invoice, update client, send email, etc.
 
@@ -1372,7 +1372,7 @@ Features are organized into logical categories and prioritized into development 
   - Custom domain (invoicing.mycompany.com)
   - Replace logo and brand colors
   - Custom email sender address
-  - Remove VisInv branding from interface and emails
+  - Remove Svethna branding from interface and emails
   - Custom terms of service and privacy policy
 - **Tier:** Enterprise plan
 
@@ -1385,7 +1385,7 @@ Features are organized into logical categories and prioritized into development 
   - Tenant-specific customizations
 
 **US-112: Reseller/Partner Program**
-- As a **reseller**, in order to **offer VisInv to my clients**, I would like to **have a partner dashboard to manage multiple client accounts**.
+- As a **reseller**, in order to **offer Svethna to my clients**, I would like to **have a partner dashboard to manage multiple client accounts**.
 - **Features:**
   - Create and manage client accounts
   - Set pricing and billing
@@ -1465,7 +1465,7 @@ Features are organized into logical categories and prioritized into development 
   - 20% random chance of showing survey again after responding
   - Minimum 30-day interval between survey displays (regardless of response)
 - **Survey Format:**
-  - Standard NPS question: "How likely are you to recommend VisInv to a friend or colleague?" (0-10 scale)
+  - Standard NPS question: "How likely are you to recommend Svethna to a friend or colleague?" (0-10 scale)
   - Follow-up question: "Why did you give this score?" (optional text field)
   - Simple modal interface with easy dismiss option
 - **Data Tracking:**
@@ -2157,7 +2157,7 @@ The Swedish Tax Authority (Skatteverket) provides APIs for digital submission of
 - **Status:** Not Started
 
 **US-122: SIE File Import** ✅
-- As a **user migrating to VisInv**, in order to **bring existing accounting data**, I would like to **import SIE files from other accounting software**.
+- As a **user migrating to Svethna**, in order to **bring existing accounting data**, I would like to **import SIE files from other accounting software**.
 - **Acceptance Criteria:**
   - Support SIE4 (.se text format) and SIE5 (.sie XML format)
   - Import wizard: upload → validate → preview → import → complete
@@ -2184,7 +2184,7 @@ The Swedish Tax Authority (Skatteverket) provides APIs for digital submission of
 - **Status:** ✅ Complete
 
 **US-123: SIE Import Fiscal Years and Transactions**
-- As a **user migrating to VisInv**, in order to **import complete accounting history**, I would like to **import fiscal years, balances, and journal entries from SIE files**.
+- As a **user migrating to Svethna**, in order to **import complete accounting history**, I would like to **import fiscal years, balances, and journal entries from SIE files**.
 - **SIE4 Format Records:**
   - `#RAR` - Fiscal year periods: `#RAR 0 20160101 20161231` (year index 0 = current, -1 = previous)
   - `#IB` - Opening balance (Ingående balans): `#IB 0 1510 432056` (year index, account, amount)

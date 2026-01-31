@@ -16,7 +16,7 @@ export const resendConfig = {
 
 // App configuration
 export const appConfig = {
-  appName: 'VisInv',
+  appName: 'Svethna',
   adminEmail: 'thomas+visinv@communitaslabs.io',
   freeInvoiceLimit: 10,
   defaultCurrency: 'SEK',

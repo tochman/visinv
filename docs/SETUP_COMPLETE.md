@@ -1,4 +1,4 @@
-# VisInv - Project Setup Complete ✅
+# Svethna - Project Setup Complete ✅
 
 ## What's Been Set Up
 

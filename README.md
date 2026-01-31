@@ -1,4 +1,4 @@
-# VisInv - Professional Invoice Management SaaS
+# Svethna - Professional Invoice Management SaaS
 
 A modern, full-featured invoice management system built with React, Supabase, and Tailwind CSS.
 

@@ -1,8 +1,8 @@
-# VisInv → Full Accounting Platform Proposal
+# Svethna → Full Accounting Platform Proposal
 
 ## Overview
 
-This document proposes transforming VisInv from an invoicing-focused application into a **fully-featured Swedish accounting platform** with three major modules:
+This document proposes transforming Svethna from an invoicing-focused application into a **fully-featured Swedish accounting platform** with three major modules:
 
 1. **Accounting** (Bokföring) - General ledger, journal entries, financial reports
 2. **Invoicing** (Fakturering) - Current invoicing functionality, enhanced
@@ -373,7 +373,7 @@ Swedish accounting follows **Bokföringslagen** (BFL) and **Årsredovisningslage
 - **Status:** Not Started
 
 **US-122: SIE File Import** (Enhanced from existing)
-- As a **user migrating to VisInv**, in order to **bring existing accounting data**, I would like to **import SIE files from other accounting software**.
+- As a **user migrating to Svethna**, in order to **bring existing accounting data**, I would like to **import SIE files from other accounting software**.
 - **Acceptance Criteria:**
   - Support SIE4 and SIE5 formats
   - Import wizard: upload → validate → preview → map → import

@@ -2,7 +2,7 @@
 
 ## Overview
 
-VisInv follows a clean architecture pattern with clear separation of concerns:
+Svethna follows a clean architecture pattern with clear separation of concerns:
 - **Components** - Pure UI, no direct data access
 - **Resources** - REST-like data access layer
 - **Redux Slices** - State management

@@ -1,4 +1,4 @@
--- VisInv Database Migration
+-- Svethna Database Migration
 -- Run this in your Supabase SQL Editor
 -- https://supabase.com/dashboard/project/YOUR_PROJECT/sql
 

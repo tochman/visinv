@@ -1,6 +1,6 @@
-# VisInv - Invoice SaaS Database Schema
+# Svethna - Invoice SaaS Database Schema
 
-This document outlines the Supabase database schema for the VisInv application.
+This document outlines the Supabase database schema for the Svethna application.
 
 ## Tables
 

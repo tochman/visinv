@@ -118,7 +118,7 @@ async function sendInvoiceEmail(supabase: any, resendApiKey: string, invoice: an
   }
 
   // Prepare email content
-  const subject = `Invoice ${invoice.invoice_number} from ${invoice.organization?.name || 'VisInv'}`
+  const subject = `Invoice ${invoice.invoice_number} from ${invoice.organization?.name || 'Svethna'}`
   const emailHtml = `
     <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
       <h2>Invoice ${invoice.invoice_number}</h2>
@@ -141,7 +141,7 @@ async function sendInvoiceEmail(supabase: any, resendApiKey: string, invoice: an
       </p>
       ` : ''}
 
-      <p>Best regards,<br>${invoice.organization?.name || 'VisInv'}</p>
+      <p>Best regards,<br>${invoice.organization?.name || 'Svethna'}</p>
     </div>
   `
 
@@ -251,7 +251,7 @@ async function sendPaymentConfirmation(supabase: any, resendApiKey: string, invo
       </p>
       ` : ''}
 
-      <p>Best regards,<br>${invoice.organization?.name || 'VisInv'}</p>
+      <p>Best regards,<br>${invoice.organization?.name || 'Svethna'}</p>
     </div>
   `
 
@@ -352,7 +352,7 @@ function generateInvoiceHtml(invoice: any): string {
 <body>
   <div class="invoice-header">
     <div class="company-info">
-      <h1>${invoice.organization?.name || 'VisInv'}</h1>
+      <h1>${invoice.organization?.name || 'Svethna'}</h1>
       ${invoice.organization?.address ? `<p>${invoice.organization.address}</p>` : ''}
       ${invoice.organization?.postal_code && invoice.organization?.city ? `<p>${invoice.organization.postal_code} ${invoice.organization.city}</p>` : ''}
       ${invoice.organization?.org_number ? `<p>Org. nr: ${invoice.organization.org_number}</p>` : ''}

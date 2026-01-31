@@ -1,6 +1,6 @@
 {
   "app": {
-    "name": "VisInv",
+    "name": "Svethna",
     "tagline": "Professional Invoice Management"
   },
   "nav": {
@@ -1066,7 +1066,7 @@
   },
   "nps": {
     "title": "We'd love your feedback!",
-    "question": "How likely are you to recommend VisInv to a friend or colleague?",
+    "question": "How likely are you to recommend Svethna to a friend or colleague?",
     "notLikely": "Not likely",
     "veryLikely": "Very likely",
     "feedbackLabel": "Why did you give this score? (optional)",
@@ -1079,7 +1079,7 @@
     "required": "{{field}} is required"
   },
   "nps": {
-    "question": "How likely is it that you would recommend VisInv to a friend or colleague?",
+    "question": "How likely is it that you would recommend Svethna to a friend or colleague?",
     "selectOption": "Select one option",
     "notLikely": "0 - Not at all likely",
     "veryLikely": "10 - Very likely",

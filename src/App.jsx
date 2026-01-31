@@ -74,7 +74,7 @@ function App() {
         <div className={shouldAnimate ? 'animate-logo-to-corner' : ''}>
           <img 
             src="/svethna_logo.svg" 
-            alt="VisInv" 
+            alt="Svethna" 
             className={`h-16 w-auto dark:invert-0 invert ${!shouldAnimate ? 'animate-pulse' : ''}`}
           />
         </div>

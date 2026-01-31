@@ -1,6 +1,6 @@
 {
   "app": {
-    "name": "VisInv",
+    "name": "Svethna",
     "tagline": "Professionell Fakturahantering"
   },
   "nav": {
@@ -1057,7 +1057,7 @@
   },
   "nps": {
     "title": "Vi skulle älska din feedback!",
-    "question": "Hur sannolikt är det att du skulle rekommendera VisInv till en vän eller kollega?",
+    "question": "Hur sannolikt är det att du skulle rekommendera Svethna till en vän eller kollega?",
     "notLikely": "Inte sannolikt",
     "veryLikely": "Mycket sannolikt",
     "feedbackLabel": "Varför gav du detta betyg? (valfritt)",

@@ -2,7 +2,7 @@
 
 ## Overview
 
-This document provides detailed information about the Swedish Tax Authority (Skatteverket) API integration for VisInv. The integration enables automated digital submission of tax reports directly to Skatteverket, ensuring compliance with Swedish tax reporting requirements.
+This document provides detailed information about the Swedish Tax Authority (Skatteverket) API integration for Svethna. The integration enables automated digital submission of tax reports directly to Skatteverket, ensuring compliance with Swedish tax reporting requirements.
 
 ## Purpose
 
@@ -489,7 +489,7 @@ See [FEATURES.md](./FEATURES.md) for complete user story details:
 - [VAT Declaration API Docs](https://www7.skatteverket.se/portal/apier-och-oppna-data/utvecklarportalen/api/momsdeklaration/1.0.19/)
 - [Employer Declaration API Docs](https://www7.skatteverket.se/portal/apier-och-oppna-data/utvecklarportalen/api/arbetsgivardeklaration-inlamning/1.0.0/)
 
-### Related VisInv Documentation
+### Related Svethna Documentation
 - [FEATURES.md](./FEATURES.md) - Complete feature list including Skatteverket user stories
 - [ARCHITECTURE.md](./ARCHITECTURE.md) - System architecture patterns
 - [DATABASE.md](./DATABASE.md) - Database schema
