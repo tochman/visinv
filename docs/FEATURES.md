@@ -37,6 +37,70 @@ Features are organized into logical categories and prioritized into development 
 - **Tests:** Cypress test suite (profile-avatar.cy.js) covering upload, display, delete, and error scenarios
 - **Status:** ✅ Complete
 
+**US-292: Professional Landing Page with Integrated Auth** 🚧
+- As a **visitor**, in order to **understand the value of Svethna and get started quickly**, I would like to **see a professional landing page with clear benefits, features, and integrated sign-up**.
+- **Business Goals:**
+  - Convert visitors to users with clear value proposition
+  - Build trust through professional design and security messaging
+  - Provide seamless path from interest to sign-up
+  - Establish credibility in financial/accounting space
+- **Content Sections:**
+  1. **Hero Section:**
+     - Clear headline: "Professional Invoice Management for Swedish Businesses"
+     - Value proposition: Automated billing, Swedish compliance, real-time insights
+     - Primary CTA: Start Free / Get Started
+     - Secondary CTA: View Demo / Learn More
+     - Hero visual: Dashboard preview or invoice mockup
+  2. **Features Section:**
+     - Professional invoicing with Swedish templates
+     - Automated accounting with BAS kontoplan
+     - Real-time financial reports
+     - Multi-currency support
+     - Team collaboration
+     - Each feature with icon and brief description
+  3. **Benefits Section:**
+     - Save time with automation
+     - Stay compliant with Swedish regulations
+     - Get paid faster with professional invoices
+     - Insights dashboard for better decisions
+  4. **Trust & Security:**
+     - "Bank-level security"
+     - "Swedish compliance built-in"
+     - "GDPR compliant"
+     - "Supabase-powered infrastructure"
+  5. **Pricing Preview:**
+     - Free tier: 10 invoices/month
+     - Premium: Unlimited invoices + accounting features
+     - Enterprise: Custom solutions
+     - Clear pricing, no hidden fees
+  6. **Auth Integration:**
+     - Inline sign-up form in hero section
+     - Email/password option
+     - Google OAuth button
+     - No redirect needed - stays on page
+  7. **Footer:**
+     - Company info
+     - Links: Features, Pricing, Privacy, Terms
+     - Language toggle
+     - Contact information
+- **Design Requirements:**
+  - Professional gradient backgrounds (blue/indigo for finance)
+  - High-quality icons (Heroicons)
+  - Responsive design (mobile-first)
+  - Fast loading with optimized images
+  - Smooth scroll animations
+  - Clear visual hierarchy
+  - Professional typography
+- **Technical Implementation:**
+  - Component: LandingPage.jsx
+  - Routing: Show for non-authenticated users, redirect authenticated users to /dashboard
+  - Translations: Full Swedish and English support
+  - Performance: Lazy-loaded sections, optimized images
+- **Inspiration:**
+  - Actual Budget (actualbudget.org): Clean, professional financial app design
+  - Modern SaaS landing pages: Clear value prop, social proof, simple CTA
+- **Status:** 🚧 In Progress
+
 ---
 
 ### Organization Management

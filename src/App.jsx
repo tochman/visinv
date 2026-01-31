@@ -9,6 +9,9 @@ import { ToastProvider } from './context/ToastContext';
 import MainLayout from './components/layout/MainLayout';
 import AuthLayout from './components/layout/AuthLayout';
 
+// Landing Page
+import LandingPage from './pages/LandingPage';
+
 // Auth Pages
 import SignIn from './pages/auth/SignIn';
 import SignUp from './pages/auth/SignUp';
@@ -48,7 +51,7 @@ import NpsModal from './components/common/NpsModal';
 
 function App() {
   const dispatch = useDispatch();
-  const { initialized, loading } = useSelector((state) => state.auth);
+  const { initialized, loading, user } = useSelector((state) => state.auth);
   const [showLoader, setShowLoader] = useState(true);
   
   // Derive animation state from conditions instead of using effect
@@ -93,6 +96,9 @@ function App() {
         <Routes>
           {/* Public Routes */}
           <Route path="/cookie-policy" element={<CookiePolicy />} />
+          
+          {/* Landing Page - Only for non-authenticated users */}
+          <Route path="/" element={user ? <Navigate to="/dashboard" replace /> : <LandingPage />} />
 
           {/* Auth Routes */}
           <Route element={<AuthLayout />}>
@@ -104,7 +110,7 @@ function App() {
 
           {/* Protected Routes */}
           <Route element={<ProtectedRoute><MainLayout /></ProtectedRoute>}>
-            <Route path="/" element={<Dashboard />} />
+            <Route path="/dashboard" element={<Dashboard />} />
             <Route path="/invoices" element={<Invoices />} />
             <Route path="/invoices/:id" element={<InvoiceDetail />} />
             <Route path="/clients" element={<Clients />} />
@@ -132,7 +138,7 @@ function App() {
             <Route path="/admin/users" element={<AdminUsers />} />
           </Route>
 
-          {/* Redirect */}
+          {/* Redirect unknown paths to root */}
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
       </BrowserRouter>

@@ -1561,5 +1561,118 @@
       "noAttachment": "This item has no attachment to process",
       "loadFailed": "Failed to load inbox item"
     }
+  },
+  "landing": {
+    "hero": {
+      "title": "Professional Invoice & Accounting for Swedish Businesses",
+      "subtitle": "Streamline your invoicing, accounting, and financial reporting with our all-in-one platform built for Swedish compliance.",
+      "benefit1": "Professional invoices in seconds",
+      "benefit2": "Automated Swedish accounting",
+      "benefit3": "Real-time financial insights"
+    },
+    "auth": {
+      "signUp": "Sign Up",
+      "signIn": "Sign In",
+      "email": "Email",
+      "password": "Password",
+      "getStarted": "Get Started Free",
+      "or": "or",
+      "googleSignIn": "Continue with Google",
+      "termsAgreement": "By signing up, you agree to our Terms of Service and Privacy Policy.",
+      "authError": "Authentication failed. Please try again."
+    },
+    "features": {
+      "title": "Everything You Need to Run Your Business",
+      "subtitle": "From invoicing to financial reporting, Svethna has you covered.",
+      "invoicing": {
+        "title": "Professional Invoicing",
+        "description": "Create beautiful, compliant invoices in seconds. Support for Swedish requirements, recurring billing, and automatic reminders."
+      },
+      "accounting": {
+        "title": "Integrated Accounting",
+        "description": "Full double-entry accounting with BAS kontoplan, automated posting, and Swedish K-regelverk support (K1-K4)."
+      },
+      "multiCurrency": {
+        "title": "Multi-Currency Support",
+        "description": "Work with international clients. Automatic exchange rates, currency conversion, and multi-currency reporting."
+      },
+      "collaboration": {
+        "title": "Team Collaboration",
+        "description": "Work together seamlessly. Role-based permissions, audit trails, and real-time collaboration for your team."
+      },
+      "compliance": {
+        "title": "Swedish Compliance Built-In",
+        "description": "F-tax, VAT, ROT/RUT deductions, and Skatteverket requirements. We handle the Swedish regulations so you don't have to."
+      },
+      "automation": {
+        "title": "Powerful Automation",
+        "description": "Save hours with OCR invoice scanning, automatic posting, recurring invoices, and payment matching."
+      }
+    },
+    "benefits": {
+      "title": "Why Choose Svethna?",
+      "saveTime": {
+        "title": "Save 10+ Hours Per Week",
+        "description": "Automate repetitive tasks and focus on growing your business instead of managing paperwork."
+      },
+      "compliance": {
+        "title": "Stay Compliant Effortlessly",
+        "description": "Built-in Swedish tax and accounting rules ensure you're always compliant with Skatteverket requirements."
+      },
+      "insights": {
+        "title": "Make Better Decisions",
+        "description": "Real-time financial reports and insights help you understand your business performance at a glance."
+      }
+    },
+    "trust": {
+      "title": "Trusted by Thousands of Swedish Businesses",
+      "security": "Bank-Level Security",
+      "securityDescription": "256-bit encryption and secure data centers protect your financial data.",
+      "compliance": "Swedish Compliance",
+      "complianceDescription": "Built for Swedish accounting standards and tax regulations.",
+      "gdpr": "GDPR Compliant",
+      "gdprDescription": "Full compliance with EU data protection regulations.",
+      "infrastructure": "Enterprise Infrastructure",
+      "infrastructureDescription": "99.9% uptime powered by Supabase and AWS."
+    },
+    "pricing": {
+      "title": "Simple, Transparent Pricing",
+      "subtitle": "Start free. Upgrade when you need more.",
+      "popular": "Most Popular",
+      "free": {
+        "title": "Free",
+        "price": "0 kr/month",
+        "feature1": "Up to 5 invoices/month",
+        "feature2": "Basic accounting",
+        "feature3": "1 organization"
+      },
+      "premium": {
+        "title": "Premium",
+        "price": "299 kr/month",
+        "feature1": "Unlimited invoices",
+        "feature2": "Full accounting features",
+        "feature3": "Multi-currency support",
+        "feature4": "OCR invoice scanning"
+      },
+      "enterprise": {
+        "title": "Enterprise",
+        "price": "Custom",
+        "feature1": "Everything in Premium",
+        "feature2": "Multiple organizations",
+        "feature3": "Priority support"
+      }
+    },
+    "footer": {
+      "description": "Professional invoice and accounting software built for Swedish businesses.",
+      "product": "Product",
+      "features": "Features",
+      "pricing": "Pricing",
+      "company": "Company",
+      "privacy": "Privacy Policy",
+      "terms": "Terms of Service",
+      "contact": "Contact",
+      "email": "Email",
+      "rights": "All rights reserved."
+    }
   }
 }

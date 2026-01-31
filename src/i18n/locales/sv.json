@@ -1543,5 +1543,118 @@
       "noAttachment": "Detta objekt har ingen bilaga att behandla",
       "loadFailed": "Kunde inte ladda inkorgobjekt"
     }
+  },
+  "landing": {
+    "hero": {
+      "title": "Professionell fakturering och bokföring för svenska företag",
+      "subtitle": "Effektivisera din fakturering, bokföring och finansiell rapportering med vår allt-i-ett-plattform byggd för svensk efterlevnad.",
+      "benefit1": "Professionella fakturor på sekunder",
+      "benefit2": "Automatiserad svensk bokföring",
+      "benefit3": "Ekonomiska insikter i realtid"
+    },
+    "auth": {
+      "signUp": "Registrera",
+      "signIn": "Logga in",
+      "email": "E-post",
+      "password": "Lösenord",
+      "getStarted": "Kom igång gratis",
+      "or": "eller",
+      "googleSignIn": "Fortsätt med Google",
+      "termsAgreement": "Genom att registrera dig godkänner du våra användarvillkor och sekretesspolicy.",
+      "authError": "Autentisering misslyckades. Vänligen försök igen."
+    },
+    "features": {
+      "title": "Allt du behöver för att driva ditt företag",
+      "subtitle": "Från fakturering till ekonomisk rapportering - Svethna täcker allt.",
+      "invoicing": {
+        "title": "Professionell fakturering",
+        "description": "Skapa vackra, regelkonforma fakturor på sekunder. Stöd för svenska krav, återkommande fakturering och automatiska påminnelser."
+      },
+      "accounting": {
+        "title": "Integrerad bokföring",
+        "description": "Fullständig dubbel bokföring med BAS-kontoplan, automatiserad bokföring och stöd för svenska K-regelverket (K1-K4)."
+      },
+      "multiCurrency": {
+        "title": "Flervalutastöd",
+        "description": "Arbeta med internationella kunder. Automatiska valutakurser, valutakonvertering och rapportering i flera valutor."
+      },
+      "collaboration": {
+        "title": "Teamsamarbete",
+        "description": "Arbeta tillsammans sömlöst. Rollbaserade behörigheter, granskningsloggar och samarbete i realtid för ditt team."
+      },
+      "compliance": {
+        "title": "Svensk efterlevnad inbyggd",
+        "description": "F-skatt, moms, ROT/RUT-avdrag och Skatteverkets krav. Vi hanterar de svenska reglerna så att du slipper."
+      },
+      "automation": {
+        "title": "Kraftfull automatisering",
+        "description": "Spara timmar med OCR-fakturaskanning, automatisk bokföring, återkommande fakturor och betalningskoppling."
+      }
+    },
+    "benefits": {
+      "title": "Varför välja Svethna?",
+      "saveTime": {
+        "title": "Spara 10+ timmar per vecka",
+        "description": "Automatisera repetitiva uppgifter och fokusera på att växa ditt företag istället för att hantera pappersarbete."
+      },
+      "compliance": {
+        "title": "Håll dig efterlevnadskorrekt enkelt",
+        "description": "Inbyggda svenska skatte- och bokföringsregler säkerställer att du alltid följer Skatteverkets krav."
+      },
+      "insights": {
+        "title": "Fatta bättre beslut",
+        "description": "Ekonomiska rapporter och insikter i realtid hjälper dig att förstå ditt företags prestanda med ett ögonkast."
+      }
+    },
+    "trust": {
+      "title": "Betrodd av tusentals svenska företag",
+      "security": "Säkerhet på banknivå",
+      "securityDescription": "256-bitars kryptering och säkra datacenter skyddar dina ekonomiska data.",
+      "compliance": "Svensk efterlevnad",
+      "complianceDescription": "Byggd för svenska bokföringsstandarder och skatteregler.",
+      "gdpr": "GDPR-efterlevnad",
+      "gdprDescription": "Full efterlevnad av EU:s dataskyddsförordning.",
+      "infrastructure": "Företagsinfrastruktur",
+      "infrastructureDescription": "99,9% drifttid driven av Supabase och AWS."
+    },
+    "pricing": {
+      "title": "Enkel, transparent prissättning",
+      "subtitle": "Börja gratis. Uppgradera när du behöver mer.",
+      "popular": "Mest populär",
+      "free": {
+        "title": "Gratis",
+        "price": "0 kr/månad",
+        "feature1": "Upp till 5 fakturor/månad",
+        "feature2": "Grundläggande bokföring",
+        "feature3": "1 organisation"
+      },
+      "premium": {
+        "title": "Premium",
+        "price": "299 kr/månad",
+        "feature1": "Obegränsade fakturor",
+        "feature2": "Alla bokföringsfunktioner",
+        "feature3": "Flervalutastöd",
+        "feature4": "OCR-fakturaskanning"
+      },
+      "enterprise": {
+        "title": "Företag",
+        "price": "Anpassad",
+        "feature1": "Allt i Premium",
+        "feature2": "Flera organisationer",
+        "feature3": "Prioriterad support"
+      }
+    },
+    "footer": {
+      "description": "Professionell faktura- och bokföringsprogramvara byggd för svenska företag.",
+      "product": "Produkt",
+      "features": "Funktioner",
+      "pricing": "Priser",
+      "company": "Företag",
+      "privacy": "Integritetspolicy",
+      "terms": "Användarvillkor",
+      "contact": "Kontakt",
+      "email": "E-post",
+      "rights": "Alla rättigheter förbehållna."
+    }
   }
 }
