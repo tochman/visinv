@@ -14,6 +14,8 @@ import {
   GlobeAltIcon,
 } from '@heroicons/react/24/outline';
 import { signUp as signUpAction, signIn as signInAction, signInWithGoogle } from '../features/auth/authSlice';
+import ThemeToggle from '../components/common/ThemeToggle';
+import TemplateCarousel from '../components/landing/TemplateCarousel';
 
 export default function LandingPage() {
   const { t, i18n } = useTranslation();
@@ -57,29 +59,29 @@ export default function LandingPage() {
       description: t('landing.features.invoicing.description'),
     },
     {
+      icon: BoltIcon,
+      title: t('landing.features.aiAutomation.title'),
+      description: t('landing.features.aiAutomation.description'),
+    },
+    {
       icon: ChartBarIcon,
       title: t('landing.features.accounting.title'),
       description: t('landing.features.accounting.description'),
     },
     {
       icon: CurrencyDollarIcon,
-      title: t('landing.features.multiCurrency.title'),
-      description: t('landing.features.multiCurrency.description'),
+      title: t('landing.features.supplierInbox.title'),
+      description: t('landing.features.supplierInbox.description'),
     },
     {
       icon: UserGroupIcon,
-      title: t('landing.features.collaboration.title'),
-      description: t('landing.features.collaboration.description'),
+      title: t('landing.features.auditApprovals.title'),
+      description: t('landing.features.auditApprovals.description'),
     },
     {
       icon: ShieldCheckIcon,
       title: t('landing.features.compliance.title'),
       description: t('landing.features.compliance.description'),
-    },
-    {
-      icon: BoltIcon,
-      title: t('landing.features.automation.title'),
-      description: t('landing.features.automation.description'),
     },
   ];
 
@@ -107,21 +109,23 @@ export default function LandingPage() {
       <header className="bg-white/80 dark:bg-gray-900/80 backdrop-blur-sm sticky top-0 z-50 border-b border-gray-200 dark:border-gray-800">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
           <div className="flex justify-between items-center">
-            <div className="flex items-center gap-2">
-              <div className="text-2xl font-bold text-blue-600 dark:text-blue-400">
-                Svethna
-              </div>
-              <span className="text-sm text-gray-600 dark:text-gray-400">
-                {t('app.tagline')}
-              </span>
+            <div className="flex items-center gap-3">
+              <img 
+                src="/svethna_logo.svg" 
+                alt="Svethna" 
+                className="h-8 w-auto dark:invert-0 invert"
+              />
             </div>
-            <button
-              onClick={() => i18n.changeLanguage(i18n.language === 'en' ? 'sv' : 'en')}
-              className="flex items-center gap-2 px-3 py-2 text-sm text-gray-700 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400 transition-colors"
-            >
-              <GlobeAltIcon className="h-5 w-5" />
-              {i18n.language === 'en' ? 'Svenska' : 'English'}
-            </button>
+            <div className="flex items-center gap-2">
+              <ThemeToggle />
+              <button
+                onClick={() => i18n.changeLanguage(i18n.language === 'en' ? 'sv' : 'en')}
+                className="flex items-center gap-2 px-3 py-2 text-sm text-gray-700 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400 transition-colors"
+              >
+                <GlobeAltIcon className="h-5 w-5" />
+                <span className="hidden sm:inline">{i18n.language === 'en' ? 'Svenska' : 'English'}</span>
+              </button>
+            </div>
           </div>
         </div>
       </header>
@@ -155,7 +159,7 @@ export default function LandingPage() {
             </div>
 
             {/* Right: Auth Form */}
-            <div className="bg-white dark:bg-gray-800 rounded-lg shadow-2xl p-8">
+            <div className="bg-white dark:bg-gray-800 rounded-sm shadow-2xl p-8">
               <div className="flex gap-2 mb-6">
                 <button
                   onClick={() => setAuthMode('signup')}
@@ -224,6 +228,7 @@ export default function LandingPage() {
                 </button>
               </form>
 
+              {/* Temporarily disabled - will enable later
               <div className="relative my-6">
                 <div className="absolute inset-0 flex items-center">
                   <div className="w-full border-t border-gray-300 dark:border-gray-600"></div>
@@ -260,6 +265,7 @@ export default function LandingPage() {
                 </svg>
                 {t('landing.auth.googleSignIn')}
               </button>
+              */}
 
               {authMode === 'signup' && (
                 <p className="text-xs text-center text-gray-500 dark:text-gray-400 mt-4">
@@ -289,7 +295,7 @@ export default function LandingPage() {
               return (
                 <div
                   key={index}
-                  className="p-6 bg-gray-50 dark:bg-gray-800 rounded-lg hover:shadow-lg transition-shadow"
+                  className="p-6 bg-gray-50 dark:bg-gray-800 rounded-sm hover:shadow-lg transition-shadow"
                 >
                   <Icon className="h-12 w-12 text-blue-600 dark:text-blue-400 mb-4" />
                   <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-2">
@@ -337,6 +343,9 @@ export default function LandingPage() {
           </div>
         </div>
       </section>
+
+      {/* Template Carousel */}
+      <TemplateCarousel />
 
       {/* Trust/Security Section */}
       <section className="py-20 bg-gray-50 dark:bg-gray-800">
@@ -402,7 +411,7 @@ export default function LandingPage() {
 
           <div className="grid md:grid-cols-3 gap-8 max-w-5xl mx-auto">
             {/* Free Tier */}
-            <div className="p-8 bg-gray-50 dark:bg-gray-800 rounded-lg border-2 border-gray-200 dark:border-gray-700">
+            <div className="p-8 bg-gray-50 dark:bg-gray-800 rounded-sm border-2 border-gray-200 dark:border-gray-700">
               <h3 className="text-2xl font-bold text-gray-900 dark:text-white mb-2">
                 {t('landing.pricing.free.title')}
               </h3>
@@ -426,11 +435,13 @@ export default function LandingPage() {
             </div>
 
             {/* Premium Tier */}
-            <div className="p-8 bg-gradient-to-br from-blue-600 to-indigo-700 rounded-lg border-2 border-blue-600 shadow-xl transform scale-105">
-              <div className="text-xs font-semibold text-white bg-yellow-500 px-3 py-1 rounded-full inline-block mb-4">
-                {t('landing.pricing.popular')}
+            <div className="relative p-8 bg-gradient-to-br from-blue-600 to-indigo-700 rounded-sm border-2 border-blue-600 shadow-xl transform scale-105">
+              <div className="absolute -top-3 left-1/2 -translate-x-1/2">
+                <span className="text-xs font-bold text-white bg-orange-500 px-4 py-1.5 rounded-full shadow-lg">
+                  {t('landing.pricing.premium.comingSoon')}
+                </span>
               </div>
-              <h3 className="text-2xl font-bold text-white mb-2">
+              <h3 className="text-2xl font-bold text-white mb-2 mt-2">
                 {t('landing.pricing.premium.title')}
               </h3>
               <p className="text-4xl font-bold text-white mb-4">
@@ -457,7 +468,7 @@ export default function LandingPage() {
             </div>
 
             {/* Enterprise Tier */}
-            <div className="p-8 bg-gray-50 dark:bg-gray-800 rounded-lg border-2 border-gray-200 dark:border-gray-700">
+            <div className="p-8 bg-gray-50 dark:bg-gray-800 rounded-sm border-2 border-gray-200 dark:border-gray-700">
               <h3 className="text-2xl font-bold text-gray-900 dark:text-white mb-2">
                 {t('landing.pricing.enterprise.title')}
               </h3>
@@ -484,16 +495,16 @@ export default function LandingPage() {
       </section>
 
       {/* Footer */}
-      <footer className="bg-white dark:bg-gray-900 border-t border-gray-200 dark:border-gray-800 py-12">
+      <footer className="bg-gray-50 dark:bg-gray-900 py-12">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-12 mb-12">
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-12 mb-8">
             {/* Logo and tagline */}
             <div>
               <div className="flex items-center gap-2 mb-4">
                 <img 
                   src="/svethna_logo.svg" 
                   alt="Svethna" 
-                  className="h-8 w-auto"
+                  className="h-8 w-auto dark:invert-0 invert"
                 />
               </div>
               <p className="text-sm text-gray-600 dark:text-gray-400">
@@ -588,7 +599,7 @@ export default function LandingPage() {
           </div>
 
           {/* Bottom section */}
-          <div className="pt-8 border-t border-gray-200 dark:border-gray-800">
+          <div className="border-t border-gray-200 dark:border-gray-700 pt-8">
             <p className="text-sm text-gray-600 dark:text-gray-400 text-center">
               {t('landing.footer.communitasNote')} <a 
                 href="https://communitaslabs.io" 

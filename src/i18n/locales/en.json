@@ -1564,8 +1564,8 @@
   },
   "landing": {
     "hero": {
-      "title": "Professional Invoice & Accounting for Swedish Businesses",
-      "subtitle": "Streamline your invoicing, accounting, and financial reporting with our all-in-one platform built for Swedish compliance.",
+      "title": "Focus on Your Business. We'll Handle the Numbers.",
+      "subtitle": "AI-powered invoicing and accounting platform built for entrepreneurs. Spend your time growing your business, not doing paperwork.",
       "benefit1": "Professional invoices in seconds",
       "benefit2": "Automated Swedish accounting",
       "benefit3": "Real-time financial insights"
@@ -1583,30 +1583,30 @@
     },
     "features": {
       "title": "Everything You Need to Run Your Business",
-      "subtitle": "From invoicing to financial reporting, Svethna has you covered.",
+      "subtitle": "From AI-powered automation to financial reporting, Svethna has you covered.",
       "invoicing": {
         "title": "Professional Invoicing",
-        "description": "Create beautiful, compliant invoices in seconds. Support for Swedish requirements, recurring billing, and automatic reminders."
+        "description": "Beautiful, compliant invoices with Swedish templates. Support for recurring billing, automatic reminders, and multi-currency."
+      },
+      "aiAutomation": {
+        "title": "AI-Powered Automation",
+        "description": "OCR invoice scanning, automatic bookkeeping, smart payment matching, and intelligent expense categorization. Let AI handle the repetitive work."
       },
       "accounting": {
         "title": "Integrated Accounting",
         "description": "Full double-entry accounting with BAS kontoplan, automated posting, and Swedish K-regelverk support (K1-K4)."
       },
-      "multiCurrency": {
-        "title": "Multi-Currency Support",
-        "description": "Work with international clients. Automatic exchange rates, currency conversion, and multi-currency reporting."
+      "supplierInbox": {
+        "title": "Supplier Invoice Inbox",
+        "description": "Email invoices directly to your inbox. AI extracts data, matches suppliers, and creates entries automatically. Approve with one click."
       },
-      "collaboration": {
-        "title": "Team Collaboration",
-        "description": "Work together seamlessly. Role-based permissions, audit trails, and real-time collaboration for your team."
+      "auditApprovals": {
+        "title": "Audit Trails & Approvals",
+        "description": "Complete audit logging, multi-level approval workflows, and team collaboration. Track every change with detailed history."
       },
       "compliance": {
         "title": "Swedish Compliance Built-In",
         "description": "F-tax, VAT, ROT/RUT deductions, and Skatteverket requirements. We handle the Swedish regulations so you don't have to."
-      },
-      "automation": {
-        "title": "Powerful Automation",
-        "description": "Save hours with OCR invoice scanning, automatic posting, recurring invoices, and payment matching."
       }
     },
     "benefits": {
@@ -1624,8 +1624,17 @@
         "description": "Real-time financial reports and insights help you understand your business performance at a glance."
       }
     },
+    "templates": {
+      "title": "Beautiful Invoice Templates",
+      "subtitle": "Choose from professionally designed templates. Fully customizable to match your brand.",
+      "modern": "Clean and contemporary design with bold colors and clear hierarchy.",
+      "classic": "Traditional professional layout perfect for established businesses.",
+      "minimal": "Simple, elegant design that puts focus on your content.",
+      "professional": "Sophisticated layout ideal for premium services.",
+      "total": "Total"
+    },
     "trust": {
-      "title": "Trusted by Thousands of Swedish Businesses",
+      "title": "Get Started in 5 Minutes",
       "security": "Bank-Level Security",
       "securityDescription": "256-bit encryption and secure data centers protect your financial data.",
       "compliance": "Swedish Compliance",
@@ -1648,7 +1657,8 @@
       },
       "premium": {
         "title": "Premium",
-        "price": "299 kr/month",
+        "price": "99 kr/month",
+        "comingSoon": "Coming Soon",
         "feature1": "Unlimited invoices",
         "feature2": "Full accounting features",
         "feature3": "Multi-currency support",

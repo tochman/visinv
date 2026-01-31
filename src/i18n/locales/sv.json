@@ -1546,8 +1546,8 @@
   },
   "landing": {
     "hero": {
-      "title": "Professionell fakturering och bokföring för svenska företag",
-      "subtitle": "Effektivisera din fakturering, bokföring och finansiell rapportering med vår allt-i-ett-plattform byggd för svensk efterlevnad.",
+      "title": "Fokusera på din affär. Vi hanterar siffrorna.",
+      "subtitle": "AI-driven fakturerings- och bokföringsplattform byggd för företagare. Använd din tid till att växa ditt företag, inte pappersarbete.",
       "benefit1": "Professionella fakturor på sekunder",
       "benefit2": "Automatiserad svensk bokföring",
       "benefit3": "Ekonomiska insikter i realtid"
@@ -1565,30 +1565,30 @@
     },
     "features": {
       "title": "Allt du behöver för att driva ditt företag",
-      "subtitle": "Från fakturering till ekonomisk rapportering - Svethna täcker allt.",
+      "subtitle": "Från AI-driven automatisering till ekonomisk rapportering - Svethna täcker allt.",
       "invoicing": {
         "title": "Professionell fakturering",
-        "description": "Skapa vackra, regelkonforma fakturor på sekunder. Stöd för svenska krav, återkommande fakturering och automatiska påminnelser."
+        "description": "Vackra, regelkonforma fakturor med svenska mallar. Stöd för återkommande fakturering, automatiska påminnelser och flera valutor."
+      },
+      "aiAutomation": {
+        "title": "AI-driven automatisering",
+        "description": "OCR-fakturaskanning, automatisk bokföring, smart betalningskoppling och intelligent utgiftskategorisering. Låt AI hantera det repetitiva arbetet."
       },
       "accounting": {
         "title": "Integrerad bokföring",
         "description": "Fullständig dubbel bokföring med BAS-kontoplan, automatiserad bokföring och stöd för svenska K-regelverket (K1-K4)."
       },
-      "multiCurrency": {
-        "title": "Flervalutastöd",
-        "description": "Arbeta med internationella kunder. Automatiska valutakurser, valutakonvertering och rapportering i flera valutor."
+      "supplierInbox": {
+        "title": "Leverantörsfaktura-inkorg",
+        "description": "Maila fakturor direkt till din inkorg. AI extraherar data, matchar leverantörer och skapar verifikationer automatiskt. Godkänn med ett klick."
       },
-      "collaboration": {
-        "title": "Teamsamarbete",
-        "description": "Arbeta tillsammans sömlöst. Rollbaserade behörigheter, granskningsloggar och samarbete i realtid för ditt team."
+      "auditApprovals": {
+        "title": "Granskningsloggar & godkännanden",
+        "description": "Komplett granskningsloggning, flernivåers godkännandeflöden och teamsamarbete. Spåra varje ändring med detaljerad historik."
       },
       "compliance": {
         "title": "Svensk efterlevnad inbyggd",
         "description": "F-skatt, moms, ROT/RUT-avdrag och Skatteverkets krav. Vi hanterar de svenska reglerna så att du slipper."
-      },
-      "automation": {
-        "title": "Kraftfull automatisering",
-        "description": "Spara timmar med OCR-fakturaskanning, automatisk bokföring, återkommande fakturor och betalningskoppling."
       }
     },
     "benefits": {
@@ -1606,8 +1606,17 @@
         "description": "Ekonomiska rapporter och insikter i realtid hjälper dig att förstå ditt företags prestanda med ett ögonkast."
       }
     },
+    "templates": {
+      "title": "Vackra fakturamallar",
+      "subtitle": "Välj bland professionellt designade mallar. Helt anpassningsbara för att matcha ditt varumärke.",
+      "modern": "Ren och modern design med djärva färger och tydlig hierarki.",
+      "classic": "Traditionell professionell layout perfekt för etablerade företag.",
+      "minimal": "Enkel, elegant design som fokuserar på ditt innehåll.",
+      "professional": "Sofistikerad layout idealisk för premiumtjänster.",
+      "total": "Totalt"
+    },
     "trust": {
-      "title": "Betrodd av tusentals svenska företag",
+      "title": "Kom igång på 5 minuter",
       "security": "Säkerhet på banknivå",
       "securityDescription": "256-bitars kryptering och säkra datacenter skyddar dina ekonomiska data.",
       "compliance": "Svensk efterlevnad",
@@ -1630,7 +1639,8 @@
       },
       "premium": {
         "title": "Premium",
-        "price": "299 kr/månad",
+        "price": "99 kr/månad",
+        "comingSoon": "Kommer snart",
         "feature1": "Obegränsade fakturor",
         "feature2": "Alla bokföringsfunktioner",
         "feature3": "Flervalutastöd",
