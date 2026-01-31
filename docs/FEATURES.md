@@ -2327,8 +2327,17 @@ The Swedish Tax Authority (Skatteverket) provides APIs for digital submission of
   - Onboarding step text
   - Settings section labels
   - Tooltip explaining adaptive UI
-- **Status:** Not Started
+- **Status:** ✅ Complete
 - **Dependencies:** None (foundational feature)
+- **Implementation Notes:**
+  - Migration: `supabase/migrations/073_add_proficiency_level.sql`
+  - Resource: `src/services/resources/Profile.js` - `updateProficiency()` method
+  - Redux: `src/features/auth/authSlice.js` - proficiency state, `updateProficiency` thunk
+  - Component: `src/components/common/ProficiencySelector.jsx`
+  - Hook: `src/hooks/useProficiency.js`
+  - Wizard: `src/components/organization/OrganizationSetupWizard.jsx` - Step 5
+  - i18n: Added `proficiency.*` keys to en.json and sv.json
+  - E2E: `cypress/e2e/organizations.cy.js` - 3 new proficiency tests
 
 **US-125: Feature Proficiency Mapping Audit**
 - As a **developer**, in order to **implement adaptive UI consistently**, I need to **audit all existing features and map them to proficiency levels**.
@@ -2407,6 +2416,99 @@ The Swedish Tax Authority (Skatteverket) provides APIs for digital submission of
 - **i18n Requirements:** None (internal/developer-facing)
 - **Status:** Not Started
 - **Dependencies:** US-124 (Proficiency Level infrastructure)
+
+**US-126: System-Suggested Proficiency Level** *(depends on US-124)*
+- As a **user**, in order to **use the optimal UI complexity for my actual skill level**, I would like the **system to suggest a proficiency level based on my behavior**.
+- **Acceptance Criteria:**
+  - Track user behavior patterns (feature usage, navigation, error rates)
+  - Calculate `system_suggested_level` based on observed behavior
+  - Show gentle prompt when mismatch detected: "You're using Expert-level features frequently. Want to switch to Expert mode?"
+  - Store suggested level in profiles table
+  - Only suggest after sufficient data (e.g., 2 weeks or 20 sessions)
+  - Never auto-change level without user consent
+- **Technical Considerations:**
+  - Add `system_suggested_level` column to profiles
+  - Track feature usage events (consider privacy implications)
+  - Algorithm should favor upgrading over downgrading
+  - Avoid annoying users with frequent suggestions
+- **i18n Requirements:** Prompt messages in English and Swedish
+- **Status:** Not Started
+
+**US-127: Proficiency Level Transition Experience** *(depends on US-124)*
+- As a **user**, in order to **understand what changed when I switch levels**, I would like a **smooth transition with clear explanations**.
+- **Acceptance Criteria:**
+  - Show modal explaining what changed when switching levels
+  - Provide "What's new at this level" summary with feature highlights
+  - Allow "peek" at other levels before committing
+  - Offer "undo" option for 24 hours after level change
+  - Animate UI changes smoothly (not jarring)
+- **Technical Considerations:**
+  - Create level comparison data structure
+  - Store previous level for undo functionality
+  - Consider guided tour for major upgrades (novice → proficient)
+- **i18n Requirements:** All transition content in English and Swedish
+- **Status:** Not Started
+
+**US-128: Progressive Feature Discovery** *(depends on US-124)*
+- As a **novice user**, in order to **grow my skills organically**, I would like **contextual prompts suggesting new features when I'm ready**.
+- **Acceptance Criteria:**
+  - Track user milestones (e.g., 50 invoices, first recurring invoice, first report)
+  - Show contextual prompts: "You've created 50 invoices - ready to learn batch operations?"
+  - Optional achievement/progress indicators
+  - Dismissable prompts that don't reappear
+  - "Learn more" links to relevant documentation
+- **Technical Considerations:**
+  - Define milestone events and thresholds
+  - Store dismissed prompts per user
+  - Rate-limit prompts (max 1 per session)
+- **i18n Requirements:** All prompts in English and Swedish
+- **Status:** Not Started
+
+**US-129: Journey-Focused Proficiency Labels** *(depends on US-124)*
+- As a **user**, in order to **feel empowered rather than judged**, I would like **proficiency labels that focus on my journey**.
+- **Acceptance Criteria:**
+  - Rename levels to journey-focused names:
+    - "Novice" → "Getting Started"
+    - "Basic" → "Building Confidence"  
+    - "Proficient" → "Taking Control"
+    - "Expert" → "Full Power"
+  - Update all UI copy to feel empowering, not condescending
+  - Emphasize that progression is positive and encouraged
+  - Keep internal enum values unchanged (backward compatible)
+- **Technical Considerations:**
+  - Labels are UI-only change (translations)
+  - Internal values remain: novice, basic, proficient, expert
+- **i18n Requirements:** New label names in English and Swedish
+- **Status:** Not Started
+
+**US-130: Hybrid Proficiency Overrides** *(depends on US-124)*
+- As a **user**, in order to **access expert features in specific areas while keeping simplified UI elsewhere**, I would like **per-feature proficiency overrides**.
+- **Acceptance Criteria:**
+  - Allow per-feature/area proficiency override
+  - Example: Novice overall but "expert" access to VAT handling
+  - UI to manage overrides in settings
+  - Useful when accountant guides user on specific tasks
+- **Technical Considerations:**
+  - Add `proficiency_overrides` JSONB column to profiles
+  - Format: `{ "vat_handling": "expert", "journal_entries": "proficient" }`
+  - Merge with base level when checking feature access
+- **i18n Requirements:** Override management UI in English and Swedish
+- **Status:** Not Started
+
+**US-131: Smart Default Proficiency** *(depends on US-124)*
+- As a **new user**, in order to **start with an appropriate complexity level**, I would like the **system to suggest a default based on context**.
+- **Acceptance Criteria:**
+  - If user imports SIE file → suggest higher level (proficient)
+  - If organization has employees → suggest proficient
+  - If industry is complex (construction, consulting) → adjust suggestion
+  - Show reasoning: "Based on your data import, we suggest Proficient level"
+  - User can always override the suggestion
+- **Technical Considerations:**
+  - Run detection during onboarding after org setup
+  - Consider organization size, industry codes, import complexity
+  - This is a suggestion, not automatic assignment
+- **i18n Requirements:** Suggestion messages in English and Swedish
+- **Status:** Not Started
 
 ---
 
@@ -3085,7 +3187,10 @@ The Swedish Tax Authority (Skatteverket) provides APIs for digital submission of
 - US-113 to US-118: Support & Growth
 - US-120: NPS Survey System
 - US-121 to US-123: SIE Integration
-- US-124 to US-125: Adaptive User Experience (Proficiency-Based UI)
+- US-124 to US-131: Adaptive User Experience (Proficiency-Based UI)
+  - US-124: Core proficiency selection ✅
+  - US-125: Feature proficiency mapping audit
+  - US-126 to US-131: Enhancements (system suggestions, transitions, discovery, labels, overrides, smart defaults)
 
 **Accounting Module (US-201 to US-282)**: Full Swedish-compliant bookkeeping
 - US-201 to US-203: Chart of Accounts (BAS standard)
