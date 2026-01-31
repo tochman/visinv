@@ -5,25 +5,25 @@ const users = {
     id: 'test-admin-user-id',
     email: 'admin@test.com',
     user_metadata: { full_name: 'Admin User' },
-    profile: { id: 'test-admin-user-id', email: 'admin@test.com', is_admin: true, plan_type: 'premium', full_name: 'Admin User' }
+    profile: { id: 'test-admin-user-id', email: 'admin@test.com', is_admin: true, plan_type: 'premium', full_name: 'Admin User', proficiency_level: 'expert' }
   },
   user: {
     id: 'test-regular-user-id',
     email: 'user@test.com',
     user_metadata: { full_name: 'Regular User' },
-    profile: { id: 'test-regular-user-id', email: 'user@test.com', is_admin: false, plan_type: 'free', full_name: 'Regular User' }
+    profile: { id: 'test-regular-user-id', email: 'user@test.com', is_admin: false, plan_type: 'free', full_name: 'Regular User', proficiency_level: 'basic' }
   },
   premiumUser: {
     id: 'test-premium-user-id',
     email: 'premium@test.com',
     user_metadata: { full_name: 'Premium User' },
-    profile: { id: 'test-premium-user-id', email: 'premium@test.com', is_admin: false, plan_type: 'premium', full_name: 'Premium User' }
+    profile: { id: 'test-premium-user-id', email: 'premium@test.com', is_admin: false, plan_type: 'premium', full_name: 'Premium User', proficiency_level: 'proficient' }
   },
   premiumUserWithOrganization: {
     id: 'test-premium-org-user-id',
     email: 'premium-org@test.com',
     user_metadata: { full_name: 'Premium Org User' },
-    profile: { id: 'test-premium-org-user-id', email: 'premium-org@test.com', is_admin: false, plan_type: 'premium', full_name: 'Premium Org User' },
+    profile: { id: 'test-premium-org-user-id', email: 'premium-org@test.com', is_admin: false, plan_type: 'premium', full_name: 'Premium Org User', proficiency_level: 'proficient' },
     organization: {
       id: 'test-premium-org-id',
       name: 'Test Premium Organization AB',
@@ -213,6 +213,13 @@ Cypress.Commands.add('login', (userType = 'user', options = {}) => {
       payload: { status: 'active', plan_type: 'premium' }
     })
   }
+
+  // Set proficiency level in Redux store
+  const proficiencyLevel = userData.profile?.proficiency_level || 'basic';
+  cy.window().its('store').invoke('dispatch', {
+    type: 'auth/setProficiency',
+    payload: proficiencyLevel
+  })
 })
 
 /**

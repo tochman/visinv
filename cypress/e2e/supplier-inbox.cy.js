@@ -120,8 +120,13 @@ describe('Supplier Invoice Inbox', () => {
       cy.visit('/supplier-invoices/inbox');
       cy.wait('@getSupplierInboxItems');
       
-      // Expand the accounting section to see the badge
-      cy.getByCy('nav-section-toggle-accounting').click();
+      // The accounting section auto-expands because the inbox page is active
+      // First verify the section exists and is expanded
+      cy.getByCy('nav-section-accounting').should('exist');
+      cy.getByCy('nav-section-content-accounting').should('exist');
+      
+      // Verify the inbox nav item exists
+      cy.get('[data-cy="sidebar-nav-supplier-invoices-inbox"]').should('exist');
       
       // The badge should show count of 'new' items (only 1 in mockInboxItems)
       cy.getByCy('inbox-badge').should('exist').and('contain', '1');
@@ -411,14 +416,15 @@ describe('Supplier Invoice Inbox', () => {
 
   describe('Navigation', () => {
     it('is expected to access inbox from sidebar navigation', () => {
-      cy.setupCommonIntercepts({
-        supplierInboxItems: mockInboxItems
-      });
+      // Note: cy.login() from beforeEach already visited '/' and set up interceptors
+      // Verify the accounting section exists
+      cy.getByCy('nav-section-accounting').should('exist');
       
-      cy.visit('/');
-      
-      // Expand accounting section if collapsed
+      // Just expand the accounting section (it's collapsed by default on dashboard)
       cy.getByCy('nav-section-toggle-accounting').click();
+      
+      // Verify section content is visible
+      cy.getByCy('nav-section-content-accounting').should('exist');
       
       // Click on inbox link
       cy.get('[data-cy="sidebar-nav-supplier-invoices-inbox"]').click();
