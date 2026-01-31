@@ -1382,5 +1382,53 @@
     "vatPayableNote": "This amount should be paid to Skatteverket by the filing deadline.",
     "vatReceivableNote": "This amount can be claimed back from Skatteverket.",
     "deductibleInputVat": "Deductible Input VAT"
+  },
+  "supplierInbox": {
+    "title": "Supplier Inbox",
+    "description": "Invoices and documents received via email",
+    "emptyState": "No items in inbox",
+    "emptyStateDescription": "Supplier invoices sent to your organization's email address will appear here.",
+    "newItems": "new",
+    "from": "From",
+    "subject": "Subject",
+    "received": "Received",
+    "attachment": "Attachment",
+    "noAttachment": "No attachment",
+    "status": {
+      "new": "New",
+      "processed": "Processed",
+      "archived": "Archived",
+      "duplicate": "Duplicate",
+      "no_attachment": "No Attachment"
+    },
+    "actions": {
+      "process": "Process",
+      "archive": "Archive",
+      "delete": "Delete",
+      "download": "Download",
+      "preview": "Preview",
+      "archiveSelected": "Archive Selected",
+      "deleteSelected": "Delete Selected"
+    },
+    "filters": {
+      "all": "All",
+      "new": "New",
+      "processed": "Processed",
+      "archived": "Archived"
+    },
+    "confirmDelete": "Are you sure you want to delete this inbox item? This cannot be undone.",
+    "confirmDeleteMany": "Are you sure you want to delete {{count}} items? This cannot be undone.",
+    "confirmArchive": "Archive this item?",
+    "confirmArchiveMany": "Archive {{count}} selected items?",
+    "deleteSuccess": "Item deleted successfully",
+    "archiveSuccess": "Item archived successfully",
+    "processSuccess": "Invoice created from inbox item",
+    "emailSetup": {
+      "title": "Email Inbox Setup",
+      "description": "Forward supplier invoices to your organization's email address to have them appear here automatically.",
+      "noSlugTitle": "Email inbox not configured",
+      "noSlugDescription": "Set up your organization's email slug in Organization Settings to start receiving invoices via email.",
+      "goToSettings": "Go to Settings"
+    }
   }
 }

@@ -1363,5 +1363,53 @@
     "vatPayableNote": "Detta belopp ska betalas till Skatteverket före deklarationsfristen.",
     "vatReceivableNote": "Detta belopp kan återkrävas från Skatteverket.",
     "deductibleInputVat": "Avdragsgill ingående moms"
+  },
+  "supplierInbox": {
+    "title": "Leverantörsinbox",
+    "description": "Fakturor och dokument mottagna via e-post",
+    "emptyState": "Inga objekt i inboxen",
+    "emptyStateDescription": "Leverantörsfakturor som skickas till din organisations e-postadress visas här.",
+    "newItems": "nya",
+    "from": "Från",
+    "subject": "Ämne",
+    "received": "Mottaget",
+    "attachment": "Bilaga",
+    "noAttachment": "Ingen bilaga",
+    "status": {
+      "new": "Ny",
+      "processed": "Behandlad",
+      "archived": "Arkiverad",
+      "duplicate": "Duplikat",
+      "no_attachment": "Ingen bilaga"
+    },
+    "actions": {
+      "process": "Behandla",
+      "archive": "Arkivera",
+      "delete": "Radera",
+      "download": "Ladda ner",
+      "preview": "Förhandsgranska",
+      "archiveSelected": "Arkivera valda",
+      "deleteSelected": "Radera valda"
+    },
+    "filters": {
+      "all": "Alla",
+      "new": "Nya",
+      "processed": "Behandlade",
+      "archived": "Arkiverade"
+    },
+    "confirmDelete": "Är du säker på att du vill radera detta inkorgobjekt? Detta kan inte ångras.",
+    "confirmDeleteMany": "Är du säker på att du vill radera {{count}} objekt? Detta kan inte ångras.",
+    "confirmArchive": "Arkivera detta objekt?",
+    "confirmArchiveMany": "Arkivera {{count}} valda objekt?",
+    "deleteSuccess": "Objektet raderades",
+    "archiveSuccess": "Objektet arkiverades",
+    "processSuccess": "Faktura skapad från inkorgobjekt",
+    "emailSetup": {
+      "title": "E-postinkorg inställningar",
+      "description": "Vidarebefordra leverantörsfakturor till din organisations e-postadress för att få dem att visas här automatiskt.",
+      "noSlugTitle": "E-postinkorg ej konfigurerad",
+      "noSlugDescription": "Ställ in din organisations e-post-slug i Organisationsinställningar för att börja ta emot fakturor via e-post.",
+      "goToSettings": "Gå till Inställningar"
+    }
   }
 }

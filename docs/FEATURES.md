@@ -2787,7 +2787,7 @@ The Swedish Tax Authority (Skatteverket) provides APIs for digital submission of
   - Logging for debugging webhook issues
   - Cron job for retention cleanup (pg_cron or Supabase scheduled functions)
 - **E2E Tests:** None (backend webhook - test via integration tests or manual verification)
-- **Status:** Not Started
+- **Status:** ✅ Complete
 - **Dependencies:** US-264a
 
 ---

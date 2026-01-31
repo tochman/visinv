@@ -15,6 +15,7 @@ export { Payment } from './Payment';
 export { Product } from './Product';
 export { ProductPrice } from './ProductPrice';
 export { Profile } from './Profile';
+export { SupplierInboxItem } from './SupplierInboxItem';
 export { User } from './User';
 // Future resources will be exported here:
 // export { Team } from './Team';

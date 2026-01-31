@@ -19,6 +19,7 @@ import npsReducer from '../features/nps/npsSlice';
 import suppliersReducer from '../features/suppliers/suppliersSlice';
 import supplierInvoicesReducer from '../features/supplierInvoices/supplierInvoicesSlice';
 import supplierInvoiceOcrReducer from '../features/supplierInvoices/supplierInvoiceOcrSlice';
+import supplierInboxReducer from '../features/supplierInbox/supplierInboxSlice';
 
 export const store = configureStore({
   reducer: {
@@ -42,6 +43,7 @@ export const store = configureStore({
     suppliers: suppliersReducer,
     supplierInvoices: supplierInvoicesReducer,
     supplierInvoiceOcr: supplierInvoiceOcrReducer,
+    supplierInbox: supplierInboxReducer,
   },
   middleware: (getDefaultMiddleware) =>
     getDefaultMiddleware({
