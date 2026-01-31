@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect, useMemo, useRef } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { useTranslation } from 'react-i18next';
 import {
@@ -47,10 +47,12 @@ export default function Accounts() {
   const [actionConfirm, setActionConfirm] = useState(null);
   const [showAccountModal, setShowAccountModal] = useState(false);
   const [editingAccount, setEditingAccount] = useState(null);
+  const summariesFetchedRef = useRef(false);
 
   // Load accounts when organization changes
   useEffect(() => {
     if (currentOrganization?.id) {
+      summariesFetchedRef.current = false; // Reset when org changes
       dispatch(
         fetchAccounts({
           organizationId: currentOrganization.id,
@@ -67,15 +69,16 @@ export default function Accounts() {
     };
   }, [dispatch]);
 
-  // Fetch account summaries when accounts are loaded
+  // Fetch account summaries when accounts are loaded (only once per org)
   useEffect(() => {
-    if (currentOrganization?.id && accounts.length > 0) {
+    if (currentOrganization?.id && accounts.length > 0 && !summariesFetchedRef.current) {
+      summariesFetchedRef.current = true;
       dispatch(fetchAccountsSummary({
         organizationId: currentOrganization.id,
         accountIds: accounts.map(a => a.id)
       }));
     }
-  }, [dispatch, currentOrganization?.id, accounts]);
+  }, [dispatch, currentOrganization?.id, accounts.length]);
 
   // Filter accounts client-side based on class and search
   const filteredAccounts = useMemo(() => {

@@ -341,6 +341,7 @@
     "search": "Sök kunder...",
     "empty": "Inga kunder ännu",
     "emptyDescription": "Kom igång genom att lägga till din första kund.",
+    "createFirst": "Lägg till din första kund",
     "addFirst": "Lägg till din första kund",
     "deleteConfirm": "Är du säker på att du vill ta bort denna kund? Denna åtgärd kan inte ångras.",
     "deleteSuccess": "Kund borttagen",

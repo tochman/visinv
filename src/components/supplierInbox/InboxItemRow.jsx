@@ -294,7 +294,7 @@ export default function InboxItemRow({ item, isSelected, onSelect, onRefresh }) 
             <button
               onClick={handleProcess}
               title={t('supplierInbox.actions.process')}
-              className="p-2 text-blue-600 hover:bg-blue-50 dark:hover:bg-blue-900/30 rounded-lg transition-colors"
+              className="p-2 text-blue-600 hover:bg-blue-50 dark:hover:bg-blue-900/30 rounded-sm transition-colors"
               data-cy="inbox-item-process"
             >
               <DocumentPlusIcon className="h-5 w-5" />
@@ -307,7 +307,7 @@ export default function InboxItemRow({ item, isSelected, onSelect, onRefresh }) 
               onClick={handleDownload}
               disabled={isDownloading}
               title={t('supplierInbox.actions.download')}
-              className="p-2 text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors disabled:opacity-50"
+              className="p-2 text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-sm transition-colors disabled:opacity-50"
               data-cy="inbox-item-download"
             >
               <ArrowDownTrayIcon className={`h-5 w-5 ${isDownloading ? 'animate-bounce' : ''}`} />
@@ -319,7 +319,7 @@ export default function InboxItemRow({ item, isSelected, onSelect, onRefresh }) 
             <button
               onClick={handleArchive}
               title={t('supplierInbox.actions.archive')}
-              className="p-2 text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors"
+              className="p-2 text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-sm transition-colors"
               data-cy="inbox-item-archive"
             >
               <ArchiveBoxIcon className="h-5 w-5" />
@@ -330,7 +330,7 @@ export default function InboxItemRow({ item, isSelected, onSelect, onRefresh }) 
           <button
             onClick={handleDelete}
             title={t('supplierInbox.actions.delete')}
-            className="p-2 text-red-600 hover:bg-red-50 dark:hover:bg-red-900/30 rounded-lg transition-colors"
+            className="p-2 text-red-600 hover:bg-red-50 dark:hover:bg-red-900/30 rounded-sm transition-colors"
             data-cy="inbox-item-delete"
           >
             <TrashIcon className="h-5 w-5" />

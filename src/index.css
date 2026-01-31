@@ -225,6 +225,35 @@ body {
     padding-bottom: 0.75rem !important;
   }
 
+  /* Totals row in modals - show inline */
+  .responsive-table .responsive-totals-row {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0.75rem 1rem;
+    background: rgb(249 250 251);
+    margin-bottom: 0;
+    box-shadow: none;
+    border-radius: 0;
+  }
+  
+  .dark .responsive-table .responsive-totals-row {
+    background: rgba(17, 24, 39, 0.5);
+  }
+  
+  .responsive-table .responsive-totals-row td {
+    display: inline-flex;
+    border: none !important;
+    padding: 0 !important;
+    flex: 0 0 auto;
+  }
+  
+  .responsive-table .responsive-totals-row td::before {
+    font-size: 0.875rem;
+    text-transform: none;
+  }
+
   /* Better scrolling for non-responsive tables */
   .overflow-x-auto {
     -webkit-overflow-scrolling: touch;

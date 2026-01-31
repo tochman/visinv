@@ -190,6 +190,27 @@ class FinancialReportResource extends BaseResource {
       });
     }
 
+    // Calculate year's net result from income/expense accounts (3xxx-7xxx)
+    // Revenue (3xxx) is positive, Expenses (4xxx-7xxx) are negative from the perspective of equity
+    let yearResult = 0;
+    let yearResultComparative = 0;
+
+    currentBalances.forEach((accData) => {
+      const accountNum = parseInt(accData.account.account_number, 10);
+      const comparativeBalance = comparativeMap.get(accData.account.id) || 0;
+      
+      // Revenue accounts (3xxx) - increases equity (positive balance increases result)
+      if (accountNum >= 3000 && accountNum < 4000) {
+        yearResult += accData.balance;
+        yearResultComparative += comparativeBalance;
+      }
+      // Expense accounts (4xxx-7xxx) - decreases equity (positive balance decreases result)
+      else if (accountNum >= 4000 && accountNum < 8000) {
+        yearResult -= accData.balance;
+        yearResultComparative -= comparativeBalance;
+      }
+    });
+
     // Group accounts by category based on BAS account numbers
     const groups = {
       // TILLGÅNGAR (Assets)
@@ -231,6 +252,7 @@ class FinancialReportResource extends BaseResource {
           subgroups: {
             shareCapital: { name: 'Bundet eget kapital', nameEn: 'Restricted Equity', accounts: [], total: 0, comparativeTotal: 0, range: [2080, 2089] },
             retained: { name: 'Fritt eget kapital', nameEn: 'Non-restricted Equity', accounts: [], total: 0, comparativeTotal: 0, range: [2090, 2099] },
+            yearResult: { name: 'Årets resultat', nameEn: 'Net Result for the Year', accounts: [], total: 0, comparativeTotal: 0, isCalculated: true },
           },
         },
         untaxedReserves: {
@@ -359,13 +381,19 @@ class FinancialReportResource extends BaseResource {
       }
     });
 
+    // Add year's result to equity subgroup
+    const eqGroups = groups.equityAndLiabilities;
+    eqGroups.equity.subgroups.yearResult.total = yearResult;
+    eqGroups.equity.subgroups.yearResult.comparativeTotal = yearResultComparative;
+    eqGroups.equity.total += yearResult;
+    eqGroups.equity.comparativeTotal += yearResultComparative;
+
     // Calculate totals
     const totalAssets =
       groups.assets.fixedAssets.total + groups.assets.currentAssets.total;
     const comparativeTotalAssets =
       groups.assets.fixedAssets.comparativeTotal + groups.assets.currentAssets.comparativeTotal;
 
-    const eqGroups = groups.equityAndLiabilities;
     const totalEquityAndLiabilities =
       eqGroups.equity.total +
       eqGroups.untaxedReserves.total +

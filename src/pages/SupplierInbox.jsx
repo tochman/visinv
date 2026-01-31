@@ -133,11 +133,11 @@ export default function SupplierInbox() {
   const hasEmailSlug = !!currentOrganization?.email_slug;
 
   return (
-    <div className="p-6" data-cy="supplier-inbox-page">
+    <div className="space-y-6" data-cy="supplier-inbox-page">
       {/* Header */}
-      <div className="flex items-center justify-between mb-6">
-        <div className="flex items-center gap-3">
-          <InboxIcon className="h-8 w-8 text-gray-600 dark:text-gray-400" />
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+        <div className="flex items-start sm:items-center gap-3">
+          <InboxIcon className="h-8 w-8 text-gray-600 dark:text-gray-400 flex-shrink-0" />
           <div>
             <h1 className="text-2xl font-bold text-gray-900 dark:text-white">
               {t('supplierInbox.title')}
@@ -150,7 +150,7 @@ export default function SupplierInbox() {
         <button
           onClick={handleRefresh}
           disabled={loading}
-          className="flex items-center gap-2 px-4 py-2 text-sm text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors"
+          className="flex items-center gap-2 px-4 py-2 text-sm text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-sm transition-colors"
           data-cy="inbox-refresh-button"
         >
           <ArrowPathIcon className={`h-5 w-5 ${loading ? 'animate-spin' : ''}`} />
@@ -160,7 +160,7 @@ export default function SupplierInbox() {
 
       {/* Email Setup Notice */}
       {!hasEmailSlug && (
-        <div className="mb-6 p-4 bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 rounded-lg" data-cy="inbox-setup-notice">
+        <div className="mb-6 p-4 bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 rounded-sm" data-cy="inbox-setup-notice">
           <h3 className="font-medium text-yellow-800 dark:text-yellow-200">
             {t('supplierInbox.emailSetup.noSlugTitle')}
           </h3>
@@ -180,7 +180,7 @@ export default function SupplierInbox() {
       {/* Filters and Search */}
       <div className="flex flex-col sm:flex-row gap-4 mb-6">
         {/* Status Filter Tabs */}
-        <div className="flex items-center gap-1 bg-gray-100 dark:bg-gray-800 rounded-lg p-1" data-cy="inbox-status-filters">
+        <div className="flex items-center gap-1 bg-gray-100 dark:bg-gray-800 rounded-sm p-1" data-cy="inbox-status-filters">
           {statusFilters.map((filter) => (
             <button
               key={filter.value || 'all'}
@@ -210,7 +210,7 @@ export default function SupplierInbox() {
             value={searchInput}
             onChange={(e) => setSearchInput(e.target.value)}
             placeholder={t('supplierInbox.searchPlaceholder') || 'Search by sender or subject...'}
-            className="w-full pl-10 pr-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white placeholder-gray-400 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+            className="w-full pl-10 pr-4 py-2 border border-gray-300 dark:border-gray-600 rounded-sm bg-white dark:bg-gray-800 text-gray-900 dark:text-white placeholder-gray-400 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
             data-cy="inbox-search-input"
           />
         </div>
@@ -218,7 +218,7 @@ export default function SupplierInbox() {
 
       {/* Bulk Actions */}
       {selectedIds.length > 0 && (
-        <div className="flex items-center gap-4 mb-4 p-3 bg-blue-50 dark:bg-blue-900/20 rounded-lg" data-cy="inbox-bulk-actions">
+        <div className="flex items-center gap-4 mb-4 p-3 bg-blue-50 dark:bg-blue-900/20 rounded-sm" data-cy="inbox-bulk-actions">
           <span className="text-sm text-blue-700 dark:text-blue-300">
             {selectedIds.length} {t('common.selected')}
           </span>
@@ -248,7 +248,7 @@ export default function SupplierInbox() {
       )}
 
       {/* Items List */}
-      <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700">
+      <div className="bg-white dark:bg-gray-800 rounded-sm shadow-sm border border-gray-200 dark:border-gray-700">
         {/* Table Header */}
         <div className="hidden sm:grid sm:grid-cols-12 gap-4 px-4 py-3 border-b border-gray-200 dark:border-gray-700 text-sm font-medium text-gray-500 dark:text-gray-400">
           <div className="col-span-1 flex items-center">
@@ -287,7 +287,7 @@ export default function SupplierInbox() {
             </p>
             {hasEmailSlug && (
               <p className="mt-4 text-sm text-gray-500 dark:text-gray-400">
-                {t('common.sendTo')}: <span className="font-mono text-blue-600 dark:text-blue-400">{currentOrganization.email_slug}@dortal.resend.app</span>
+                {t('common.sendTo')}: <span className="font-mono text-blue-600 dark:text-blue-400 break-all">{currentOrganization.email_slug}@dortal.resend.app</span>
               </p>
             )}
           </div>
@@ -312,7 +312,7 @@ export default function SupplierInbox() {
       {/* Confirmation Modal */}
       {confirmAction && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50" data-cy="inbox-confirm-modal">
-          <div className="bg-white dark:bg-gray-800 rounded-lg shadow-xl p-6 max-w-md mx-4">
+          <div className="bg-white dark:bg-gray-800 rounded-sm shadow-xl p-6 max-w-md mx-4">
             <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-4">
               {confirmAction.type === 'archiveMany' 
                 ? t('supplierInbox.confirmArchiveMany', { count: confirmAction.count })
@@ -322,14 +322,14 @@ export default function SupplierInbox() {
             <div className="flex justify-end gap-3">
               <button
                 onClick={() => setConfirmAction(null)}
-                className="px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg"
+                className="px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-sm"
                 data-cy="confirm-cancel"
               >
                 {t('common.cancel')}
               </button>
               <button
                 onClick={confirmAction.onConfirm}
-                className={`px-4 py-2 text-sm text-white rounded-lg ${
+                className={`px-4 py-2 text-sm text-white rounded-sm ${
                   confirmAction.type === 'deleteMany' 
                     ? 'bg-red-600 hover:bg-red-700' 
                     : 'bg-blue-600 hover:bg-blue-700'

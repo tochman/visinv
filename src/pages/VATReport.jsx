@@ -277,7 +277,7 @@ export default function VATReport() {
   return (
     <div className="space-y-6" data-cy="vat-report-page">
       {/* Header */}
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
           <h1 className="text-2xl font-semibold text-gray-900 dark:text-white">
             {t('vatReport.title')}
@@ -286,10 +286,10 @@ export default function VATReport() {
             {t('vatReport.description')}
           </p>
         </div>
-        <div className="flex items-center gap-3">
+        <div className="flex flex-wrap items-center gap-3">
           {/* Detail Level Selector */}
           <div className="flex items-center gap-2">
-            <label className="text-sm text-gray-500 dark:text-gray-400">
+            <label className="text-sm text-gray-500 dark:text-gray-400 whitespace-nowrap">
               {t('common.detailLevel')}:
             </label>
             <select
@@ -368,21 +368,23 @@ export default function VATReport() {
         </div>
 
         {/* Quick Period Selection & Show Transactions */}
-        <div className="flex items-center justify-between gap-4 mt-4 pt-4 border-t border-gray-200 dark:border-gray-700">
-          <div className="flex flex-wrap gap-2">
-            <span className="text-sm text-gray-500 dark:text-gray-400 mr-2">
+        <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4 mt-4 pt-4 border-t border-gray-200 dark:border-gray-700">
+          <div>
+            <span className="text-sm text-gray-500 dark:text-gray-400 block mb-2 lg:inline lg:mb-0 lg:mr-2">
               {t('vatReport.quickPeriod')}:
             </span>
-            {['q1', 'q2', 'q3', 'q4', 'lastMonth', 'thisMonth', 'ytd'].map((period) => (
-              <button
-                key={period}
-                onClick={() => setPeriod(period)}
-                className="px-2 py-1 text-xs rounded-sm bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 hover:bg-blue-100 dark:hover:bg-blue-900/50"
-                data-cy={`period-${period}`}
-              >
-                {t(`vatReport.periods.${period}`)}
-              </button>
-            ))}
+            <div className="flex flex-wrap gap-2">
+              {['q1', 'q2', 'q3', 'q4', 'lastMonth', 'thisMonth', 'ytd'].map((period) => (
+                <button
+                  key={period}
+                  onClick={() => setPeriod(period)}
+                  className="px-2 py-1 text-xs rounded-sm bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 hover:bg-blue-100 dark:hover:bg-blue-900/50"
+                  data-cy={`period-${period}`}
+                >
+                  {t(`vatReport.periods.${period}`)}
+                </button>
+              ))}
+            </div>
           </div>
 
           <div className="flex items-center gap-2">
@@ -394,7 +396,7 @@ export default function VATReport() {
               className="rounded text-blue-600"
               data-cy="show-transactions"
             />
-            <label htmlFor="showTransactions" className="text-sm text-gray-700 dark:text-gray-300">
+            <label htmlFor="showTransactions" className="text-sm text-gray-700 dark:text-gray-300 whitespace-nowrap">
               {t('vatReport.showTransactions')}
             </label>
           </div>

@@ -276,7 +276,7 @@ export default function IncomeStatement() {
   return (
     <div className="space-y-6" data-cy="income-statement-page">
       {/* Header */}
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
           <h1 className="text-2xl font-semibold text-gray-900 dark:text-white">
             {t('incomeStatement.title')}
@@ -285,10 +285,10 @@ export default function IncomeStatement() {
             {t('incomeStatement.description')}
           </p>
         </div>
-        <div className="flex items-center gap-3">
+        <div className="flex flex-wrap items-center gap-3">
           {/* Detail Level Selector */}
           <div className="flex items-center gap-2">
-            <label className="text-sm text-gray-500 dark:text-gray-400">
+            <label className="text-sm text-gray-500 dark:text-gray-400 whitespace-nowrap">
               {t('common.detailLevel')}:
             </label>
             <select

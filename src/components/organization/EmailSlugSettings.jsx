@@ -90,7 +90,7 @@ export default function EmailSlugSettings({ organization, onSlugUpdated }) {
       </p>
 
       {/* Current Email Address */}
-      <div className="bg-gray-50 dark:bg-gray-700/50 rounded-lg p-4 mb-4">
+      <div className="bg-gray-50 dark:bg-gray-700/50 rounded-sm p-4 mb-4">
         <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
           {t('organization.emailSlug.currentAddress')}
         </label>
@@ -146,7 +146,7 @@ export default function EmailSlugSettings({ organization, onSlugUpdated }) {
       </div>
 
       {/* Info Box */}
-      <div className="flex items-start gap-3 p-4 bg-blue-50 dark:bg-blue-900/20 rounded-lg border border-blue-200 dark:border-blue-800">
+      <div className="flex items-start gap-3 p-4 bg-blue-50 dark:bg-blue-900/20 rounded-sm border border-blue-200 dark:border-blue-800">
         <InformationCircleIcon className="w-5 h-5 text-blue-600 dark:text-blue-400 flex-shrink-0 mt-0.5" />
         <div className="text-sm text-blue-800 dark:text-blue-300">
           <p>{t('organization.emailSlug.infoText')}</p>

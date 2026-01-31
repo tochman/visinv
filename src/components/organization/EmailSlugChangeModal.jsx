@@ -107,7 +107,7 @@ export default function EmailSlugChangeModal({
         />
         
         {/* Modal */}
-        <div className="relative bg-white dark:bg-gray-800 rounded-lg shadow-xl w-full max-w-md transform transition-all">
+        <div className="relative bg-white dark:bg-gray-800 rounded-sm shadow-xl w-full max-w-md transform transition-all">
           {/* Header */}
           <div className="flex items-center justify-between p-4 border-b border-gray-200 dark:border-gray-700">
             <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
@@ -218,7 +218,7 @@ export default function EmailSlugChangeModal({
             ) : (
               /* Confirmation View */
               <div className="space-y-4">
-                <div className="flex items-start gap-3 p-4 bg-amber-50 dark:bg-amber-900/20 rounded-lg border border-amber-200 dark:border-amber-800">
+                <div className="flex items-start gap-3 p-4 bg-amber-50 dark:bg-amber-900/20 rounded-sm border border-amber-200 dark:border-amber-800">
                   <ExclamationTriangleIcon className="w-6 h-6 text-amber-600 dark:text-amber-400 flex-shrink-0" />
                   <div className="text-sm text-amber-800 dark:text-amber-300">
                     <p className="font-medium mb-2">{t('organization.emailSlug.confirmTitle')}</p>

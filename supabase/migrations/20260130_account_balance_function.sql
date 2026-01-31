@@ -9,9 +9,9 @@ CREATE OR REPLACE FUNCTION get_account_balance_and_count(
 )
 RETURNS TABLE (
   account_id UUID,
-  account_number VARCHAR,
-  account_name VARCHAR,
-  account_class VARCHAR,
+  account_number TEXT,
+  account_name TEXT,
+  account_class TEXT,
   balance DECIMAL(15,2),
   debit_total DECIMAL(15,2),
   credit_total DECIMAL(15,2),
@@ -42,7 +42,7 @@ BEGIN
     JOIN journal_entries je ON jel.journal_entry_id = je.id
     WHERE jel.account_id = p_account_id
       AND je.organization_id = p_organization_id
-      AND je.is_posted = true
+      AND je.status = 'posted'
       AND je.entry_date <= p_end_date
   )
   SELECT 

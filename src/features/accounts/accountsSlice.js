@@ -1,4 +1,4 @@
-import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
+import { createSlice, createAsyncThunk, createSelector } from '@reduxjs/toolkit';
 import { Account } from '../../services/resources/Account';
 
 /**
@@ -365,63 +365,67 @@ export const selectAccountsLoading = (state) => state.accounts.loading;
 export const selectAccountsError = (state) => state.accounts.error;
 export const selectAccountsFilter = (state) => state.accounts.filter;
 
-// Filtered accounts selector
-export const selectFilteredAccounts = (state) => {
-  const { items } = state.accounts;
-  const { accountClass, searchQuery } = state.accounts.filter;
-
-  let filtered = items;
-
-  // Filter by class
-  if (accountClass) {
-    filtered = filtered.filter((a) => a.account_class === accountClass);
-  }
-
-  // Filter by search query
-  if (searchQuery) {
-    const query = searchQuery.toLowerCase();
-    filtered = filtered.filter(
-      (a) =>
-        a.account_number.toLowerCase().includes(query) ||
-        a.name.toLowerCase().includes(query) ||
-        (a.name_en && a.name_en.toLowerCase().includes(query))
-    );
-  }
-
-  return filtered;
-};
-
-// Accounts grouped by class selector
-export const selectAccountsByClass = (state) => {
-  const items = selectFilteredAccounts(state);
-  return items.reduce((acc, account) => {
-    const classKey = account.account_class;
-    if (!acc[classKey]) {
-      acc[classKey] = [];
-    }
-    acc[classKey].push(account);
-    return acc;
-  }, {});
-};
-
 // Summaries selectors
 export const selectAccountsSummaries = (state) => state.accounts.summaries;
 export const selectAccountsSummariesLoading = (state) => state.accounts.summariesLoading;
+
+// Memoized: Filtered accounts selector
+export const selectFilteredAccounts = createSelector(
+  [selectAccounts, selectAccountsFilter],
+  (items, filter) => {
+    const { accountClass, searchQuery } = filter;
+
+    let filtered = items;
+
+    // Filter by class
+    if (accountClass) {
+      filtered = filtered.filter((a) => a.account_class === accountClass);
+    }
+
+    // Filter by search query
+    if (searchQuery) {
+      const query = searchQuery.toLowerCase();
+      filtered = filtered.filter(
+        (a) =>
+          a.account_number.toLowerCase().includes(query) ||
+          a.name.toLowerCase().includes(query) ||
+          (a.name_en && a.name_en.toLowerCase().includes(query))
+      );
+    }
+
+    return filtered;
+  }
+);
+
+// Memoized: Accounts grouped by class selector
+export const selectAccountsByClass = createSelector(
+  [selectFilteredAccounts],
+  (items) => {
+    return items.reduce((acc, account) => {
+      const classKey = account.account_class;
+      if (!acc[classKey]) {
+        acc[classKey] = [];
+      }
+      acc[classKey].push(account);
+      return acc;
+    }, {});
+  }
+);
 
 // Get summary for specific account
 export const selectAccountSummary = (accountId) => (state) => {
   return state.accounts.summaries[accountId] || null;
 };
 
-// Get accounts with summary data combined
-export const selectAccountsWithSummaries = (state) => {
-  const accounts = selectFilteredAccounts(state);
-  const summaries = state.accounts.summaries;
-  
-  return accounts.map((account) => ({
-    ...account,
-    summary: summaries[account.id] || null,
-  }));
-};
+// Memoized: Get accounts with summary data combined
+export const selectAccountsWithSummaries = createSelector(
+  [selectFilteredAccounts, selectAccountsSummaries],
+  (accounts, summaries) => {
+    return accounts.map((account) => ({
+      ...account,
+      summary: summaries[account.id] || null,
+    }));
+  }
+);
 
 export default accountsSlice.reducer;

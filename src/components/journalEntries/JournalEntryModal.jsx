@@ -347,20 +347,20 @@ export default function JournalEntryModal({ entry, fiscalYear, organizationId, o
               )}
             </div>
 
-            <div className="overflow-x-auto border border-gray-200 dark:border-gray-700 rounded-sm">
-              <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
+            <div className="border border-gray-200 dark:border-gray-700 rounded-sm">
+              <table className="responsive-table min-w-full divide-y divide-gray-200 dark:divide-gray-700">
                 <thead className="bg-gray-50 dark:bg-gray-900/50">
                   <tr>
-                    <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase w-1/3">
+                    <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">
                       {t('journalEntries.account')}
                     </th>
-                    <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase w-1/5">
+                    <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">
                       {t('journalEntries.lineDescription')}
                     </th>
-                    <th className="px-3 py-2 text-right text-xs font-medium text-gray-500 dark:text-gray-400 uppercase w-1/6">
+                    <th className="px-3 py-2 text-right text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">
                       {t('journalEntries.debit')}
                     </th>
-                    <th className="px-3 py-2 text-right text-xs font-medium text-gray-500 dark:text-gray-400 uppercase w-1/6">
+                    <th className="px-3 py-2 text-right text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">
                       {t('journalEntries.credit')}
                     </th>
                     {!isViewOnly && (
@@ -372,7 +372,7 @@ export default function JournalEntryModal({ entry, fiscalYear, organizationId, o
                   {lines.map((line, index) => (
                     <tr key={index} data-cy={`entry-line-${index}`}>
                       {/* Account */}
-                      <td className="px-3 py-2 relative">
+                      <td className="px-3 py-2 relative" data-label={t('journalEntries.account')}>
                         {isViewOnly ? (
                           <span className="text-sm text-gray-900 dark:text-white">
                             {getAccountLabel(accounts.find((a) => a.id === line.account_id))}
@@ -421,7 +421,7 @@ export default function JournalEntryModal({ entry, fiscalYear, organizationId, o
                       </td>
 
                       {/* Description */}
-                      <td className="px-3 py-2">
+                      <td className="px-3 py-2" data-label={t('journalEntries.lineDescription')}>
                         <input
                           type="text"
                           value={line.description}
@@ -433,7 +433,7 @@ export default function JournalEntryModal({ entry, fiscalYear, organizationId, o
                       </td>
 
                       {/* Debit */}
-                      <td className="px-3 py-2">
+                      <td className="px-3 py-2" data-label={t('journalEntries.debit')}>
                         <input
                           type="number"
                           value={line.debit_amount}
@@ -452,7 +452,7 @@ export default function JournalEntryModal({ entry, fiscalYear, organizationId, o
                       </td>
 
                       {/* Credit */}
-                      <td className="px-3 py-2">
+                      <td className="px-3 py-2" data-label={t('journalEntries.credit')}>
                         <input
                           type="number"
                           value={line.credit_amount}
@@ -472,7 +472,7 @@ export default function JournalEntryModal({ entry, fiscalYear, organizationId, o
 
                       {/* Remove Button */}
                       {!isViewOnly && (
-                        <td className="px-3 py-2">
+                        <td className="px-3 py-2" data-label="">
                           <button
                             type="button"
                             onClick={() => removeLine(index)}
@@ -492,17 +492,17 @@ export default function JournalEntryModal({ entry, fiscalYear, organizationId, o
 
                 {/* Totals Row */}
                 <tfoot className="bg-gray-50 dark:bg-gray-900/50">
-                  <tr>
-                    <td colSpan={2} className="px-3 py-2 text-right text-sm font-medium text-gray-700 dark:text-gray-300">
+                  <tr className="responsive-totals-row">
+                    <td colSpan={2} className="px-3 py-2 text-right text-sm font-medium text-gray-700 dark:text-gray-300 hidden lg:table-cell">
                       {t('journalEntries.total')}:
                     </td>
-                    <td className="px-3 py-2 text-right font-mono text-sm font-medium text-gray-900 dark:text-white">
+                    <td className="px-3 py-2 text-right font-mono text-sm font-medium text-gray-900 dark:text-white" data-label={t('journalEntries.total')}>
                       {totals.totalDebit.toFixed(2)}
                     </td>
-                    <td className="px-3 py-2 text-right font-mono text-sm font-medium text-gray-900 dark:text-white">
+                    <td className="px-3 py-2 text-right font-mono text-sm font-medium text-gray-900 dark:text-white" data-label="">
                       {totals.totalCredit.toFixed(2)}
                     </td>
-                    {!isViewOnly && <td></td>}
+                    {!isViewOnly && <td className="hidden lg:table-cell"></td>}
                   </tr>
                   {/* Balance Status */}
                   <tr>
