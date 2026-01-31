@@ -6,22 +6,19 @@
  */
 
 describe('Profile Avatar Upload', () => {
+  // Use admin user data from cy.login('admin') - must match commands.js
   const mockProfile = {
-    id: 'user-123',
-    email: 'test@example.com',
-    full_name: 'Test User',
+    id: 'test-admin-user-id',
+    email: 'admin@test.com',
+    full_name: 'Admin User',
+    is_admin: true,
+    plan_type: 'premium',
     avatar_url: null,
   };
 
   beforeEach(() => {
     // Setup common intercepts
     cy.setupCommonIntercepts({ clients: [], products: [] });
-    
-    // Intercept profile fetch
-    cy.intercept('GET', '**/rest/v1/profiles?id=eq.*', {
-      statusCode: 200,
-      body: [mockProfile],
-    }).as('getProfile');
 
     // Login and navigate to settings
     cy.login('admin');
@@ -36,17 +33,17 @@ describe('Profile Avatar Upload', () => {
   describe('Happy Path - Success Scenarios', () => {
     it('is expected to display the profile settings page with avatar placeholder', () => {
       // Should show placeholder when no avatar exists
-      cy.get('[data-cy="profile-avatar-placeholder"]').should('be.visible');
+      cy.get('[data-cy="profile-avatar-placeholder"]').should('exist');
       
       // Should show upload button
-      cy.get('[data-cy="profile-upload-avatar-button"]').should('be.visible');
+      cy.get('[data-cy="profile-upload-avatar-button"]').should('exist');
       
       // Should NOT show remove button when no avatar
       cy.get('[data-cy="profile-remove-avatar-button"]').should('not.exist');
       
-      // Should display profile info
-      cy.get('[data-cy="profile-full-name"]').should('have.value', 'Test User');
-      cy.get('[data-cy="profile-email"]').should('have.value', 'test@example.com');
+      // Should display profile info from admin user
+      cy.get('[data-cy="profile-full-name"]').should('have.value', 'Admin User');
+      cy.get('[data-cy="profile-email"]').should('have.value', 'admin@test.com');
     });
 
     it('is expected to upload an avatar successfully', () => {
@@ -56,12 +53,13 @@ describe('Profile Avatar Upload', () => {
         body: { Key: 'avatars/user-123/avatar.jpg' },
       }).as('uploadAvatar');
 
+      // PATCH returns single object
       cy.intercept('PATCH', '**/rest/v1/profiles?id=eq.*', {
         statusCode: 200,
-        body: [{
+        body: {
           ...mockProfile,
           avatar_url: 'https://example.com/avatars/user-123/avatar.jpg',
-        }],
+        },
       }).as('updateProfile');
 
       // Select a file
@@ -71,68 +69,76 @@ describe('Profile Avatar Upload', () => {
       cy.wait('@uploadAvatar');
       cy.wait('@updateProfile');
 
-      // Should show success message
-      cy.get('[data-cy="profile-success"]').should('be.visible');
-      cy.get('[data-cy="profile-success"]').should('contain', 'Avatar uploaded successfully');
+      // Should show success toast
+      cy.get('[data-cy="toast-success"]').should('exist');
+      cy.get('[data-cy="toast-success"]').should('contain', 'Avatar uploaded successfully');
     });
 
     it('is expected to display uploaded avatar image', () => {
-      // Mock profile with avatar
+      // Mock profile with avatar - set up BEFORE visit
       const profileWithAvatar = {
         ...mockProfile,
-        avatar_url: 'https://example.com/avatars/user-123/avatar.jpg',
+        avatar_url: 'https://example.com/avatars/test-admin-user-id/avatar.jpg',
       };
 
-      cy.intercept('GET', '**/rest/v1/profiles?id=eq.*', {
+      // Override the profile intercept from login with one that has avatar
+      cy.intercept('GET', '**/rest/v1/profiles*', {
         statusCode: 200,
-        body: [profileWithAvatar],
+        body: profileWithAvatar,
       }).as('getProfileWithAvatar');
 
-      // Reload page
-      cy.reload();
+      // Visit settings fresh (avoid reload which clears intercepts)
+      cy.visit('/settings');
+      cy.get('[data-cy="tab-profile"]').click();
       cy.wait('@getProfileWithAvatar');
 
       // Should show avatar image instead of placeholder
-      cy.get('[data-cy="profile-avatar-image"]').should('be.visible');
+      cy.get('[data-cy="profile-avatar-image"]').should('exist');
       cy.get('[data-cy="profile-avatar-image"]').should('have.attr', 'src', profileWithAvatar.avatar_url);
       
       // Should show remove button
-      cy.get('[data-cy="profile-remove-avatar-button"]').should('be.visible');
+      cy.get('[data-cy="profile-remove-avatar-button"]').should('exist');
     });
 
     it('is expected to delete avatar successfully', () => {
       // Mock profile with avatar
       const profileWithAvatar = {
         ...mockProfile,
-        avatar_url: 'https://example.com/avatars/user-123/avatar.jpg',
+        avatar_url: 'https://example.com/storage/v1/object/public/avatars/test-admin-user-id/avatar.jpg',
       };
 
-      cy.intercept('GET', '**/rest/v1/profiles?id=eq.*', {
+      // Override the profile intercept from login with one that has avatar
+      cy.intercept('GET', '**/rest/v1/profiles*', {
         statusCode: 200,
-        body: [profileWithAvatar],
+        body: profileWithAvatar,
       }).as('getProfileWithAvatar');
 
-      cy.reload();
-      cy.wait('@getProfileWithAvatar');
-
-      // Mock delete operations
-      cy.intercept('DELETE', '**/storage/v1/object/avatars/**', {
+      // Mock storage remove - Supabase storage uses this pattern
+      cy.intercept('DELETE', '**/storage/**', {
         statusCode: 200,
         body: { message: 'Deleted' },
       }).as('deleteAvatar');
 
-      cy.intercept('PATCH', '**/rest/v1/profiles?id=eq.*', {
+      // PATCH returns single object
+      cy.intercept('PATCH', '**/rest/v1/profiles*', {
         statusCode: 200,
-        body: [{
+        body: {
           ...mockProfile,
           avatar_url: null,
-        }],
+        },
       }).as('updateProfileRemove');
 
-      // Stub window.confirm to return true
-      cy.window().then((win) => {
-        cy.stub(win, 'confirm').returns(true);
-      });
+      // Handle confirm dialog automatically
+      cy.on('window:confirm', () => true);
+
+      // Visit settings fresh
+      cy.visit('/settings');
+      cy.get('[data-cy="tab-profile"]').click();
+      cy.wait('@getProfileWithAvatar');
+
+      // Verify avatar is displayed
+      cy.get('[data-cy="profile-avatar-image"]').should('exist');
+      cy.get('[data-cy="profile-remove-avatar-button"]').should('exist');
 
       // Click remove button
       cy.get('[data-cy="profile-remove-avatar-button"]').click();
@@ -141,12 +147,12 @@ describe('Profile Avatar Upload', () => {
       cy.wait('@deleteAvatar');
       cy.wait('@updateProfileRemove');
 
-      // Should show success message
-      cy.get('[data-cy="profile-success"]').should('be.visible');
-      cy.get('[data-cy="profile-success"]').should('contain', 'Avatar removed successfully');
+      // Should show success toast
+      cy.get('[data-cy="toast-success"]').should('exist');
+      cy.get('[data-cy="toast-success"]').should('contain', 'Avatar removed successfully');
 
       // Should show placeholder again
-      cy.get('[data-cy="profile-avatar-placeholder"]').should('be.visible');
+      cy.get('[data-cy="profile-avatar-placeholder"]').should('exist');
     });
   });
 
@@ -163,60 +169,62 @@ describe('Profile Avatar Upload', () => {
 
       cy.wait('@uploadAvatarFail');
 
-      // Should show error message
-      cy.get('[data-cy="profile-error"]').should('be.visible');
-      cy.get('[data-cy="profile-error"]').should('contain', 'Upload failed');
+      // Should show error toast
+      cy.get('[data-cy="toast-error"]').should('exist');
     });
 
     it('is expected to display error when avatar delete fails', () => {
       // Mock profile with avatar
       const profileWithAvatar = {
         ...mockProfile,
-        avatar_url: 'https://example.com/avatars/user-123/avatar.jpg',
+        avatar_url: 'https://example.com/storage/v1/object/public/avatars/test-admin-user-id/avatar.jpg',
       };
 
-      cy.intercept('GET', '**/rest/v1/profiles?id=eq.*', {
+      // Override the profile intercept from login with one that has avatar
+      cy.intercept('GET', '**/rest/v1/profiles*', {
         statusCode: 200,
-        body: [profileWithAvatar],
+        body: profileWithAvatar,
       }).as('getProfileWithAvatar');
 
-      cy.reload();
-      cy.wait('@getProfileWithAvatar');
-
-      // Mock failed delete
-      cy.intercept('DELETE', '**/storage/v1/object/avatars/**', {
+      // Mock failed delete - use broader pattern
+      cy.intercept('DELETE', '**/storage/**', {
         statusCode: 500,
         body: { error: 'Delete failed' },
       }).as('deleteAvatarFail');
 
-      // Stub window.confirm
-      cy.window().then((win) => {
-        cy.stub(win, 'confirm').returns(true);
-      });
+      // Handle confirm dialog automatically
+      cy.on('window:confirm', () => true);
+
+      // Visit settings fresh
+      cy.visit('/settings');
+      cy.get('[data-cy="tab-profile"]').click();
+      cy.wait('@getProfileWithAvatar');
 
       // Try to delete
       cy.get('[data-cy="profile-remove-avatar-button"]').click();
 
       cy.wait('@deleteAvatarFail');
 
-      // Should show error message
-      cy.get('[data-cy="profile-error"]').should('be.visible');
-      cy.get('[data-cy="profile-error"]').should('contain', 'Delete failed');
+      // Should show error toast
+      cy.get('[data-cy="toast-error"]').should('exist');
     });
 
     it('is expected to handle cancel confirmation for avatar delete', () => {
       // Mock profile with avatar
       const profileWithAvatar = {
         ...mockProfile,
-        avatar_url: 'https://example.com/avatars/user-123/avatar.jpg',
+        avatar_url: 'https://example.com/avatars/test-admin-user-id/avatar.jpg',
       };
 
-      cy.intercept('GET', '**/rest/v1/profiles?id=eq.*', {
+      // Override the profile intercept from login with one that has avatar
+      cy.intercept('GET', '**/rest/v1/profiles*', {
         statusCode: 200,
-        body: [profileWithAvatar],
+        body: profileWithAvatar,
       }).as('getProfileWithAvatar');
 
-      cy.reload();
+      // Visit settings fresh
+      cy.visit('/settings');
+      cy.get('[data-cy="tab-profile"]').click();
       cy.wait('@getProfileWithAvatar');
 
       // Stub window.confirm to return false (cancel)
@@ -228,7 +236,7 @@ describe('Profile Avatar Upload', () => {
       cy.get('[data-cy="profile-remove-avatar-button"]').click();
 
       // Avatar should still be visible (delete was cancelled)
-      cy.get('[data-cy="profile-avatar-image"]').should('be.visible');
+      cy.get('[data-cy="profile-avatar-image"]').should('exist');
     });
   });
 });

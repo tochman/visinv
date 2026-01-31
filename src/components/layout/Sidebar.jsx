@@ -18,15 +18,18 @@ import {
   ChartBarIcon,
   ScaleIcon,
   ReceiptPercentIcon,
+  XMarkIcon,
 } from '@heroicons/react/24/outline';
 import { OrganizationSwitcher } from '../organization';
 import CollapsibleNavSection from './CollapsibleNavSection';
+import useProficiency from '../../hooks/useProficiency';
 
-export default function Sidebar() {
+export default function Sidebar({ onClose }) {
   const { t } = useTranslation();
   const location = useLocation();
   const { isAdmin } = useSelector((state) => state.auth);
   const { isPremium } = useSelector((state) => state.subscriptions);
+  const { showFeature } = useProficiency();
 
   // Admins have access to all premium features
   const hasPremiumAccess = isPremium || isAdmin;
@@ -36,43 +39,61 @@ export default function Sidebar() {
   // Overview section - just Dashboard (rendered separately, not collapsible)
   const dashboardItem = { path: '/', label: t('nav.dashboard'), icon: HomeIcon };
 
-  // Invoicing module items
+  // Invoicing module items - filtered by proficiency
   const invoicingItems = [
-    { path: '/invoices', label: t('nav.invoices'), icon: DocumentTextIcon },
-    { path: '/clients', label: t('nav.clients'), icon: UsersIcon },
-    { path: '/suppliers', label: t('nav.suppliers'), icon: BuildingStorefrontIcon },
-    { path: '/products', label: t('nav.products'), icon: CubeIcon },
-    { path: '/templates', label: t('nav.templates'), icon: SwatchIcon, premium: true },
-  ];
+    { path: '/invoices', label: t('nav.invoices'), icon: DocumentTextIcon, featureId: 'nav.invoices' },
+    { path: '/clients', label: t('nav.clients'), icon: UsersIcon, featureId: 'nav.clients' },
+    { path: '/suppliers', label: t('nav.suppliers'), icon: BuildingStorefrontIcon, featureId: 'nav.suppliers' },
+    { path: '/products', label: t('nav.products'), icon: CubeIcon, featureId: 'nav.products' },
+    { path: '/templates', label: t('nav.templates'), icon: SwatchIcon, premium: true, featureId: 'nav.templates' },
+  ].filter(item => !item.featureId || showFeature(item.featureId));
 
-  // Administration items
+  // Administration items - filtered by proficiency
   const adminItems = [
     { path: '/settings', label: t('nav.settings'), icon: Cog6ToothIcon },
-    { path: '/teams', label: t('nav.teams'), icon: UserGroupIcon, premium: true },
-  ];
+    { path: '/teams', label: t('nav.teams'), icon: UserGroupIcon, premium: true, featureId: 'nav.teams' },
+  ].filter(item => !item.featureId || showFeature(item.featureId));
 
-  // Accounting module items
+  // Accounting module items - filtered by proficiency
   const accountingItems = [
-    { path: '/supplier-invoices', label: t('nav.supplierInvoices'), icon: DocumentTextIcon },
-    { path: '/accounts', label: t('nav.accounts'), icon: CalculatorIcon },
-    { path: '/journal-entries', label: t('nav.journalEntries'), icon: ClipboardDocumentListIcon },
-    { path: '/general-ledger', label: t('nav.generalLedger'), icon: BookOpenIcon },
-    { path: '/reports/balance-sheet', label: t('nav.balanceSheet'), icon: ScaleIcon },
-    { path: '/reports/income-statement', label: t('nav.incomeStatement'), icon: ChartBarIcon },
-    { path: '/reports/vat-report', label: t('nav.vatReport'), icon: ReceiptPercentIcon },
-    { path: '/import/sie', label: t('nav.sieImport'), icon: ArrowUpTrayIcon },
-  ];
+    { path: '/supplier-invoices', label: t('nav.supplierInvoices'), icon: DocumentTextIcon, featureId: 'nav.supplierInvoices' },
+    { path: '/accounts', label: t('nav.accounts'), icon: CalculatorIcon, featureId: 'nav.accounts' },
+    { path: '/journal-entries', label: t('nav.journalEntries'), icon: ClipboardDocumentListIcon, featureId: 'nav.journalEntries' },
+    { path: '/general-ledger', label: t('nav.generalLedger'), icon: BookOpenIcon, featureId: 'nav.generalLedger' },
+    { path: '/reports/balance-sheet', label: t('nav.balanceSheet'), icon: ScaleIcon, featureId: 'nav.balanceSheet' },
+    { path: '/reports/income-statement', label: t('nav.incomeStatement'), icon: ChartBarIcon, featureId: 'nav.incomeStatement' },
+    { path: '/reports/vat-report', label: t('nav.vatReport'), icon: ReceiptPercentIcon, featureId: 'nav.vatReport' },
+    { path: '/import/sie', label: t('nav.sieImport'), icon: ArrowUpTrayIcon, featureId: 'nav.sieImport' },
+  ].filter(item => !item.featureId || showFeature(item.featureId));
 
   // Add admin panel if user is admin
   if (isAdmin) {
     adminItems.push({ path: '/admin', label: t('nav.admin'), icon: ShieldCheckIcon });
   }
 
+  // Handle navigation click on mobile - close sidebar
+  const handleNavClick = () => {
+    if (onClose && window.innerWidth < 1024) {
+      onClose();
+    }
+  };
+
   return (
     <div className="w-64 bg-white dark:bg-gray-800 shadow-lg dark:shadow-gray-900/20 flex flex-col h-full">
       {/* Logo and Plan Badge */}
       <div className="p-6">
-        <img src="/svethna_logo.svg" alt="Svethna" className="h-10 w-auto dark:invert-0 invert" />
+        <div className="flex items-center justify-between">
+          <img src="/svethna_logo.svg" alt="Svethna" className="h-10 w-auto dark:invert-0 invert" />
+          {/* Mobile close button */}
+          <button
+            onClick={onClose}
+            className="lg:hidden p-2 -mr-2 text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-sm"
+            data-cy="sidebar-close-button"
+            aria-label="Close menu"
+          >
+            <XMarkIcon className="h-6 w-6" />
+          </button>
+        </div>
         {isAdmin && (
           <div className="mt-4 p-3 bg-purple-50 dark:bg-purple-900/30 rounded-sm text-sm flex items-center gap-2">
             <ShieldCheckIcon className="h-5 w-5 text-purple-600 dark:text-purple-400" />
@@ -99,6 +120,7 @@ export default function Sidebar() {
           <Link
             to={dashboardItem.path}
             data-cy="sidebar-nav-dashboard"
+            onClick={handleNavClick}
             className={`flex items-center px-4 py-3 rounded-sm transition-colors ${
               isActive(dashboardItem.path)
                 ? 'bg-blue-600 text-white'
@@ -117,16 +139,20 @@ export default function Sidebar() {
           items={invoicingItems}
           defaultExpanded={true}
           hasPremiumAccess={hasPremiumAccess}
+          onNavClick={handleNavClick}
         />
 
-        {/* Accounting Module */}
-        <CollapsibleNavSection
-          title={t('nav.sections.accounting')}
-          sectionKey="accounting"
-          items={accountingItems}
-          defaultExpanded={false}
-          hasPremiumAccess={hasPremiumAccess}
-        />
+        {/* Accounting Module - only show if there are visible items */}
+        {accountingItems.length > 0 && (
+          <CollapsibleNavSection
+            title={t('nav.sections.accounting')}
+            sectionKey="accounting"
+            items={accountingItems}
+            defaultExpanded={false}
+            hasPremiumAccess={hasPremiumAccess}
+            onNavClick={handleNavClick}
+          />
+        )}
 
         {/* Time & Projects Module - Coming Soon */}
         <CollapsibleNavSection
@@ -145,6 +171,7 @@ export default function Sidebar() {
           items={adminItems}
           defaultExpanded={true}
           hasPremiumAccess={hasPremiumAccess}
+          onNavClick={handleNavClick}
         />
       </nav>
 

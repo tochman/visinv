@@ -75,7 +75,26 @@ export const uploadFile = async ({ bucket, file, userId, fileName }) => {
       });
 
     if (uploadError) {
+      console.error(`Storage upload error for bucket ${bucket}:`, uploadError);
       return { data: null, error: uploadError };
+    }
+
+    // Verify the upload actually succeeded by checking if file exists
+    const { data: fileData, error: listError } = await supabase.storage
+      .from(bucket)
+      .list(userId, { limit: 10, search: sanitizedFileName });
+    
+    if (listError) {
+      console.error(`Storage list error for bucket ${bucket}:`, listError);
+    }
+    
+    const fileExists = fileData?.some(f => f.name === sanitizedFileName);
+    if (!fileExists) {
+      console.error(`File was not uploaded to ${bucket}/${filePath} - RLS policy may have blocked the upload`);
+      return { 
+        data: null, 
+        error: new Error('Upload failed - the file was not saved. Please check storage bucket permissions.') 
+      };
     }
 
     // Get public URL

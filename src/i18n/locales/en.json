@@ -806,7 +806,10 @@
     "avatarUploadError": "Failed to upload avatar",
     "avatarDeleteSuccess": "Avatar removed successfully",
     "avatarDeleteError": "Failed to remove avatar",
-    "confirmDeleteAvatar": "Remove your profile picture?"
+    "confirmDeleteAvatar": "Remove your profile picture?",
+    "proficiencyLevel": "Experience Level",
+    "proficiencyDescription": "Your experience level helps us customize the interface to match your needs. You can change this at any time.",
+    "proficiencyUpdateSuccess": "Experience level updated successfully"
   },
   "accounts": {
     "title": "Chart of Accounts",

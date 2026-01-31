@@ -794,7 +794,10 @@
     "avatarUploadError": "Det gick inte att ladda upp profilbilden",
     "avatarDeleteSuccess": "Profilbilden har tagits bort",
     "avatarDeleteError": "Det gick inte att ta bort profilbilden",
-    "confirmDeleteAvatar": "Ta bort din profilbild?"
+    "confirmDeleteAvatar": "Ta bort din profilbild?",
+    "proficiencyLevel": "Erfarenhetsnivå",
+    "proficiencyDescription": "Din erfarenhetsnivå hjälper oss att anpassa gränssnittet efter dina behov. Du kan ändra detta när som helst.",
+    "proficiencyUpdateSuccess": "Erfarenhetsnivån har uppdaterats"
   },
   "accounts": {
     "title": "Kontoplan",

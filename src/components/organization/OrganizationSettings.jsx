@@ -7,7 +7,7 @@ import { ArrowUpTrayIcon, TrashIcon } from '@heroicons/react/24/outline';
 
 export default function OrganizationSettings() {
   const { t } = useTranslation();
-  const { currentOrganization, updateOrganization } = useOrganization();
+  const { currentOrganization, updateOrganization, refreshOrganizations } = useOrganization();
   const [isEditing, setIsEditing] = useState(false);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState(null);
@@ -82,7 +82,8 @@ export default function OrganizationSettings() {
       setError(uploadError.message || t('organization.logoUploadError'));
     } else {
       setSuccessMessage(t('organization.logoUploadSuccess'));
-      // Refresh organization context
+      // Refresh organization context to get the new logo_url
+      await refreshOrganizations();
       setTimeout(() => setSuccessMessage(''), 3000);
     }
 
@@ -109,6 +110,8 @@ export default function OrganizationSettings() {
       setError(deleteError.message || t('organization.logoDeleteError'));
     } else {
       setSuccessMessage(t('organization.logoDeleteSuccess'));
+      // Refresh organization context to update logo_url
+      await refreshOrganizations();
       setTimeout(() => setSuccessMessage(''), 3000);
     }
 
@@ -150,168 +153,173 @@ export default function OrganizationSettings() {
       )}
 
       <form onSubmit={handleSubmit(onSubmit)}>
-        <div className="bg-white dark:bg-gray-800 rounded-sm shadow dark:shadow-gray-900/20 p-6 space-y-6">
-          {/* Logo Section */}
-          <div className="pb-6 border-b border-gray-200 dark:border-gray-700">
-            <h2 className="text-xl font-bold text-gray-900 dark:text-white mb-4">
-              {t('organization.logo')}
-            </h2>
-            
-            <div className="flex items-start space-x-6">
-              {/* Logo Display */}
-              <div className="flex-shrink-0">
-                {currentOrganization?.logo_url ? (
-                  <div className="w-24 h-24 border-2 border-gray-200 dark:border-gray-700 rounded-sm bg-white dark:bg-gray-800 p-2 flex items-center justify-center">
-                    <img
-                      src={currentOrganization.logo_url}
-                      alt={currentOrganization.name}
-                      className="max-w-full max-h-full object-contain"
-                      data-cy="organization-logo-image"
+        <div className="bg-white dark:bg-gray-800 rounded-sm shadow dark:shadow-gray-900/20 p-4 sm:p-6">
+          {/* Responsive two-column layout: stacked on mobile, side-by-side on desktop */}
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 lg:gap-8 mb-6">
+            {/* Left Column: Logo Section */}
+            <div className="lg:border-r lg:border-gray-200 lg:dark:border-gray-700 lg:pr-8">
+              <h2 className="text-xl font-bold text-gray-900 dark:text-white mb-4">
+                {t('organization.logo')}
+              </h2>
+              
+              <div className="flex flex-col sm:flex-row items-center sm:items-start gap-4 sm:gap-6">
+                {/* Logo Display */}
+                <div className="flex-shrink-0">
+                  {currentOrganization?.logo_url ? (
+                    <div className="w-24 h-24 border-2 border-gray-200 dark:border-gray-700 rounded-sm bg-white dark:bg-gray-800 p-2 flex items-center justify-center">
+                      <img
+                        src={currentOrganization.logo_url}
+                        alt={currentOrganization.name}
+                        className="max-w-full max-h-full object-contain"
+                        data-cy="organization-logo-image"
+                      />
+                    </div>
+                  ) : (
+                    <div 
+                      className="w-24 h-24 border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-sm flex items-center justify-center bg-gray-50 dark:bg-gray-700"
+                      data-cy="organization-logo-placeholder"
+                    >
+                      <svg className="w-12 h-12 text-gray-400 dark:text-gray-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                      </svg>
+                    </div>
+                  )}
+                </div>
+
+                {/* Logo Controls */}
+                <div className="flex-1 text-center sm:text-left">
+                  <p className="text-sm text-gray-600 dark:text-gray-400 mb-2">
+                    {t('organization.logoHint')}
+                  </p>
+                  <p className="text-xs text-gray-500 dark:text-gray-500 mb-3">
+                    {t('organization.logoWillAppear')}
+                  </p>
+
+                  <div className="flex justify-center sm:justify-start space-x-2">
+                    <input
+                      ref={logoInputRef}
+                      type="file"
+                      accept="image/jpeg,image/jpg,image/png,image/webp,image/svg+xml"
+                      onChange={handleLogoChange}
+                      className="hidden"
+                      data-cy="organization-logo-input"
                     />
-                  </div>
-                ) : (
-                  <div 
-                    className="w-24 h-24 border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-sm flex items-center justify-center bg-gray-50 dark:bg-gray-700"
-                    data-cy="organization-logo-placeholder"
-                  >
-                    <svg className="w-12 h-12 text-gray-400 dark:text-gray-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                    </svg>
-                  </div>
-                )}
-              </div>
 
-              {/* Logo Controls */}
-              <div className="flex-1">
-                <p className="text-sm text-gray-600 dark:text-gray-400 mb-2">
-                  {t('organization.logoHint')}
-                </p>
-                <p className="text-xs text-gray-500 dark:text-gray-500 mb-3">
-                  {t('organization.logoWillAppear')}
-                </p>
-
-                <div className="flex space-x-2">
-                  <input
-                    ref={logoInputRef}
-                    type="file"
-                    accept="image/jpeg,image/jpg,image/png,image/webp,image/svg+xml"
-                    onChange={handleLogoChange}
-                    className="hidden"
-                    data-cy="organization-logo-input"
-                  />
-
-                  <button
-                    type="button"
-                    onClick={() => logoInputRef.current?.click()}
-                    disabled={uploadingLogo}
-                    title={currentOrganization?.logo_url ? t('organization.changeLogo') : t('organization.uploadLogo')}
-                    className="p-2 border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 disabled:opacity-50 rounded-sm transition-colors"
-                    data-cy="organization-upload-logo-button"
-                  >
-                    <ArrowUpTrayIcon className="w-5 h-5" />
-                  </button>
-
-                  {currentOrganization?.logo_url && (
                     <button
                       type="button"
-                      onClick={handleLogoRemove}
+                      onClick={() => logoInputRef.current?.click()}
                       disabled={uploadingLogo}
-                      title={t('organization.removeLogo')}
+                      title={currentOrganization?.logo_url ? t('organization.changeLogo') : t('organization.uploadLogo')}
                       className="p-2 border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 disabled:opacity-50 rounded-sm transition-colors"
-                      data-cy="organization-remove-logo-button"
+                      data-cy="organization-upload-logo-button"
                     >
-                      <TrashIcon className="w-5 h-5" />
+                      <ArrowUpTrayIcon className="w-5 h-5" />
                     </button>
+
+                    {currentOrganization?.logo_url && (
+                      <button
+                        type="button"
+                        onClick={handleLogoRemove}
+                        disabled={uploadingLogo}
+                        title={t('organization.removeLogo')}
+                        className="p-2 border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 disabled:opacity-50 rounded-sm transition-colors"
+                        data-cy="organization-remove-logo-button"
+                      >
+                        <TrashIcon className="w-5 h-5" />
+                      </button>
+                    )}
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Right Column: Basic Information */}
+            <div>
+              <h2 className="text-xl font-bold text-gray-900 dark:text-white mb-4">
+                {t('organization.setupWizard.step1')}
+              </h2>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                    {t('organization.name')} *
+                  </label>
+                  {isEditing ? (
+                    <div>
+                      <input
+                        type="text"
+                        {...register('name', { 
+                          required: 'Företagsnamn är obligatoriskt',
+                          validate: value => (value?.trim() ? true : 'Företagsnamn är obligatoriskt')
+                        })}
+                        className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-sm focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white"
+                        data-cy="org-name"
+                      />
+                      {errors.name && (
+                        <p className="mt-1 text-sm text-red-600 dark:text-red-400" data-cy="error-org-name">{errors.name.message}</p>
+                      )}
+                    </div>
+                  ) : (
+                    <div className="text-gray-900 dark:text-white py-2">{currentOrganization.name}</div>
+                  )}
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                    {t('organization.organizationNumber')} *
+                  </label>
+                  {isEditing ? (
+                    <div>
+                      <input
+                        type="text"
+                        {...register('organization_number', { 
+                          required: 'Organisationsnummer är obligatoriskt enligt Aktiebolagslagen',
+                          validate: value => (value?.trim() ? true : 'Organisationsnummer är obligatoriskt enligt Aktiebolagslagen')
+                        })}
+                        className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-sm focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white"
+                        data-cy="org-number"
+                      />
+                      {errors.organization_number && (
+                        <p className="mt-1 text-sm text-red-600 dark:text-red-400" data-cy="error-org-number">{errors.organization_number.message}</p>
+                      )}
+                    </div>
+                  ) : (
+                    <div className="text-gray-900 dark:text-white py-2">
+                      {currentOrganization.organization_number || '-'}
+                    </div>
+                  )}
+                </div>
+
+                <div className="sm:col-span-2">
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                    {t('organization.vatNumber')} *
+                  </label>
+                  {isEditing ? (
+                    <div>
+                      <input
+                        type="text"
+                        {...register('vat_number', { 
+                          required: 'Momsregistreringsnummer är obligatoriskt enligt Mervärdesskattelagen',
+                          validate: value => (value?.trim() ? true : 'Momsregistreringsnummer är obligatoriskt enligt Mervärdesskattelagen')
+                        })}
+                        className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-sm focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white"
+                        data-cy="org-vat"
+                      />
+                      {errors.vat_number && (
+                        <p className="mt-1 text-sm text-red-600 dark:text-red-400" data-cy="error-vat-number">{errors.vat_number.message}</p>
+                      )}
+                    </div>
+                  ) : (
+                    <div className="text-gray-900 dark:text-white py-2">
+                      {currentOrganization.vat_number || '-'}
+                    </div>
                   )}
                 </div>
               </div>
             </div>
           </div>
 
-          {/* Basic Information */}
-          <div>
-            <h2 className="text-xl font-bold text-gray-900 dark:text-white mb-4">
-              {t('organization.setupWizard.step1')}
-            </h2>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                  {t('organization.name')} *
-                </label>
-                {isEditing ? (
-                  <div>
-                    <input
-                      type="text"
-                      {...register('name', { 
-                        required: 'Företagsnamn är obligatoriskt',
-                        validate: value => (value?.trim() ? true : 'Företagsnamn är obligatoriskt')
-                      })}
-                      className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-sm focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white"
-                      data-cy="org-name"
-                    />
-                    {errors.name && (
-                      <p className="mt-1 text-sm text-red-600 dark:text-red-400" data-cy="error-org-name">{errors.name.message}</p>
-                    )}
-                  </div>
-                ) : (
-                  <div className="text-gray-900 dark:text-white py-2">{currentOrganization.name}</div>
-                )}
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                  {t('organization.organizationNumber')} *
-                </label>
-                {isEditing ? (
-                  <div>
-                    <input
-                      type="text"
-                      {...register('organization_number', { 
-                        required: 'Organisationsnummer är obligatoriskt enligt Aktiebolagslagen',
-                        validate: value => (value?.trim() ? true : 'Organisationsnummer är obligatoriskt enligt Aktiebolagslagen')
-                      })}
-                      className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-sm focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white"
-                      data-cy="org-number"
-                    />
-                    {errors.organization_number && (
-                      <p className="mt-1 text-sm text-red-600 dark:text-red-400" data-cy="error-org-number">{errors.organization_number.message}</p>
-                    )}
-                  </div>
-                ) : (
-                  <div className="text-gray-900 dark:text-white py-2">
-                    {currentOrganization.organization_number || '-'}
-                  </div>
-                )}
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                  {t('organization.vatNumber')} *
-                </label>
-                {isEditing ? (
-                  <div>
-                    <input
-                      type="text"
-                      {...register('vat_number', { 
-                        required: 'Momsregistreringsnummer är obligatoriskt enligt Mervärdesskattelagen',
-                        validate: value => (value?.trim() ? true : 'Momsregistreringsnummer är obligatoriskt enligt Mervärdesskattelagen')
-                      })}
-                      className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-sm focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white"
-                      data-cy="org-vat"
-                    />
-                    {errors.vat_number && (
-                      <p className="mt-1 text-sm text-red-600 dark:text-red-400" data-cy="error-vat-number">{errors.vat_number.message}</p>
-                    )}
-                  </div>
-                ) : (
-                  <div className="text-gray-900 dark:text-white py-2">
-                    {currentOrganization.vat_number || '-'}
-                  </div>
-                )}
-              </div>
-            </div>
-          </div>
-
+          {/* Full-width sections below */}
+          <div className="space-y-6">
           {/* Address & Contact */}
           <div>
             <h2 className="text-xl font-bold text-gray-900 dark:text-white mb-4">
@@ -657,6 +665,7 @@ export default function OrganizationSettings() {
               </button>
             </div>
           )}
+          </div>
         </div>
       </form>
     </div>

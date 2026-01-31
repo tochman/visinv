@@ -12,6 +12,7 @@ import { ChevronDownIcon, ChevronRightIcon } from '@heroicons/react/24/outline';
  * @param {boolean} props.defaultExpanded - Whether section is expanded by default
  * @param {boolean} props.hasPremiumAccess - Whether user has premium access
  * @param {string} props.comingSoon - If set, shows "coming soon" message instead of items
+ * @param {Function} props.onNavClick - Callback when a nav item is clicked (for mobile close)
  */
 export default function CollapsibleNavSection({
   title,
@@ -20,6 +21,7 @@ export default function CollapsibleNavSection({
   defaultExpanded = false,
   hasPremiumAccess = false,
   comingSoon = null,
+  onNavClick,
 }) {
   const location = useLocation();
   const storageKey = `nav-section-${sectionKey}`;
@@ -92,7 +94,13 @@ export default function CollapsibleNavSection({
                       ? 'text-gray-400 dark:text-gray-600 cursor-not-allowed'
                       : 'text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700'
                   }`}
-                  onClick={(e) => disabled && e.preventDefault()}
+                  onClick={(e) => {
+                    if (disabled) {
+                      e.preventDefault();
+                    } else if (onNavClick) {
+                      onNavClick();
+                    }
+                  }}
                 >
                   {Icon && <Icon className="h-5 w-5 mr-3" />}
                   <span className="flex-1 text-sm">{item.label}</span>

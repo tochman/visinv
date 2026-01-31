@@ -39,7 +39,6 @@ import {
  * // Show advanced options only for proficient+
  * {isAtLeast('proficient') && <AdvancedOptions />}
  */
- */
 
 const PROFICIENCY_ORDER = ['novice', 'basic', 'proficient', 'expert'];
 
