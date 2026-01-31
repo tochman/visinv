@@ -122,7 +122,7 @@ class OrganizationEmailSlugHistoryResource extends BaseResource {
     slug = slug.toLowerCase();
 
     // Replace spaces and common separators with underscores
-    slug = slug.replace(/[\s\-\.]+/g, '_');
+    slug = slug.replace(/[\s\-.]+/g, '_');
 
     // Remove all non-alphanumeric characters except underscores
     slug = slug.replace(/[^a-z0-9_]/g, '');

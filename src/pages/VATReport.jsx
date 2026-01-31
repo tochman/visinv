@@ -189,12 +189,13 @@ export default function VATReport() {
         start = new Date(year, 9, 1);
         end = new Date(year, 11, 31);
         break;
-      case 'lastMonth':
+      case 'lastMonth': {
         const lastMonth = month === 0 ? 11 : month - 1;
         const lastMonthYear = month === 0 ? year - 1 : year;
         start = new Date(lastMonthYear, lastMonth, 1);
         end = new Date(lastMonthYear, lastMonth + 1, 0);
         break;
+      }
       case 'thisMonth':
         start = new Date(year, month, 1);
         end = new Date(year, month + 1, 0);
