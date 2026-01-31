@@ -22,6 +22,7 @@ import InvoiceDetail from './pages/InvoiceDetail';
 import Clients from './pages/Clients';
 import Suppliers from './pages/Suppliers';
 import SupplierInvoices from './pages/SupplierInvoices';
+import SupplierInbox from './pages/SupplierInbox';
 import Products from './pages/Products';
 import Accounts from './pages/Accounts';
 import JournalEntries from './pages/JournalEntries';
@@ -109,6 +110,7 @@ function App() {
             <Route path="/clients" element={<Clients />} />
             <Route path="/suppliers" element={<Suppliers />} />
             <Route path="/supplier-invoices" element={<SupplierInvoices />} />
+            <Route path="/supplier-invoices/inbox" element={<SupplierInbox />} />
             <Route path="/products" element={<Products />} />
             <Route path="/accounts" element={<Accounts />} />
             <Route path="/journal-entries" element={<JournalEntries />} />

@@ -19,9 +19,11 @@ import {
   ScaleIcon,
   ReceiptPercentIcon,
   XMarkIcon,
+  InboxIcon,
 } from '@heroicons/react/24/outline';
 import { OrganizationSwitcher } from '../organization';
 import CollapsibleNavSection from './CollapsibleNavSection';
+import InboxBadge from '../supplierInbox/InboxBadge';
 import useProficiency from '../../hooks/useProficiency';
 
 export default function Sidebar({ onClose }) {
@@ -57,6 +59,7 @@ export default function Sidebar({ onClose }) {
   // Accounting module items - filtered by proficiency
   const accountingItems = [
     { path: '/supplier-invoices', label: t('nav.supplierInvoices'), icon: DocumentTextIcon, featureId: 'nav.supplierInvoices' },
+    { path: '/supplier-invoices/inbox', label: t('nav.supplierInbox'), icon: InboxIcon, badge: InboxBadge, featureId: 'nav.supplierInbox' },
     { path: '/accounts', label: t('nav.accounts'), icon: CalculatorIcon, featureId: 'nav.accounts' },
     { path: '/journal-entries', label: t('nav.journalEntries'), icon: ClipboardDocumentListIcon, featureId: 'nav.journalEntries' },
     { path: '/general-ledger', label: t('nav.generalLedger'), icon: BookOpenIcon, featureId: 'nav.generalLedger' },

@@ -81,12 +81,13 @@ export default function CollapsibleNavSection({
             items.map((item) => {
               const disabled = item.premium && !hasPremiumAccess;
               const Icon = item.icon;
+              const BadgeComponent = item.badge;
 
               return (
                 <Link
                   key={item.path}
                   to={disabled ? '#' : item.path}
-                  data-cy={`sidebar-nav-${item.path.replace('/', '') || 'dashboard'}`}
+                  data-cy={`sidebar-nav-${item.path.replace(/\//g, '-').replace(/^-/, '') || 'dashboard'}`}
                   className={`flex items-center px-4 py-2.5 ml-2 rounded-sm transition-colors ${
                     isActive(item.path)
                       ? 'bg-blue-600 text-white'
@@ -104,6 +105,7 @@ export default function CollapsibleNavSection({
                 >
                   {Icon && <Icon className="h-5 w-5 mr-3" />}
                   <span className="flex-1 text-sm">{item.label}</span>
+                  {BadgeComponent && <BadgeComponent />}
                   {item.premium && !hasPremiumAccess && (
                     <span className="text-xs bg-yellow-400 dark:bg-yellow-500 text-gray-900 px-2 py-0.5 rounded">
                       PRO

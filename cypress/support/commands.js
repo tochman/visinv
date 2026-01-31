@@ -402,7 +402,9 @@ Cypress.Commands.add('setupCommonIntercepts', (options = {}) => {
     templates: [],
     organizations: null,
     organizationMembers: null,
-    defaultOrganization: null
+    defaultOrganization: null,
+    supplierInboxItems: [],
+    supplierInvoices: []
   }
   
   const config = { ...defaults, ...options }
@@ -472,6 +474,56 @@ Cypress.Commands.add('setupCommonIntercepts', (options = {}) => {
       body: { organizations: config.defaultOrganization }
     }).as('getDefaultOrganization')
   }
+
+  if (config.supplierInboxItems !== null) {
+    // Handle count requests (Prefer: count=exact, head=true) for inbox badge
+    cy.intercept('GET', '**/rest/v1/supplier_inbox_items*', (req) => {
+      const preferHeader = req.headers['prefer'] || '';
+      const isCountRequest = preferHeader.includes('count=exact') && preferHeader.includes('head=true');
+      const isNewStatusFilter = req.url.includes('status=eq.new');
+      
+      if (isCountRequest && isNewStatusFilter) {
+        // Return count in Content-Range header for new items count
+        const newItemsCount = config.supplierInboxItems?.filter?.(i => i.status === 'new')?.length || 0;
+        req.reply({
+          statusCode: 200,
+          headers: {
+            'content-range': `0-0/${newItemsCount}`
+          },
+          body: null
+        });
+      } else if (isCountRequest) {
+        // Return total count
+        const totalCount = config.supplierInboxItems?.length || 0;
+        req.reply({
+          statusCode: 200,
+          headers: {
+            'content-range': `0-0/${totalCount}`
+          },
+          body: null
+        });
+      } else {
+        // Return items list
+        req.reply({
+          statusCode: 200,
+          body: config.supplierInboxItems
+        });
+      }
+    }).as('getSupplierInboxItems');
+  }
+
+  if (config.supplierInvoices !== null) {
+    cy.intercept('GET', '**/rest/v1/supplier_invoices*', {
+      statusCode: 200,
+      body: config.supplierInvoices
+    }).as('getSupplierInvoices')
+  }
+  
+  // Mock RPC calls for supplier inbox
+  cy.intercept('POST', '**/rest/v1/rpc/get_inbox_count*', {
+    statusCode: 200,
+    body: config.supplierInboxItems?.filter?.(i => i.status === 'new')?.length || 0
+  }).as('getInboxCount')
   
   // Mock Supabase Edge Function for sending invoice emails
   // This ensures email sending always succeeds in tests unless explicitly overridden

@@ -1,13 +1,22 @@
 // Supabase Edge Function for processing inbound supplier invoice emails
 // US-264b: Inbound Email Processing (Backend)
 // Handles webhooks from Resend for emails sent to {slug}@dortal.resend.app
+//
+// DEPLOYMENT NOTE: This function must be deployed with --no-verify-jwt
+// to allow unauthenticated webhook calls from Resend:
+//   supabase functions deploy process-inbound-supplier-invoice --no-verify-jwt
+//
+// REQUIRED ENV VARS:
+//   - SUPABASE_URL
+//   - SUPABASE_SERVICE_ROLE_KEY
+//   - RESEND_WEBHOOK_SECRET (from Resend webhook settings, starts with 'whsec_')
 
 import { serve } from 'https://deno.land/std@0.168.0/http/server.ts'
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type, x-webhook-signature',
+  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type, svix-id, svix-timestamp, svix-signature',
   'Access-Control-Allow-Methods': 'POST, OPTIONS',
 }
 
@@ -58,9 +67,10 @@ const MAX_FILE_SIZE = 10 * 1024 * 1024
 
 /**
  * Extract email slug from recipient address
+ * Supports alphanumeric characters, hyphens, and underscores
  */
 function extractSlug(toAddress: string): string | null {
-  const match = toAddress.toLowerCase().match(/^([a-z0-9-]+)@/i)
+  const match = toAddress.toLowerCase().match(/^([a-z0-9_-]+)@/i)
   return match ? match[1].toLowerCase() : null
 }
 
@@ -112,6 +122,72 @@ async function calculateMessageHash(messageId: string | undefined, from: string,
 }
 
 /**
+ * Verify Svix webhook signature (used by Resend)
+ * Based on: https://docs.svix.com/receiving/verifying-payloads/how-manual
+ */
+async function verifyWebhookSignature(
+  payload: string,
+  headers: {
+    svixId: string | null
+    svixTimestamp: string | null
+    svixSignature: string | null
+  },
+  secret: string
+): Promise<boolean> {
+  const { svixId, svixTimestamp, svixSignature } = headers
+  
+  // All headers are required
+  if (!svixId || !svixTimestamp || !svixSignature) {
+    console.error('Missing Svix headers for webhook verification')
+    return false
+  }
+  
+  // Check timestamp is within 5 minutes to prevent replay attacks
+  const timestamp = parseInt(svixTimestamp, 10)
+  const now = Math.floor(Date.now() / 1000)
+  if (isNaN(timestamp) || Math.abs(now - timestamp) > 300) {
+    console.error('Webhook timestamp too old or invalid')
+    return false
+  }
+  
+  // Prepare the signed content
+  const signedContent = `${svixId}.${svixTimestamp}.${payload}`
+  
+  // Extract the secret key (remove 'whsec_' prefix if present)
+  const secretKey = secret.startsWith('whsec_') ? secret.slice(6) : secret
+  
+  // Decode the base64 secret
+  const secretBytes = Uint8Array.from(atob(secretKey), c => c.charCodeAt(0))
+  
+  // Import the key for HMAC
+  const key = await crypto.subtle.importKey(
+    'raw',
+    secretBytes,
+    { name: 'HMAC', hash: 'SHA-256' },
+    false,
+    ['sign']
+  )
+  
+  // Sign the content
+  const encoder = new TextEncoder()
+  const signatureBuffer = await crypto.subtle.sign('HMAC', key, encoder.encode(signedContent))
+  const expectedSignature = 'v1,' + btoa(String.fromCharCode(...new Uint8Array(signatureBuffer)))
+  
+  // The signature header can contain multiple signatures (v1,sig1 v1,sig2)
+  const signatures = svixSignature.split(' ')
+  
+  // Check if any signature matches
+  for (const sig of signatures) {
+    if (sig === expectedSignature) {
+      return true
+    }
+  }
+  
+  console.error('No matching webhook signature found')
+  return false
+}
+
+/**
  * Log webhook event for debugging
  */
 async function logWebhook(
@@ -155,15 +231,34 @@ serve(async (req: Request) => {
   
   const supabase = createClient(supabaseUrl, supabaseServiceKey)
 
+  // Get the raw body for signature verification
+  const rawBody = await req.text()
+  
   try {
     // Verify webhook signature if secret is configured
     if (webhookSecret) {
-      const signature = req.headers.get('x-webhook-signature')
-      // TODO: Implement Resend signature verification when they provide documentation
-      // For now, we rely on the URL being secret
+      const svixHeaders = {
+        svixId: req.headers.get('svix-id'),
+        svixTimestamp: req.headers.get('svix-timestamp'),
+        svixSignature: req.headers.get('svix-signature'),
+      }
+      
+      const isValid = await verifyWebhookSignature(rawBody, svixHeaders, webhookSecret)
+      
+      if (!isValid) {
+        console.error('Invalid webhook signature')
+        return new Response(
+          JSON.stringify({ error: 'Invalid webhook signature' }),
+          { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        )
+      }
+      
+      console.log('Webhook signature verified successfully')
+    } else {
+      console.warn('RESEND_WEBHOOK_SECRET not configured - skipping signature verification')
     }
 
-    const payload: WebhookPayload = await req.json()
+    const payload: WebhookPayload = JSON.parse(rawBody)
     
     // Log incoming webhook
     await logWebhook(supabase, payload.type, payload, true)
@@ -266,13 +361,10 @@ serve(async (req: Request) => {
         .insert({
           organization_id: organization.id,
           status: 'no_attachment',
-          from_email: senderEmail,
-          from_name: extractSenderName(email.from),
+          sender_email: senderEmail,
           subject: email.subject || '(No subject)',
           received_at: email.date || payload.created_at,
-          message_id: email.message_id,
-          message_hash: messageHash,
-          email_body_preview: (email.text || '').substring(0, 500),
+          email_body: (email.text || '').substring(0, 1000),
         })
         .select()
         .single()
@@ -319,15 +411,12 @@ serve(async (req: Request) => {
         .insert({
           organization_id: organization.id,
           status: 'new',
-          from_email: senderEmail,
-          from_name: extractSenderName(email.from),
+          sender_email: senderEmail,
           subject: email.subject || '(No subject)',
           received_at: email.date || payload.created_at,
-          message_id: email.message_id,
-          message_hash: messageHash,
-          email_body_preview: (email.text || '').substring(0, 500),
+          email_body: (email.text || '').substring(0, 1000),
           file_name: attachment.filename,
-          file_type: attachment.content_type,
+          content_type: attachment.content_type,
           file_size: attachment.size,
           storage_path: storagePath,
         })
