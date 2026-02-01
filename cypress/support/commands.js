@@ -180,7 +180,7 @@ Cypress.Commands.add('login', (userType = 'user', options = {}) => {
     cy.wrap(organizationToUse).as('organizationToDispatch')
   }
 
-  cy.visit('/dashboard', {
+  cy.visit('/', {
     onBeforeLoad(win) {
       const storageKey = `sb-${Cypress.env('SUPABASE_PROJECT_REF') || 'test'}-auth-token`
       win.localStorage.setItem(storageKey, JSON.stringify(mockSession))
@@ -198,11 +198,28 @@ Cypress.Commands.add('login', (userType = 'user', options = {}) => {
       win.localStorage.setItem('nav-section-accounting', 'true')
       win.localStorage.setItem('nav-section-administration', 'true')
       
-      // Stub the Supabase auth.getSession method before the app loads
-      win.supabaseAuthGetSession = async () => ({
-        data: { session: mockSession },
-        error: null
-      })
+      //  Hook into Redux store when it's created
+      const originalConfigureStore = win.Object.getOwnPropertyDescriptor(win, 'store');
+      Object.defineProperty(win, 'store', {
+        configurable: true,
+        get() {
+          return this._store;
+        },
+        set(store) {
+          this._store = store;
+          // Immediately dispatch auth state when store is set
+          if (store && !this._authDispatched) {
+            this._authDispatched = true;
+            store.dispatch({
+              type: 'auth/checkSession/fulfilled',
+              payload: {
+                session: mockSession,
+                profile: userData.profile
+              }
+            });
+          }
+        }
+      });
     }
   })
 
@@ -212,7 +229,8 @@ Cypress.Commands.add('login', (userType = 'user', options = {}) => {
   //  Dispatch the authenticated user state immediately after store is ready
   cy.window().its('store').then((store) => {
     // Log current auth state before dispatch
-    cy.log('Auth state before dispatch:', JSON.stringify(store.getState().auth))
+    const authBefore = store.getState().auth
+    cy.log('Auth before:', `initialized=${authBefore.initialized}, loading=${authBefore.loading}, isAuthenticated=${authBefore.isAuthenticated}`)
     
     // Use checkSession fulfilled action to properly set all auth state
     store.dispatch({
@@ -224,7 +242,19 @@ Cypress.Commands.add('login', (userType = 'user', options = {}) => {
     })
     
     // Log auth state after dispatch
-    cy.log('Auth state after dispatch:', JSON.stringify(store.getState().auth))
+    const authAfter = store.getState().auth
+    cy.log('Auth after:', `initialized=${authAfter.initialized}, loading=${authAfter.loading}, isAuthenticated=${authAfter.isAuthenticated}`)
+    
+    // Verify critical flags are set
+    if (!authAfter.initialized) {
+      throw new Error('CRITICAL: initialized is still false after dispatch!')
+    }
+    if (authAfter.loading) {
+      throw new Error('CRITICAL: loading is still true after dispatch!')
+    }
+    if (!authAfter.isAuthenticated) {
+      throw new Error('CRITICAL: isAuthenticated is still false after dispatch!')
+    }
   })
 
   // Wait for the app to load
