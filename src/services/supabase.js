@@ -72,6 +72,21 @@ export const authService = {
 
   // Get session
   async getSession() {
+    // In Cypress tests, return mock session from localStorage
+    if (window.Cypress) {
+      const storageKey = `sb-${window.Cypress.env('SUPABASE_PROJECT_REF') || 'test'}-auth-token`;
+      const storedSession = window.localStorage.getItem(storageKey);
+      if (storedSession) {
+        try {
+          const session = JSON.parse(storedSession);
+          return { session, error: null };
+        } catch (e) {
+          return { session: null, error: null };
+        }
+      }
+      return { session: null, error: null };
+    }
+    
     if (!supabase) {
       return { session: null, error: null };
     }

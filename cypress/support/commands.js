@@ -75,6 +75,7 @@ Cypress.Commands.add('login', (userType = 'user', options = {}) => {
     }
   }
 
+  // Intercept all auth endpoints
   cy.intercept('GET', '**/auth/v1/user', {
     statusCode: 200,
     body: mockSession.user
@@ -89,6 +90,17 @@ Cypress.Commands.add('login', (userType = 'user', options = {}) => {
     statusCode: 200,
     body: mockSession
   }).as('refreshToken')
+
+  // Intercept the session endpoint that Supabase client uses
+  cy.intercept('GET', '**/auth/v1/session*', {
+    statusCode: 200,
+    body: {
+      data: {
+        session: mockSession
+      },
+      error: null
+    }
+  }).as('getSession')
 
   cy.intercept('GET', '**/rest/v1/profiles*', (req) => {
     // When .single() is used, Supabase adds specific headers
@@ -168,7 +180,7 @@ Cypress.Commands.add('login', (userType = 'user', options = {}) => {
     cy.wrap(organizationToUse).as('organizationToDispatch')
   }
 
-  cy.visit('/', {
+  cy.visit('/dashboard', {
     onBeforeLoad(win) {
       const storageKey = `sb-${Cypress.env('SUPABASE_PROJECT_REF') || 'test'}-auth-token`
       win.localStorage.setItem(storageKey, JSON.stringify(mockSession))
@@ -185,7 +197,34 @@ Cypress.Commands.add('login', (userType = 'user', options = {}) => {
       win.localStorage.setItem('nav-section-invoicing', 'true')
       win.localStorage.setItem('nav-section-accounting', 'true')
       win.localStorage.setItem('nav-section-administration', 'true')
+      
+      // Stub the Supabase auth.getSession method before the app loads
+      win.supabaseAuthGetSession = async () => ({
+        data: { session: mockSession },
+        error: null
+      })
     }
+  })
+
+  // Wait for Redux store to be available with a retry mechanism
+  cy.window({ timeout: 15000 }).should('have.property', 'store')
+  
+  //  Dispatch the authenticated user state immediately after store is ready
+  cy.window().its('store').then((store) => {
+    // Log current auth state before dispatch
+    cy.log('Auth state before dispatch:', JSON.stringify(store.getState().auth))
+    
+    // Use checkSession fulfilled action to properly set all auth state
+    store.dispatch({
+      type: 'auth/checkSession/fulfilled',
+      payload: {
+        session: mockSession,
+        profile: userData.profile
+      }
+    })
+    
+    // Log auth state after dispatch
+    cy.log('Auth state after dispatch:', JSON.stringify(store.getState().auth))
   })
 
   // Wait for the app to load
