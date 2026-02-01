@@ -58,7 +58,10 @@ function App() {
   const shouldAnimate = initialized && !loading && showLoader;
 
   useEffect(() => {
-    dispatch(checkSession());
+    // Skip checkSession in Cypress - auth state is mocked
+    if (!window.Cypress) {
+      dispatch(checkSession());
+    }
   }, [dispatch]);
 
   // When loading is done, hide loader after animation completes

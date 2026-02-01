@@ -75,6 +75,7 @@ Cypress.Commands.add('login', (userType = 'user', options = {}) => {
     }
   }
 
+  // Intercept all auth endpoints
   cy.intercept('GET', '**/auth/v1/user', {
     statusCode: 200,
     body: mockSession.user
@@ -89,6 +90,17 @@ Cypress.Commands.add('login', (userType = 'user', options = {}) => {
     statusCode: 200,
     body: mockSession
   }).as('refreshToken')
+
+  // Intercept the session endpoint that Supabase client uses
+  cy.intercept('GET', '**/auth/v1/session*', {
+    statusCode: 200,
+    body: {
+      data: {
+        session: mockSession
+      },
+      error: null
+    }
+  }).as('getSession')
 
   cy.intercept('GET', '**/rest/v1/profiles*', (req) => {
     // When .single() is used, Supabase adds specific headers
@@ -185,6 +197,63 @@ Cypress.Commands.add('login', (userType = 'user', options = {}) => {
       win.localStorage.setItem('nav-section-invoicing', 'true')
       win.localStorage.setItem('nav-section-accounting', 'true')
       win.localStorage.setItem('nav-section-administration', 'true')
+      
+      //  Hook into Redux store when it's created
+      const originalConfigureStore = win.Object.getOwnPropertyDescriptor(win, 'store');
+      Object.defineProperty(win, 'store', {
+        configurable: true,
+        get() {
+          return this._store;
+        },
+        set(store) {
+          this._store = store;
+          // Immediately dispatch auth state when store is set
+          if (store && !this._authDispatched) {
+            this._authDispatched = true;
+            store.dispatch({
+              type: 'auth/checkSession/fulfilled',
+              payload: {
+                session: mockSession,
+                profile: userData.profile
+              }
+            });
+          }
+        }
+      });
+    }
+  })
+
+  // Wait for Redux store to be available with a retry mechanism
+  cy.window({ timeout: 15000 }).should('have.property', 'store')
+  
+  //  Dispatch the authenticated user state immediately after store is ready
+  cy.window().its('store').then((store) => {
+    // Log current auth state before dispatch
+    const authBefore = store.getState().auth
+    cy.log('Auth before:', `initialized=${authBefore.initialized}, loading=${authBefore.loading}, isAuthenticated=${authBefore.isAuthenticated}`)
+    
+    // Use checkSession fulfilled action to properly set all auth state
+    store.dispatch({
+      type: 'auth/checkSession/fulfilled',
+      payload: {
+        session: mockSession,
+        profile: userData.profile
+      }
+    })
+    
+    // Log auth state after dispatch
+    const authAfter = store.getState().auth
+    cy.log('Auth after:', `initialized=${authAfter.initialized}, loading=${authAfter.loading}, isAuthenticated=${authAfter.isAuthenticated}`)
+    
+    // Verify critical flags are set
+    if (!authAfter.initialized) {
+      throw new Error('CRITICAL: initialized is still false after dispatch!')
+    }
+    if (authAfter.loading) {
+      throw new Error('CRITICAL: loading is still true after dispatch!')
+    }
+    if (!authAfter.isAuthenticated) {
+      throw new Error('CRITICAL: isAuthenticated is still false after dispatch!')
     }
   })
 
